@@ -1,0 +1,10 @@
+**/*~
+**/._*
+**/.DS_Store
+npm-debug.log
+/.idea
+/bower_components
+/coverage
+/dist/json-schema-ref-parser.cover.js
+/tests
+/.*

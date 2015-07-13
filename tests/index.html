@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head lang="en">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="../node_modules/mocha/mocha.css"/>
+
+    <title>Json Schema Ref Parser Tests</title>
+  </head>
+  <body>
+    <div id="mocha"></div>
+
+    <!-- Unit Testing Frameworks -->
+    <script src="../node_modules/mocha/mocha.js"></script>
+    <script src="../node_modules/chai/chai.js"></script>
+    <script src="../node_modules/sinon/pkg/sinon.js"></script>
+    <script>mocha.setup('bdd')</script>
+
+    <!-- Json Schema Ref Parser -->
+    <script src="../dist/ref-parser.js"></script>
+
+    <!-- Unit Tests -->
+    <script src="helper.js"></script>
+    <script src="dereference.spec.js"></script>
+
+    <script>
+      expect = chai.expect;
+      mocha.checkLeaks();
+      mocha.globals([]);
+      mocha.run();
+    </script>
+  </body>
+</html>

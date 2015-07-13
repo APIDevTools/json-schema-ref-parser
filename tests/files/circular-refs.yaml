@@ -1,0 +1,29 @@
+definitions:
+  thing:
+    $ref: "#/definitions/thing" # circular reference to self
+
+  person:
+    properties:
+      name:
+        type: string
+      spouse:
+        type:
+          $ref: "#/definitions/person" # circular reference to parent
+
+  parent:
+    properties:
+      name:
+        type: string
+      children:
+        type: array
+        items:
+          $ref: "#/definitions/child"   # indirect circular reference
+
+  child:
+    properties:
+      name:
+        type: string
+      parents:
+        type: array
+        items:
+          $ref: "#/definitions/parent"  # indirect circular reference
