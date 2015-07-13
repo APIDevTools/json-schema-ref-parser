@@ -42,7 +42,7 @@ The Solution:
 JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03#section-3) and [JSON Pointer](https://tools.ietf.org/html/rfc6901) implementation that crawls even the most complex [JSON Schemas](http://json-schema.org/latest/json-schema-core.html) and gives you simple, straightforward JavaScript objects.
 
 ### Features
-* Works in **Node** and all major **web browsers** on Windows, Mac, and Linux
+* Works in **Node**, **io.js**, and all major **web browsers** on Windows, Mac, and Linux
 * Supports **JSON** and **YAML** formats &mdash; even a mix of both!
 * Resolves all `$ref` pointers, including pointers to **external files and URLs**
 * Configurable **caching** of external files
