@@ -16,7 +16,7 @@ module.exports = function(config) {
       'dist/ref-parser.min.js',
 
       // Unit tests
-      'tests/test-environment.js',
+      'tests/helper.js',
       'tests/**/*.spec.js'
     ],
 

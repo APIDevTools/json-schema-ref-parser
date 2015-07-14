@@ -23,6 +23,7 @@
     "build": "npm run lint && npm run browserify",
     "lint": "jshint . --verbose && jscs . --verbose",
     "browserify": "gulp build",
+    "testem": "testem",
     "test": "istanbul cover _mocha -- --bail --recursive tests && npm run karma",
     "mocha": "mocha --bail --recursive tests",
     "karma": "karma start --single-run",
