@@ -86,6 +86,26 @@ Sample Usage
 ```
 
 
+Circular $Refs
+--------------------------
+JSON Schema files can contain [circular $ref pointers](https://gist.github.com/BigstickCarpet/d18278935fc73e3a0ee1), and JSON Schema $Ref Parser will detect them and handle them correctly. Circular $ref pointers will be resolved and dereferenced just like any other $ref pointer.  However, this means that the resulting dereferenced JavaScript object will contain circular object references.  This isn't a problem if you just plan to use the object programmatically, but if you attempt to serialize a circular object to JSON, you will receive an error.  Just be aware of that.
+
+```javascript
+"person": {
+    "properties": {
+        "name": {
+          "type": "string"
+        },
+        "spouse": {
+          "type": {
+            "$ref": "#/person"        // circular reference
+          }
+        }
+    }
+}
+```
+
+
 Contributing
 --------------------------
 I welcome any contributions, enhancements, and bug-fixes.  [File an issue](https://github.com/BigstickCarpet/json-schema-ref-parser/issues) on GitHub and [submit a pull request](https://github.com/BigstickCarpet/json-schema-ref-parser/pulls).
