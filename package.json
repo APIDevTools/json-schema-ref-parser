@@ -28,7 +28,8 @@
     "mocha": "mocha --bail --recursive tests",
     "karma": "karma start --single-run",
     "upgrade": "npm-check-updates -u && npm update && gulp update-tests",
-    "release": "npm run upgrade && npm run build && npm test && bump --prerelease --tag --push --all && npm publish"
+    "bump": "bump --prerelease --tag --push --all",
+    "release": "npm run upgrade && npm run build && npm test && npm run bump && npm publish"
   },
   "repository": {
     "type": "git",

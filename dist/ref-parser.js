@@ -78,7 +78,6 @@ var Promise        = require('./promise'),
     Options        = require('./options'),
     Url            = require('./url'),
     $Refs          = require('./refs'),
-    $Ref           = require('./ref'),
     read           = require('./read'),
     resolve        = require('./resolve'),
     dereference    = require('./dereference'),
@@ -96,6 +95,7 @@ function $RefParser() {
    * The parsed (and possibly dereferenced) JSON schema object
    *
    * @type {object}
+   * @readonly
    */
   this.schema = null;
 
@@ -149,15 +149,13 @@ $RefParser.prototype.parse = function(schema, options, callback) {
   return read(this._url, this, options)
     .then(function($ref) {
       // Make sure the file was a POJO (in JSON or YAML format), NOT a Buffer or string
-      if (_isPlainObject($ref.value)) {
+      if ($ref.value && _isPlainObject($ref.value)) {
         me.schema = $ref.value;
         util.doCallback(callback, null, me.schema);
         return me.schema;
       }
       else {
-        var err = util.newError(SyntaxError, '"%s" is not a valid JSON Schema', me._url);
-        util.doCallback(callback, err, $ref.value);
-        throw err;
+        throw util.newError(SyntaxError, '"%s" is not a valid JSON Schema', me._url);
       }
     })
     .catch(function(err) {
@@ -206,14 +204,9 @@ $RefParser.prototype.dereference = function(schema, options, callback) {
   options = new Options(options);
   var me = this;
 
-  return this.parse(schema, options)
-    .then(function(result) {
-      return resolve(me, options);
-    })
+  return this.resolve(schema, options)
     .then(function() {
-      return dereference(me, options);
-    })
-    .then(function() {
+      dereference(me, options);
       util.doCallback(callback, null, me.schema);
       return me.schema;
     })
@@ -223,41 +216,39 @@ $RefParser.prototype.dereference = function(schema, options, callback) {
     });
 };
 
-},{"./dereference":1,"./options":3,"./promise":5,"./read":6,"./ref":7,"./refs":8,"./resolve":9,"./url":10,"./util":11,"lodash/lang/cloneDeep":138,"lodash/lang/isFunction":142,"lodash/lang/isObject":145,"lodash/lang/isPlainObject":146,"lodash/lang/isString":147}],3:[function(require,module,exports){
+},{"./dereference":1,"./options":3,"./promise":5,"./read":6,"./refs":8,"./resolve":9,"./url":10,"./util":11,"lodash/lang/cloneDeep":138,"lodash/lang/isFunction":142,"lodash/lang/isObject":145,"lodash/lang/isPlainObject":146,"lodash/lang/isString":147}],3:[function(require,module,exports){
 'use strict';
 
-var _merge     = require('lodash/object/merge'),
-    _cloneDeep = require('lodash/lang/cloneDeep');
+var _merge = require('lodash/object/merge');
 
 module.exports = Options;
 
 function Options(options) {
-  _merge(this, _cloneDeep(Options.prototype), options);
+  this.allow = {
+    json: true,
+    yaml: true,
+    empty: true,
+    unknown: true
+  };
+
+  this.$refs = {
+    internal: true,
+    external: true
+  };
+
+  this.cache = {
+    fs: 60,
+    http: 5 * 60,
+    https: 5 * 60
+  };
+
+  _merge(this, options);
 }
 
-Options.prototype.allow = {
-  json: true,
-  yaml: true,
-  empty: true,
-  unknown: true
-};
-
-Options.prototype.$refs = {
-  internal: true,
-  external: true
-};
-
-Options.prototype.cache = {
-  fs: 60,
-  http: 5 * 60,
-  https: 5 * 60
-};
-
-},{"lodash/lang/cloneDeep":138,"lodash/object/merge":152}],4:[function(require,module,exports){
+},{"lodash/object/merge":152}],4:[function(require,module,exports){
 'use strict';
 
 var yaml      = require('js-yaml'),
-    Url       = require('./url'),
     util      = require('./util'),
     _isEmpty  = require('lodash/lang/isEmpty'),
     _isString = require('lodash/lang/isString');
@@ -312,7 +303,7 @@ function parse(data, url, options) {
   return parsed;
 }
 
-},{"./url":10,"./util":11,"js-yaml":52,"lodash/lang/isEmpty":141,"lodash/lang/isString":147}],5:[function(require,module,exports){
+},{"./util":11,"js-yaml":52,"lodash/lang/isEmpty":141,"lodash/lang/isString":147}],5:[function(require,module,exports){
 /** @type {Promise} **/
 module.exports = typeof(Promise) === 'function' ? Promise : require('es6-promise').Promise;
 
@@ -325,7 +316,6 @@ var fs          = require('fs'),
     https       = require('https'),
     parse       = require('./parse'),
     util        = require('./util'),
-    Url         = require('./url'),
     $Ref        = require('./ref'),
     Promise     = require('./promise'),
     _isFunction = require('lodash/lang/isFunction');
@@ -399,7 +389,7 @@ function read$Ref($ref, parser, options) {
           $ref.cached = false;
 
           return $ref;
-        })
+        });
     }
     else {
       return Promise.reject(util.newError(SyntaxError, 'Unable to resolve $ref pointer "%s"', $ref.url));
@@ -542,7 +532,7 @@ function download(protocol, url, options) {
 
 }).call(this,require('_process'))
 
-},{"./parse":4,"./promise":5,"./ref":7,"./url":10,"./util":11,"_process":27,"fs":12,"http":19,"https":23,"lodash/lang/isFunction":142}],7:[function(require,module,exports){
+},{"./parse":4,"./promise":5,"./ref":7,"./util":11,"_process":27,"fs":12,"http":19,"https":23,"lodash/lang/isFunction":142}],7:[function(require,module,exports){
 'use strict';
 
 var util      = require('./util'),
@@ -955,7 +945,7 @@ module.exports = Url;
 
 function Url(u) {
   if (_isString(u)) {
-    this._url = Url.parse(u);
+    this._url = Url.parse(u)._url;
   }
   else if (u instanceof Url) {
     this._url = url.parse(u._url.format());
@@ -984,7 +974,7 @@ Object.defineProperty(Url.prototype, 'href', {
           this._url = url.parse(this._url.format());
         }
       }
-    })
+    });
   }
 );
 
@@ -1067,7 +1057,7 @@ Url.parse = function(urlStr) {
 
   if (process.browser || u.protocol === 'http:' || u.protocol === 'https:') {
     // It's a web URL, so return it as-is
-    return u;
+    return new Url(u);
   }
 
   // It's a local file, so we need to do some extra work
@@ -1126,10 +1116,11 @@ Url.cwd = function() {
 (function (process){
 'use strict';
 
-var debug     = require('debug'),
-    format    = require('util').format,
+var debug       = require('debug'),
+    format      = require('util').format,
     _isFunction = require('lodash/lang/isFunction'),
-    _isString = require('lodash/lang/isString');
+    _isString   = require('lodash/lang/isString'),
+    slice       = Array.prototype.slice;
 
 module.exports = {
   /**
@@ -1138,22 +1129,9 @@ module.exports = {
    * @type {function}
    */
   debug: debug('json-schema-ref-parser'),
-  slice: slice,
   doCallback: doCallback,
   newError: newError
 };
-
-/**
- * {@link Array#slice} for any array-like object (e.g. arguments)
- *
- * @param {object} array
- * @param {number} [start]
- * @param {number} [end]
- * @returns {Array}
- */
-function slice(array, start, end) {
-  return Array.prototype.slice.call(array, start, end);
-}
 
 /**
  * Asynchronously invokes the given callback function with the given parameters.
@@ -1164,7 +1142,7 @@ function slice(array, start, end) {
  */
 function doCallback(callback, err, params) {
   if (_isFunction(callback)) {
-    var args = slice(arguments, 1);
+    var args = slice.call(arguments, 1);
 
     /* istanbul ignore if: code-coverage doesn't run in the browser */
     if (process.browser) {
@@ -1191,13 +1169,13 @@ function doCallback(callback, err, params) {
  */
 function newError(Klass, err, message, params) {
   if (_isFunction(Klass) && err instanceof Error) {
-    return makeError(Klass, err, format.apply(null, slice(arguments, 2)));
+    return makeError(Klass, err, format.apply(null, slice.call(arguments, 2)));
   }
   else if (_isFunction(Klass)) {
-    return makeError(Klass, null, format.apply(null, slice(arguments, 1)));
+    return makeError(Klass, null, format.apply(null, slice.call(arguments, 1)));
   }
   else if (err instanceof Error) {
-    return makeError(Error, err, format.apply(null, slice(arguments, 1)));
+    return makeError(Error, err, format.apply(null, slice.call(arguments, 1)));
   }
   else {
     return makeError(Error, null, format.apply(null, arguments));

@@ -17,7 +17,8 @@ module.exports = function(config) {
 
       // Unit tests
       'tests/helper.js',
-      'tests/**/*.spec.js'
+      'tests/**/*.spec.js',
+      {pattern: 'tests/files/**', included: false, served: true}
     ],
 
     browsers: (function() {
