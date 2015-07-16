@@ -1,6 +1,6 @@
 {
   "name": "json-schema-ref-parser",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "description": "Parse, Resolve, and Dereference JSON Schema $ref pointers",
   "keywords": [
     "json",
@@ -27,7 +27,7 @@
     "test": "istanbul cover _mocha -- --bail --recursive tests && npm run karma",
     "mocha": "mocha --bail --recursive tests",
     "karma": "karma start --single-run",
-    "upgrade": "npm-check-updates -u && npm update && gulp update-tests",
+    "upgrade": "npm-check-updates -u && npm update",
     "bump": "bump --prerelease --tag --push --all",
     "release": "npm run upgrade && npm run build && npm test && npm run bump && npm publish"
   },
@@ -40,7 +40,7 @@
     "exorcist": "^0.4.0",
     "uglifyify": "^3.0.1",
     "browserify-istanbul": "^0.2.1",
-    "karma": "^0.12.37",
+    "karma": "^0.13.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^0.2.0",
     "karma-cli": "0.1.0",
@@ -59,7 +59,7 @@
     "jscs": "^1.13.1",
     "jshint": "^2.8.0",
     "npm-check-updates": "^1.5.1",
-    "version-bump-prompt": "^1.4.0",
+    "version-bump-prompt": "^1.4.1",
     "gulp": "^3.9.0",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^1.5.2",
