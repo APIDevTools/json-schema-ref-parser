@@ -410,18 +410,8 @@ PathOrUrl.prototype.resolve = function(relative, options) {
   else {
     // Resolve as a file path
     util.debug('Resolving path "%s", relative to "%s"', relative, this);
-    relative = parseFile({}, relative, options);
-    relative.path = relative.root = relative.dir = relative.base = relative.name = relative.ext = '';
-    if (relative.pathname) {
-      relative.pathname = path.resolve(this.dir, relative.pathname);
-    }
-    else {
-      relative.pathname = this.pathname;
-      relative.search = relative.search || this.search;
-      relative.query = relative.query || this.query;
-      relative.hash = relative.hash || this.hash;
-    }
-    resolved = PathOrUrl.prototype.format.call(relative);
+    var parsed = parseRelativeFile({}, this, relative, options);
+    resolved = PathOrUrl.prototype.format.call(parsed);
     util.debug('    Resolved to %s', resolved);
   }
 
@@ -470,12 +460,10 @@ PathOrUrl.prototype.format = function() {
   }
 
   // Format as a file path
-  return path.normalize(clone.pathname + clone.search + clone.hash);
+  return path.normalize(clone.pathname) + clone.search + clone.hash;
 };
 
-PathOrUrl.prototype.toString = function() {
-  return this.href;
-};
+PathOrUrl.prototype.toString = PathOrUrl.prototype.format;
 
 PathOrUrl.toUrl = function(href, options) {
   return new PathOrUrl(href, options).toUrl();
@@ -498,7 +486,7 @@ PathOrUrl.prototype.toUrlString = function() {
 
     // Normalize path separators (e.g. Windows backslashes)
     if (path.sep !== '/') {
-      pathname = pathname.replace(new RegExp(path.sep, 'g'), '/');
+      pathname = pathname.replace(new RegExp('\\' + path.sep, 'g'), '/');
     }
 
     return url.format({
@@ -558,7 +546,7 @@ PathOrUrl.prototype.parse = function(href, options) {
     }
     else {
       // It's a relative file path
-      parseFile(this, path.resolve(process.cwd(), href), options);
+      parseRelativeFile(this, PathOrUrl.cwd(), href, options);
     }
   }
 };
@@ -658,6 +646,30 @@ function parseFile(target, file, options) {
   target.query = query;
   target.hash = hash;
   return target;
+}
+
+/**
+ * @param {PathOrUrl} target
+ * @param {PathOrUrl} base
+ * @param {string} relative
+ * @param {{allowFileQuery: boolean, allowFileHash: boolean}} [options]
+ * @returns {{isUrl: boolean, isFile: boolean, url: Url, path: Path}}
+ */
+function parseRelativeFile(target, base, relative, options) {
+  relative = parseFile({}, relative, options);
+
+  var absolute;
+  if (relative.pathname) {
+    absolute = path.resolve(base.dir, relative.pathname) + relative.search + relative.hash;
+  }
+  else if (relative.search) {
+    absolute = base.pathname + relative.search + relative.hash;
+  }
+  else {
+    absolute = base.pathname + base.search + (relative.hash || base.hash);
+  }
+
+  return parseFile(target, absolute, options);
 }
 
 /**
