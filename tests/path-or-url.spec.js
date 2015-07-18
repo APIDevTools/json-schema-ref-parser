@@ -19,8 +19,13 @@ describe('PathOrUrl', function() {
         {allowFileHash: true, allowFileQuery: true});
       console.log('\n====> rel = %s\n', JSON.stringify(rel, null, 2));
 
-      rel = rel.toUrlString();
-      console.log('\n====> url = %s\n', rel);
+      var urlString = rel.toUrlString();
+      console.log('\n====> url = %s\n', urlString);
+
+      var relToUrl = rel.resolve('http://www.google.com');
+      console.log('\n====> rel-to-url: ' + relToUrl);
+      expect(relToUrl).to.equal('http://www.google.com/');
+
       done();
     }
   );
