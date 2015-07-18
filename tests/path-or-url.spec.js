@@ -11,11 +11,11 @@ describe('PathOrUrl', function() {
         return done();
       }
 
-      var relPath = helper.relPath('circular-external-refs.yaml');
       var cwd = PathOrUrl.cwd();
       console.log('\n====> cwd = %s\n', JSON.stringify(cwd, null, 2));
 
-      var rel = new PathOrUrl(relPath + '?foo=bar&biz=baz#/definitions/pet',
+      var relPath = helper.relPath('circular-external-refs.yaml');
+      var rel = new PathOrUrl(relPath + '?foo=ba r&biz=baz#/definitio??ns/#pet',
         {allowFileHash: true, allowFileQuery: true});
       console.log('\n====> rel = %s\n', JSON.stringify(rel, null, 2));
 
