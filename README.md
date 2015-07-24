@@ -2,11 +2,11 @@ JSON Schema $Ref Parser
 ============================
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
 
-[![Build Status](https://img.shields.io/travis/BigstickCarpet/json-schema-ref-parser.svg)](https://travis-ci.org/BigstickCarpet/json-schema-ref-parser)
-[![Coverage Status](https://img.shields.io/coveralls/BigstickCarpet/json-schema-ref-parser.svg)](https://coveralls.io/r/BigstickCarpet/json-schema-ref-parser)
-[![Code Climate Score](https://img.shields.io/codeclimate/github/BigstickCarpet/json-schema-ref-parser.svg)](https://codeclimate.com/github/BigstickCarpet/json-schema-ref-parser)
-[![Codacy Score](http://img.shields.io/codacy/d8abfe5e9a4044b89bd9f4b999d4a574.svg)](https://www.codacy.com/public/jamesmessinger/json-schema-ref-parser)
-[![Dependencies](https://img.shields.io/david/BigstickCarpet/json-schema-ref-parser.svg)](https://david-dm.org/BigstickCarpet/json-schema-ref-parser)
+[![Build Status](https://api.travis-ci.org/BigstickCarpet/json-schema-ref-parser.svg)](https://travis-ci.org/BigstickCarpet/json-schema-ref-parser)
+[![Dependencies](https://david-dm.org/BigstickCarpet/json-schema-ref-parser.svg)](https://david-dm.org/BigstickCarpet/json-schema-ref-parser)
+[![Coverage Status](https://coveralls.io/repos/BigstickCarpet/json-schema-ref-parser/badge.svg?branch=master&service=github)](https://coveralls.io/r/BigstickCarpet/json-schema-ref-parser)
+[![Code Climate Score](https://codeclimate.com/github/BigstickCarpet/json-schema-ref-parser/badges/gpa.svg)](https://codeclimate.com/github/BigstickCarpet/json-schema-ref-parser)
+[![Codacy Score](https://www.codacy.com/project/badge/d8abfe5e9a4044b89bd9f4b999d4a574)](https://www.codacy.com/public/jamesmessinger/json-schema-ref-parser)
 [![Inline docs](http://inch-ci.org/github/BigstickCarpet/json-schema-ref-parser.svg?branch=master&style=shields)](http://inch-ci.org/github/BigstickCarpet/json-schema-ref-parser)
 
 [![npm](http://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
