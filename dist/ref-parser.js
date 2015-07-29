@@ -1168,11 +1168,26 @@ function $Refs() {
   this._$refs = {};
 }
 
-$Refs.prototype.toJSON = function() {
-  return _reduce(this._$refs, function($refs, $ref, url) {
-    $refs[url] = $ref.value;
-    return $refs;
-  }, {});
+$Refs.prototype.keys = function() {
+  return Object.keys(this._$refs);
+};
+
+$Refs.prototype.fileKeys = function() {
+  return _reduce(this._$refs, function(fileKeys, $ref, url) {
+    if ($ref.pathOrUrl.isFile) {
+      fileKeys.push(url);
+    }
+    return fileKeys;
+  }, []);
+};
+
+$Refs.prototype.urlKeys = function() {
+  return _reduce(this._$refs, function(urlKeys, $ref, url) {
+    if ($ref.pathOrUrl.isUrl) {
+      urlKeys.push(url);
+    }
+    return urlKeys;
+  }, []);
 };
 
 /**
@@ -1198,6 +1213,15 @@ $Refs.prototype.exists = function($ref, options) {
 $Refs.prototype.get = function($ref, options) {
   return this._resolve($ref, options).value;
 };
+
+$Refs.prototype.getAll = function() {
+  return _reduce(this._$refs, function($refs, $ref, url) {
+    $refs[url] = $ref.value;
+    return $refs;
+  }, {});
+};
+
+$Refs.prototype.toJSON = $Refs.prototype.getAll;
 
 /**
  * @param {string} $ref
