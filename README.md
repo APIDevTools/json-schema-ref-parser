@@ -13,6 +13,8 @@ JSON Schema $Ref Parser
 [![Bower](http://img.shields.io/bower/v/json-schema-ref-parser.svg)](#bower)
 [![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
 
+[![Browser Compatibility](https://saucelabs.com/browser-matrix/json-schema-ref-parser.svg)](https://saucelabs.com/u/json-schema-ref-parser)
+
 
 The Problem:
 --------------------------
@@ -73,16 +75,16 @@ Sample Usage
 --------------------------
 
 ```javascript
-// 
-// 
-// 
+//
+//
+//
 // !!! Coming Soon !!!
 //
 // NOTE: This project is still in alpha.  The API and syntax may change before release
-// 
-// 
-// 
-// 
+//
+//
+//
+//
 ```
 
 

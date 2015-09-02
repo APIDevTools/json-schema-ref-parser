@@ -17,9 +17,19 @@
   },
   "ignore": [
     "/bower_components",
-    "/tests",
     "/lib",
-    "/.*"
+    "/www",
+    "/dist/*.test.js",
+    "/tests",
+    "/karma.conf.js",
+    "/.*",
+    "/index.html",
+    "/package.json"
   ],
-  "dependencies": {}
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*",
+    "sinon-js": "*"
+  }
 }

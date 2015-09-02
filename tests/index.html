@@ -1,31 +1,34 @@
 <!DOCTYPE html>
 <html>
   <head lang="en">
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="../node_modules/mocha/mocha.css"/>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Json Schema Ref Parser Tests</title>
+
+    <link rel="stylesheet" href="bower_components/mocha/mocha.css"/>
   </head>
   <body>
     <div id="mocha"></div>
 
-    <!-- Unit Testing Frameworks -->
-    <script src="../node_modules/mocha/mocha.js"></script>
-    <script src="../node_modules/chai/chai.js"></script>
-    <script src="../node_modules/sinon/pkg/sinon.js"></script>
-    <script>mocha.setup('bdd')</script>
+    <!-- Third-Party Libraries -->
+    <script src="bower_components/mocha/mocha.js"></script>
+    <script src="bower_components/chai/chai.js"></script>
+    <script src="bower_components/sinon-js/sinon.js"></script>
 
     <!-- Json Schema Ref Parser -->
     <script src="../dist/ref-parser.js"></script>
 
-    <!-- Unit Tests -->
-    <script src="helper.js"></script>
-    <script src="dereference.spec.js"></script>
+    <!-- Test Fixtures -->
+    <script src="fixtures/config.js"></script>
+    <script src="fixtures/globals.js"></script>
+    <script src="fixtures/helper.js"></script>
+
+    <!-- Tests -->
+    <script src="specs/dereference.spec.js"></script>
 
     <script>
-      expect = chai.expect;
-      mocha.checkLeaks();
-      mocha.globals([]);
       mocha.run();
     </script>
   </body>

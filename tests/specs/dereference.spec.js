@@ -1,9 +1,5 @@
 'use strict';
 
-var $RefParser = require('../'),
-    helper     = require('./helper'),
-    expect     = require('chai').expect;
-
 describe('Dereferencing', function() {
   it('should support circular $refs',
     function(done) {
@@ -16,7 +12,7 @@ describe('Dereferencing', function() {
 
           var keys = parser.$refs.keys();
           expect(keys).to.satisfy(arrayOfStrings);
-          if (helper.isBrowser) {
+          if (userAgent.isBrowser) {
             expect(parser.$refs.urlKeys()).to.deep.equal(keys);
           }
           else {
