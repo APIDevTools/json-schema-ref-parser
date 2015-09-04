@@ -63,7 +63,7 @@ function crawl(obj, path, parents, $refs, options) {
 
 },{"./ref":7,"./util":10,"lodash/collection/forEach":47,"lodash/lang/isArray":83,"lodash/lang/isObject":88,"url":137}],2:[function(require,module,exports){
 /**!
- * JSON Schema $Ref Parser v1.0.0-alpha.10
+ * JSON Schema $Ref Parser v1.0.0-alpha.11
  *
  * @link https://github.com/BigstickCarpet/json-schema-ref-parser
  * @license MIT
