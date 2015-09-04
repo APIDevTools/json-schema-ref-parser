@@ -13,7 +13,7 @@ JSON Schema $Ref Parser
 [![Bower](http://img.shields.io/bower/v/json-schema-ref-parser.svg)](#bower)
 [![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
 
-[![Browser Compatibility](https://saucelabs.com/browser-matrix/json-schema-ref-parser.svg)](https://saucelabs.com/u/json-schema-ref-parser)
+[![Browser Compatibility](https://saucelabs.com/browser-matrix/json-schema-parser.svg)](https://saucelabs.com/u/json-schema-parser)
 
 
 The Problem:
