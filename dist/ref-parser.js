@@ -63,7 +63,7 @@ function crawl(obj, path, parents, $refs, options) {
 
 },{"./ref":7,"./util":10,"lodash/collection/forEach":47,"lodash/lang/isArray":83,"lodash/lang/isObject":88,"url":137}],2:[function(require,module,exports){
 /**!
- * JSON Schema $Ref Parser v1.0.0-alpha.11
+ * JSON Schema $Ref Parser v1.0.0-alpha.12
  *
  * @link https://github.com/BigstickCarpet/json-schema-ref-parser
  * @license MIT
@@ -3799,8 +3799,14 @@ function YAMLException(reason, mark) {
   // Super constructor
   Error.call(this);
 
-  // Super helper method to include stack trace in error object
-  Error.captureStackTrace(this, this.constructor);
+  // Include stack trace in error object
+  if (Error.captureStackTrace) {
+    // Chrome and NodeJS
+    Error.captureStackTrace(this, this.constructor);
+  } else {
+    // FF, IE 10+ and Safari 6+. Fallback for others
+    this.stack = (new Error()).stack || '';
+  }
 
   this.name = 'YAMLException';
   this.reason = reason;
