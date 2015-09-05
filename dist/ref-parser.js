@@ -658,12 +658,14 @@ function download(protocol, u, options) {
 },{"./parse":4,"./promise":5,"./ref":7,"./util":10,"_process":108,"fs":98,"http":127,"https":105,"lodash/lang/isFunction":85,"ono":97,"url":137}],7:[function(require,module,exports){
 'use strict';
 
-var util      = require('./util'),
-    url       = require('url'),
-    ono       = require('ono'),
-    _isObject = require('lodash/lang/isObject'),
-    _isNumber = require('lodash/lang/isNumber'),
-    _isString = require('lodash/lang/isString');
+var util         = require('./util'),
+    url          = require('url'),
+    ono          = require('ono'),
+    _isObject    = require('lodash/lang/isObject'),
+    _isNumber    = require('lodash/lang/isNumber'),
+    _isString    = require('lodash/lang/isString'),
+    escapedSlash = /~1/g,
+    escapedTilde = /~0/g;
 
 module.exports = $Ref;
 
@@ -739,7 +741,7 @@ $Ref.prototype.setValue = function(value, options) {
 
   // Extend the cache expiration
   var cacheDuration = options.cache[this.type];
-  if (_isNumber(cacheDuration)) {
+  if (_isNumber(cacheDuration) && cacheDuration > 0) {
     var expires = Date.now() + (cacheDuration * 1000);
     this.expires = new Date(expires);
   }
@@ -901,7 +903,7 @@ function parseJsonPointer(hash) {
 
   // Decode each part, according to RFC 6901
   for (var i = 0; i < hash.length; i++) {
-    hash[i] = hash[i].replace(/~1/g, '/').replace(/~0/g, '~');
+    hash[i] = hash[i].replace(escapedSlash, '/').replace(escapedTilde, '~');
   }
 
   if (hash[0] !== '') {
