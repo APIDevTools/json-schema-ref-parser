@@ -20,7 +20,7 @@ The Problem:
 --------------------------
 You've got a JSON Schema with `$ref` pointers to other files and/or URLs.  Maybe you know all the referenced files ahead of time.  Maybe you don't.  Maybe some are local files, and others are remote URLs.  Maybe they are a mix of JSON and YAML format.  Maybe some of the files contain cross-references to each other.
 
-```json
+```javascript
 {
     "definitions": {
         "person": {
@@ -132,13 +132,13 @@ The API
 - Objects
     - [`Schema`](#schema-object)
     - [`$Refs`](#refs-object)
-      - [`$Refs.paths()`](#refs-pathstypes)
-      - [`$Refs.values()`](#refs-valuestypes)
-      - [`$Refs.isExpired()`](#refs-isexpiredref)
-      - [`$Refs.expire()`](#refs-expireref)
-      - [`$Refs.exists()`](#refs-existsref)
-      - [`$Refs.get()`](#refs-getref-options)
-      - [`$Refs.set()`](#refs-setref-value-options)
+      - [`$Refs.paths()`](#refspathstypes)
+      - [`$Refs.values()`](#refsvaluestypes)
+      - [`$Refs.isExpired()`](#refsisexpiredref)
+      - [`$Refs.expire()`](#refsexpireref)
+      - [`$Refs.exists()`](#refsexistsref)
+      - [`$Refs.get()`](#refsgetref-options)
+      - [`$Refs.set()`](#refssetref-value-options)
     - [`Options`](#options)
 - [Class methods vs. Instance methods](#class-methods-vs-instance-methods)
 - [Callbacks vs. Promises](#callbacks-vs-promises)
@@ -447,7 +447,7 @@ $RefParser.dereference("my-schema.yaml", {
 |`allow.yaml`     |bool     |true      |Determines whether YAML files are supported<br> (note: all JSON files are also valid YAML files)
 |`allow.empty`    |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an empty file
 |`allow.unknown`  |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an unknown/unsupported file type (such as HTML, text, image, etc.). The default is to resolve unknown files as a [`Buffer`](https://nodejs.org/api/buffer.html#buffer_class_buffer)
-|`$refs.internal` |bool     |true      |Determines whether internal `$ref` pointers (such as `#/definitions/widget`) will be dereferenced when calling [`dereference()`](#dereferencepath-options-callback).  Either way, you'll still be able to get the value using [`$refs.get()`](#refs-get)
+|`$refs.internal` |bool     |true      |Determines whether internal `$ref` pointers (such as `#/definitions/widget`) will be dereferenced when calling [`dereference()`](#dereferencepath-options-callback).  Either way, you'll still be able to get the value using [`$refs.get()`](#refsgetref-options)
 |`$refs.external` |bool     |true      |Determines whether external `$ref` pointers get resolved/dereferenced. If `false`, then no files/URLs will be retrieved.  Use this if you only want to allow single-file schemas.
 |`cache.fs`       |number   |60        |<a name="caching"></a>The length of time (in seconds) to cache local files.  The default is one minute.  Setting to zero will cache forever.
 |`cache.http`     |number   |300       |The length of time (in seconds) to cache HTTP URLs.  The default is five minutes.  Setting to zero will cache forever.
