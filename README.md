@@ -98,7 +98,7 @@ npm install json-schema-ref-parser
 Then require it in your code:
 
 ```javascript
-var OmniPath = require('json-schema-ref-parser');
+var $RefParser = require('json-schema-ref-parser');
 ```
 
 #### Web Browsers
@@ -182,12 +182,12 @@ The file path or URL of your JSON Schema file.  See the [`parse`](#parsepath-opt
 See [options](#options) below.
 
 - **callback** (_optional_) - `function(err, $refs)`<br>
-A callback that will receive a [`$refs`](#refs-object) object.
+A callback that will receive a [`$Refs`](#refs-object) object.
 
 - **Return Value:** `Promise`<br>
 See [Callbacks vs. Promises](#callbacks-vs-promises) below.
 
-Resolves all JSON references (`$ref` pointers) in the given JSON Schema file.  If it references any other files/URLs, then they will be downloaded and resolved as well (unless `options.$refs.external` is false).   This method **does not** dereference anything.  It simply gives you a [`$refs`](#refs-object) object, which is a map of all the resolved references and their values.
+Resolves all JSON references (`$ref` pointers) in the given JSON Schema file.  If it references any other files/URLs, then they will be downloaded and resolved as well (unless `options.$refs.external` is false).   This method **does not** dereference anything.  It simply gives you a [`$Refs`](#refs-object) object, which is a map of all the resolved references and their values.
 
 ```javascript
 $RefParser.resolve("my-schema.yaml")
@@ -218,7 +218,7 @@ A callback that will receive the bundled schema object.
 - **Return Value:** `Promise`<br>
 See [Callbacks vs. Promises](#callbacks-vs-promises) below.
 
-Bundles all referenced files/URLs into a single schema that only has _internal_ `$ref` pointers.  This lets you split-up your schema however you want while you're build it, but easily combine all those files together when it's time to package or distribute the schema to other people.  The resulting schema size will be small, since it will still contain _internal_ JSON references rather than being [fully-dereferenced](#dereferencepath-options-callback).
+Bundles all referenced files/URLs into a single schema that only has _internal_ `$ref` pointers.  This lets you split-up your schema however you want while you're building it, but easily combine all those files together when it's time to package or distribute the schema to other people.  The resulting schema size will be small, since it will still contain _internal_ JSON references rather than being [fully-dereferenced](#dereferencepath-options-callback).
 
 This also eliminates the risk of [circular references](#circular-refs), so the schema can be safely serialized using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).
 
@@ -286,7 +286,7 @@ $RefParser.dereference("my-schema.yaml", {
 |`allow.yaml`     |bool     |true      |Determines whether YAML files are supported<br> (note: all JSON files are also valid YAML files)
 |`allow.empty`    |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an empty file
 |`allow.unknown`  |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an unknown/unsupported file type (such as HTML, text, image, etc.). The default is to resolve unknown files as a [`Buffer`](https://nodejs.org/api/buffer.html#buffer_class_buffer)
-|`$refs.internal` |bool     |true      |Determines whether internal `$ref` pointers (such as `#/definitions/widget`) will be dereferenced when calling [`dereference()`](#dereferencepath-options-callback).  Either way, you'll still be able to get the value using [`$refs.get()`](#refsgetref-options)
+|`$refs.internal` |bool     |true      |Determines whether internal `$ref` pointers (such as `#/definitions/widget`) will be dereferenced when calling [`dereference()`](#dereferencepath-options-callback).  Either way, you'll still be able to get the value using [`$Refs.get()`](#refsgetref-options)
 |`$refs.external` |bool     |true      |Determines whether external `$ref` pointers get resolved/dereferenced. If `false`, then no files/URLs will be retrieved.  Use this if you only want to allow single-file schemas.
 |`cache.fs`       |number   |60        |<a name="caching"></a>The length of time (in seconds) to cache local files.  The default is one minute.  Setting to zero will cache forever.
 |`cache.http`     |number   |300       |The length of time (in seconds) to cache HTTP URLs.  The default is five minutes.  Setting to zero will cache forever.
