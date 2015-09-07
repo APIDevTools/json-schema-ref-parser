@@ -130,6 +130,7 @@ The API
     - [`dereference()`](#dereferencepath-options-callback)
     - [`validate()`](#validatepath-options-callback)
 - Objects
+    - [`Options`](#options)
     - [`Schema`](#schema-object)
     - [`$Refs`](#refs-object)
       - [`$Refs.paths()`](#refspathstypes)
@@ -139,7 +140,9 @@ The API
       - [`$Refs.exists()`](#refsexistsref)
       - [`$Refs.get()`](#refsgetref-options)
       - [`$Refs.set()`](#refssetref-value-options)
-    - [`Options`](#options)
+    - [`YAML`](#yaml-object)
+      - [`YAML.parse()`](#yamlparsetext)
+      - [`YAML.stringify()`](#yamlstringifyvalue)
 - [Class methods vs. Instance methods](#class-methods-vs-instance-methods)
 - [Callbacks vs. Promises](#callbacks-vs-promises)
 
@@ -256,6 +259,38 @@ $RefParser.dereference("my-schema.yaml")
     schema.definitions.thing === schema.definitions.batmobile;   // => true
   });
 ```
+
+
+### Options
+You can pass an options parameter to any method.  You don't need to specify every option - only the ones you want to change.
+
+```javascript
+$RefParser.dereference("my-schema.yaml", {
+    allow: {
+        json: false,        // Don't allow JSON files
+        yaml: true          // Allow YAML files
+    },
+    $refs: {
+        internal: false     // Don't dereference internal $refs, only external
+    },
+    cache: {
+        fs: 1,              // Cache local files for 1 second
+        http: 600           // Cache http URLs for 10 minutes
+    }
+});
+```
+
+|Option           |Type     |Default   |Description
+|:----------------|:--------|:---------|:----------
+|`allow.json`     |bool     |true      |Determines whether JSON files are supported
+|`allow.yaml`     |bool     |true      |Determines whether YAML files are supported<br> (note: all JSON files are also valid YAML files)
+|`allow.empty`    |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an empty file
+|`allow.unknown`  |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an unknown/unsupported file type (such as HTML, text, image, etc.). The default is to resolve unknown files as a [`Buffer`](https://nodejs.org/api/buffer.html#buffer_class_buffer)
+|`$refs.internal` |bool     |true      |Determines whether internal `$ref` pointers (such as `#/definitions/widget`) will be dereferenced when calling [`dereference()`](#dereferencepath-options-callback).  Either way, you'll still be able to get the value using [`$refs.get()`](#refsgetref-options)
+|`$refs.external` |bool     |true      |Determines whether external `$ref` pointers get resolved/dereferenced. If `false`, then no files/URLs will be retrieved.  Use this if you only want to allow single-file schemas.
+|`cache.fs`       |number   |60        |<a name="caching"></a>The length of time (in seconds) to cache local files.  The default is one minute.  Setting to zero will cache forever.
+|`cache.http`     |number   |300       |The length of time (in seconds) to cache HTTP URLs.  The default is five minutes.  Setting to zero will cache forever.
+|`cache.https`    |number   |300       |The length of time (in seconds) to cache HTTPS URLs.  The default is five minutes.  Setting to zero will cache forever.
 
 
 ### `Schema` Object
@@ -422,36 +457,88 @@ $RefParser.resolve("my-schema.json")
 ```
 
 
-### Options
-You can pass an options parameter to any method.  You don't need to specify every option - only the ones you want to change.
+### `YAML` object
+This object provides simple YAML parsing functions.  JSON Schema $Ref Parser uses this object internally
+for its own YAML parsing, but it is also exposed so you can use it in your code if needed.
+
+
+### `YAML.parse(text)`
+
+- **text** (_required_) - `string`<br>
+The YAML string to be parsed.
+
+- **Return Value:**<br>
+Returns the parsed value, which can be any valid JSON type (object, array, string, number, etc.)
+
+This method is similar to [`JSON.parse()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse), but it supports YAML _in addition_ to JSON (since any JSON document is also a valid YAML document).
 
 ```javascript
-$RefParser.dereference("my-schema.yaml", {
-    allow: {
-        json: false,        // Don't allow JSON files
-        yaml: true          // Allow YAML files
-    },
-    $refs: {
-        internal: false     // Don't dereference internal $refs, only external
-    },
-    cache: {
-        fs: 1,              // Cache local files for 1 second
-        http: 600           // Cache http URLs for 10 minutes
-    }
-});
+var YAML = $RefParser.YAML;
+var text = "title: person \n" +
+           "required: \n" +
+           "  - name \n" +
+           "  - age \n" +
+           "properties: \n" +
+           "  name: \n" +
+           "    type: string \n" +
+           "  age: \n" +
+           "    type: number"
+
+var obj = YAML.parse(text);
+
+// {
+//   title: "person",
+//   required: ["name", "age"],
+//   properties: {
+//     name: {
+//       type: "string"
+//     },
+//     age: {
+//       type: "number"
+//     }
+//   }
+// }
 ```
 
-|Option           |Type     |Default   |Description
-|:----------------|:--------|:---------|:----------
-|`allow.json`     |bool     |true      |Determines whether JSON files are supported
-|`allow.yaml`     |bool     |true      |Determines whether YAML files are supported<br> (note: all JSON files are also valid YAML files)
-|`allow.empty`    |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an empty file
-|`allow.unknown`  |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an unknown/unsupported file type (such as HTML, text, image, etc.). The default is to resolve unknown files as a [`Buffer`](https://nodejs.org/api/buffer.html#buffer_class_buffer)
-|`$refs.internal` |bool     |true      |Determines whether internal `$ref` pointers (such as `#/definitions/widget`) will be dereferenced when calling [`dereference()`](#dereferencepath-options-callback).  Either way, you'll still be able to get the value using [`$refs.get()`](#refsgetref-options)
-|`$refs.external` |bool     |true      |Determines whether external `$ref` pointers get resolved/dereferenced. If `false`, then no files/URLs will be retrieved.  Use this if you only want to allow single-file schemas.
-|`cache.fs`       |number   |60        |<a name="caching"></a>The length of time (in seconds) to cache local files.  The default is one minute.  Setting to zero will cache forever.
-|`cache.http`     |number   |300       |The length of time (in seconds) to cache HTTP URLs.  The default is five minutes.  Setting to zero will cache forever.
-|`cache.https`    |number   |300       |The length of time (in seconds) to cache HTTPS URLs.  The default is five minutes.  Setting to zero will cache forever.
+
+### `YAML.stringify(value)`
+
+- **value** (_required_)<br>
+The value to be converted to a YAML string. Can be any valid JSON type (object, array, string, number, etc.)
+
+- **Return Value:** `string`<br>
+Returns the a YAML string containing the serialized value
+
+This method is similar to [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify), except that it converts a value to a YAML string instead of a JSON string.
+
+```javascript
+var YAML = $RefParser.YAML;
+var obj = {
+  title: "person",
+  required: ["name", "age"],
+  properties: {
+    name: {
+      type: "string"
+    },
+    age: {
+      type: "number"
+    }
+  }
+};
+
+
+var string = YAML.stringify(obj);
+
+// title: person
+// required:
+//   - name
+//   - age
+// properties:
+//   name:
+//     type: string
+//   age:
+//     type: number
+```
 
 
 ### Class methods vs. Instance methods
