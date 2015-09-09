@@ -610,8 +610,9 @@ function read$RefFile($ref, options) {
 
   $ref.type = 'fs';
   return new Promise(function(resolve, reject) {
+    var file;
     try {
-      var file = decodeURI($ref.path);
+      file = decodeURI($ref.path);
     }
     catch (err) {
       reject(ono.uri(err, 'Malformed URI: %s', $ref.path));
@@ -1048,14 +1049,17 @@ function $Refs() {
 $Refs.prototype.paths = function(types) {
   var $refs = this._$refs;
   var keys = Object.keys($refs);
-
   types = _flatten(arguments);
-  if (types.length === 0) {
-    return keys;
+
+  if (types.length > 0) {
+    keys = keys.filter(function(key) {
+      return types.indexOf($refs[key].type) !== -1;
+    });
   }
 
-  return keys.filter(function(key) {
-    return types.indexOf($refs[key].type) !== -1;
+  return keys.map(function(key) {
+    // Decode URL-encoded characters for local file paths
+    return $refs[key].type === 'fs' ? decodeURI(key) : key;
   });
 };
 
@@ -1067,13 +1071,10 @@ $Refs.prototype.paths = function(types) {
  */
 $Refs.prototype.values = function(types) {
   var $refs = this._$refs;
-  var keys = Object.keys($refs);
-  types = _flatten(arguments);
+  var keys = this.paths(types);
 
   return keys.reduce(function(obj, key) {
-    if (types.length === 0 || types.indexOf($refs[key].type) !== -1) {
-      obj[key] = $refs[key].value;
-    }
+    obj[key] = $refs[key].value;
   }, {});
 };
 
@@ -1347,7 +1348,7 @@ exports.debug = debug('json-schema-ref-parser');
  */
 exports.cwd = function cwd() {
   return process.browser ? location.href : process.cwd() + '/';
-}
+};
 
 /**
  * Determines whether the given path is a URL.
@@ -1357,7 +1358,7 @@ exports.cwd = function cwd() {
  */
 exports.isUrl = function isUrl(path) {
   return protocolPattern.test(path);
-}
+};
 
 /**
  * Returns the hash (URL fragment), if any, of the given path.
@@ -1371,7 +1372,7 @@ exports.getHash = function getHash(path) {
     return path.substr(hashIndex);
   }
   return '';
-}
+};
 
 /**
  * Removes the hash (URL fragment), if any, from the given path.
@@ -1385,7 +1386,7 @@ exports.stripHash = function stripHash(path) {
     path = path.substr(0, hashIndex);
   }
   return path;
-}
+};
 
 /**
  * Returns the file extension of the given path.
@@ -1399,7 +1400,7 @@ exports.extname = function extname(path) {
     return path.substr(lastDot).toLowerCase();
   }
   return '';
-}
+};
 
 /**
  * Asynchronously invokes the given callback function with the given parameters.
@@ -1424,7 +1425,7 @@ exports.doCallback = function doCallback(callback, err, params) {
   function invokeCallback() {
     callback.apply(null, args);
   }
-}
+};
 
 }).call(this,require('_process'))
 
