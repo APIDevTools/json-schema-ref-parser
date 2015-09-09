@@ -610,10 +610,17 @@ function read$RefFile($ref, options) {
 
   $ref.type = 'fs';
   return new Promise(function(resolve, reject) {
-    util.debug('Opening file: %s', $ref.path);
+    try {
+      var file = decodeURI($ref.path);
+    }
+    catch (err) {
+      reject(ono.uri(err, 'Malformed URI: %s', $ref.path));
+    }
+
+    util.debug('Opening file: %s', file);
 
     try {
-      fs.readFile($ref.path, function(err, data) {
+      fs.readFile(file, function(err, data) {
         if (err) {
           reject(ono(err, 'Error opening file "%s"', $ref.path));
         }
@@ -623,7 +630,7 @@ function read$RefFile($ref, options) {
       });
     }
     catch (err) {
-      reject(ono(err, 'Error opening file "%s"', $ref.path));
+      reject(ono(err, 'Error opening file "%s"', file));
     }
   });
 }
@@ -1326,27 +1333,19 @@ var debug           = require('debug'),
     _isFunction     = require('lodash/lang/isFunction'),
     protocolPattern = /^[a-z0-9.+-]+:\/\//i;
 
-module.exports = {
-  /**
-   * Writes messages to stdout.
-   * Log messages are suppressed by default, but can be enabled by setting the DEBUG variable.
-   * @type {function}
-   */
-  debug: debug('json-schema-ref-parser'),
-  cwd: cwd,
-  isUrl: isUrl,
-  getHash: getHash,
-  stripHash: stripHash,
-  extname: extname,
-  doCallback: doCallback
-};
+/**
+ * Writes messages to stdout.
+ * Log messages are suppressed by default, but can be enabled by setting the DEBUG variable.
+ * @type {function}
+ */
+exports.debug = debug('json-schema-ref-parser');
 
 /**
  * Returns the current working directory (in Node) or the current page URL (in browsers).
  *
  * @returns {string}
  */
-function cwd() {
+exports.cwd = function cwd() {
   return process.browser ? location.href : process.cwd() + '/';
 }
 
@@ -1356,7 +1355,7 @@ function cwd() {
  * @param   {string} path
  * @returns {boolean}
  */
-function isUrl(path) {
+exports.isUrl = function isUrl(path) {
   return protocolPattern.test(path);
 }
 
@@ -1366,7 +1365,7 @@ function isUrl(path) {
  * @param   {string} path
  * @returns {string}
  */
-function getHash(path) {
+exports.getHash = function getHash(path) {
   var hashIndex = path.indexOf('#');
   if (hashIndex >= 0) {
     return path.substr(hashIndex);
@@ -1380,7 +1379,7 @@ function getHash(path) {
  * @param   {string} path
  * @returns {string}
  */
-function stripHash(path) {
+exports.stripHash = function stripHash(path) {
   var hashIndex = path.indexOf('#');
   if (hashIndex >= 0) {
     path = path.substr(0, hashIndex);
@@ -1394,7 +1393,7 @@ function stripHash(path) {
  * @param   {string} path
  * @returns {string}
  */
-function extname(path) {
+exports.extname = function extname(path) {
   var lastDot = path.lastIndexOf('.');
   if (lastDot >= 0) {
     return path.substr(lastDot).toLowerCase();
@@ -1409,7 +1408,7 @@ function extname(path) {
  * @param {*}       [err]
  * @param {...*}    [params]
  */
-function doCallback(callback, err, params) {
+exports.doCallback = function doCallback(callback, err, params) {
   if (_isFunction(callback)) {
     var args = Array.prototype.slice.call(arguments, 1);
 

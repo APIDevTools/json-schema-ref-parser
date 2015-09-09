@@ -4,7 +4,7 @@ describe('Dereferencing', function() {
   it('should parse',
     function(done) {
       var parser = new $RefParser();
-      parser.parse(helper.relPath('no-refs.yaml'))
+      parser.parse(helper.relPath('no refs.yaml'))
         .then(function(schema) {
           expect(schema).to.be.an('object').and.not.empty;
           expect(schema).to.equal(parser.schema);
