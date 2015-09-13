@@ -6,10 +6,13 @@ required:
 properties:
   first:
     $ref: ../../files/definitions/definitions.yaml#/requiredString
-  middle:
-    $ref: "#/properties/first"
   last:
     $ref: ./required-string.yaml
+  middle:
+    type:
+      $ref: "#/properties/first/type"
+    minLength:
+      $ref: "#/properties/first/minLength"
   prefix:
     $ref: "#/properties/first"
     minLength: 3

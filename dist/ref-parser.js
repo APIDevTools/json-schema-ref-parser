@@ -16,7 +16,7 @@ module.exports = bundle;
 /**
  * Bundles all external JSON references into the main JSON schema, thus resulting in a schema that
  * only has *internal* references, not any *external* references.
- * This method mutates the JSON schema object, adding new references and remapping existing ones.
+ * This method mutates the JSON schema object, adding new references and re-mapping existing ones.
  *
  * @param {$RefParser} parser
  * @param {$RefParserOptions} options
@@ -24,34 +24,43 @@ module.exports = bundle;
 function bundle(parser, options) {
   util.debug('Bundling $ref pointers in %s', parser._basePath);
 
-  var $refs = parser.$refs;
-  var basePath = util.path.stripHash(parser._basePath);
-  Object.keys($refs._$refs).forEach(function(key) {
-    var $ref = $refs._$refs[key];
-
-    if (!$ref.pathFromRoot) {
-      // This is the root of the JSON schema, so we don't need to do anything
-      // since all of its $refs are already relative to the schema root
-      return;
-    }
-
-    // Crawl the value, re-mapping its pointer
-    crawl($ref.value, $ref.path + '#', $ref.pathFromRoot, parser.$refs, options);
-
-    // Replace the original $ref with the resolved value
-    //$refs.set(basePath + $ref.pathFromRoot, $ref.value, options);
-  });
+  remap(parser.$refs, options);
+  dereference(parser._basePath, parser.$refs, options);
 }
 
 /**
+ * Re-maps all $ref pointers in the schema, so that they are relative to the root of the schema.
  *
- * @param obj
- * @param path
- * @param pointer
- * @param $refs
- * @param options
+ * @param {$Refs} $refs
+ * @param {$RefParserOptions} options
  */
-function crawl(obj, path, pointer, $refs, options) {
+function remap($refs, options) {
+  var remapped = [];
+
+  // Crawl the schema and determine the re-mapped values for all $ref pointers.
+  // NOTE: We don't actually APPLY the re-mappings them yet, since that can affect other re-mappings
+  Object.keys($refs._$refs).forEach(function(key) {
+    var $ref = $refs._$refs[key];
+    crawl($ref.value, $ref.path + '#', $refs, remapped, options);
+  });
+
+  // Now APPLY all of the re-mappings
+  for (var i = 0; i < remapped.length; i++) {
+    var mapping = remapped[i];
+    mapping.old.$ref = mapping.new.$ref;
+  }
+}
+
+/**
+ * Recursively crawls the given value, and re-maps any JSON references.
+ *
+ * @param {*} obj - The value to crawl. If it's not an object or array, it will be ignored.
+ * @param {string} path - The path to use for resolving relative JSON references
+ * @param {$Refs} $refs - The resolved JSON references
+ * @param {object[]} remapped - An array of the re-mapped JSON references
+ * @param {$RefParserOptions} options
+ */
+function crawl(obj, path, $refs, remapped, options) {
   if (obj && typeof(obj) === 'object') {
     Object.keys(obj).forEach(function(key) {
       var keyPath = path + '/' + key;
@@ -59,18 +68,41 @@ function crawl(obj, path, pointer, $refs, options) {
 
       if ($Ref.is$Ref(value)) {
         // We found a $ref, so resolve it
-        util.debug('Bundling $ref pointer "%s" at %s', value.$ref, keyPath);
+        util.debug('Re-mapping $ref pointer "%s" at %s', value.$ref, keyPath);
         var $refPath = url.resolve(path, value.$ref);
-        var resolved$Ref = $refs._resolve($refPath, options);
-        var $ref = resolved$Ref.$ref;
+        var pointer = $refs._resolve($refPath, options);
 
-        //value.$ref = $ref.pathFromRoot
+        // Re-map the value
+        var new$RefPath = pointer.$ref.pathFromRoot + util.path.getHash(pointer.path).substr(1);
+        util.debug('    new value: %s', new$RefPath);
+        remapped.push({
+          old: value,
+          new: {$ref: new$RefPath}
+        });
       }
       else {
-        crawl(value, keyPath, pointer, $refs, options);
+        crawl(value, keyPath, $refs, remapped, options);
       }
     });
   }
+}
+
+/**
+ * Dereferences each external $ref pointer exactly ONCE.
+ *
+ * @param {string} basePath
+ * @param {$Refs} $refs
+ * @param {$RefParserOptions} options
+ */
+function dereference(basePath, $refs, options) {
+  basePath = util.path.stripHash(basePath);
+
+  Object.keys($refs._$refs).forEach(function(key) {
+    var $ref = $refs._$refs[key];
+    if ($ref.pathFromRoot) {
+      $refs.set(basePath + $ref.pathFromRoot, $ref.value, options);
+    }
+  });
 }
 
 },{"./ref":9,"./util":12,"url":90}],2:[function(require,module,exports){
@@ -91,7 +123,7 @@ module.exports = dereference;
  */
 function dereference(parser, options) {
   util.debug('Dereferencing $ref pointers in %s', parser._basePath);
-  crawl(parser.schema, parser._basePath + '#', [], parser.$refs, options);
+  crawl(parser.schema, parser._basePath, [], parser.$refs, options);
 }
 
 /**
@@ -106,6 +138,7 @@ function dereference(parser, options) {
 function crawl(obj, path, parents, $refs, options) {
   if (obj && typeof(obj) === 'object') {
     parents.push(obj);
+    path = util.path.ensureHash(path);
 
     Object.keys(obj).forEach(function(key) {
       var keyPath = path + '/' + key;
@@ -115,14 +148,14 @@ function crawl(obj, path, parents, $refs, options) {
         // We found a $ref, so resolve it
         util.debug('Dereferencing $ref pointer "%s" at %s', value.$ref, keyPath);
         var $refPath = url.resolve(path, value.$ref);
-        var resolved$Ref = $refs._resolve($refPath, options);
+        var pointer = $refs._resolve($refPath, options);
 
         // Dereference the JSON reference
-        obj[key] = value = resolved$Ref.value;
+        obj[key] = value = pointer.value;
 
         // Crawl the dereferenced value (unless it's circular)
         if (parents.indexOf(value) === -1) {
-          crawl(resolved$Ref.value, resolved$Ref.path + '#', parents, $refs, options);
+          crawl(pointer.value, pointer.path, parents, $refs, options);
         }
       }
       else if (parents.indexOf(value) === -1) {
@@ -644,15 +677,18 @@ function Pointer($ref, path) {
  */
 Pointer.prototype.resolve = function(obj, options) {
   var tokens = Pointer.parse(this.path);
-  this.value = obj;
 
-  // Crawl the value, one token at a time
+  // Crawl the object, one token at a time
+  this.value = obj;
   for (var i = 0; i < tokens.length; i++) {
-    resolveIf$Ref(this, options);
+    if (resolveIf$Ref(this, options)) {
+      // The $ref path has changed, so append the remaining tokens to the path
+      this.path += '#/' + tokens.slice(i).join('/');
+    }
 
     var token = tokens[i];
     if (this.value[token] === undefined) {
-      throw ono.syntax('Error resolving $ref pointer "%s". \nToken "%s" does not exist.', path, token);
+      throw ono.syntax('Error resolving $ref pointer "%s". \nToken "%s" does not exist.', this.path, token);
     }
     else {
       this.value = this.value[token];
@@ -676,6 +712,7 @@ Pointer.prototype.resolve = function(obj, options) {
  */
 Pointer.prototype.set = function(obj, value, options) {
   var tokens = Pointer.parse(this.path);
+  var token;
 
   if (tokens.length === 0) {
     // There are no tokens, replace the entire object with the new value
@@ -688,7 +725,7 @@ Pointer.prototype.set = function(obj, value, options) {
   for (var i = 0; i < tokens.length - 1; i++) {
     resolveIf$Ref(this, options);
 
-    var token = tokens[i];
+    token = tokens[i];
     if (this.value && this.value[token] !== undefined) {
       // The token exists
       this.value = this.value[token];
@@ -752,6 +789,7 @@ Pointer.parse = function(path) {
  *
  * @param {Pointer} pointer
  * @param {$RefParserOptions} [options]
+ * @returns {boolean} - Returns `true` if the resolution path changed
  */
 function resolveIf$Ref(pointer, options) {
   // Is the value a JSON reference? (and allowed?)
@@ -765,6 +803,7 @@ function resolveIf$Ref(pointer, options) {
       pointer.$ref = resolved.$ref;
       pointer.path = resolved.path;    // pointer.path = $refPath ???
       pointer.value = resolved.value;
+      return true;
     }
   }
 }
@@ -1028,8 +1067,7 @@ function download(protocol, u, options) {
 module.exports = $Ref;
 
 var Pointer = require('./pointer'),
-    util    = require('./util'),
-    ono     = require('ono');
+    util    = require('./util');
 
 /**
  * This class represents a single JSON reference and its resolved value.
@@ -1075,9 +1113,9 @@ function $Ref($refs, path) {
    *
    * This property is used by the {@link $RefParser.bundle} method to re-map other JSON references.
    *
-   * @type {?string}
+   * @type {string}
    */
-  this.pathFromRoot = undefined;
+  this.pathFromRoot = '';
 
   /**
    * The resolved value of the JSON reference.
@@ -1219,7 +1257,7 @@ $Ref.isAllowed$Ref = function(value, options) {
   }
 };
 
-},{"./pointer":6,"./util":12,"ono":50}],10:[function(require,module,exports){
+},{"./pointer":6,"./util":12}],10:[function(require,module,exports){
 'use strict';
 
 var Options = require('./options'),
@@ -1505,7 +1543,7 @@ function crawl$Ref(path, pathFromRoot, $refs, options) {
       // If a cached $ref is returned, then we DON'T need to crawl it
       if (!$ref.cached) {
         // This is a new $ref, so store the path from the root of the JSON schema to this $ref
-        $ref.pathFromRoot= pathFromRoot;
+        $ref.pathFromRoot = pathFromRoot;
 
         // Crawl the new $ref
         util.debug('Resolving $ref pointers in %s', $ref.path);
@@ -1580,6 +1618,16 @@ exports.cwd = function cwd() {
  */
 exports.isUrl = function isUrl(path) {
   return protocolPattern.test(path);
+};
+
+/**
+ * Adds a hash to the given path, if it doesn't already have one.
+ *
+ * @param   {string} path
+ * @returns {string}
+ */
+exports.ensureHash = function ensureHash(path) {
+  return path.indexOf('#') === -1 ? path + '#' : path;
 };
 
 /**

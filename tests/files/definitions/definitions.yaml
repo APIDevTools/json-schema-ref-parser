@@ -1,3 +1,5 @@
+string:
+  $ref: "#/requiredString/type"
 requiredString:
   $ref: required-string.yaml
 name:
