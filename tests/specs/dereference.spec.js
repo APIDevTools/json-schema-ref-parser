@@ -50,10 +50,58 @@ describe('Dereferencing', function() {
     }
   );
 
+  it('should dereference $refs',
+    function(done) {
+      var parser = new $RefParser();
+      parser.dereference(helper.relPath('external-refs.yaml'))
+        .then(function(schema) {
+          expect(schema).to.be.an('object').and.not.empty;
+          expect(schema).to.equal(parser.schema);
+          expect(parser.$refs).to.be.an('object');
+
+          var all$Refs = parser.$refs.paths();
+          expect(all$Refs).to.satisfy(arrayOfStrings);
+          if (userAgent.isBrowser) {
+            expect(parser.$refs.paths('http', 'https')).to.deep.equal(all$Refs);
+          }
+          else {
+            expect(parser.$refs.paths('fs')).to.deep.equal(all$Refs);
+          }
+
+          done();
+        })
+        .catch(done);
+    }
+  );
+
   it('should support circular $refs',
     function(done) {
       var parser = new $RefParser();
       parser.dereference(helper.relPath('circular-external-refs.yaml'))
+        .then(function(schema) {
+          expect(schema).to.be.an('object').and.not.empty;
+          expect(schema).to.equal(parser.schema);
+          expect(parser.$refs).to.be.an('object');
+
+          var all$Refs = parser.$refs.paths();
+          expect(all$Refs).to.satisfy(arrayOfStrings);
+          if (userAgent.isBrowser) {
+            expect(parser.$refs.paths('http', 'https')).to.deep.equal(all$Refs);
+          }
+          else {
+            expect(parser.$refs.paths('fs')).to.deep.equal(all$Refs);
+          }
+
+          done();
+        })
+        .catch(done);
+    }
+  );
+
+  it('should bundle $refs',
+    function(done) {
+      var parser = new $RefParser();
+      parser.bundle(helper.relPath('external-refs.yaml'))
         .then(function(schema) {
           expect(schema).to.be.an('object').and.not.empty;
           expect(schema).to.equal(parser.schema);
