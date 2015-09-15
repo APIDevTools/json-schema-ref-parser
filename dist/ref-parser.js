@@ -99,7 +99,7 @@ function dereference(basePath, $refs, options) {
 
   Object.keys($refs._$refs).forEach(function(key) {
     var $ref = $refs._$refs[key];
-    if ($ref.pathFromRoot) {
+    if ($ref.pathFromRoot !== '#') {
       $refs.set(basePath + $ref.pathFromRoot, $ref.value, options);
     }
   });
@@ -151,11 +151,11 @@ function crawl(obj, path, parents, $refs, options) {
         var pointer = $refs._resolve($refPath, options);
 
         // Dereference the JSON reference
-        obj[key] = value = pointer.value;
+        value = dereference$Ref(obj, key, pointer.value);
 
         // Crawl the dereferenced value (unless it's circular)
         if (parents.indexOf(value) === -1) {
-          crawl(pointer.value, pointer.path, parents, $refs, options);
+          crawl(value, pointer.path, parents, $refs, options);
         }
       }
       else if (parents.indexOf(value) === -1) {
@@ -164,6 +164,33 @@ function crawl(obj, path, parents, $refs, options) {
     });
 
     parents.pop();
+  }
+}
+
+/**
+ * Replaces the specified JSON reference with its resolved value.
+ *
+ * @param {object} obj - The object that contains the JSON reference
+ * @param {string} key - The key of the JSON reference within `obj`
+ * @param {*} value - The resolved value
+ * @returns {*} - Returns the new value of the JSON reference
+ */
+function dereference$Ref(obj, key, value) {
+  var $refObj = obj[key];
+
+  if (value && typeof(value) === 'object' && Object.keys($refObj).length > 1) {
+    // The JSON reference has additional properties (other than "$ref"),
+    // so merge the resolved value rather than completely replacing the reference
+    delete $refObj.$ref;
+    Object.keys(value).forEach(function(key) {
+      if (!(key in $refObj)) {
+        $refObj[key] = value[key];
+      }
+    });
+  }
+  else {
+    // Completely replace the original reference with the resolved value
+    return obj[key] = value;
   }
 }
 
@@ -620,7 +647,7 @@ function parse(data, path, options) {
  */
 function isEmpty(value) {
   return !value ||
-    (typeof(value) === 'object' && Object.keys(value) === 0) ||
+    (typeof(value) === 'object' && Object.keys(value).length === 0) ||
     (typeof(value) === 'string' && value.trim().length === 0) ||
     (value instanceof Buffer && value.length === 0);
 }
@@ -688,7 +715,7 @@ Pointer.prototype.resolve = function(obj, options) {
   for (var i = 0; i < tokens.length; i++) {
     if (resolveIf$Ref(this, options)) {
       // The $ref path has changed, so append the remaining tokens to the path
-      this.path += '#/' + tokens.slice(i).join('/');
+      this.path = util.path.ensureHash(this.path) + '/' + tokens.slice(i).join('/');
     }
 
     var token = tokens[i];
@@ -799,16 +826,20 @@ Pointer.parse = function(path) {
 function resolveIf$Ref(pointer, options) {
   // Is the value a JSON reference? (and allowed?)
   if ($Ref.isAllowed$Ref(pointer.value, options)) {
-    var $refPath = url.resolve(pointer.path, pointer.value.$ref);
+    // Does the JSON reference have other properties (other than "$ref")?
+    // If so, then don't resolve it, since it represents a new type
+    if (Object.keys(pointer.value).length === 1) {
+      var $refPath = url.resolve(pointer.path, pointer.value.$ref);
 
-    // Is the value a reference to itself?  If so, then there's nothing to do.
-    if ($refPath !== pointer.path) {
-      // Resolve the reference
-      var resolved = pointer.$ref.$refs._resolve($refPath);
-      pointer.$ref = resolved.$ref;
-      pointer.path = resolved.path;    // pointer.path = $refPath ???
-      pointer.value = resolved.value;
-      return true;
+      // Is the value a reference to itself?  If so, then there's nothing to do.
+      if ($refPath !== pointer.path) {
+        // Resolve the reference
+        var resolved = pointer.$ref.$refs._resolve($refPath);
+        pointer.$ref = resolved.$ref;
+        pointer.path = resolved.path;    // pointer.path = $refPath ???
+        pointer.value = resolved.value;
+        return true;
+      }
     }
   }
 }
@@ -1053,7 +1084,7 @@ function download(protocol, u, options) {
           reject(ono('GET %s \nHTTP 204: No Content', u.href));
         }
         else {
-          resolve(body);
+          resolve(body || '');
         }
       });
 
@@ -1120,7 +1151,7 @@ function $Ref($refs, path) {
    *
    * @type {string}
    */
-  this.pathFromRoot = '';
+  this.pathFromRoot = '#';
 
   /**
    * The resolved value of the JSON reference.
@@ -1296,7 +1327,7 @@ $Refs.prototype.paths = function(types) {
   var keys = Object.keys($refs);
   types = Array.isArray(types) ? types : Array.prototype.slice.call(arguments);
 
-  if (types.length > 0) {
+  if (types.length > 0 && types[0]) {
     keys = keys.filter(function(key) {
       return types.indexOf($refs[key].pathType) !== -1;
     });
@@ -1320,6 +1351,7 @@ $Refs.prototype.values = function(types) {
 
   return keys.reduce(function(obj, key) {
     obj[key] = $refs[key].value;
+    return obj;
   }, {});
 };
 

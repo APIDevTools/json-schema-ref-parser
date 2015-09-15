@@ -15,7 +15,8 @@
     window.expect = chai.expect;
     window.userAgent = {
       isNode: false,
-      isBrowser: true
+      isBrowser: true,
+      isPhantomJS: /PhantomJS/.test(navigator.userAgent)
     };
   }
   else {
@@ -23,7 +24,6 @@
     global.$RefParser = require('../../');
     global.expect = require('chai').expect;
     global.sinon = require('sinon');
-    global.path = require('path');
 
     global.userAgent = {
       isNode: true,

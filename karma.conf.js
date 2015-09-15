@@ -19,7 +19,8 @@ var baseConfig = {
     {pattern: 'tests/files/**', included: false, served: true},
 
     // Tests
-    'tests/specs/**/*.spec.js'
+    'tests/specs/**/*.js',
+    {pattern: 'tests/specs/**', included: false, served: true}
   ]
 };
 

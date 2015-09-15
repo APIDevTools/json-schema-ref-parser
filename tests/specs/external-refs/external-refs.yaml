@@ -14,4 +14,4 @@ properties:
       - male
       - female
 definitions:
-  $ref: definitions/definitions.yaml
+  $ref: definitions/definitions.json
