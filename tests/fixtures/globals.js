@@ -15,8 +15,7 @@
     window.expect = chai.expect;
     window.userAgent = {
       isNode: false,
-      isBrowser: true,
-      isPhantomJS: /PhantomJS/.test(navigator.userAgent)
+      isBrowser: true
     };
   }
   else {
