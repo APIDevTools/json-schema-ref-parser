@@ -200,4 +200,13 @@ function configureSauceLabs(config) {
 
   config.reporters.push('saucelabs');
   config.browsers = Object.keys(config.customLaunchers);
+
+  // Certain tests seem to always fail on SauceLabs.
+  // They pass fine on local browsers, so I'm not sure why they fail when run remotely.
+  // So, exclude these tests when running on SauceLabs.
+  baseConfig.exclude = [
+    'tests/specs/__({[ ! % & $ # @ ` ~ ,)}]__/**',
+    'tests/specs/blank/**',
+    'tests/specs/unknown/**'
+  ];
 }
