@@ -876,7 +876,7 @@ function setValue(pointer, token, value) {
 module.exports = typeof(Promise) === 'function' ? Promise : require('es6-promise').Promise;
 
 },{"es6-promise":18}],8:[function(require,module,exports){
-(function (process){
+(function (process,Buffer){
 'use strict';
 
 var fs      = require('fs'),
@@ -1077,8 +1077,12 @@ function download(protocol, u, options) {
       var body;
 
       res.on('data', function(data) {
-        // Data can be a string or a buffer
-        body = body ? body.concat(data) : data;
+        if (body) {
+          body = Buffer.concat([new Buffer(body), new Buffer(data)]);
+        }
+        else {
+          body = data;
+        }
       });
 
       res.on('end', function() {
@@ -1100,9 +1104,9 @@ function download(protocol, u, options) {
   });
 }
 
-}).call(this,require('_process'))
+}).call(this,require('_process'),require("buffer").Buffer)
 
-},{"./parse":5,"./promise":7,"./ref":9,"./util":12,"_process":61,"fs":51,"http":80,"https":58,"ono":50,"url":90}],9:[function(require,module,exports){
+},{"./parse":5,"./promise":7,"./ref":9,"./util":12,"_process":61,"buffer":53,"fs":51,"http":80,"https":58,"ono":50,"url":90}],9:[function(require,module,exports){
 'use strict';
 
 module.exports = $Ref;
@@ -12631,12 +12635,14 @@ function errorToJSON() {
 },{}],52:[function(require,module,exports){
 arguments[4][51][0].apply(exports,arguments)
 },{"dup":51}],53:[function(require,module,exports){
+(function (global){
 /*!
  * The buffer module from node.js, for the browser.
  *
  * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
  * @license  MIT
  */
+/* eslint-disable no-proto */
 
 var base64 = require('base64-js')
 var ieee754 = require('ieee754')
@@ -12676,20 +12682,22 @@ var rootParent = {}
  * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
  * get the Object implementation, which is slower but behaves correctly.
  */
-Buffer.TYPED_ARRAY_SUPPORT = (function () {
-  function Bar () {}
-  try {
-    var arr = new Uint8Array(1)
-    arr.foo = function () { return 42 }
-    arr.constructor = Bar
-    return arr.foo() === 42 && // typed array instances can be augmented
-        arr.constructor === Bar && // constructor can be set
-        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
-        arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
-  } catch (e) {
-    return false
-  }
-})()
+Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
+  ? global.TYPED_ARRAY_SUPPORT
+  : (function () {
+      function Bar () {}
+      try {
+        var arr = new Uint8Array(1)
+        arr.foo = function () { return 42 }
+        arr.constructor = Bar
+        return arr.foo() === 42 && // typed array instances can be augmented
+            arr.constructor === Bar && // constructor can be set
+            typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
+            arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
+      } catch (e) {
+        return false
+      }
+    })()
 
 function kMaxLength () {
   return Buffer.TYPED_ARRAY_SUPPORT
@@ -12845,10 +12853,16 @@ function fromJsonObject (that, object) {
   return that
 }
 
+if (Buffer.TYPED_ARRAY_SUPPORT) {
+  Buffer.prototype.__proto__ = Uint8Array.prototype
+  Buffer.__proto__ = Uint8Array
+}
+
 function allocate (that, length) {
   if (Buffer.TYPED_ARRAY_SUPPORT) {
     // Return an augmented `Uint8Array` instance, for best performance
     that = Buffer._augment(new Uint8Array(length))
+    that.__proto__ = Buffer.prototype
   } else {
     // Fallback: Return an object instance of the Buffer class
     that.length = length
@@ -14164,6 +14178,8 @@ function blitBuffer (src, dst, offset, length) {
   }
   return i
 }
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
 },{"base64-js":54,"ieee754":55,"is-array":56}],54:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -17731,19 +17747,19 @@ http.request = function (opts, cb) {
 	else
 		opts = extend(opts)
 
-	// Split opts.host into its components
-	var hostHostname = opts.host ? opts.host.split(':')[0] : null
-	var hostPort = opts.host ? parseInt(opts.host.split(':')[1], 10) : null
+	var protocol = opts.protocol || ''
+	var host = opts.hostname || opts.host
+	var port = opts.port
+	var path = opts.path || '/'
 
-	opts.method = opts.method || 'GET'
+	// Necessary for IPv6 addresses
+	if (host && host.indexOf(':') !== -1)
+		host = '[' + host + ']'
+
+	// This may be a relative url. The browser should always be able to interpret it correctly.
+	opts.url = (host ? (protocol + '//' + host) : '') + (port ? ':' + port : '') + path
+	opts.method = (opts.method || 'GET').toUpperCase()
 	opts.headers = opts.headers || {}
-	opts.path = opts.path || '/'
-	opts.protocol = opts.protocol || window.location.protocol
-	// If the hostname is provided, use the default port for the protocol. If
-	// the url is instead relative, use window.location.port
-	var defaultPort = (opts.hostname || hostHostname) ? (opts.protocol === 'https:' ? 443 : 80) : window.location.port
-	opts.hostname = opts.hostname || hostHostname || window.location.hostname
-	opts.port = opts.port || hostPort || defaultPort
 
 	// Also valid opts.auth, opts.mode
 
@@ -17793,7 +17809,8 @@ http.METHODS = [
 	'UNSUBSCRIBE'
 ]
 },{"./lib/request":82,"builtin-status-codes":84,"url":90,"xtend":93}],81:[function(require,module,exports){
-exports.fetch = isFunction(window.fetch) && isFunction(window.ReadableByteStream)
+(function (global){
+exports.fetch = isFunction(global.fetch) && isFunction(global.ReadableByteStream)
 
 exports.blobConstructor = false
 try {
@@ -17801,8 +17818,10 @@ try {
 	exports.blobConstructor = true
 } catch (e) {}
 
-var xhr = new window.XMLHttpRequest()
-xhr.open('GET', '/')
+var xhr = new global.XMLHttpRequest()
+// If location.host is empty, e.g. if this page/worker was loaded
+// from a Blob, then use example.com to avoid an error
+xhr.open('GET', global.location.host ? '/' : 'https://example.com')
 
 function checkTypeSupport (type) {
 	try {
@@ -17812,10 +17831,10 @@ function checkTypeSupport (type) {
 	return false
 }
 
-// For some strange reason, Safari 7.0 reports typeof window.ArrayBuffer === 'object'.
+// For some strange reason, Safari 7.0 reports typeof global.ArrayBuffer === 'object'.
 // Safari 7.1 appears to have fixed this bug.
-var haveArrayBuffer = typeof window.ArrayBuffer !== 'undefined'
-var haveSlice = haveArrayBuffer && isFunction(window.ArrayBuffer.prototype.slice)
+var haveArrayBuffer = typeof global.ArrayBuffer !== 'undefined'
+var haveSlice = haveArrayBuffer && isFunction(global.ArrayBuffer.prototype.slice)
 
 exports.arraybuffer = haveArrayBuffer && checkTypeSupport('arraybuffer')
 // These next two tests unavoidably show warnings in Chrome. Since fetch will always
@@ -17824,7 +17843,7 @@ exports.msstream = !exports.fetch && haveSlice && checkTypeSupport('ms-stream')
 exports.mozchunkedarraybuffer = !exports.fetch && haveArrayBuffer &&
 	checkTypeSupport('moz-chunked-arraybuffer')
 exports.overrideMimeType = isFunction(xhr.overrideMimeType)
-exports.vbArray = isFunction(window.VBArray)
+exports.vbArray = isFunction(global.VBArray)
 
 function isFunction (value) {
   return typeof value === 'function'
@@ -17832,8 +17851,10 @@ function isFunction (value) {
 
 xhr = null // Help gc
 
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+
 },{}],82:[function(require,module,exports){
-(function (process,Buffer){
+(function (process,global,Buffer){
 // var Base64 = require('Base64')
 var capability = require('./capability')
 var foreach = require('foreach')
@@ -17867,7 +17888,6 @@ var ClientRequest = module.exports = function (opts) {
 	stream.Writable.call(self)
 
 	self._opts = opts
-	self._url = opts.protocol + '//' + opts.hostname + ':' + opts.port + opts.path
 	self._body = []
 	self._headers = {}
 	if (opts.auth)
@@ -17935,7 +17955,7 @@ ClientRequest.prototype._onFinish = function () {
 	var body
 	if (opts.method === 'POST' || opts.method === 'PUT') {
 		if (capability.blobConstructor) {
-			body = new window.Blob(self._body.map(function (buffer) {
+			body = new global.Blob(self._body.map(function (buffer) {
 				return buffer.toArrayBuffer()
 			}), {
 				type: (headersObj['content-type'] || {}).value || ''
@@ -17951,7 +17971,7 @@ ClientRequest.prototype._onFinish = function () {
 			return [headersObj[name].name, headersObj[name].value]
 		})
 
-		window.fetch(self._url, {
+		global.fetch(self._opts.url, {
 			method: self._opts.method,
 			headers: headers,
 			body: body,
@@ -17964,9 +17984,9 @@ ClientRequest.prototype._onFinish = function () {
 			self.emit('error', reason)
 		})
 	} else {
-		var xhr = self._xhr = new window.XMLHttpRequest()
+		var xhr = self._xhr = new global.XMLHttpRequest()
 		try {
-			xhr.open(self._opts.method, self._url, true)
+			xhr.open(self._opts.method, self._opts.url, true)
 		} catch (err) {
 			process.nextTick(function () {
 				self.emit('error', err)
@@ -18114,10 +18134,10 @@ var unsafeHeaders = [
 	'via'
 ]
 
-}).call(this,require('_process'),require("buffer").Buffer)
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 
 },{"./capability":81,"./response":83,"_process":61,"buffer":53,"foreach":85,"indexof":86,"inherits":59,"object-keys":87,"stream":79}],83:[function(require,module,exports){
-(function (process,Buffer){
+(function (process,global,Buffer){
 var capability = require('./capability')
 var foreach = require('foreach')
 var inherits = require('inherits')
@@ -18227,7 +18247,7 @@ IncomingMessage.prototype._onXHRProgress = function () {
 				break
 			try {
 				// This fails in IE8
-				response = new window.VBArray(xhr.responseBody).toArray()
+				response = new global.VBArray(xhr.responseBody).toArray()
 			} catch (e) {}
 			if (response !== null) {
 				self.push(new Buffer(response))
@@ -18271,7 +18291,7 @@ IncomingMessage.prototype._onXHRProgress = function () {
 			response = xhr.response
 			if (xhr.readyState !== rStates.LOADING)
 				break
-			var reader = new window.MSStreamReader()
+			var reader = new global.MSStreamReader()
 			reader.onprogress = function () {
 				if (reader.result.byteLength > self._pos) {
 					self.push(new Buffer(new Uint8Array(reader.result.slice(self._pos))))
@@ -18292,7 +18312,7 @@ IncomingMessage.prototype._onXHRProgress = function () {
 	}
 }
 
-}).call(this,require('_process'),require("buffer").Buffer)
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 
 },{"./capability":81,"_process":61,"buffer":53,"foreach":85,"inherits":59,"stream":79}],84:[function(require,module,exports){
 module.exports = {
@@ -18409,6 +18429,44 @@ var dontEnums = [
 	'propertyIsEnumerable',
 	'constructor'
 ];
+var equalsConstructorPrototype = function (o) {
+	var ctor = o.constructor;
+	return ctor && ctor.prototype === o;
+};
+var blacklistedKeys = {
+	$window: true,
+	$console: true,
+	$parent: true,
+	$self: true,
+	$frames: true,
+	$webkitIndexedDB: true,
+	$webkitStorageInfo: true
+};
+var hasAutomationEqualityBug = (function () {
+	/* global window */
+	if (typeof window === 'undefined') { return false; }
+	for (var k in window) {
+		if (!blacklistedKeys['$' + k] && has.call(window, k) && window[k] !== null && typeof window[k] === 'object') {
+			try {
+				equalsConstructorPrototype(window[k]);
+			} catch (e) {
+				return true;
+			}
+		}
+	}
+	return false;
+}());
+var equalsConstructorPrototypeIfNotBuggy = function (o) {
+	/* global window */
+	if (typeof window === 'undefined' && !hasAutomationEqualityBug) {
+		return equalsConstructorPrototype(o);
+	}
+	try {
+		return equalsConstructorPrototype(o);
+	} catch (e) {
+		return false;
+	}
+};
 
 var keysShim = function keys(object) {
 	var isObject = object !== null && typeof object === 'object';
@@ -18441,8 +18499,7 @@ var keysShim = function keys(object) {
 	}
 
 	if (hasDontEnumBug) {
-		var ctor = object.constructor;
-		var skipConstructor = ctor && ctor.prototype === object;
+		var skipConstructor = equalsConstructorPrototypeIfNotBuggy(object);
 
 		for (var k = 0; k < dontEnums.length; ++k) {
 			if (!(skipConstructor && dontEnums[k] === 'constructor') && has.call(object, dontEnums[k])) {
