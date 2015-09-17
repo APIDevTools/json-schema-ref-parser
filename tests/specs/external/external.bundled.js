@@ -1,4 +1,4 @@
-helper.bundled.externalRefs =
+helper.bundled.external =
 {
   "title": "Person",
   "type": "object",

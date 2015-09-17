@@ -10,7 +10,7 @@ var baseConfig = {
     'tests/bower_components/chai/chai.js',
     'tests/bower_components/sinon-js/sinon.js',
 
-    // Json Schema Ref Parser
+    // Json Schema $Ref Parser
     'dist/ref-parser.min.js',
     {pattern: 'dist/*.map', included: false, served: true},
 

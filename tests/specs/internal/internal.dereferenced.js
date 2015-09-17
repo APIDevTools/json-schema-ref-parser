@@ -1,4 +1,4 @@
-helper.dereferenced.internalRefs =
+helper.dereferenced.internal =
 {
   "definitions": {
     "requiredString": {

@@ -1,4 +1,4 @@
-helper.parsed.internalRefs =
+helper.parsed.internal =
 {
   "definitions": {
     "requiredString": {

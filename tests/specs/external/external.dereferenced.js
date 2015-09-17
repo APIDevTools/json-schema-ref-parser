@@ -1,4 +1,4 @@
-helper.dereferenced.externalRefs =
+helper.dereferenced.external =
 {
   "title": "Person",
   "type": "object",

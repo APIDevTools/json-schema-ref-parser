@@ -1,4 +1,4 @@
-helper.bundled.internalRefs =
+helper.bundled.internal =
 {
   "definitions": {
     "requiredString": {
