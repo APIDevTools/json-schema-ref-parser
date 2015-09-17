@@ -1208,7 +1208,7 @@ $Ref.prototype.setValue = function(value, options) {
   this.value = value;
 
   // Extend the cache expiration
-  var cacheDuration = options.cache[this.type];
+  var cacheDuration = options.cache[this.pathType];
   if (cacheDuration > 0) {
     var expires = Date.now() + (cacheDuration * 1000);
     this.expires = new Date(expires);
