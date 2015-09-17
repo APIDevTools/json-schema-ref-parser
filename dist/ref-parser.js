@@ -298,7 +298,8 @@ $RefParser.prototype.parse = function(schema, options, callback) {
 
   // Read the schema file/url
   return read(args.schema, this.$refs, args.options)
-    .then(function($ref) {
+    .then(function(cached$Ref) {
+      var $ref = cached$Ref.$ref;
       if (!$ref.value || typeof($ref.value) !== 'object' || $ref.value instanceof Buffer) {
         throw ono.syntax('"%s" is not a valid JSON Schema', me._basePath);
       }
@@ -309,7 +310,7 @@ $RefParser.prototype.parse = function(schema, options, callback) {
       }
     })
     .catch(function(err) {
-      util.doCallback(args.callback, err);
+      util.doCallback(args.callback, err, me.schema);
       return Promise.reject(err);
     });
 };
@@ -898,8 +899,8 @@ module.exports = read;
  * @param {$RefParserOptions} options
  *
  * @returns {Promise}
- * The promise resolves with a {@link $Ref} object.
- * {@link $Ref#cached} will be true if the file was already cached.
+ * The promise resolves with an object that contains a {@link $Ref}
+ * and a flag indicating whether the {@link $Ref} came from cache or not.
  */
 function read(path, $refs, options) {
   try {
@@ -911,8 +912,10 @@ function read(path, $refs, options) {
     var $ref = $refs._get$Ref(path);
     if ($ref && !$ref.isExpired()) {
       util.debug('    cached from %s', $ref.type);
-      $ref.cached = true;
-      return Promise.resolve($ref);
+      return Promise.resolve({
+        $ref: $ref,
+        cached: true
+      });
     }
 
     // Add a placeholder $ref to the cache, so we don't read this URL multiple times
@@ -945,9 +948,11 @@ function read$Ref($ref, options) {
           // Update the $ref with the parsed file contents
           var value = parse(data, $ref.path, options);
           $ref.setValue(value, options);
-          $ref.cached = false;
 
-          return $ref;
+          return {
+            $ref: $ref,
+            cached: false
+          };
         });
     }
     else {
@@ -1576,9 +1581,11 @@ function crawl(obj, path, pathFromRoot, $refs, options) {
  */
 function crawl$Ref(path, pathFromRoot, $refs, options) {
   return read(path, $refs, options)
-    .then(function($ref) {
+    .then(function(cached$Ref) {
       // If a cached $ref is returned, then we DON'T need to crawl it
-      if (!$ref.cached) {
+      if (!cached$Ref.cached) {
+        var $ref = cached$Ref.$ref;
+
         // This is a new $ref, so store the path from the root of the JSON schema to this $ref
         $ref.pathFromRoot = pathFromRoot;
 
