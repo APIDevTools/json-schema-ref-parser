@@ -12579,7 +12579,7 @@ module.exports = new Type('tag:yaml.org,2002:timestamp', {
 
 },{}],50:[function(require,module,exports){
 /**!
- * Ono v1.0.32
+ * Ono v1.0.22
  *
  * @link https://github.com/BigstickCarpet/ono
  * @license MIT
