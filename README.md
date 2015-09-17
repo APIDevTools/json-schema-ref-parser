@@ -124,11 +124,10 @@ define(["ref-parser"], function($RefParser) { /* your module's code */ })
 The API
 --------------------------
 - Methods
+    - [`dereference()`](#dereferencepath-options-callback)
+    - [`bundle()`](#bundlepath-options-callback)
     - [`parse()`](#parsepath-options-callback)
     - [`resolve()`](#resolvepath-options-callback)
-    - [`bundle()`](#bundlepath-options-callback)
-    - [`dereference()`](#dereferencepath-options-callback)
-    - [`validate()`](#validatepath-options-callback)
 - Objects
     - [`Options`](#options)
     - [`Schema`](#schema-object)
@@ -147,33 +146,7 @@ The API
 - [Callbacks vs. Promises](#callbacks-vs-promises)
 
 
-### `parse(path, [options], [callback])`
-
-- **path** (_required_) - `string`<br>
-The file path or URL of your JSON Schema file.  The path can be absolute or relative.  In Node, the path is relative to `process.cwd()`.  In the browser, it's relative to the URL of the page.
-<br><br>
-If you already have the JSON Schema as a JavaScript object, then you can pass that instead of a file path.
-
-- **options** (_optional_) - `object`<br>
-See [options](#options) below.
-
-- **callback** (_optional_) - `function(err, schema)`<br>
-A callback that will receive the parsed schema object, or an error.
-
-- **Return Value:** `Promise`<br>
-See [Callbacks vs. Promises](#callbacks-vs-promises) below.
-
-Parses the given JSON Schema file (in JSON or YAML format), and returns it as a JavaScript object.  This method **does not** resolve `$ref` pointers or dereference anything.  It simply parses _one_ file and returns it.
-
-```javascript
-$RefParser.parse("my-schema.yaml")
-  .then(function(schema) {
-    console.log(schema.definitions.person); // => {$ref: "schemas/people/Bruce-Wayne.json"}
-  });
-```
-
-
-### `resolve(path, [options], [callback])`
+### `dereference(path, [options], [callback])`
 
 - **path** (_required_) - `string` or `object`<br>
 The file path or URL of your JSON Schema file.  See the [`parse`](#parsepath-options-callback) method for more info.
@@ -181,25 +154,25 @@ The file path or URL of your JSON Schema file.  See the [`parse`](#parsepath-opt
 - **options** (_optional_) - `object`<br>
 See [options](#options) below.
 
-- **callback** (_optional_) - `function(err, $refs)`<br>
-A callback that will receive a [`$Refs`](#refs-object) object.
+- **callback** (_optional_) - `function(err, schema)`<br>
+A callback that will receive the dereferenced schema object.
 
 - **Return Value:** `Promise`<br>
 See [Callbacks vs. Promises](#callbacks-vs-promises) below.
 
-Resolves all JSON references (`$ref` pointers) in the given JSON Schema file.  If it references any other files/URLs, then they will be downloaded and resolved as well (unless `options.$refs.external` is false).   This method **does not** dereference anything.  It simply gives you a [`$Refs`](#refs-object) object, which is a map of all the resolved references and their values.
+Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value.  This results in a schema object that does not contain _any_ `$ref` pointers.  Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object.  This is great for programmatic usage, especially when using tools that don't understand JSON references.
+
+The `dereference` method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object.  Again, this is great for programmatic usage, but it does introduce the risk of [circular references](#circular-refs), so be careful if you intend to serialize the schema using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).  Consider using the [`bundle`](#bundlepath-options-callback) method instead, which does not create circular references.
 
 ```javascript
-$RefParser.resolve("my-schema.yaml")
-  .then(function($refs) {
-    // $refs.paths() returns the paths of all the files in your schema
-    var filePaths = $refs.paths();
+$RefParser.dereference("my-schema.yaml")
+  .then(function(schema) {
+    // The `schema` object is a normal JavaScript object,
+    // so you can easily access any part of the schema using simple dot notation
+    console.log(schema.definitions.person.properties.firstName); // => {type: "string"}
 
-    // $refs.get() lets you query parts of your schema
-    var name = $refs.get("schemas/people/Bruce-Wayne.json#/properties/name");
-
-    // $refs.set() lets you change parts of your schema
-    $refs.set("schemas/people/Bruce-Wayne.json#/properties/favoriteColor/default", "black");
+    // Object reference equality works as expected
+    schema.definitions.thing === schema.definitions.batmobile;   // => true
   });
 ```
 
@@ -230,7 +203,35 @@ $RefParser.bundle("my-schema.yaml")
 ```
 
 
-### `dereference(path, [options], [callback])`
+### `parse(path, [options], [callback])`
+
+- **path** (_required_) - `string`<br>
+The file path or URL of your JSON Schema file.  The path can be absolute or relative.  In Node, the path is relative to `process.cwd()`.  In the browser, it's relative to the URL of the page.
+<br><br>
+If you already have the JSON Schema as a JavaScript object, then you can pass that instead of a file path.
+
+- **options** (_optional_) - `object`<br>
+See [options](#options) below.
+
+- **callback** (_optional_) - `function(err, schema)`<br>
+A callback that will receive the parsed schema object, or an error.
+
+- **Return Value:** `Promise`<br>
+See [Callbacks vs. Promises](#callbacks-vs-promises) below.
+
+> This method is used internally by other methods, such as [`bundle`](#bundlepath-options-callback) and [`dereference`](#dereferencepath-options-callback).  You probably won't need to call this method yourself.
+
+Parses the given JSON Schema file (in JSON or YAML format), and returns it as a JavaScript object.  This method **does not** resolve `$ref` pointers or dereference anything.  It simply parses _one_ file and returns it.
+
+```javascript
+$RefParser.parse("my-schema.yaml")
+  .then(function(schema) {
+    console.log(schema.definitions.person); // => {$ref: "schemas/people/Bruce-Wayne.json"}
+  });
+```
+
+
+### `resolve(path, [options], [callback])`
 
 - **path** (_required_) - `string` or `object`<br>
 The file path or URL of your JSON Schema file.  See the [`parse`](#parsepath-options-callback) method for more info.
@@ -238,25 +239,27 @@ The file path or URL of your JSON Schema file.  See the [`parse`](#parsepath-opt
 - **options** (_optional_) - `object`<br>
 See [options](#options) below.
 
-- **callback** (_optional_) - `function(err, schema)`<br>
-A callback that will receive the dereferenced schema object.
+- **callback** (_optional_) - `function(err, $refs)`<br>
+A callback that will receive a [`$Refs`](#refs-object) object.
 
 - **Return Value:** `Promise`<br>
 See [Callbacks vs. Promises](#callbacks-vs-promises) below.
 
-Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value.  This results in a schema object that does not contain _any_ `$ref` pointers.  Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object.  This is great for programmatic usage, especially when using tools that don't understand JSON references.
+> This method is used internally by other methods, such as [`bundle`](#bundlepath-options-callback) and [`dereference`](#dereferencepath-options-callback).  You probably won't need to call this method yourself.
 
-The `dereference` method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object.  Again, this is great for programmatic usage, but it does introduce the risk of [circular references](#circular-refs), so be careful if you intend to serialize the schema using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).  Consider using the [`bundle`](#bundlepath-options-callback) method instead, which does not create circular references.
+Resolves all JSON references (`$ref` pointers) in the given JSON Schema file.  If it references any other files/URLs, then they will be downloaded and resolved as well (unless `options.$refs.external` is false).   This method **does not** dereference anything.  It simply gives you a [`$Refs`](#refs-object) object, which is a map of all the resolved references and their values.
 
 ```javascript
-$RefParser.dereference("my-schema.yaml")
-  .then(function(schema) {
-    // The `schema` object is a normal JavaScript object,
-    // so you can easily access any part of the schema using simple dot notation
-    console.log(schema.definitions.person.properties.firstName); // => {type: "string"}
+$RefParser.resolve("my-schema.yaml")
+  .then(function($refs) {
+    // $refs.paths() returns the paths of all the files in your schema
+    var filePaths = $refs.paths();
 
-    // Object reference equality works as expected
-    schema.definitions.thing === schema.definitions.batmobile;   // => true
+    // $refs.get() lets you query parts of your schema
+    var name = $refs.get("schemas/people/Bruce-Wayne.json#/properties/name");
+
+    // $refs.set() lets you change parts of your schema
+    $refs.set("schemas/people/Bruce-Wayne.json#/properties/favoriteColor/default", "black");
   });
 ```
 
