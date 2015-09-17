@@ -73,12 +73,8 @@
           var values = $refs.values();
           expect(values).to.have.keys(expectedFiles);
           expectedFiles.forEach(function(file, i) {
-            var actual = values[file];
+            var actual = convertNodeBuffersToPOJOs(values[file]);
             var expected = expectedValues[i];
-            if (actual && actual.constructor && actual.constructor.name === 'Buffer') {
-              // Convert Buffers to POJOs for comparison
-              actual = actual.toJSON();
-            }
             expect(actual).to.deep.equal(expected, file);
           });
 
@@ -87,5 +83,21 @@
         .catch(helper.shouldNotGetCalled(done));
     }
   };
+
+  /**
+   * Converts Buffer objects to POJOs, so they can be compared using Chai
+   */
+  function convertNodeBuffersToPOJOs(value) {
+    if (value && value.constructor && value.constructor.name === 'Buffer') {
+      // Convert Buffers to POJOs for comparison
+      value = value.toJSON();
+
+      if (userAgent.isNode && /v0\.10/.test(process.version)) {
+        // Node v0.10 serializes buffers differently
+        value = {type: 'Buffer', data: actual};
+      }
+    }
+    return value;
+  }
 
 })();
