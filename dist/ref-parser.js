@@ -293,6 +293,7 @@ $RefParser.prototype.parse = function(schema, options, callback) {
   var me = this;
 
   // Resolve the absolute path of the schema
+  args.schema = util.path.localPathToUrl(args.schema);
   args.schema = url.resolve(util.path.cwd(), args.schema);
   this._basePath = util.path.stripHash(args.schema);
 
@@ -984,7 +985,7 @@ function read$RefFile($ref, options) {
   return new Promise(function(resolve, reject) {
     var file;
     try {
-      file = decodeURI($ref.path);
+      file = util.path.urlToLocalPath($ref.path);
     }
     catch (err) {
       reject(ono.uri(err, 'Malformed URI: %s', $ref.path));
@@ -1332,19 +1333,9 @@ function $Refs() {
  * @returns {string[]}
  */
 $Refs.prototype.paths = function(types) {
-  var $refs = this._$refs;
-  var keys = Object.keys($refs);
-  types = Array.isArray(types) ? types : Array.prototype.slice.call(arguments);
-
-  if (types.length > 0 && types[0]) {
-    keys = keys.filter(function(key) {
-      return types.indexOf($refs[key].pathType) !== -1;
-    });
-  }
-
-  return keys.map(function(key) {
-    // Decode URL-encoded characters for local file paths
-    return $refs[key].type === 'fs' ? decodeURI(key) : key;
+  var paths = getPaths(this._$refs, arguments);
+  return paths.map(function(path) {
+    return path.decoded;
   });
 };
 
@@ -1356,10 +1347,9 @@ $Refs.prototype.paths = function(types) {
  */
 $Refs.prototype.values = function(types) {
   var $refs = this._$refs;
-  var keys = this.paths(types);
-
-  return keys.reduce(function(obj, key) {
-    obj[key] = $refs[key].value;
+  var paths = getPaths($refs, arguments);
+  return paths.reduce(function(obj, path) {
+    obj[path.decoded] = $refs[path.encoded].value;
     return obj;
   }, {});
 };
@@ -1474,6 +1464,33 @@ $Refs.prototype._get$Ref = function(path) {
   var withoutHash = util.path.stripHash(path);
   return this._$refs[withoutHash];
 };
+
+/**
+ * Returns the encoded and decoded paths keys of the given object.
+ *
+ * @param {object} $refs - The object whose keys are URL-encoded paths
+ * @param {...string|string[]} [types] - Only return paths of the given types ("fs", "http", "https")
+ * @returns {object[]}
+ */
+function getPaths($refs, types) {
+  var paths = Object.keys($refs);
+
+  // Filter the paths by type
+  types = Array.isArray(types[0]) ? types[0] : Array.prototype.slice.call(types);
+  if (types.length > 0 && types[0]) {
+    paths = paths.filter(function(key) {
+      return types.indexOf($refs[key].pathType) !== -1;
+    });
+  }
+
+  // Decode local filesystem paths
+  return paths.map(function(path) {
+    return {
+      encoded: path,
+      decoded: $refs[path].pathType === 'fs' ? util.path.urlToLocalPath(path) : path
+    };
+  });
+}
 
 },{"./options":4,"./util":12,"ono":50}],11:[function(require,module,exports){
 'use strict';
@@ -1649,6 +1666,22 @@ exports.doCallback = function doCallback(callback, err, params) {
 
 var protocolPattern = /^[a-z0-9.+-]+:\/\//i;
 
+// RegExp patterns to URL-encode special characters in local filesystem paths
+var urlEncodePatterns = [
+  /\?/g, '%3F',
+  /\#/g, '%23',
+  /^win/.test(process.platform) ? /\\/g : /\//, '/'
+];
+
+// RegExp patterns to URL-decode special characters for local filesystem paths
+var urlDecodePatterns = [
+  /\%23/g, '#',
+  /\%24/g, '$',
+  /\%26/g, '&',
+  /\%2C/g, ',',
+  /\%40/g, '@'
+];
+
 /**
  * Returns the current working directory (in Node) or the current page URL (in browsers).
  *
@@ -1666,6 +1699,38 @@ exports.cwd = function cwd() {
  */
 exports.isUrl = function isUrl(path) {
   return protocolPattern.test(path);
+};
+
+/**
+ * If the given path is a local filesystem path, it is converted to a URL.
+ *
+ * @param {string} path
+ * @returns {string}
+ */
+exports.localPathToUrl = function localPathToUrl(path) {
+  if (!process.browser && !exports.isUrl(path)) {
+    // Manually encode characters that are not encoded by `encodeURI`
+    for (var i = 0; i < urlEncodePatterns.length; i += 2) {
+      path = path.replace(urlEncodePatterns[i], urlEncodePatterns[i + 1]);
+    }
+    path = encodeURI(path);
+  }
+  return path;
+};
+
+/**
+ * Converts a URL to a local filesystem path
+ *
+ * @param {string} url
+ * @returns {string}
+ */
+exports.urlToLocalPath = function urlToLocalPath(url) {
+  url = decodeURI(url);
+  // Manually decode characters that are not decoded by `decodeURI`
+  for (var i = 0; i < urlDecodePatterns.length; i += 2) {
+    url = url.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1]);
+  }
+  return url;
 };
 
 /**

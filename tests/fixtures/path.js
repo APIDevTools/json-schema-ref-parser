@@ -17,7 +17,7 @@
     }
 
     // Encode special characters in paths when running in a browser
-    file = encodeURIComponent(file).split('%2F').join('/');
+    file = encodeFile(file);
 
     if (window.location.href.indexOf(_testsDir) === 0) {
       // Return the relative path from "/tests/index.html"
@@ -37,7 +37,7 @@
       return _path.join(_testsDir, file || '/');
     }
     else {
-      return _testsDir + file;
+      return _testsDir + encodeFile(file);
     }
   };
 
@@ -52,6 +52,13 @@
       var filename = document.querySelector('script[src*="fixtures/helper.js"]').src;
       return filename.substr(0, filename.indexOf('fixtures/helper.js'));
     }
+  }
+
+  /**
+   * URI-encodes the given file name
+   */
+  function encodeFile(file) {
+    return encodeURIComponent(file).split('%2F').join('/');
   }
 
 })();
