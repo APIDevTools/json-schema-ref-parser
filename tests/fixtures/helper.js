@@ -73,7 +73,7 @@
           var values = $refs.values();
           expect(values).to.have.keys(expectedFiles);
           expectedFiles.forEach(function(file, i) {
-            var actual = convertNodeBuffersToPOJOs(values[file]);
+            var actual = helper.convertNodeBuffersToPOJOs(values[file]);
             var expected = expectedValues[i];
             expect(actual).to.deep.equal(expected, file);
           });
@@ -87,7 +87,7 @@
   /**
    * Converts Buffer objects to POJOs, so they can be compared using Chai
    */
-  function convertNodeBuffersToPOJOs(value) {
+  helper.convertNodeBuffersToPOJOs = function convertNodeBuffersToPOJOs(value) {
     if (value && value.constructor && value.constructor.name === 'Buffer') {
       // Convert Buffers to POJOs for comparison
       value = value.toJSON();

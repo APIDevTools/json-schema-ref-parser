@@ -34,11 +34,16 @@
    */
   path.abs = function(file) {
     if (userAgent.isNode) {
-      return _path.join(_testsDir, file || '/');
+      file = _path.join(_testsDir, file || '/');
     }
     else {
-      return _testsDir + encodeFile(file);
+      file = _testsDir + encodeFile(file);
     }
+    if (/^[A-Z]\:[\\\/]/.test(file)) {
+      // lowercase the drive letter on Windows, for string comparison purposes
+      file = file[0].toLowerCase() + file.substr(1);
+    }
+    return file;
   };
 
   /**

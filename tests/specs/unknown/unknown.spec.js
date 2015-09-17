@@ -49,8 +49,8 @@ describe('Schema with $refs to unknown file types', function() {
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
 
-        // Serialize the schema, to convert the Buffers into POJOs
-        schema = JSON.parse(JSON.stringify(schema));
+        schema.definitions.html = helper.convertNodeBuffersToPOJOs(schema.definitions.html);
+        schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         expect(schema).to.deep.equal(helper.dereferenced.unknown);
 
         done();
@@ -66,8 +66,8 @@ describe('Schema with $refs to unknown file types', function() {
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
 
-        // Serialize the schema, to convert the Buffers into POJOs
-        schema = JSON.parse(JSON.stringify(schema));
+        schema.definitions.html = helper.convertNodeBuffersToPOJOs(schema.definitions.html);
+        schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         expect(schema).to.deep.equal(helper.dereferenced.unknown);
 
         done();

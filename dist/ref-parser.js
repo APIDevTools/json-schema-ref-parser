@@ -1664,13 +1664,15 @@ exports.doCallback = function doCallback(callback, err, params) {
 (function (process){
 'use strict';
 
-var protocolPattern = /^[a-z0-9.+-]+:\/\//i;
+var isWindows           = /^win/.test(process.platform),
+    forwardSlashPattern = /\//g,
+    protocolPattern     = /^[a-z0-9.+-]+:\/\//i;
 
 // RegExp patterns to URL-encode special characters in local filesystem paths
 var urlEncodePatterns = [
   /\?/g, '%3F',
   /\#/g, '%23',
-  /^win/.test(process.platform) ? /\\/g : /\//, '/'
+  isWindows ? /\\/g : /\//, '/'
 ];
 
 // RegExp patterns to URL-decode special characters for local filesystem paths
@@ -1729,6 +1731,9 @@ exports.urlToLocalPath = function urlToLocalPath(url) {
   // Manually decode characters that are not decoded by `decodeURI`
   for (var i = 0; i < urlDecodePatterns.length; i += 2) {
     url = url.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1]);
+  }
+  if (isWindows) {
+    url = url.replace(forwardSlashPattern, '\\');
   }
   return url;
 };
