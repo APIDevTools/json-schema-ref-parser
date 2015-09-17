@@ -98,6 +98,21 @@
       }
     }
     return value;
-  }
+  };
+
+  /**
+   * Creates a deep clone of the given value.
+   */
+  helper.cloneDeep = function cloneDeep(value) {
+    var clone = value;
+    if (value && typeof(value) === 'object') {
+      clone = value instanceof Array ? [] : {};
+      var keys = Object.keys(value);
+      for (var i = 0; i < keys.length; i++) {
+        clone[keys[i]] = helper.cloneDeep(value[keys[i]]);
+      }
+    }
+    return clone;
+  };
 
 })();

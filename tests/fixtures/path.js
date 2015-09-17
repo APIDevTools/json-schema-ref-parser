@@ -5,6 +5,11 @@
   var _path = userAgent.isNode ? require('path') : null;
   var _testsDir = getTestsDir();
 
+  if (userAgent.isNode) {
+    // Run all tests from the "tests" directory
+    process.chdir(_path.join(__dirname, '..'));
+  }
+
   /**
    * Returns the relative path of a file in the "tests" directory
    *
@@ -13,7 +18,7 @@
   path.rel = function(file) {
     if (userAgent.isNode) {
       // Return the relative path from the project root
-      return _path.join('tests', file);
+      return file;
     }
 
     // Encode special characters in paths when running in a browser
@@ -51,7 +56,7 @@
    */
   function getTestsDir() {
     if (userAgent.isNode) {
-      return _path.resolve('tests');
+      return _path.resolve(__dirname, '..');
     }
     else {
       var filename = document.querySelector('script[src*="fixtures/helper.js"]').src;
