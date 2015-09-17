@@ -1,0 +1,10 @@
+definitions:
+  blank:
+    $ref: files/blank
+  text:
+    $ref: files/text.txt
+  html:
+    $ref: files/page.html
+  binary:
+    $ref: files/binary.png
+

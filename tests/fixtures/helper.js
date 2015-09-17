@@ -73,7 +73,13 @@
           var values = $refs.values();
           expect(values).to.have.keys(expectedFiles);
           expectedFiles.forEach(function(file, i) {
-            expect(values[file]).to.deep.equal(expectedValues[i], file);
+            var actual = values[file];
+            var expected = expectedValues[i];
+            if (actual && actual.constructor && actual.constructor.name === 'Buffer') {
+              // Convert Buffers to POJOs for comparison
+              actual = actual.toJSON();
+            }
+            expect(actual).to.deep.equal(expected, file);
           });
 
           done();
