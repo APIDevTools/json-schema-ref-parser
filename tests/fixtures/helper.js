@@ -94,7 +94,7 @@
 
       if (userAgent.isNode && /v0\.10/.test(process.version)) {
         // Node v0.10 serializes buffers differently
-        value = {type: 'Buffer', data: actual};
+        value = {type: 'Buffer', data: value};
       }
     }
     return value;
