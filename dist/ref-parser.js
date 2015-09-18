@@ -7,9 +7,10 @@
  */
 'use strict';
 
-var $Ref = require('./ref'),
-    util = require('./util'),
-    url  = require('url');
+var $Ref    = require('./ref'),
+    Pointer = require('./pointer'),
+    util    = require('./util'),
+    url     = require('url');
 
 module.exports = bundle;
 
@@ -63,7 +64,7 @@ function remap($refs, options) {
 function crawl(obj, path, $refs, remapped, options) {
   if (obj && typeof(obj) === 'object') {
     Object.keys(obj).forEach(function(key) {
-      var keyPath = path + '/' + key;
+      var keyPath = Pointer.join(path, key);
       var value = obj[key];
 
       if ($Ref.is$Ref(value)) {
@@ -105,12 +106,13 @@ function dereference(basePath, $refs, options) {
   });
 }
 
-},{"./ref":9,"./util":12,"url":90}],2:[function(require,module,exports){
+},{"./pointer":6,"./ref":9,"./util":12,"url":90}],2:[function(require,module,exports){
 'use strict';
 
-var $Ref = require('./ref'),
-    util = require('./util'),
-    url  = require('url');
+var $Ref    = require('./ref'),
+    Pointer = require('./pointer'),
+    util    = require('./util'),
+    url     = require('url');
 
 module.exports = dereference;
 
@@ -138,10 +140,9 @@ function dereference(parser, options) {
 function crawl(obj, path, parents, $refs, options) {
   if (obj && typeof(obj) === 'object') {
     parents.push(obj);
-    path = util.path.ensureHash(path);
 
     Object.keys(obj).forEach(function(key) {
-      var keyPath = path + '/' + key;
+      var keyPath = Pointer.join(path, key);
       var value = obj[key];
 
       if ($Ref.isAllowed$Ref(value, options)) {
@@ -194,7 +195,7 @@ function dereference$Ref(obj, key, value) {
   }
 }
 
-},{"./ref":9,"./util":12,"url":90}],3:[function(require,module,exports){
+},{"./pointer":6,"./ref":9,"./util":12,"url":90}],3:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -665,6 +666,8 @@ var $Ref         = require('./ref'),
     util         = require('./util'),
     url          = require('url'),
     ono          = require('ono'),
+    slashes      = /\//g,
+    tildes       = /~/g,
     escapedSlash = /~1/g,
     escapedTilde = /~0/g;
 
@@ -717,7 +720,7 @@ Pointer.prototype.resolve = function(obj, options) {
   for (var i = 0; i < tokens.length; i++) {
     if (resolveIf$Ref(this, options)) {
       // The $ref path has changed, so append the remaining tokens to the path
-      this.path = util.path.ensureHash(this.path) + '/' + tokens.slice(i).join('/');
+      this.path = Pointer.join(this.path, tokens.slice(i));
     }
 
     var token = tokens[i];
@@ -813,6 +816,30 @@ Pointer.parse = function(path) {
   }
 
   return pointer.slice(1);
+};
+
+/**
+ * Creates a JSON pointer path, by joining one or more tokens to a base path.
+ *
+ * @param {string} base - The base path (e.g. "schema.json#/definitions/person")
+ * @param {string|string[]} tokens - The token(s) to append (e.g. ["name", "first"])
+ * @returns {string}
+ */
+Pointer.join = function(base, tokens) {
+  // Ensure that the base path contains a hash
+  if (base.indexOf('#') === -1) {
+    base += '#';
+  }
+
+  // Append each token to the base path
+  tokens = Array.isArray(tokens) ? tokens : [tokens];
+  for (var i = 0; i < tokens.length; i++) {
+    var token = tokens[i];
+    // Encode the token, according to RFC 6901
+    base += '/' + token.replace(tildes, '~0').replace(slashes, '~1');
+  }
+
+  return base;
 };
 
 /**
@@ -1502,6 +1529,7 @@ function getPaths($refs, types) {
 
 var Promise = require('./promise'),
     $Ref    = require('./ref'),
+    Pointer = require('./pointer'),
     read    = require('./read'),
     util    = require('./util'),
     url     = require('url'),
@@ -1568,8 +1596,8 @@ function crawl(obj, path, pathFromRoot, $refs, options) {
     }
 
     keys.forEach(function(key) {
-      var keyPath = path + '/' + key;
-      var keyPathFromRoot = pathFromRoot + '/' + key;
+      var keyPath = Pointer.join(path, key);
+      var keyPathFromRoot = Pointer.join(pathFromRoot, key);
       var value = obj[key];
 
       if ($Ref.isExternal$Ref(value)) {
@@ -1623,7 +1651,7 @@ function crawl$Ref(path, pathFromRoot, $refs, options) {
     });
 }
 
-},{"./promise":7,"./read":8,"./ref":9,"./util":12,"ono":50,"url":90}],12:[function(require,module,exports){
+},{"./pointer":6,"./promise":7,"./read":8,"./ref":9,"./util":12,"ono":50,"url":90}],12:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -1741,16 +1769,6 @@ exports.urlToLocalPath = function urlToLocalPath(url) {
     url = url.replace(forwardSlashPattern, '\\');
   }
   return url;
-};
-
-/**
- * Adds a hash to the given path, if it doesn't already have one.
- *
- * @param   {string} path
- * @returns {string}
- */
-exports.ensureHash = function ensureHash(path) {
-  return path.indexOf('#') === -1 ? path + '#' : path;
 };
 
 /**
