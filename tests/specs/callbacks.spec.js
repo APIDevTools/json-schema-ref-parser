@@ -1,10 +1,15 @@
 'use strict';
 
 describe('Callback & Promise syntax', function() {
+  // NOTE: This delay is so high because TravisCI and SauceLabs,
+  // both of which are VERY SLOW
+  var delay = 2000;
+
   beforeEach(function() {
-    // These tests all have a 200ms delay,
-    // to ensure that all callbacks and promises are called.
-    this.currentTest.slow(500);
+    // These tests all have a delay, to ensure that all callbacks and promises are called.
+    // So we need to increase the test timeouts
+    this.currentTest.timeout(delay * 2);
+    this.currentTest.slow(delay * 2);
   });
 
   ['parse', 'resolve', 'dereference', 'bundle'].forEach(function(method) {
@@ -50,7 +55,7 @@ describe('Callback & Promise syntax', function() {
         catch (e) {
           done(e)
         }
-      }, 200);
+      }, delay);
     }
   }
 
@@ -89,7 +94,7 @@ describe('Callback & Promise syntax', function() {
         catch (e) {
           done(e)
         }
-      }, 200);
+      }, delay);
     }
   }
 });

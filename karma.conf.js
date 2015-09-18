@@ -16,7 +16,6 @@ var baseConfig = {
 
     // Test Fixtures
     'tests/fixtures/**/*.js',
-    {pattern: 'tests/files/**', included: false, served: true},
 
     // Tests
     'tests/specs/**/*.js',
@@ -200,12 +199,17 @@ function configureSauceLabs(config) {
 
   config.reporters.push('saucelabs');
   config.browsers = Object.keys(config.customLaunchers);
+  config.captureTimeout = 60000;
+  config.browserDisconnectTimeout = 15000;
+  config.browserNoActivityTimeout = 15000;
+  // config.logLevel = 'debug';
 
-  // Certain tests seem to always fail on SauceLabs.
-  // They pass fine on local browsers, so I'm not sure why they fail when run remotely.
+  // The following tests tend to fail on SauceLabs,
+  // probably due to zero-byte files and special characters in the paths.
   // So, exclude these tests when running on SauceLabs.
-  baseConfig.exclude = [
-    'tests/specs/__({[ ! % & $ # @ ` ~ ,)}]__/**',
+  config.exclude = [
+    'tests/fixtures/config.js',
+    'tests/specs/__*/**',
     'tests/specs/blank/**',
     'tests/specs/unknown/**'
   ];
