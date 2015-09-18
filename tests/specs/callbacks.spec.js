@@ -3,13 +3,13 @@
 describe('Callback & Promise syntax', function() {
   // NOTE: This delay is so high because TravisCI and SauceLabs,
   // both of which are VERY SLOW
-  var delay = 2000;
+  var delay = global.__karma__ ? 2000 : 200;
 
   beforeEach(function() {
     // These tests all have a delay, to ensure that all callbacks and promises are called.
     // So we need to increase the test timeouts
     this.currentTest.timeout(delay * 2);
-    this.currentTest.slow(delay * 2);
+    this.currentTest.slow(delay * 2 + 50);
   });
 
   ['parse', 'resolve', 'dereference', 'bundle'].forEach(function(method) {
