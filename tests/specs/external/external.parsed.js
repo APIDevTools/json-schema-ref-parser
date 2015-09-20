@@ -28,11 +28,11 @@ helper.parsed.external =
   },
 
   definitions: {
-    "requiredString": {
+    "required string": {
       "$ref": "required-string.yaml"
     },
     "string": {
-      "$ref": "#/requiredString/type"
+      "$ref": "#/required%20string/type"
     },
     "name": {
       "$ref": "../definitions/name.yaml"
@@ -67,7 +67,7 @@ helper.parsed.external =
         "maxLength": 3
       },
       "first": {
-        "$ref": "../definitions/definitions.json#/requiredString"
+        "$ref": "../definitions/definitions.json#/required string"
       }
     },
     "title": "name"
@@ -76,6 +76,6 @@ helper.parsed.external =
   requiredString: {
     "minLength": 1,
     "type": "string",
-    "title": "requiredString"
+    "title": "required string"
   }
 };

@@ -15,12 +15,12 @@ helper.dereferenced.external =
       ],
       "properties": {
         "first": {
-          "title": "requiredString",
+          "title": "required string",
           "type": "string",
           "minLength": 1
         },
         "last": {
-          "title": "requiredString",
+          "title": "required string",
           "type": "string",
           "minLength": 1
         },
@@ -29,12 +29,12 @@ helper.dereferenced.external =
           "minLength": 1
         },
         "prefix": {
-          "title": "requiredString",
+          "title": "required string",
           "type": "string",
           "minLength": 3
         },
         "suffix": {
-          "title": "requiredString",
+          "title": "required string",
           "type": "string",
           "minLength": 3,
           "maxLength": 3
@@ -54,8 +54,8 @@ helper.dereferenced.external =
     }
   },
   "definitions": {
-    "requiredString": {
-      "title": "requiredString",
+    "required string": {
+      "title": "required string",
       "type": "string",
       "minLength": 1
     },
@@ -69,12 +69,12 @@ helper.dereferenced.external =
       ],
       "properties": {
         "first": {
-          "title": "requiredString",
+          "title": "required string",
           "type": "string",
           "minLength": 1
         },
         "last": {
-          "title": "requiredString",
+          "title": "required string",
           "type": "string",
           "minLength": 1
         },
@@ -83,12 +83,12 @@ helper.dereferenced.external =
           "minLength": 1
         },
         "prefix": {
-          "title": "requiredString",
+          "title": "required string",
           "type": "string",
           "minLength": 3
         },
         "suffix": {
-          "title": "requiredString",
+          "title": "required string",
           "type": "string",
           "minLength": 3,
           "maxLength": 3

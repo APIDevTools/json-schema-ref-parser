@@ -5,7 +5,7 @@ required:
   - last
 properties:
   first:
-    $ref: ../definitions/definitions.json#/requiredString
+    $ref: ../definitions/definitions.json#/required string
   last:
     $ref: ./required-string.yaml
   middle:

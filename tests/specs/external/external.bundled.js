@@ -22,13 +22,13 @@ helper.bundled.external =
     }
   },
   "definitions": {
-    "requiredString": {
-      "title": "requiredString",
+    "required string": {
+      "title": "required string",
       "type": "string",
       "minLength": 1
     },
     "string": {
-      "$ref": "#/definitions/requiredString/type"
+      "$ref": "#/definitions/required%20string/type"
     },
     "name": {
       "title": "name",
@@ -39,21 +39,21 @@ helper.bundled.external =
       ],
       "properties": {
         "first": {
-          "$ref": "#/definitions/requiredString"
+          "$ref": "#/definitions/required%20string"
         },
         "last": {
-          "$ref": "#/definitions/requiredString"
+          "$ref": "#/definitions/required%20string"
         },
         "middle": {
           "type": {
-            "$ref": "#/definitions/requiredString/type"
+            "$ref": "#/definitions/required%20string/type"
           },
           "minLength": {
-            "$ref": "#/definitions/requiredString/minLength"
+            "$ref": "#/definitions/required%20string/minLength"
           }
         },
         "prefix": {
-          "$ref": "#/definitions/requiredString",
+          "$ref": "#/definitions/required%20string",
           "minLength": 3
         },
         "suffix": {

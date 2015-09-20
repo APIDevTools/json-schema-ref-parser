@@ -833,7 +833,7 @@ Pointer.parse = function(path) {
 
   // Decode each part, according to RFC 6901
   for (var i = 0; i < pointer.length; i++) {
-    pointer[i] = pointer[i].replace(escapedSlash, '/').replace(escapedTilde, '~');
+    pointer[i] = decodeURI(pointer[i].replace(escapedSlash, '/').replace(escapedTilde, '~'));
   }
 
   if (pointer[0] !== '') {
@@ -864,7 +864,7 @@ Pointer.join = function(base, tokens) {
     base += '/' + token.replace(tildes, '~0').replace(slashes, '~1');
   }
 
-  return base;
+  return encodeURI(base);
 };
 
 /**
