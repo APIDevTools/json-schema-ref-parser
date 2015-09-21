@@ -43,6 +43,7 @@ You've got a JSON Schema with `$ref` pointers to other files and/or URLs.  Maybe
 }
 ```
 
+
 The Solution:
 --------------------------
 JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03) and [JSON Pointer](https://tools.ietf.org/html/rfc6901) implementation that crawls even the most complex [JSON Schemas](http://json-schema.org/latest/json-schema-core.html) and gives you simple, straightforward JavaScript objects.
@@ -61,7 +62,7 @@ Example
 --------------------------
 
 ```javascript
-$RefParser.dereference("my-schema.json", function(err, schema) {
+$RefParser.dereference(mySchema, function(err, schema) {
   if (err) {
     console.error(err);
   }
@@ -76,7 +77,7 @@ $RefParser.dereference("my-schema.json", function(err, schema) {
 Or use [Promises syntax](http://javascriptplayground.com/blog/2015/02/promises/) instead. The following example is the same as above:
 
 ```javascript
-$RefParser.dereference("my-schema.json")
+$RefParser.dereference(mySchema)
   .then(function(schema) {
     console.log(schema.definitions.person.properties.firstName);
   })
@@ -146,10 +147,10 @@ The API
 - [Callbacks vs. Promises](#callbacks-vs-promises)
 
 
-### `dereference(path, [options], [callback])`
+### `dereference(schema, [options], [callback])`
 
-- **path** (_required_) - `string` or `object`<br>
-The file path or URL of your JSON Schema file.  See the [`parse`](#parsepath-options-callback) method for more info.
+- **schema** (_required_) - `string` or `object`<br>
+A JSON Schema object, or the file path or URL of a JSON Schema file.  See the [`parse`](#parseschema-options-callback) method for more info.
 
 - **options** (_optional_) - `object`<br>
 See [options](#options) below.
@@ -177,10 +178,10 @@ $RefParser.dereference("my-schema.yaml")
 ```
 
 
-### `bundle(path, [options], [callback])`
+### `bundle(schema, [options], [callback])`
 
-- **path** (_required_) - `string` or `object`<br>
-The file path or URL of your JSON Schema file.  See the [`parse`](#parsepath-options-callback) method for more info.
+- **schema** (_required_) - `string` or `object`<br>
+A JSON Schema object, or the file path or URL of a JSON Schema file.  See the [`parse`](#parseschema-options-callback) method for more info.
 
 - **options** (_optional_) - `object`<br>
 See [options](#options) below.
@@ -203,12 +204,12 @@ $RefParser.bundle("my-schema.yaml")
 ```
 
 
-### `parse(path, [options], [callback])`
+### `parse(schema, [options], [callback])`
 
-- **path** (_required_) - `string`<br>
-The file path or URL of your JSON Schema file.  The path can be absolute or relative.  In Node, the path is relative to `process.cwd()`.  In the browser, it's relative to the URL of the page.
+- **schema** (_required_) - `string` or `object`<br>
+A JSON Schema object, or the file path or URL of a JSON Schema file.
 <br><br>
-If you already have the JSON Schema as a JavaScript object, then you can pass that instead of a file path.
+The path can be absolute or relative.  In Node, the path is relative to `process.cwd()`.  In the browser, it's relative to the URL of the page.
 
 - **options** (_optional_) - `object`<br>
 See [options](#options) below.
@@ -231,10 +232,10 @@ $RefParser.parse("my-schema.yaml")
 ```
 
 
-### `resolve(path, [options], [callback])`
+### `resolve(schema, [options], [callback])`
 
 - **path** (_required_) - `string` or `object`<br>
-The file path or URL of your JSON Schema file.  See the [`parse`](#parsepath-options-callback) method for more info.
+A JSON Schema object, or the file path or URL of a JSON Schema file.  See the [`parse`](#parseschema-options-callback) method for more info.
 
 - **options** (_optional_) - `object`<br>
 See [options](#options) below.
@@ -245,7 +246,7 @@ A callback that will receive a [`$Refs`](#refs-object) object.
 - **Return Value:** `Promise`<br>
 See [Callbacks vs. Promises](#callbacks-vs-promises) below.
 
-> This method is used internally by other methods, such as [`bundle`](#bundlepath-options-callback) and [`dereference`](#dereferencepath-options-callback).  You probably won't need to call this method yourself.
+> This method is used internally by other methods, such as [`bundle`](#bundleschema-options-callback) and [`dereference`](#dereferenceschema-options-callback).  You probably won't need to call this method yourself.
 
 Resolves all JSON references (`$ref` pointers) in the given JSON Schema file.  If it references any other files/URLs, then they will be downloaded and resolved as well (unless `options.$refs.external` is false).   This method **does not** dereference anything.  It simply gives you a [`$Refs`](#refs-object) object, which is a map of all the resolved references and their values.
 
@@ -289,7 +290,7 @@ $RefParser.dereference("my-schema.yaml", {
 |`allow.yaml`     |bool     |true      |Determines whether YAML files are supported<br> (note: all JSON files are also valid YAML files)
 |`allow.empty`    |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an empty file
 |`allow.unknown`  |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an unknown/unsupported file type (such as HTML, text, image, etc.). The default is to resolve unknown files as a [`Buffer`](https://nodejs.org/api/buffer.html#buffer_class_buffer)
-|`$refs.internal` |bool     |true      |Determines whether internal `$ref` pointers (such as `#/definitions/widget`) will be dereferenced when calling [`dereference()`](#dereferencepath-options-callback).  Either way, you'll still be able to get the value using [`$Refs.get()`](#refsgetref-options)
+|`$refs.internal` |bool     |true      |Determines whether internal `$ref` pointers (such as `#/definitions/widget`) will be dereferenced when calling [`dereference()`](#dereferenceschema-options-callback).  Either way, you'll still be able to get the value using [`$Refs.get()`](#refsgetref-options)
 |`$refs.external` |bool     |true      |Determines whether external `$ref` pointers get resolved/dereferenced. If `false`, then no files/URLs will be retrieved.  Use this if you only want to allow single-file schemas.
 |`$refs.circular` |bool     |true      |Determines whether [circular `$ref` pointers](#circular-refs) are allowed. If `false`, then a `ReferenceError` will be thrown if the schema contains a circular reference.
 |`cache.fs`       |number   |60        |<a name="caching"></a>The length of time (in seconds) to cache local files.  The default is one minute.  Setting to zero will cache forever.
@@ -298,7 +299,7 @@ $RefParser.dereference("my-schema.yaml", {
 
 
 ### `Schema` Object
-If you create an instance of the `$RefParser` class (rather than just calling the static methods), then the `schema` property gives you easy access to the JSON schema.  This is the same value that is passed to the callback function (or Promise) when calling the [`parse`](#parsepath-options-callback), [`bundle`](#bundlepath-options-callback), or [`dereference`](#dereferencepath-options-callback) methods.
+If you create an instance of the `$RefParser` class (rather than just calling the static methods), then the `schema` property gives you easy access to the JSON schema.  This is the same value that is passed to the callback function (or Promise) when calling the [`parse`](#parseschema-options-callback), [`bundle`](#bundleschema-options-callback), or [`dereference`](#dereferenceschema-options-callback) methods.
 
 ```javascript
 var parser = new $RefParser();
@@ -315,7 +316,7 @@ parser.dereference("my-schema.json")
 
 
 ### `$Refs` Object
-When you call the [`resolve`](#resolvepath-options-callback) method, the value that gets passed to the callback function (or Promise) is a `$Refs` object.  This same object is accessible via the `parser.$refs` property of `$RefParser` instances.
+When you call the [`resolve`](#resolveschema-options-callback) method, the value that gets passed to the callback function (or Promise) is a `$Refs` object.  This same object is accessible via the `parser.$refs` property of `$RefParser` instances.
 
 This object is a map of JSON References and their resolved values.  It also has several convenient helper methods that make it easy for you to navigate and manipulate the JSON References.
 
@@ -408,7 +409,7 @@ $RefParser.resolve("my-schema.json")
 - **$ref** (_required_) - `string`<br>
 The JSON Reference path, optionally with a JSON Pointer in the hash
 
-Immediately expires the given JSON reference, so the next time you call a method such as [`parse`](#parsepath-options-callback) or [`dereference`](#dereferencepath-options-callback), the file will be refreshed rather than reusing the cached value.
+Immediately expires the given JSON reference, so the next time you call a method such as [`parse`](#parseschema-options-callback) or [`dereference`](#dereferenceschema-options-callback), the file will be refreshed rather than reusing the cached value.
 
 ```javascript
 $RefParser.resolve("my-schema.json")
@@ -577,7 +578,7 @@ var parser = new $RefParser();
 parser.resolve("my-schema.json");
 ```
 
-The difference is that in the second example you now have a reference to `parser`, which means you can access the results ([`parser.schema`](#schema-object) and [`parser.$refs`](#refs-object)) anytime you want, rather than just in the callback function. Also, having a `$RefParser` instance allows you to benefit from **[caching](#caching)**, so the next time you call [`parser.resolve()`](#resolvepath-options-callback), it won't need to re-download those files again (as long as the cache hasn't expired).
+The difference is that in the second example you now have a reference to `parser`, which means you can access the results ([`parser.schema`](#schema-object) and [`parser.$refs`](#refs-object)) anytime you want, rather than just in the callback function. Also, having a `$RefParser` instance allows you to benefit from **[caching](#caching)**, so the next time you call [`parser.resolve()`](#resolveschema-options-callback), it won't need to re-download those files again (as long as the cache hasn't expired).
 
 
 ### Callbacks vs. Promises
@@ -590,7 +591,7 @@ JSON Schema files can contain [circular $ref pointers](https://gist.github.com/B
 
 You can disable circular references by setting the [`$refs.circular`](#options) option to `false`. Then, if a circular reference is found, a `ReferenceError` will be thrown.
 
-Another option is to use the [`bundle`](#bundlepath-options-callback) method rather than the [`dereference`](#dereferencepath-options-callback) method.  Bundling does _not_ result in circular references, because it simply converts _external_ `$ref` pointers to _internal_ ones.
+Another option is to use the [`bundle`](#bundleschema-options-callback) method rather than the [`dereference`](#dereferenceschema-options-callback) method.  Bundling does _not_ result in circular references, because it simply converts _external_ `$ref` pointers to _internal_ ones.
 
 ```javascript
 "person": {
