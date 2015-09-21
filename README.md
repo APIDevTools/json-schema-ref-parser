@@ -289,9 +289,9 @@ $RefParser.dereference("my-schema.yaml", {
 |`allow.yaml`     |bool     |true      |Determines whether YAML files are supported<br> (note: all JSON files are also valid YAML files)
 |`allow.empty`    |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an empty file
 |`allow.unknown`  |bool     |true      |Determines whether it's ok for a `$ref` pointer to point to an unknown/unsupported file type (such as HTML, text, image, etc.). The default is to resolve unknown files as a [`Buffer`](https://nodejs.org/api/buffer.html#buffer_class_buffer)
-|`allow.circular` |bool     |true      |Determines whether [circular references](#circular-refs) are allowed. If `false`, then a `ReferenceError` will be thrown if the schema contains a circular reference.
 |`$refs.internal` |bool     |true      |Determines whether internal `$ref` pointers (such as `#/definitions/widget`) will be dereferenced when calling [`dereference()`](#dereferencepath-options-callback).  Either way, you'll still be able to get the value using [`$Refs.get()`](#refsgetref-options)
 |`$refs.external` |bool     |true      |Determines whether external `$ref` pointers get resolved/dereferenced. If `false`, then no files/URLs will be retrieved.  Use this if you only want to allow single-file schemas.
+|`$refs.circular` |bool     |true      |Determines whether [circular `$ref` pointers](#circular-refs) are allowed. If `false`, then a `ReferenceError` will be thrown if the schema contains a circular reference.
 |`cache.fs`       |number   |60        |<a name="caching"></a>The length of time (in seconds) to cache local files.  The default is one minute.  Setting to zero will cache forever.
 |`cache.http`     |number   |300       |The length of time (in seconds) to cache HTTP URLs.  The default is five minutes.  Setting to zero will cache forever.
 |`cache.https`    |number   |300       |The length of time (in seconds) to cache HTTPS URLs.  The default is five minutes.  Setting to zero will cache forever.
@@ -588,7 +588,7 @@ Circular $Refs
 --------------------------
 JSON Schema files can contain [circular $ref pointers](https://gist.github.com/BigstickCarpet/d18278935fc73e3a0ee1), and JSON Schema $Ref Parser fully supports them. Circular references can be resolved and dereferenced just like any other reference.  However, if you intend to serialize the dereferenced schema as JSON, then you should be aware that [`JSON.stringify`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) does not support circular references by default, so you will need to [use a custom replacer function](https://stackoverflow.com/questions/11616630/json-stringify-avoid-typeerror-converting-circular-structure-to-json).
 
-You can disable circular references by setting the [`allow.circular`](#options) option to `false`. Then, if a circular reference is found, a `ReferenceError` will be thrown.
+You can disable circular references by setting the [`$refs.circular`](#options) option to `false`. Then, if a circular reference is found, a `ReferenceError` will be thrown.
 
 Another option is to use the [`bundle`](#bundlepath-options-callback) method rather than the [`dereference`](#dereferencepath-options-callback) method.  Bundling does _not_ result in circular references, because it simply converts _external_ `$ref` pointers to _internal_ ones.
 
