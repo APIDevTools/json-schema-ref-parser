@@ -47,10 +47,10 @@ describe('Schema with circular (recursive) external $refs', function() {
       .catch(helper.shouldNotGetCalled(done));
   });
 
-  it('should throw an error if "options.allow.circular" is false', function(done) {
+  it('should throw an error if "options.$refs.circular" is false', function(done) {
     var parser = new $RefParser();
     parser
-      .dereference(path.rel('specs/circular-external/circular-external.yaml'), {allow: {circular: false}})
+      .dereference(path.rel('specs/circular-external/circular-external.yaml'), {$refs: {circular: false}})
       .then(helper.shouldNotGetCalled(done))
       .catch(function(err) {
         // A ReferenceError should have been thrown

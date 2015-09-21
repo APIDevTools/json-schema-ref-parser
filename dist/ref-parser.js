@@ -156,7 +156,7 @@ function crawl(obj, path, parents, $refs, options) {
         // Check for circular references
         var circular = pointer.circular || parents.indexOf(pointer.value) !== -1;
         $refs.circular = $refs.circular || true;
-        if (!options.allow.circular) {
+        if (!options.$refs.circular) {
           throw ono.reference('Circular $ref pointer found at %s', keyPath);
         }
 
@@ -520,14 +520,7 @@ function $RefParserOptions(options) {
      * If false, then an error will be thrown.
      * @type {boolean}
      */
-    unknown: true,
-
-    /**
-     * Allow circular (recursive) JSON references?
-     * If false, then a {@link ReferenceError} will be thrown if a circular reference is found.
-     * @type {boolean}
-     */
-    circular: true
+    unknown: true
   };
 
   /**
@@ -544,7 +537,14 @@ function $RefParserOptions(options) {
      * Allow JSON references to external files/URLs?
      * @type {boolean}
      */
-    external: true
+    external: true,
+
+    /**
+     * Allow circular (recursive) JSON references?
+     * If false, then a {@link ReferenceError} will be thrown if a circular reference is found.
+     * @type {boolean}
+     */
+    circular: true
   };
 
   /**
