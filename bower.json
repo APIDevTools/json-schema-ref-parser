@@ -17,6 +17,7 @@
   },
   "ignore": [
     "/bower_components",
+    "/docs",
     "/lib",
     "/www",
     "/dist/*.test.js",
