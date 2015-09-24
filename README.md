@@ -86,7 +86,7 @@ $RefParser.dereference(mySchema)
   });
 ```
 
-For more detailed examples, please see the [api documentation](docs/README.md)
+For more detailed examples, please see the [API Documentation](docs/README.md)
 
 
 Installation

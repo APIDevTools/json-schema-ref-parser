@@ -8,10 +8,10 @@ This is the default export of JSON Schema $Ref Parser.  You can creates instance
 - [`$refs`](#refs)
 
 ##### Methods
-- [`dereference()`](#dereferencepath-options-callback)
-- [`bundle()`](#bundlepath-options-callback)
-- [`parse()`](#parsepath-options-callback)
-- [`resolve()`](#resolvepath-options-callback)
+- [`dereference()`](#dereferenceschema-options-callback)
+- [`bundle()`](#bundleschema-options-callback)
+- [`parse()`](#parseschema-options-callback)
+- [`resolve()`](#resolveschema-options-callback)
 
 
 ### `Schema`
@@ -65,7 +65,7 @@ See [Callbacks vs. Promises](README.md#callbacks-vs-promises)
 
 Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value.  This results in a schema object that does not contain _any_ `$ref` pointers.  Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object.  This is great for programmatic usage, especially when using tools that don't understand JSON references.
 
-The `dereference` method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object.  Again, this is great for programmatic usage, but it does introduce the risk of [circular references](README.md#circular-refs), so be careful if you intend to serialize the schema using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).  Consider using the [`bundle`](#bundlepath-options-callback) method instead, which does not create circular references.
+The `dereference` method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object.  Again, this is great for programmatic usage, but it does introduce the risk of [circular references](README.md#circular-refs), so be careful if you intend to serialize the schema using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).  Consider using the [`bundle`](#bundleschema-options-callback) method instead, which does not create circular references.
 
 ```javascript
 $RefParser.dereference("my-schema.yaml")
@@ -94,7 +94,7 @@ A callback that will receive the bundled schema object
 - **Return Value:** `Promise`<br>
 See [Callbacks vs. Promises](README.md#callbacks-vs-promises)
 
-Bundles all referenced files/URLs into a single schema that only has _internal_ `$ref` pointers.  This lets you split-up your schema however you want while you're building it, but easily combine all those files together when it's time to package or distribute the schema to other people.  The resulting schema size will be small, since it will still contain _internal_ JSON references rather than being [fully-dereferenced](#dereferencepath-options-callback).
+Bundles all referenced files/URLs into a single schema that only has _internal_ `$ref` pointers.  This lets you split-up your schema however you want while you're building it, but easily combine all those files together when it's time to package or distribute the schema to other people.  The resulting schema size will be small, since it will still contain _internal_ JSON references rather than being [fully-dereferenced](#dereferenceschema-options-callback).
 
 This also eliminates the risk of [circular references](README.md#circular-refs), so the schema can be safely serialized using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).
 
@@ -122,7 +122,7 @@ A callback that will receive the parsed schema object, or an error
 - **Return Value:** `Promise`<br>
 See [Callbacks vs. Promises](README.md#callbacks-vs-promises)
 
-> This method is used internally by other methods, such as [`bundle`](#bundlepath-options-callback) and [`dereference`](#dereferencepath-options-callback).  You probably won't need to call this method yourself.
+> This method is used internally by other methods, such as [`bundle`](#bundleschema-options-callback) and [`dereference`](#dereferenceschema-options-callback).  You probably won't need to call this method yourself.
 
 Parses the given JSON Schema file (in JSON or YAML format), and returns it as a JavaScript object.  This method **does not** resolve `$ref` pointers or dereference anything.  It simply parses _one_ file and returns it.
 
