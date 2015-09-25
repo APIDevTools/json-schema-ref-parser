@@ -54,7 +54,7 @@ JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/d
 - Can [bundle](docs/ref-parser.md#bundlepath-options-callback) multiple files into a single schema that only has _internal_ `$ref` pointers
 - Can [dereference](docs/ref-parser.md#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
 - Supports [circular references](docs/README.md#circular-refs), nested references, back-references, and cross-references between files
-- Maintains object reference equality &mdash `$ref` pointers to the same value always resolve to the same object instance
+- Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object instance
 - [Tested](http://bigstickcarpet.github.io/json-schema-ref-parser/tests/index.html) in Node, io.js, and all major web browsers on Windows, Mac, and Linux
 
 
