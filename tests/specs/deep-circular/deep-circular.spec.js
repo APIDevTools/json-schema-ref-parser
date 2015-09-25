@@ -57,7 +57,14 @@ describe('Schema with deeply-nested circular $refs', function() {
         // A ReferenceError should have been thrown
         expect(err).to.be.an.instanceOf(ReferenceError);
         expect(err.message).to.contain('Circular $ref pointer found at ');
-        expect(err.message).to.contain('specs/deep-circular/deep-circular.yaml#/properties/name/type');
+        expect(err.message).to.contain(
+          'specs/deep-circular/deep-circular.yaml#/properties/level1/properties/level2/properties/' +
+          'level3/properties/level4/properties/level5/properties/level6/properties/level7/properties/' +
+          'level8/properties/level9/properties/level10/properties/level11/properties/level12/properties/' +
+          'level13/properties/level14/properties/level15/properties/level16/properties/level17/properties/' +
+          'level18/properties/level19/properties/level20/properties/level21/properties/level22/properties/' +
+          'level23/properties/level24/properties/level25/properties/level26/properties/level27/properties/' +
+          'level28/properties/level29/properties/level30');
 
         // $Refs.circular should be true
         expect(parser.$refs.circular).to.equal(true);
