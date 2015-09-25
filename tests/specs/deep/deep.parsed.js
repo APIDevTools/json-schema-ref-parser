@@ -3,25 +3,25 @@ helper.parsed.deep =
   schema: {
     "type": "object",
     "properties": {
-      "level1": {
+      "level 1": {
         "required": [
           "name"
         ],
         "type": "object",
         "properties": {
-          "level2": {
+          "level 2": {
             "required": [
               "name"
             ],
             "type": "object",
             "properties": {
-              "level3": {
+              "level 3": {
                 "required": [
                   "name"
                 ],
                 "type": "object",
                 "properties": {
-                  "level4": {
+                  "level 4": {
                     "required": [
                       "name"
                     ],
@@ -32,7 +32,7 @@ helper.parsed.deep =
                           "$ref": "definitions/name.yaml"
                         }
                       },
-                      "level5": {
+                      "level 5": {
                         "required": [
                           "name"
                         ],
@@ -43,7 +43,7 @@ helper.parsed.deep =
                               "$ref": "definitions/name.yaml"
                             }
                           },
-                          "level6": {
+                          "level 6": {
                             "required": [
                               "name"
                             ],
@@ -54,43 +54,43 @@ helper.parsed.deep =
                                   "$ref": "definitions/name.yaml"
                                 }
                               },
-                              "level7": {
+                              "level 7": {
                                 "required": [
                                   "name"
                                 ],
                                 "type": "object",
                                 "properties": {
-                                  "level8": {
+                                  "level 8": {
                                     "required": [
                                       "name"
                                     ],
                                     "type": "object",
                                     "properties": {
-                                      "level9": {
+                                      "level 9": {
                                         "required": [
                                           "name"
                                         ],
                                         "type": "object",
                                         "properties": {
-                                          "level10": {
+                                          "level 10": {
                                             "required": [
                                               "name"
                                             ],
                                             "type": "object",
                                             "properties": {
-                                              "level11": {
+                                              "level 11": {
                                                 "required": [
                                                   "name"
                                                 ],
                                                 "type": "object",
                                                 "properties": {
-                                                  "level12": {
+                                                  "level 12": {
                                                     "required": [
                                                       "name"
                                                     ],
                                                     "type": "object",
                                                     "properties": {
-                                                      "level13": {
+                                                      "level 13": {
                                                         "required": [
                                                           "name"
                                                         ],
@@ -101,7 +101,7 @@ helper.parsed.deep =
                                                               "$ref": "definitions/name.yaml"
                                                             }
                                                           },
-                                                          "level14": {
+                                                          "level 14": {
                                                             "required": [
                                                               "name"
                                                             ],
@@ -112,13 +112,13 @@ helper.parsed.deep =
                                                                   "$ref": "definitions/name.yaml"
                                                                 }
                                                               },
-                                                              "level15": {
+                                                              "level 15": {
                                                                 "required": [
                                                                   "name"
                                                                 ],
                                                                 "type": "object",
                                                                 "properties": {
-                                                                  "level16": {
+                                                                  "level 16": {
                                                                     "required": [
                                                                       "name"
                                                                     ],
@@ -129,43 +129,43 @@ helper.parsed.deep =
                                                                           "$ref": "definitions/name.yaml"
                                                                         }
                                                                       },
-                                                                      "level17": {
+                                                                      "level 17": {
                                                                         "required": [
                                                                           "name"
                                                                         ],
                                                                         "type": "object",
                                                                         "properties": {
-                                                                          "level18": {
+                                                                          "level 18": {
                                                                             "required": [
                                                                               "name"
                                                                             ],
                                                                             "type": "object",
                                                                             "properties": {
-                                                                              "level19": {
+                                                                              "level 19": {
                                                                                 "required": [
                                                                                   "name"
                                                                                 ],
                                                                                 "type": "object",
                                                                                 "properties": {
-                                                                                  "level20": {
+                                                                                  "level 20": {
                                                                                     "required": [
                                                                                       "name"
                                                                                     ],
                                                                                     "type": "object",
                                                                                     "properties": {
-                                                                                      "level21": {
+                                                                                      "level 21": {
                                                                                         "required": [
                                                                                           "name"
                                                                                         ],
                                                                                         "type": "object",
                                                                                         "properties": {
-                                                                                          "level22": {
+                                                                                          "level 22": {
                                                                                             "required": [
                                                                                               "name"
                                                                                             ],
                                                                                             "type": "object",
                                                                                             "properties": {
-                                                                                              "level23": {
+                                                                                              "level 23": {
                                                                                                 "required": [
                                                                                                   "name"
                                                                                                 ],
@@ -176,7 +176,7 @@ helper.parsed.deep =
                                                                                                       "$ref": "definitions/name.yaml"
                                                                                                     }
                                                                                                   },
-                                                                                                  "level24": {
+                                                                                                  "level 24": {
                                                                                                     "required": [
                                                                                                       "name"
                                                                                                     ],
@@ -187,7 +187,7 @@ helper.parsed.deep =
                                                                                                           "$ref": "definitions/name.yaml"
                                                                                                         }
                                                                                                       },
-                                                                                                      "level25": {
+                                                                                                      "level 25": {
                                                                                                         "required": [
                                                                                                           "name"
                                                                                                         ],
@@ -198,25 +198,25 @@ helper.parsed.deep =
                                                                                                               "$ref": "definitions/name.yaml"
                                                                                                             }
                                                                                                           },
-                                                                                                          "level26": {
+                                                                                                          "level 26": {
                                                                                                             "required": [
                                                                                                               "name"
                                                                                                             ],
                                                                                                             "type": "object",
                                                                                                             "properties": {
-                                                                                                              "level27": {
+                                                                                                              "level 27": {
                                                                                                                 "required": [
                                                                                                                   "name"
                                                                                                                 ],
                                                                                                                 "type": "object",
                                                                                                                 "properties": {
-                                                                                                                  "level28": {
+                                                                                                                  "level 28": {
                                                                                                                     "required": [
                                                                                                                       "name"
                                                                                                                     ],
                                                                                                                     "type": "object",
                                                                                                                     "properties": {
-                                                                                                                      "level29": {
+                                                                                                                      "level 29": {
                                                                                                                         "required": [
                                                                                                                           "name"
                                                                                                                         ],

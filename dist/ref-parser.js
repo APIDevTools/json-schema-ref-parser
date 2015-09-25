@@ -155,8 +155,8 @@ function crawl(obj, path, parents, $refs, options) {
 
         // Check for circular references
         var circular = pointer.circular || parents.indexOf(pointer.value) !== -1;
-        $refs.circular = $refs.circular || true;
-        if (!options.$refs.circular) {
+        $refs.circular = $refs.circular || circular;
+        if ($refs.circular && !options.$refs.circular) {
           throw ono.reference('Circular $ref pointer found at %s', keyPath);
         }
 
@@ -861,10 +861,10 @@ Pointer.join = function(base, tokens) {
   for (var i = 0; i < tokens.length; i++) {
     var token = tokens[i];
     // Encode the token, according to RFC 6901
-    base += '/' + token.replace(tildes, '~0').replace(slashes, '~1');
+    base += '/' + encodeURI(token.replace(tildes, '~0').replace(slashes, '~1'));
   }
 
-  return encodeURI(base);
+  return base;
 };
 
 /**
@@ -967,7 +967,7 @@ function read(path, $refs, options) {
     // Return from cache, if possible
     var $ref = $refs._get$Ref(path);
     if ($ref && !$ref.isExpired()) {
-      util.debug('    cached from %s', $ref.type);
+      util.debug('    cached from %s', $ref.pathType);
       return Promise.resolve({
         $ref: $ref,
         cached: true

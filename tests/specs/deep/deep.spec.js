@@ -30,10 +30,10 @@ describe('Schema with deeply-nested $refs', function() {
 
         // Reference equality
         expect(schema.properties.name.type)
-          .to.equal(schema.properties.level1.properties.name.type)
-          .to.equal(schema.properties.level1.properties.level2.properties.name.type)
-          .to.equal(schema.properties.level1.properties.level2.properties.level3.properties.name.type)
-          .to.equal(schema.properties.level1.properties.level2.properties.level3.properties.level4.properties.name.type);
+          .to.equal(schema.properties['level 1'].properties.name.type)
+          .to.equal(schema.properties['level 1'].properties['level 2'].properties.name.type)
+          .to.equal(schema.properties['level 1'].properties['level 2'].properties['level 3'].properties.name.type)
+          .to.equal(schema.properties['level 1'].properties['level 2'].properties['level 3'].properties['level 4'].properties.name.type);
 
         done();
       })
