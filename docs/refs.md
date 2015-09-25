@@ -7,16 +7,16 @@ This object is a map of JSON References and their resolved values.  It also has 
 
 
 ##### Properties
-- [`circular`](refs.md#circular)
+- [`circular`](#circular)
 
 ##### Methods
-- [`paths()`](refs.md#pathstypes)
-- [`values()`](refs.md#valuestypes)
-- [`isExpired()`](refs.md#isexpiredref)
-- [`expire()`](refs.md#expireref)
-- [`exists()`](refs.md#existsref)
-- [`get()`](refs.md#getref-options)
-- [`set()`](refs.md#setref-value-options)
+- [`paths()`](#pathstypes)
+- [`values()`](#valuestypes)
+- [`isExpired()`](#isexpiredref)
+- [`expire()`](#expireref)
+- [`exists()`](#existsref)
+- [`get()`](#getref-options)
+- [`set()`](#setref-value-options)
 
 
 ### `circular`

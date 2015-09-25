@@ -40,14 +40,14 @@ Classes & Methods
 All of JSON Schema $Ref Parser's methods are available as static (class) methods, and as instance methods.  The static methods simply create a new [`$RefParser`](ref-parser.md) instance and then call the corresponding instance method.  Thus, the following line...
 
 ```javascript
-$RefParser.resolve("my-schema.json");
+$RefParser.bundle("my-schema.json");
 ```
 
 ... is the same as this:
 
 ```javascript
 var parser = new $RefParser();
-parser.resolve("my-schema.json");
+parser.bundle("my-schema.json");
 ```
 
 The difference is that in the second example you now have a reference to `parser`, which means you can access the results ([`parser.schema`](ref-parser.md#schema) and [`parser.$refs`](ref-parser.md#refs)) anytime you want, rather than just in the callback function. Also, having a `$RefParser` instance allows you to benefit from **[caching](options.md#caching)**, so the next time you call [`parser.resolve()`](ref-parser.md#resolveschema-options-callback), it won't need to re-download those files again (as long as the cache hasn't expired).
@@ -55,6 +55,18 @@ The difference is that in the second example you now have a reference to `parser
 
 ### Callbacks vs. Promises
 Many people prefer [ES6 Promise syntax](http://javascriptplayground.com/blog/2015/02/promises/) instead of callbacks.  JSON Schema $Ref Parser allows you to use whichever one you prefer.  Every method accepts an optional callback _and_ returns a Promise.  So pick your poison.
+
+```javascript
+$RefParser.dereference(mySchema, function(err, api) {
+        // Callback (success or error)
+    })
+    .then(function(api) {
+        // Promise (success)
+    })
+    .catch(function(err) {
+        // Promise (error)
+    });
+```
 
 
 ### Circular $Refs

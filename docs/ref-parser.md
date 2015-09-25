@@ -48,7 +48,6 @@ parser.dereference("my-schema.json")
 ```
 
 
-
 ### `dereference(schema, [options], [callback])`
 
 - **schema** (_required_) - `string` or `object`<br>
