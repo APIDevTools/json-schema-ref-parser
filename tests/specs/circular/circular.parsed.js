@@ -54,6 +54,9 @@ helper.parsed.circular =
           },
           "name": {
             "type": "string"
+          },
+          "age": {
+            "type": "number"
           }
         }
       },

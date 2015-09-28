@@ -69,6 +69,9 @@ helper.dereferenced.circular =
             "pet": null,
             "name": {
               "type": "string"
+            },
+            "age": {
+              "type": "number"
             }
           }
         },
@@ -107,6 +110,9 @@ helper.dereferenced.circular =
             "pet": null,
             "name": {
               "type": "string"
+            },
+            "age": {
+              "type": "number"
             }
           }
         },
