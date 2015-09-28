@@ -10,7 +10,7 @@ JSON Schema $Ref Parser
 [![Inline docs](http://inch-ci.org/github/BigstickCarpet/json-schema-ref-parser.svg?branch=master&style=shields)](http://inch-ci.org/github/BigstickCarpet/json-schema-ref-parser)
 
 [![npm](http://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
-[![Bower](http://img.shields.io/bower/v/json-schema-ref-parser.svg)](#bower)
+[![Bower](http://img.shields.io/bower/v/json-schema-ref-parser.svg)](http://bower.io/)
 [![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
 
 [![Browser Compatibility](https://saucelabs.com/browser-matrix/json-schema-parser.svg)](https://saucelabs.com/u/json-schema-parser)
