@@ -1,0 +1,38 @@
+definitions:
+  parent:
+    title: parent
+    properties:
+      name:
+        type: string
+      children:
+        type: array
+        items:
+          $ref: "#/definitions/child"       # <--- indirect circular reference
+
+  child:
+    title: child
+    properties:
+      name:
+        type: string
+      pet:
+        $ref: '#/definitions/pet'
+      parents:
+        type: array
+        items:
+          $ref: "#/definitions/parent"      # <--- indirect circular reference
+
+  pet:
+    title: pet
+    type: object
+    properties:
+      name:
+        type: string
+      age:
+        type: number
+      species:
+        type: string
+        enum:
+          - cat
+          - dog
+          - bird
+          - fish

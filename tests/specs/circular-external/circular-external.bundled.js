@@ -1,6 +1,27 @@
 helper.bundled.circularExternal =
 {
   "definitions": {
+    "pet": {
+      "title": "pet",
+      "type": "object",
+      "properties": {
+        "age": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "species": {
+          "enum": [
+            "cat",
+            "dog",
+            "bird",
+            "fish"
+          ],
+          "type": "string"
+        }
+      },
+    },
     "thing": {
       "$ref": "#/definitions/thing"
     },
@@ -9,9 +30,7 @@ helper.bundled.circularExternal =
       "type": "object",
       "properties": {
         "spouse": {
-          "type": {
-            "$ref": "#/definitions/person"
-          }
+          "$ref": "#/definitions/person"
         },
         "name": {
           "type": "string"

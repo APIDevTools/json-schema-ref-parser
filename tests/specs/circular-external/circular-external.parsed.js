@@ -2,6 +2,9 @@ helper.parsed.circularExternal =
 {
   schema: {
     "definitions": {
+      "pet": {
+        "$ref": "definitions/pet.yaml"
+      },
       "thing": {
         "$ref": "circular-external.yaml#/definitions/thing"
       },
@@ -15,6 +18,28 @@ helper.parsed.circularExternal =
         "$ref": "definitions/child.yaml"
       }
     }
+  },
+
+  "pet": {
+    "title": "pet",
+    "type": "object",
+    "properties": {
+      "age": {
+        "type": "number"
+      },
+      "name": {
+        "type": "string"
+      },
+      "species": {
+        "enum": [
+          "cat",
+          "dog",
+          "bird",
+          "fish"
+        ],
+        "type": "string"
+      }
+    },
   },
 
   child: {
@@ -53,9 +78,7 @@ helper.parsed.circularExternal =
     "type": "object",
     "properties": {
       "spouse": {
-        "type": {
-          "$ref": "person.yaml"
-        }
+        "$ref": "person.yaml"
       },
       "name": {
         "type": "string"

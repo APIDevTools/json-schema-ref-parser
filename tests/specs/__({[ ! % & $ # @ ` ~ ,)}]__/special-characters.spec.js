@@ -26,6 +26,10 @@ describe('File names with special characters', function() {
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.specialCharacters);
+
+        // The "circular" flag should NOT be set
+        expect(parser.$refs.circular).to.equal(false);
+
         done();
       })
       .catch(helper.shouldNotGetCalled(done));

@@ -1,6 +1,27 @@
 helper.dereferenced.circularExternal =
 {
   "definitions": {
+    "pet": {
+      "title": "pet",
+      "type": "object",
+      "properties": {
+        "age": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "species": {
+          "enum": [
+            "cat",
+            "dog",
+            "bird",
+            "fish"
+          ],
+          "type": "string"
+        }
+      },
+    },
     "thing": {
       "$ref": "circular-external.yaml#/definitions/thing"
     },
@@ -8,9 +29,7 @@ helper.dereferenced.circularExternal =
       "title": "person",
       "type": "object",
       "properties": {
-        "spouse": {
-          "type": null
-        },
+        "spouse": null,
         "name": {
           "type": "string"
         }
@@ -45,6 +64,6 @@ helper.dereferenced.circularExternal =
   }
 };
 
-helper.dereferenced.circularExternal.definitions.person.properties.spouse.type = helper.dereferenced.circularExternal.definitions.person;
+helper.dereferenced.circularExternal.definitions.person.properties.spouse = helper.dereferenced.circularExternal.definitions.person;
 helper.dereferenced.circularExternal.definitions.parent.properties.children.items = helper.dereferenced.circularExternal.definitions.child;
 helper.dereferenced.circularExternal.definitions.child.properties.parents.items = helper.dereferenced.circularExternal.definitions.parent;

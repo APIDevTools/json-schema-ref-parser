@@ -1,0 +1,26 @@
+definitions:
+  person:
+    title: person
+    properties:
+      name:
+        type: string
+      pet:
+        $ref: '#/definitions/pet'
+      spouse:
+        $ref: "#/definitions/person"       # <--- circular reference to ancestor
+
+  pet:
+    title: pet
+    type: object
+    properties:
+      name:
+        type: string
+      age:
+        type: number
+      species:
+        type: string
+        enum:
+          - cat
+          - dog
+          - bird
+          - fish

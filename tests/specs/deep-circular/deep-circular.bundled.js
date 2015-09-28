@@ -1,6 +1,44 @@
 helper.bundled.deepCircular =
 {
+  "title": "Deep Schema",
   "type": "object",
+  "definitions": {
+    "name": {
+      "title": "name",
+      "required": [
+        "first",
+        "last"
+      ],
+      "type": "object",
+      "properties": {
+        "middle": {
+          "minLength": {
+            "$ref": "#/definitions/name/properties/first/minLength"
+          },
+          "type": {
+            "$ref": "#/definitions/name/properties/first/type"
+          }
+        },
+        "prefix": {
+          "minLength": 3,
+          "$ref": "#/definitions/name/properties/first"
+        },
+        "last": {
+          "$ref": "#/definitions/name/properties/first"
+        },
+        "suffix": {
+          "$ref": "#/definitions/name/properties/prefix",
+          "type": "string",
+          "maxLength": 3
+        },
+        "first": {
+          "minLength": 1,
+          "type": "string",
+          "title": "requiredString"
+        }
+      },
+    }
+  },
   "properties": {
     "level1": {
       "required": [
@@ -27,9 +65,7 @@ helper.bundled.deepCircular =
                   "type": "object",
                   "properties": {
                     "name": {
-                      "type": {
-                        "$ref": "#/properties/name/type"
-                      }
+                      "$ref": "#/definitions/name"
                     },
                     "level5": {
                       "required": [
@@ -38,9 +74,7 @@ helper.bundled.deepCircular =
                       "type": "object",
                       "properties": {
                         "name": {
-                          "type": {
-                            "$ref": "#/properties/name/type"
-                          }
+                          "$ref": "#/definitions/name"
                         },
                         "level6": {
                           "required": [
@@ -49,9 +83,7 @@ helper.bundled.deepCircular =
                           "type": "object",
                           "properties": {
                             "name": {
-                              "type": {
-                                "$ref": "#/properties/name/type"
-                              }
+                              "$ref": "#/definitions/name"
                             },
                             "level7": {
                               "required": [
@@ -96,9 +128,7 @@ helper.bundled.deepCircular =
                                                       "type": "object",
                                                       "properties": {
                                                         "name": {
-                                                          "type": {
-                                                            "$ref": "#/properties/name/type"
-                                                          }
+                                                          "$ref": "#/definitions/name"
                                                         },
                                                         "level14": {
                                                           "required": [
@@ -107,9 +137,7 @@ helper.bundled.deepCircular =
                                                           "type": "object",
                                                           "properties": {
                                                             "name": {
-                                                              "type": {
-                                                                "$ref": "#/properties/name/type"
-                                                              }
+                                                              "$ref": "#/definitions/name"
                                                             },
                                                             "level15": {
                                                               "required": [
@@ -124,9 +152,7 @@ helper.bundled.deepCircular =
                                                                   "type": "object",
                                                                   "properties": {
                                                                     "name": {
-                                                                      "type": {
-                                                                        "$ref": "#/properties/name/type"
-                                                                      }
+                                                                      "$ref": "#/definitions/name"
                                                                     },
                                                                     "level17": {
                                                                       "required": [
@@ -171,9 +197,7 @@ helper.bundled.deepCircular =
                                                                                               "type": "object",
                                                                                               "properties": {
                                                                                                 "name": {
-                                                                                                  "type": {
-                                                                                                    "$ref": "#/properties/name/type"
-                                                                                                  }
+                                                                                                  "$ref": "#/definitions/name"
                                                                                                 },
                                                                                                 "level24": {
                                                                                                   "required": [
@@ -182,9 +206,7 @@ helper.bundled.deepCircular =
                                                                                                   "type": "object",
                                                                                                   "properties": {
                                                                                                     "name": {
-                                                                                                      "type": {
-                                                                                                        "$ref": "#/properties/name/type"
-                                                                                                      }
+                                                                                                      "$ref": "#/definitions/name"
                                                                                                     },
                                                                                                     "level25": {
                                                                                                       "required": [
@@ -193,9 +215,7 @@ helper.bundled.deepCircular =
                                                                                                       "type": "object",
                                                                                                       "properties": {
                                                                                                         "name": {
-                                                                                                          "type": {
-                                                                                                            "$ref": "#/properties/name/type"
-                                                                                                          }
+                                                                                                          "$ref": "#/definitions/name"
                                                                                                         },
                                                                                                         "level26": {
                                                                                                           "required": [
@@ -225,30 +245,22 @@ helper.bundled.deepCircular =
                                                                                                                           "$ref": "#"
                                                                                                                         },
                                                                                                                         "name": {
-                                                                                                                          "type": {
-                                                                                                                            "$ref": "#/properties/name/type"
-                                                                                                                          }
+                                                                                                                          "$ref": "#/definitions/name"
                                                                                                                         }
                                                                                                                       }
                                                                                                                     },
                                                                                                                     "name": {
-                                                                                                                      "type": {
-                                                                                                                        "$ref": "#/properties/name/type"
-                                                                                                                      }
+                                                                                                                      "$ref": "#/definitions/name"
                                                                                                                     }
                                                                                                                   }
                                                                                                                 },
                                                                                                                 "name": {
-                                                                                                                  "type": {
-                                                                                                                    "$ref": "#/properties/name/type"
-                                                                                                                  }
+                                                                                                                  "$ref": "#/definitions/name"
                                                                                                                 }
                                                                                                               }
                                                                                                             },
                                                                                                             "name": {
-                                                                                                              "type": {
-                                                                                                                "$ref": "#/properties/name/type"
-                                                                                                              }
+                                                                                                              "$ref": "#/definitions/name"
                                                                                                             }
                                                                                                           }
                                                                                                         }
@@ -259,53 +271,39 @@ helper.bundled.deepCircular =
                                                                                               }
                                                                                             },
                                                                                             "name": {
-                                                                                              "type": {
-                                                                                                "$ref": "#/properties/name/type"
-                                                                                              }
+                                                                                              "$ref": "#/definitions/name"
                                                                                             }
                                                                                           }
                                                                                         },
                                                                                         "name": {
-                                                                                          "type": {
-                                                                                            "$ref": "#/properties/name/type"
-                                                                                          }
+                                                                                          "$ref": "#/definitions/name"
                                                                                         }
                                                                                       }
                                                                                     },
                                                                                     "name": {
-                                                                                      "type": {
-                                                                                        "$ref": "#/properties/name/type"
-                                                                                      }
+                                                                                      "$ref": "#/definitions/name"
                                                                                     }
                                                                                   }
                                                                                 },
                                                                                 "name": {
-                                                                                  "type": {
-                                                                                    "$ref": "#/properties/name/type"
-                                                                                  }
+                                                                                  "$ref": "#/definitions/name"
                                                                                 }
                                                                               }
                                                                             },
                                                                             "name": {
-                                                                              "type": {
-                                                                                "$ref": "#/properties/name/type"
-                                                                              }
+                                                                              "$ref": "#/definitions/name"
                                                                             }
                                                                           }
                                                                         },
                                                                         "name": {
-                                                                          "type": {
-                                                                            "$ref": "#/properties/name/type"
-                                                                          }
+                                                                          "$ref": "#/definitions/name"
                                                                         }
                                                                       }
                                                                     }
                                                                   }
                                                                 },
                                                                 "name": {
-                                                                  "type": {
-                                                                    "$ref": "#/properties/name/type"
-                                                                  }
+                                                                  "$ref": "#/definitions/name"
                                                                 }
                                                               }
                                                             }
@@ -314,44 +312,32 @@ helper.bundled.deepCircular =
                                                       }
                                                     },
                                                     "name": {
-                                                      "type": {
-                                                        "$ref": "#/properties/name/type"
-                                                      }
+                                                      "$ref": "#/definitions/name"
                                                     }
                                                   }
                                                 },
                                                 "name": {
-                                                  "type": {
-                                                    "$ref": "#/properties/name/type"
-                                                  }
+                                                  "$ref": "#/definitions/name"
                                                 }
                                               }
                                             },
                                             "name": {
-                                              "type": {
-                                                "$ref": "#/properties/name/type"
-                                              }
+                                              "$ref": "#/definitions/name"
                                             }
                                           }
                                         },
                                         "name": {
-                                          "type": {
-                                            "$ref": "#/properties/name/type"
-                                          }
+                                          "$ref": "#/definitions/name"
                                         }
                                       }
                                     },
                                     "name": {
-                                      "type": {
-                                        "$ref": "#/properties/name/type"
-                                      }
+                                      "$ref": "#/definitions/name"
                                     }
                                   }
                                 },
                                 "name": {
-                                  "type": {
-                                    "$ref": "#/properties/name/type"
-                                  }
+                                  "$ref": "#/definitions/name"
                                 }
                               }
                             }
@@ -362,63 +348,22 @@ helper.bundled.deepCircular =
                   }
                 },
                 "name": {
-                  "type": {
-                    "$ref": "#/properties/name/type"
-                  }
+                  "$ref": "#/definitions/name"
                 }
               }
             },
             "name": {
-              "type": {
-                "$ref": "#/properties/name/type"
-              }
+              "$ref": "#/definitions/name"
             }
           }
         },
         "name": {
-          "type": {
-            "$ref": "#/properties/name/type"
-          }
+          "$ref": "#/definitions/name"
         }
       }
     },
     "name": {
-      "type": {
-        "required": [
-          "first",
-          "last"
-        ],
-        "type": "object",
-        "properties": {
-          "middle": {
-            "minLength": {
-              "$ref": "#/properties/name/type/properties/first/minLength"
-            },
-            "type": {
-              "$ref": "#/properties/name/type/properties/first/type"
-            }
-          },
-          "prefix": {
-            "minLength": 3,
-            "$ref": "#/properties/name/type/properties/first"
-          },
-          "last": {
-            "$ref": "#/properties/name/type/properties/first"
-          },
-          "suffix": {
-            "$ref": "#/properties/name/type/properties/prefix",
-            "type": "string",
-            "maxLength": 3
-          },
-          "first": {
-            "minLength": 1,
-            "type": "string",
-            "title": "requiredString"
-          }
-        },
-        "title": "name"
-      }
+      "$ref": "#/definitions/name"
     }
   },
-  "title": "Deep Schema"
 };

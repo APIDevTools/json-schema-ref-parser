@@ -37,11 +37,12 @@ describe('Schema with deeply-nested circular $refs', function() {
         expect(parser.$refs.circular).to.equal(true);
 
         // Reference equality
-        expect(schema.properties.name.type)
-          .to.equal(schema.properties.level1.properties.name.type)
-          .to.equal(schema.properties.level1.properties.level2.properties.name.type)
-          .to.equal(schema.properties.level1.properties.level2.properties.level3.properties.name.type)
-          .to.equal(schema.properties.level1.properties.level2.properties.level3.properties.level4.properties.name.type);
+        expect(schema.definitions.name)
+          .to.equal(schema.properties.name)
+          .to.equal(schema.properties.level1.properties.name)
+          .to.equal(schema.properties.level1.properties.level2.properties.name)
+          .to.equal(schema.properties.level1.properties.level2.properties.level3.properties.name)
+          .to.equal(schema.properties.level1.properties.level2.properties.level3.properties.level4.properties.name);
 
         done();
       })

@@ -1,6 +1,12 @@
 helper.parsed.deepCircular =
 {
   schema: {
+    "title": "Deep Schema",
+    "definitions": {
+      "name": {
+        "$ref": "definitions/name.yaml"
+      }
+    },
     "type": "object",
     "properties": {
       "level1": {
@@ -28,9 +34,7 @@ helper.parsed.deepCircular =
                     "type": "object",
                     "properties": {
                       "name": {
-                        "type": {
-                          "$ref": "definitions/name.yaml"
-                        }
+                        "$ref": "definitions/name.yaml"
                       },
                       "level5": {
                         "required": [
@@ -39,9 +43,7 @@ helper.parsed.deepCircular =
                         "type": "object",
                         "properties": {
                           "name": {
-                            "type": {
-                              "$ref": "definitions/name.yaml"
-                            }
+                            "$ref": "definitions/name.yaml"
                           },
                           "level6": {
                             "required": [
@@ -50,9 +52,7 @@ helper.parsed.deepCircular =
                             "type": "object",
                             "properties": {
                               "name": {
-                                "type": {
-                                  "$ref": "definitions/name.yaml"
-                                }
+                                "$ref": "#/definitions/name"
                               },
                               "level7": {
                                 "required": [
@@ -97,9 +97,7 @@ helper.parsed.deepCircular =
                                                         "type": "object",
                                                         "properties": {
                                                           "name": {
-                                                            "type": {
-                                                              "$ref": "definitions/name.yaml"
-                                                            }
+                                                            "$ref": "#/definitions/name"
                                                           },
                                                           "level14": {
                                                             "required": [
@@ -108,9 +106,7 @@ helper.parsed.deepCircular =
                                                             "type": "object",
                                                             "properties": {
                                                               "name": {
-                                                                "type": {
-                                                                  "$ref": "definitions/name.yaml"
-                                                                }
+                                                                "$ref": "definitions/name.yaml"
                                                               },
                                                               "level15": {
                                                                 "required": [
@@ -125,9 +121,7 @@ helper.parsed.deepCircular =
                                                                     "type": "object",
                                                                     "properties": {
                                                                       "name": {
-                                                                        "type": {
-                                                                          "$ref": "definitions/name.yaml"
-                                                                        }
+                                                                        "$ref": "definitions/name.yaml"
                                                                       },
                                                                       "level17": {
                                                                         "required": [
@@ -172,9 +166,7 @@ helper.parsed.deepCircular =
                                                                                                 "type": "object",
                                                                                                 "properties": {
                                                                                                   "name": {
-                                                                                                    "type": {
-                                                                                                      "$ref": "definitions/name.yaml"
-                                                                                                    }
+                                                                                                    "$ref": "definitions/name.yaml"
                                                                                                   },
                                                                                                   "level24": {
                                                                                                     "required": [
@@ -183,9 +175,7 @@ helper.parsed.deepCircular =
                                                                                                     "type": "object",
                                                                                                     "properties": {
                                                                                                       "name": {
-                                                                                                        "type": {
-                                                                                                          "$ref": "definitions/name.yaml"
-                                                                                                        }
+                                                                                                        "$ref": "definitions/name.yaml"
                                                                                                       },
                                                                                                       "level25": {
                                                                                                         "required": [
@@ -194,9 +184,7 @@ helper.parsed.deepCircular =
                                                                                                         "type": "object",
                                                                                                         "properties": {
                                                                                                           "name": {
-                                                                                                            "type": {
-                                                                                                              "$ref": "definitions/name.yaml"
-                                                                                                            }
+                                                                                                            "$ref": "definitions/name.yaml"
                                                                                                           },
                                                                                                           "level26": {
                                                                                                             "required": [
@@ -226,30 +214,22 @@ helper.parsed.deepCircular =
                                                                                                                             "$ref": "#"
                                                                                                                           },
                                                                                                                           "name": {
-                                                                                                                            "type": {
-                                                                                                                              "$ref": "definitions/name.yaml"
-                                                                                                                            }
+                                                                                                                            "$ref": "definitions/name.yaml"
                                                                                                                           }
                                                                                                                         }
                                                                                                                       },
                                                                                                                       "name": {
-                                                                                                                        "type": {
-                                                                                                                          "$ref": "definitions/name.yaml"
-                                                                                                                        }
+                                                                                                                        "$ref": "definitions/name.yaml"
                                                                                                                       }
                                                                                                                     }
                                                                                                                   },
                                                                                                                   "name": {
-                                                                                                                    "type": {
-                                                                                                                      "$ref": "definitions/name.yaml"
-                                                                                                                    }
+                                                                                                                    "$ref": "definitions/name.yaml"
                                                                                                                   }
                                                                                                                 }
                                                                                                               },
                                                                                                               "name": {
-                                                                                                                "type": {
-                                                                                                                  "$ref": "definitions/name.yaml"
-                                                                                                                }
+                                                                                                                "$ref": "#/definitions/name"
                                                                                                               }
                                                                                                             }
                                                                                                           }
@@ -260,53 +240,39 @@ helper.parsed.deepCircular =
                                                                                                 }
                                                                                               },
                                                                                               "name": {
-                                                                                                "type": {
-                                                                                                  "$ref": "definitions/name.yaml"
-                                                                                                }
+                                                                                                "$ref": "definitions/name.yaml"
                                                                                               }
                                                                                             }
                                                                                           },
                                                                                           "name": {
-                                                                                            "type": {
-                                                                                              "$ref": "definitions/name.yaml"
-                                                                                            }
+                                                                                            "$ref": "definitions/name.yaml"
                                                                                           }
                                                                                         }
                                                                                       },
                                                                                       "name": {
-                                                                                        "type": {
-                                                                                          "$ref": "definitions/name.yaml"
-                                                                                        }
+                                                                                        "$ref": "definitions/name.yaml"
                                                                                       }
                                                                                     }
                                                                                   },
                                                                                   "name": {
-                                                                                    "type": {
-                                                                                      "$ref": "definitions/name.yaml"
-                                                                                    }
+                                                                                    "$ref": "definitions/name.yaml"
                                                                                   }
                                                                                 }
                                                                               },
                                                                               "name": {
-                                                                                "type": {
-                                                                                  "$ref": "definitions/name.yaml"
-                                                                                }
+                                                                                "$ref": "definitions/name.yaml"
                                                                               }
                                                                             }
                                                                           },
                                                                           "name": {
-                                                                            "type": {
-                                                                              "$ref": "definitions/name.yaml"
-                                                                            }
+                                                                            "$ref": "definitions/name.yaml"
                                                                           }
                                                                         }
                                                                       }
                                                                     }
                                                                   },
                                                                   "name": {
-                                                                    "type": {
-                                                                      "$ref": "definitions/name.yaml"
-                                                                    }
+                                                                    "$ref": "definitions/name.yaml"
                                                                   }
                                                                 }
                                                               }
@@ -315,44 +281,32 @@ helper.parsed.deepCircular =
                                                         }
                                                       },
                                                       "name": {
-                                                        "type": {
-                                                          "$ref": "definitions/name.yaml"
-                                                        }
+                                                        "$ref": "#/definitions/name"
                                                       }
                                                     }
                                                   },
                                                   "name": {
-                                                    "type": {
-                                                      "$ref": "definitions/name.yaml"
-                                                    }
+                                                    "$ref": "definitions/name.yaml"
                                                   }
                                                 }
                                               },
                                               "name": {
-                                                "type": {
-                                                  "$ref": "definitions/name.yaml"
-                                                }
+                                                "$ref": "definitions/name.yaml"
                                               }
                                             }
                                           },
                                           "name": {
-                                            "type": {
-                                              "$ref": "definitions/name.yaml"
-                                            }
+                                            "$ref": "definitions/name.yaml"
                                           }
                                         }
                                       },
                                       "name": {
-                                        "type": {
-                                          "$ref": "definitions/name.yaml"
-                                        }
+                                        "$ref": "definitions/name.yaml"
                                       }
                                     }
                                   },
                                   "name": {
-                                    "type": {
-                                      "$ref": "definitions/name.yaml"
-                                    }
+                                    "$ref": "definitions/name.yaml"
                                   }
                                 }
                               }
@@ -363,33 +317,24 @@ helper.parsed.deepCircular =
                     }
                   },
                   "name": {
-                    "type": {
-                      "$ref": "definitions/name.yaml"
-                    }
+                    "$ref": "#/definitions/name"
                   }
                 }
               },
               "name": {
-                "type": {
-                  "$ref": "definitions/name.yaml"
-                }
+                "$ref": "definitions/name.yaml"
               }
             }
           },
           "name": {
-            "type": {
-              "$ref": "definitions/name.yaml"
-            }
+            "$ref": "definitions/name.yaml"
           }
         }
       },
       "name": {
-        "type": {
-          "$ref": "definitions/name.yaml"
-        }
+        "$ref": "#/definitions/name"
       }
-    },
-    "title": "Deep Schema"
+    }
   },
 
   name: {

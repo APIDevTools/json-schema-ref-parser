@@ -28,6 +28,10 @@ describe('Empty schema', function() {
         expect(schema).to.be.empty;
         expect(parser.schema).to.equal(schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/empty/empty.json')]);
+
+        // The "circular" flag should NOT be set
+        expect(parser.$refs.circular).to.equal(false);
+
         done();
       })
       .catch(helper.shouldNotGetCalled(done));

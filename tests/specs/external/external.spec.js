@@ -37,6 +37,9 @@ describe('Schema with external $refs', function() {
           .to.equal(schema.properties.name.properties.first)
           .to.equal(schema.properties.name.properties.last);
 
+        // The "circular" flag should NOT be set
+        expect(parser.$refs.circular).to.equal(false);
+
         done();
       })
       .catch(helper.shouldNotGetCalled(done));

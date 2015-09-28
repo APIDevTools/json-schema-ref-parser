@@ -53,6 +53,9 @@ describe('Schema with $refs to unknown file types', function() {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         expect(schema).to.deep.equal(helper.dereferenced.unknown);
 
+        // The "circular" flag should NOT be set
+        expect(parser.$refs.circular).to.equal(false);
+
         done();
       })
       .catch(helper.shouldNotGetCalled(done));

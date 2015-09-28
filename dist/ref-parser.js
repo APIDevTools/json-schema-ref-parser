@@ -138,8 +138,11 @@ function dereference(parser, options) {
  * @param {object[]} parents - An array of the parent objects that have already been dereferenced
  * @param {$Refs} $refs - The resolved JSON references
  * @param {$RefParserOptions} options
+ * @returns {boolean} - Returns true if a circular reference was found
  */
 function crawl(obj, path, parents, $refs, options) {
+  var isCircular = false;
+
   if (obj && typeof(obj) === 'object') {
     parents.push(obj);
 
@@ -155,53 +158,83 @@ function crawl(obj, path, parents, $refs, options) {
 
         // Check for circular references
         var circular = pointer.circular || parents.indexOf(pointer.value) !== -1;
-        $refs.circular = $refs.circular || circular;
-        if ($refs.circular && !options.$refs.circular) {
-          throw ono.reference('Circular $ref pointer found at %s', keyPath);
-        }
+        circular && (isCircular = foundCircularReference(keyPath, $refs, options));
 
         // Dereference the JSON reference
-        value = dereference$Ref(obj, key, pointer.value);
+        var dereferencedValue = getDereferencedValue(value, pointer.value);
 
         // Crawl the dereferenced value (unless it's circular)
         if (!circular) {
-          crawl(value, pointer.path, parents, $refs, options);
+          // If the `crawl` method returns true, then dereferenced value is circular
+          circular = crawl(dereferencedValue, pointer.path, parents, $refs, options);
+          isCircular = isCircular || circular;
+        }
+
+        // Replace the JSON reference with the dereferenced value
+        if (!circular || options.$refs.circular === true) {
+          obj[key] = dereferencedValue;
         }
       }
-      else if (parents.indexOf(value) === -1) {
-        crawl(value, keyPath, parents, $refs, options);
+      else {
+        if (parents.indexOf(value) === -1) {
+          isCircular = crawl(value, keyPath, parents, $refs, options);
+        }
+        else {
+          isCircular = foundCircularReference(keyPath, $refs, options);
+        }
       }
     });
 
     parents.pop();
   }
+  return isCircular;
 }
 
 /**
- * Replaces the specified JSON reference with its resolved value.
+ * Returns the dereferenced value of the given JSON reference.
  *
- * @param {object} obj - The object that contains the JSON reference
- * @param {string} key - The key of the JSON reference within `obj`
- * @param {*} value - The resolved value
- * @returns {*} - Returns the new value of the JSON reference
+ * @param {object} currentValue - the current value, which contains a JSON reference ("$ref" property)
+ * @param {*} resolvedValue - the resolved value, which can be any type
+ * @returns {*} - Returns the dereferenced value
  */
-function dereference$Ref(obj, key, value) {
-  var $refObj = obj[key];
-
-  if (value && typeof(value) === 'object' && Object.keys($refObj).length > 1) {
-    // The JSON reference has additional properties (other than "$ref"),
+function getDereferencedValue(currentValue, resolvedValue) {
+  if (resolvedValue && typeof(resolvedValue) === 'object' && Object.keys(currentValue).length > 1) {
+    // The current value has additional properties (other than "$ref"),
     // so merge the resolved value rather than completely replacing the reference
-    delete $refObj.$ref;
-    Object.keys(value).forEach(function(key) {
-      if (!(key in $refObj)) {
-        $refObj[key] = value[key];
+    var merged = {};
+    Object.keys(currentValue).forEach(function(key) {
+      if (key !== '$ref') {
+        merged[key] = currentValue[key];
       }
     });
+    Object.keys(resolvedValue).forEach(function(key) {
+      if (!(key in merged)) {
+        merged[key] = resolvedValue[key];
+      }
+    });
+    return merged;
   }
   else {
     // Completely replace the original reference with the resolved value
-    return obj[key] = value;
+    return resolvedValue;
   }
+}
+
+/**
+ * Called when a circular reference is found.
+ * It sets the {@link $Refs#circular} flag, and throws an error if options.$refs.circular is false.
+ *
+ * @param {string} keyPath - The JSON Reference path of the circular reference
+ * @param {$Refs} $refs
+ * @param {$RefParserOptions} options
+ * @returns {boolean} - always returns true, to indicate that a circular reference was found
+ */
+function foundCircularReference(keyPath, $refs, options) {
+  $refs.circular = true;
+  if (!options.$refs.circular) {
+    throw ono.reference('Circular $ref pointer found at %s', keyPath);
+  }
+  return true;
 }
 
 },{"./pointer":6,"./ref":9,"./util":12,"ono":65,"url":90}],3:[function(require,module,exports){
@@ -542,7 +575,8 @@ function $RefParserOptions(options) {
     /**
      * Allow circular (recursive) JSON references?
      * If false, then a {@link ReferenceError} will be thrown if a circular reference is found.
-     * @type {boolean}
+     * If "ignore", then circular references will not be dereferenced.
+     * @type {boolean|string}
      */
     circular: true
   };
@@ -880,20 +914,20 @@ Pointer.join = function(base, tokens) {
 function resolveIf$Ref(pointer, options) {
   // Is the value a JSON reference? (and allowed?)
   if ($Ref.isAllowed$Ref(pointer.value, options)) {
-    // Does the JSON reference have other properties (other than "$ref")?
-    // If so, then don't resolve it, since it represents a new type
-    if (Object.keys(pointer.value).length === 1) {
-      var $refPath = url.resolve(pointer.path, pointer.value.$ref);
+    var $refPath = url.resolve(pointer.path, pointer.value.$ref);
 
-      if ($refPath === pointer.path) {
-        // The value is a reference to itself, so there's nothing to do.
-        pointer.circular = true;
-      }
-      else {
+    if ($refPath === pointer.path) {
+      // The value is a reference to itself, so there's nothing to do.
+      pointer.circular = true;
+    }
+    else {
+      // Does the JSON reference have other properties (other than "$ref")?
+      // If so, then don't resolve it, since it represents a new type
+      if (Object.keys(pointer.value).length === 1) {
         // Resolve the reference
         var resolved = pointer.$ref.$refs._resolve($refPath);
         pointer.$ref = resolved.$ref;
-        pointer.path = resolved.path;    // pointer.path = $refPath ???
+        pointer.path = resolved.path;
         pointer.value = resolved.value;
         return true;
       }

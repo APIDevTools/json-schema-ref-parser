@@ -21,6 +21,7 @@ describe('Schema with circular (recursive) external $refs', function() {
 
   it('should resolve successfully', helper.testResolve(
     'specs/circular-external/circular-external.yaml', helper.parsed.circularExternal.schema,
+    'specs/circular-external/definitions/pet.yaml', helper.parsed.circularExternal.pet,
     'specs/circular-external/definitions/child.yaml', helper.parsed.circularExternal.child,
     'specs/circular-external/definitions/parent.yaml', helper.parsed.circularExternal.parent,
     'specs/circular-external/definitions/person.yaml', helper.parsed.circularExternal.person
@@ -38,7 +39,7 @@ describe('Schema with circular (recursive) external $refs', function() {
         expect(parser.$refs.circular).to.equal(true);
 
         // Reference equality
-        expect(schema.definitions.person.properties.spouse.type).to.equal(schema.definitions.person);
+        expect(schema.definitions.person.properties.spouse).to.equal(schema.definitions.person);
         expect(schema.definitions.parent.properties.children.items).to.equal(schema.definitions.child);
         expect(schema.definitions.child.properties.parents.items).to.equal(schema.definitions.parent);
 

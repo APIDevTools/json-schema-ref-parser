@@ -1,0 +1,28 @@
+definitions:
+  child:
+    title: child
+    type: object
+    properties:
+      name:
+        type: string
+      pet:
+        $ref: '#/definitions/pet'
+
+  thing:
+    $ref: "#/definitions/thing"         # <--- circular reference to self
+
+  pet:
+    title: pet
+    type: object
+    properties:
+      name:
+        type: string
+      age:
+        type: number
+      species:
+        type: string
+        enum:
+          - cat
+          - dog
+          - bird
+          - fish

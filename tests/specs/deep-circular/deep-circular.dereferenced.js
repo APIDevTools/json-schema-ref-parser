@@ -39,7 +39,11 @@
 
   helper.dereferenced.deepCircular =
   {
+    "title": "Deep Schema",
     "type": "object",
+    "definitions": {
+      "name": name
+    },
     "properties": {
       "level1": {
         "required": [
@@ -65,27 +69,21 @@
                     ],
                     "type": "object",
                     "properties": {
-                      "name": {
-                        "type": name
-                      },
+                      "name": name,
                       "level5": {
                         "required": [
                           "name"
                         ],
                         "type": "object",
                         "properties": {
-                          "name": {
-                            "type": name
-                          },
+                          "name": name,
                           "level6": {
                             "required": [
                               "name"
                             ],
                             "type": "object",
                             "properties": {
-                              "name": {
-                                "type": name
-                              },
+                              "name": name,
                               "level7": {
                                 "required": [
                                   "name"
@@ -128,18 +126,14 @@
                                                         ],
                                                         "type": "object",
                                                         "properties": {
-                                                          "name": {
-                                                            "type": name
-                                                          },
+                                                          "name": name,
                                                           "level14": {
                                                             "required": [
                                                               "name"
                                                             ],
                                                             "type": "object",
                                                             "properties": {
-                                                              "name": {
-                                                                "type": name
-                                                              },
+                                                              "name": name,
                                                               "level15": {
                                                                 "required": [
                                                                   "name"
@@ -152,9 +146,7 @@
                                                                     ],
                                                                     "type": "object",
                                                                     "properties": {
-                                                                      "name": {
-                                                                        "type": name
-                                                                      },
+                                                                      "name": name,
                                                                       "level17": {
                                                                         "required": [
                                                                           "name"
@@ -197,27 +189,21 @@
                                                                                                 ],
                                                                                                 "type": "object",
                                                                                                 "properties": {
-                                                                                                  "name": {
-                                                                                                    "type": name
-                                                                                                  },
+                                                                                                  "name": name,
                                                                                                   "level24": {
                                                                                                     "required": [
                                                                                                       "name"
                                                                                                     ],
                                                                                                     "type": "object",
                                                                                                     "properties": {
-                                                                                                      "name": {
-                                                                                                        "type": name
-                                                                                                      },
+                                                                                                      "name": name,
                                                                                                       "level25": {
                                                                                                         "required": [
                                                                                                           "name"
                                                                                                         ],
                                                                                                         "type": "object",
                                                                                                         "properties": {
-                                                                                                          "name": {
-                                                                                                            "type": name
-                                                                                                          },
+                                                                                                          "name": name,
                                                                                                           "level26": {
                                                                                                             "required": [
                                                                                                               "name"
@@ -242,24 +228,16 @@
                                                                                                                         ],
                                                                                                                         "type": "object",
                                                                                                                         "properties": {
-                                                                                                                          "name": {
-                                                                                                                            "type": name
-                                                                                                                          }
+                                                                                                                          "name": name
                                                                                                                         }
                                                                                                                       },
-                                                                                                                      "name": {
-                                                                                                                        "type": name
-                                                                                                                      }
+                                                                                                                      "name": name
                                                                                                                     }
                                                                                                                   },
-                                                                                                                  "name": {
-                                                                                                                    "type": name
-                                                                                                                  }
+                                                                                                                  "name": name
                                                                                                                 }
                                                                                                               },
-                                                                                                              "name": {
-                                                                                                                "type": name
-                                                                                                              }
+                                                                                                              "name": name
                                                                                                             }
                                                                                                           }
                                                                                                         }
@@ -268,75 +246,49 @@
                                                                                                   }
                                                                                                 }
                                                                                               },
-                                                                                              "name": {
-                                                                                                "type": name
-                                                                                              }
+                                                                                              "name": name
                                                                                             }
                                                                                           },
-                                                                                          "name": {
-                                                                                            "type": name
-                                                                                          }
+                                                                                          "name": name
                                                                                         }
                                                                                       },
-                                                                                      "name": {
-                                                                                        "type": name
-                                                                                      }
+                                                                                      "name": name
                                                                                     }
                                                                                   },
-                                                                                  "name": {
-                                                                                    "type": name
-                                                                                  }
+                                                                                  "name": name
                                                                                 }
                                                                               },
-                                                                              "name": {
-                                                                                "type": name
-                                                                              }
+                                                                              "name": name
                                                                             }
                                                                           },
-                                                                          "name": {
-                                                                            "type": name
-                                                                          }
+                                                                          "name": name
                                                                         }
                                                                       }
                                                                     }
                                                                   },
-                                                                  "name": {
-                                                                    "type": name
-                                                                  }
+                                                                  "name": name
                                                                 }
                                                               }
                                                             }
                                                           }
                                                         }
                                                       },
-                                                      "name": {
-                                                        "type": name
-                                                      }
+                                                      "name": name
                                                     }
                                                   },
-                                                  "name": {
-                                                    "type": name
-                                                  }
+                                                  "name": name
                                                 }
                                               },
-                                              "name": {
-                                                "type": name
-                                              }
+                                              "name": name
                                             }
                                           },
-                                          "name": {
-                                            "type": name
-                                          }
+                                          "name": name
                                         }
                                       },
-                                      "name": {
-                                        "type": name
-                                      }
+                                      "name": name
                                     }
                                   },
-                                  "name": {
-                                    "type": name
-                                  }
+                                  "name": name
                                 }
                               }
                             }
@@ -345,26 +297,17 @@
                       }
                     }
                   },
-                  "name": {
-                    "type": name
-                  }
+                  "name": name
                 }
               },
-              "name": {
-                "type": name
-              }
+              "name": name
             }
           },
-          "name": {
-            "type": name
-          }
+          "name": name
         }
       },
-      "name": {
-        "type": name
-      }
+      "name": name
     },
-    "title": "Deep Schema"
   };
 
   helper.dereferenced.deepCircular
