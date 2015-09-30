@@ -6,13 +6,15 @@
     mocha.setup('bdd');
     mocha.fullTrace();
     mocha.checkLeaks();
-    mocha.globals([]);
+    mocha.globals(['$0', '$1', '$2', '$3', '$4', '$5']);
   }
 
   // Set global settings for all tests
   beforeEach(function() {
-    this.currentTest.timeout(2000);
-    this.currentTest.slow(100);
+    // Most of our tests perform multiple AJAX requests,
+    // so we need to increase the timeouts to allow for that
+    this.currentTest.timeout(slowEnvironment ? 10000 : 2000);
+    this.currentTest.slow(500);
   });
 
 })();
