@@ -1,9 +1,9 @@
 'use strict';
 
 describe('Object sources (instead of file paths)', function() {
-  it('should dereference a single object', function(done) {
+  it('should dereference a single object', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .dereference(helper.cloneDeep(helper.parsed.internal))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -22,15 +22,12 @@ describe('Object sources (instead of file paths)', function() {
           .to.equal(schema.definitions.name.properties.last)
           .to.equal(schema.properties.name.properties.first)
           .to.equal(schema.properties.name.properties.last);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
-  it('should dereference an object that references external files', function(done) {
+  it('should dereference an object that references external files', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .dereference(helper.cloneDeep(helper.parsed.objectSource.schema))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -56,15 +53,12 @@ describe('Object sources (instead of file paths)', function() {
 
         // The "circular" flag should NOT be set
         expect(parser.$refs.circular).to.equal(false);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
-  it('should bundle an object that references external files', function(done) {
+  it('should bundle an object that references external files', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .bundle(helper.cloneDeep(helper.parsed.objectSource.schema))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -79,9 +73,6 @@ describe('Object sources (instead of file paths)', function() {
         ];
         expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
         expect(parser.$refs.values()).to.have.keys(expectedPaths);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 });

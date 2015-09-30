@@ -1,17 +1,15 @@
 'use strict';
 
 describe('Schema with deeply-nested $refs', function() {
-  it('should parse successfully', function(done) {
+  it('should parse successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .parse(path.rel('specs/deep/deep.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.deep.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/deep/deep.yaml')]);
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
   it('should resolve successfully', helper.testResolve(
@@ -20,9 +18,9 @@ describe('Schema with deeply-nested $refs', function() {
     'specs/deep/definitions/required-string.yaml', helper.parsed.deep.requiredString
   ));
 
-  it('should dereference successfully', function(done) {
+  it('should dereference successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .dereference(path.rel('specs/deep/deep.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -37,21 +35,16 @@ describe('Schema with deeply-nested $refs', function() {
 
         // The "circular" flag should NOT be set
         expect(parser.$refs.circular).to.equal(false);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
-  it('should bundle successfully', function(done) {
+  it('should bundle successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .bundle(path.rel('specs/deep/deep.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.deep);
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 });

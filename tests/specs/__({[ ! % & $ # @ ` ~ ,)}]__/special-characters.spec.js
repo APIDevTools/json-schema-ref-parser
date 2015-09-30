@@ -1,17 +1,15 @@
 'use strict';
 
 describe('File names with special characters', function() {
-  it('should parse successfully', function(done) {
+  it('should parse successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .parse(path.rel('specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.specialCharacters.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.yaml')]);
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
   it('should resolve successfully', helper.testResolve(
@@ -19,9 +17,9 @@ describe('File names with special characters', function() {
     'specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.json', helper.parsed.specialCharacters.file
   ));
 
-  it('should dereference successfully', function(done) {
+  it('should dereference successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .dereference(path.rel('specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -29,21 +27,16 @@ describe('File names with special characters', function() {
 
         // The "circular" flag should NOT be set
         expect(parser.$refs.circular).to.equal(false);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
-  it('should bundle successfully', function(done) {
+  it('should bundle successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .bundle(path.rel('specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.specialCharacters);
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 });

@@ -26,8 +26,7 @@ describe('Schema with $refs to unknown file types', function() {
         expect(schema).to.deep.equal(helper.parsed.unknown.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/unknown/unknown.yaml')]);
         done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
   it('should resolve successfully', function(done) {
@@ -55,10 +54,8 @@ describe('Schema with $refs to unknown file types', function() {
 
         // The "circular" flag should NOT be set
         expect(parser.$refs.circular).to.equal(false);
-
         done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
   it('should bundle successfully', function(done) {
@@ -72,9 +69,7 @@ describe('Schema with $refs to unknown file types', function() {
         schema.definitions.html = helper.convertNodeBuffersToPOJOs(schema.definitions.html);
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         expect(schema).to.deep.equal(helper.dereferenced.unknown);
-
         done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 });

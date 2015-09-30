@@ -1,26 +1,24 @@
 'use strict';
 
 describe('Schema with internal $refs', function() {
-  it('should parse successfully', function(done) {
+  it('should parse successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .parse(path.rel('specs/internal/internal.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.internal);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/internal/internal.yaml')]);
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
   it('should resolve successfully', helper.testResolve(
     'specs/internal/internal.yaml', helper.parsed.internal
   ));
 
-  it('should dereference successfully', function(done) {
+  it('should dereference successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .dereference(path.rel('specs/internal/internal.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -36,21 +34,16 @@ describe('Schema with internal $refs', function() {
 
         // The "circular" flag should NOT be set
         expect(parser.$refs.circular).to.equal(false);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
-  it('should bundle successfully', function(done) {
+  it('should bundle successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .bundle(path.rel('specs/internal/internal.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.internal);
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 });

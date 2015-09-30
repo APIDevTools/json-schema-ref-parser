@@ -24,7 +24,7 @@
     "build": "npm run lint && npm run browserify",
     "browserify": "simplifyify lib/index.js --outfile dist/ref-parser.js --standalone \\$RefParser --debug --minify",
     "watch": "npm run browserify -- --watch",
-    "mocha": "mocha --bail --recursive tests/fixtures tests/specs",
+    "mocha": "mocha --bail --async-only tests/fixtures tests/specs",
     "istanbul": "istanbul cover _mocha --dir coverage/node -- --bail --recursive tests/fixtures tests/specs",
     "karma": "karma start --single-run",
     "test": "npm run browserify -- --test && npm run istanbul && npm run karma",

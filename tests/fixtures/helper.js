@@ -19,17 +19,10 @@
   helper.bundled = {};
 
   /**
-   * Returns a function that throws an error if called.
-   *
-   * @param {function} done
+   * Throws an error if called.
    */
-  helper.shouldNotGetCalled = function shouldNotGetCalled(done) {
-    return function shouldNotGetCalledFN(err) {
-      if (!(err instanceof Error)) {
-        err = new Error('This function should not have gotten called.');
-      }
-      done(err);
-    };
+  helper.shouldNotGetCalled = function shouldNotGetCalled() {
+    throw new Error('This function should not have gotten called.');
   };
 
   /**
@@ -80,7 +73,7 @@
 
           done();
         })
-        .catch(helper.shouldNotGetCalled(done));
+        .catch(helper.shouldNotGetCalled);
     }
   };
 

@@ -1,9 +1,9 @@
 'use strict';
 
 describe('Schema with deeply-nested circular $refs', function() {
-  it('should parse successfully', function(done) {
+  it('should parse successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .parse(path.rel('specs/deep-circular/deep-circular.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -13,10 +13,7 @@ describe('Schema with deeply-nested circular $refs', function() {
         // The "circular" flag should NOT be set
         // (it only gets set by `dereference`)
         expect(parser.$refs.circular).to.equal(false);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
   it('should resolve successfully', helper.testResolve(
@@ -25,9 +22,9 @@ describe('Schema with deeply-nested circular $refs', function() {
     'specs/deep-circular/definitions/required-string.yaml', helper.parsed.deepCircular.requiredString
   ));
 
-  it('should dereference successfully', function(done) {
+  it('should dereference successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .dereference(path.rel('specs/deep-circular/deep-circular.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -43,17 +40,14 @@ describe('Schema with deeply-nested circular $refs', function() {
           .to.equal(schema.properties.level1.properties.level2.properties.name)
           .to.equal(schema.properties.level1.properties.level2.properties.level3.properties.name)
           .to.equal(schema.properties.level1.properties.level2.properties.level3.properties.level4.properties.name);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
-  it('should throw an error if "options.$refs.circular" is false', function(done) {
+  it('should throw an error if "options.$refs.circular" is false', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .dereference(path.rel('specs/deep-circular/deep-circular.yaml'), {$refs: {circular: false}})
-      .then(helper.shouldNotGetCalled(done))
+      .then(helper.shouldNotGetCalled)
       .catch(function(err) {
         // A ReferenceError should have been thrown
         expect(err).to.be.an.instanceOf(ReferenceError);
@@ -69,15 +63,12 @@ describe('Schema with deeply-nested circular $refs', function() {
 
         // $Refs.circular should be true
         expect(parser.$refs.circular).to.equal(true);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
-  it('should bundle successfully', function(done) {
+  it('should bundle successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .bundle(path.rel('specs/deep-circular/deep-circular.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -86,9 +77,6 @@ describe('Schema with deeply-nested circular $refs', function() {
         // The "circular" flag should NOT be set
         // (it only gets set by `dereference`)
         expect(parser.$refs.circular).to.equal(false);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 });

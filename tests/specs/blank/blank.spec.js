@@ -18,36 +18,34 @@ describe('Blank files', function() {
 
   it('should throw an error if parsed as YAML', function(done) {
     testDone = done;
-    $RefParser
+    return $RefParser
       .parse(path.rel('specs/blank/blank.yaml'))
-      .then(helper.shouldNotGetCalled(done))
+      .then(helper.shouldNotGetCalled)
       .catch(function(err) {
         expect(err).to.be.an.instanceOf(SyntaxError);
         expect(err.message).to.contain('blank/blank.yaml" is not a valid JSON Schema');
         done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
   it('should throw an error if parsed as JSON', function(done) {
     testDone = done;
-    $RefParser
+    return $RefParser
       .parse(path.rel('specs/blank/blank.yaml'), {allow: {yaml: false}})
-      .then(helper.shouldNotGetCalled(done))
+      .then(helper.shouldNotGetCalled)
       .catch(function(err) {
         expect(err).to.be.an.instanceOf(SyntaxError);
         expect(err.message).to.contain('Error parsing "');
         expect(err.message).to.contain('blank/blank.yaml"');
         done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
   it('should throw an error if "options.allow.empty" is disabled', function(done) {
     testDone = done;
-    $RefParser
+    return $RefParser
       .parse(path.rel('specs/blank/blank.yaml'), {allow: {empty: false}})
-      .then(helper.shouldNotGetCalled(done))
+      .then(helper.shouldNotGetCalled)
       .catch(function(err) {
         if (userAgent.isNode) {
           expect(err).to.be.an.instanceOf(SyntaxError);
@@ -60,7 +58,6 @@ describe('Blank files', function() {
           expect(err.message).to.contain('HTTP 204: No Content');
         }
         done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 });

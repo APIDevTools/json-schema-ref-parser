@@ -27,7 +27,7 @@ describe('Callback & Promise syntax', function() {
           done();
         }
         catch (e) {
-          done(e)
+          done(e);
         }
       });
     }
@@ -66,12 +66,11 @@ describe('Callback & Promise syntax', function() {
   }
 
   function testPromiseError(method) {
-    return function(done) {
-      $RefParser[method](path.rel('specs/invalid/invalid.yaml'))
-        .then(helper.shouldNotGetCalled(done))
+    return function() {
+      return $RefParser[method](path.rel('specs/invalid/invalid.yaml'))
+        .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          done();
         });
     }
   }

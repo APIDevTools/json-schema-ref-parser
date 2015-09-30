@@ -1,17 +1,15 @@
 'use strict';
 
 describe('Schema with external $refs', function() {
-  it('should parse successfully', function(done) {
+  it('should parse successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .parse(path.rel('specs/external/external.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.external.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/external/external.yaml')]);
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
   it('should resolve successfully', helper.testResolve(
@@ -21,9 +19,9 @@ describe('Schema with external $refs', function() {
     'specs/external/definitions/required-string.yaml', helper.parsed.external.requiredString
   ));
 
-  it('should dereference successfully', function(done) {
+  it('should dereference successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .dereference(path.rel('specs/external/external.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -39,21 +37,16 @@ describe('Schema with external $refs', function() {
 
         // The "circular" flag should NOT be set
         expect(parser.$refs.circular).to.equal(false);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
-  it('should bundle successfully', function(done) {
+  it('should bundle successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .bundle(path.rel('specs/external/external.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.external);
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 });

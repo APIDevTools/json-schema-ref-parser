@@ -1,9 +1,9 @@
 'use strict';
 
 describe('Schema with circular (recursive) external $refs', function() {
-  it('should parse successfully', function(done) {
+  it('should parse successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .parse(path.rel('specs/circular-external/circular-external.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -13,10 +13,7 @@ describe('Schema with circular (recursive) external $refs', function() {
         // The "circular" flag should NOT be set
         // (it only gets set by `dereference`)
         expect(parser.$refs.circular).to.equal(false);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
   it('should resolve successfully', helper.testResolve(
@@ -27,9 +24,9 @@ describe('Schema with circular (recursive) external $refs', function() {
     'specs/circular-external/definitions/person.yaml', helper.parsed.circularExternal.person
   ));
 
-  it('should dereference successfully', function(done) {
+  it('should dereference successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .dereference(path.rel('specs/circular-external/circular-external.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -42,17 +39,14 @@ describe('Schema with circular (recursive) external $refs', function() {
         expect(schema.definitions.person.properties.spouse).to.equal(schema.definitions.person);
         expect(schema.definitions.parent.properties.children.items).to.equal(schema.definitions.child);
         expect(schema.definitions.child.properties.parents.items).to.equal(schema.definitions.parent);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
-  it('should throw an error if "options.$refs.circular" is false', function(done) {
+  it('should throw an error if "options.$refs.circular" is false', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .dereference(path.rel('specs/circular-external/circular-external.yaml'), {$refs: {circular: false}})
-      .then(helper.shouldNotGetCalled(done))
+      .then(helper.shouldNotGetCalled)
       .catch(function(err) {
         // A ReferenceError should have been thrown
         expect(err).to.be.an.instanceOf(ReferenceError);
@@ -61,15 +55,12 @@ describe('Schema with circular (recursive) external $refs', function() {
 
         // $Refs.circular should be true
         expect(parser.$refs.circular).to.equal(true);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 
-  it('should bundle successfully', function(done) {
+  it('should bundle successfully', function() {
     var parser = new $RefParser();
-    parser
+    return parser
       .bundle(path.rel('specs/circular-external/circular-external.yaml'))
       .then(function(schema) {
         expect(schema).to.equal(parser.schema);
@@ -78,9 +69,6 @@ describe('Schema with circular (recursive) external $refs', function() {
         // The "circular" flag should NOT be set
         // (it only gets set by `dereference`)
         expect(parser.$refs.circular).to.equal(false);
-
-        done();
-      })
-      .catch(helper.shouldNotGetCalled(done));
+      });
   });
 });
