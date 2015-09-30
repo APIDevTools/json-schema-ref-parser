@@ -254,6 +254,7 @@ var Promise     = require('./promise'),
     dereference = require('./dereference'),
     util        = require('./util'),
     url         = require('url'),
+    maybe       = require('call-me-maybe'),
     ono         = require('ono');
 
 module.exports = $RefParser;
@@ -326,14 +327,12 @@ $RefParser.prototype.parse = function(schema, options, callback) {
     var $ref = new $Ref(this.$refs, this._basePath);
     $ref.setValue(this.schema, args.options);
 
-    util.doCallback(args.callback, null, this.schema);
-    return Promise.resolve(this.schema);
+    return maybe(args.callback, Promise.resolve(this.schema));
   }
 
   if (!args.schema || typeof(args.schema) !== 'string') {
     var err = ono('Expected a file path, URL, or object. Got %s', args.schema);
-    util.doCallback(args.callback, err, args.schema);
-    return Promise.reject(err);
+    return maybe(args.callback, Promise.reject(err));
   }
 
   var me = this;
@@ -352,13 +351,11 @@ $RefParser.prototype.parse = function(schema, options, callback) {
       }
       else {
         me.schema = $ref.value;
-        util.doCallback(args.callback, null, me.schema);
-        return me.schema;
+        return maybe(args.callback, Promise.resolve(me.schema));
       }
     })
     .catch(function(err) {
-      util.doCallback(args.callback, err, me.schema);
-      return Promise.reject(err);
+      return maybe(args.callback, Promise.reject(err));
     });
 };
 
@@ -400,12 +397,10 @@ $RefParser.prototype.resolve = function(schema, options, callback) {
       return resolve(me, args.options);
     })
     .then(function() {
-      util.doCallback(args.callback, null, me.$refs);
-      return me.$refs;
+      return maybe(args.callback, Promise.resolve(me.$refs));
     })
     .catch(function(err) {
-      util.doCallback(args.callback, err, me.$refs);
-      return Promise.reject(err);
+      return maybe(args.callback, Promise.reject(err));
     });
 };
 
@@ -441,12 +436,10 @@ $RefParser.prototype.bundle = function(schema, options, callback) {
   return this.resolve(args.schema, args.options)
     .then(function() {
       bundle(me, args.options);
-      util.doCallback(args.callback, null, me.schema);
-      return me.schema;
+      return maybe(args.callback, Promise.resolve(me.schema));
     })
     .catch(function(err) {
-      util.doCallback(args.callback, err, me.schema);
-      return Promise.reject(err);
+      return maybe(args.callback, Promise.reject(err));
     });
 };
 
@@ -480,12 +473,10 @@ $RefParser.prototype.dereference = function(schema, options, callback) {
   return this.resolve(args.schema, args.options)
     .then(function() {
       dereference(me, args.options);
-      util.doCallback(args.callback, null, me.schema);
-      return me.schema;
+      return maybe(args.callback, Promise.resolve(me.schema));
     })
     .catch(function(err) {
-      util.doCallback(args.callback, err, me.schema);
-      return Promise.reject(err);
+      return maybe(args.callback, Promise.reject(err));
     });
 };
 
@@ -513,7 +504,7 @@ function normalizeArgs(args) {
 
 }).call(this,require("buffer").Buffer)
 
-},{"./bundle":1,"./dereference":2,"./options":4,"./promise":7,"./read":8,"./ref":9,"./refs":10,"./resolve":11,"./util":12,"./yaml":14,"buffer":18,"ono":65,"url":90}],4:[function(require,module,exports){
+},{"./bundle":1,"./dereference":2,"./options":4,"./promise":7,"./read":8,"./ref":9,"./refs":10,"./resolve":11,"./util":12,"./yaml":13,"buffer":17,"call-me-maybe":19,"ono":65,"url":90}],4:[function(require,module,exports){
 'use strict';
 
 module.exports = $RefParserOptions;
@@ -713,7 +704,7 @@ function isEmpty(value) {
 
 }).call(this,require("buffer").Buffer)
 
-},{"./util":12,"./yaml":14,"buffer":18,"ono":65}],6:[function(require,module,exports){
+},{"./util":12,"./yaml":13,"buffer":17,"ono":65}],6:[function(require,module,exports){
 'use strict';
 
 module.exports = Pointer;
@@ -1204,7 +1195,7 @@ function download(protocol, u, options) {
 
 }).call(this,require('_process'),require("buffer").Buffer)
 
-},{"./parse":5,"./promise":7,"./ref":9,"./util":12,"_process":67,"buffer":18,"fs":17,"http":83,"https":27,"ono":65,"url":90}],9:[function(require,module,exports){
+},{"./parse":5,"./promise":7,"./ref":9,"./util":12,"_process":67,"buffer":17,"fs":16,"http":83,"https":27,"ono":65,"url":90}],9:[function(require,module,exports){
 'use strict';
 
 module.exports = $Ref;
@@ -1727,49 +1718,8 @@ function crawl$Ref(path, pathFromRoot, $refs, options) {
 (function (process){
 'use strict';
 
-var debug = require('debug');
-
-exports.path = require('./path');
-
-/**
- * Writes messages to stdout.
- * Log messages are suppressed by default, but can be enabled by setting the DEBUG variable.
- * @type {function}
- */
-exports.debug = debug('json-schema-ref-parser');
-
-/**
- * Asynchronously invokes the given callback function with the given parameters.
- *
- * @param {function|undefined} callback
- * @param {*}       [err]
- * @param {...*}    [params]
- */
-exports.doCallback = function doCallback(callback, err, params) {
-  if (typeof(callback) === 'function') {
-    var args = Array.prototype.slice.call(arguments, 1);
-
-    /* istanbul ignore if: code-coverage doesn't run in the browser */
-    if (process.browser) {
-      process.nextTick(invokeCallback);
-    }
-    else {
-      setImmediate(invokeCallback);
-    }
-  }
-
-  function invokeCallback() {
-    callback.apply(null, args);
-  }
-};
-
-}).call(this,require('_process'))
-
-},{"./path":13,"_process":67,"debug":21}],13:[function(require,module,exports){
-(function (process){
-'use strict';
-
-var isWindows           = /^win/.test(process.platform),
+var debug               = require('debug'),
+    isWindows           = /^win/.test(process.platform),
     forwardSlashPattern = /\//g,
     protocolPattern     = /^[a-z0-9.+-]+:\/\//i;
 
@@ -1790,11 +1740,23 @@ var urlDecodePatterns = [
 ];
 
 /**
+ * Writes messages to stdout.
+ * Log messages are suppressed by default, but can be enabled by setting the DEBUG variable.
+ * @type {function}
+ */
+exports.debug = debug('json-schema-ref-parser');
+
+/**
+ * Utility functions for working with paths and URLs.
+ */
+exports.path = {};
+
+/**
  * Returns the current working directory (in Node) or the current page URL (in browsers).
  *
  * @returns {string}
  */
-exports.cwd = function cwd() {
+exports.path.cwd = function cwd() {
   return process.browser ? location.href : process.cwd() + '/';
 };
 
@@ -1804,7 +1766,7 @@ exports.cwd = function cwd() {
  * @param   {string} path
  * @returns {boolean}
  */
-exports.isUrl = function isUrl(path) {
+exports.path.isUrl = function isUrl(path) {
   return protocolPattern.test(path);
 };
 
@@ -1814,8 +1776,8 @@ exports.isUrl = function isUrl(path) {
  * @param {string} path
  * @returns {string}
  */
-exports.localPathToUrl = function localPathToUrl(path) {
-  if (!process.browser && !exports.isUrl(path)) {
+exports.path.localPathToUrl = function localPathToUrl(path) {
+  if (!process.browser && !exports.path.isUrl(path)) {
     // Manually encode characters that are not encoded by `encodeURI`
     for (var i = 0; i < urlEncodePatterns.length; i += 2) {
       path = path.replace(urlEncodePatterns[i], urlEncodePatterns[i + 1]);
@@ -1831,7 +1793,7 @@ exports.localPathToUrl = function localPathToUrl(path) {
  * @param {string} url
  * @returns {string}
  */
-exports.urlToLocalPath = function urlToLocalPath(url) {
+exports.path.urlToLocalPath = function urlToLocalPath(url) {
   url = decodeURI(url);
   // Manually decode characters that are not decoded by `decodeURI`
   for (var i = 0; i < urlDecodePatterns.length; i += 2) {
@@ -1849,7 +1811,7 @@ exports.urlToLocalPath = function urlToLocalPath(url) {
  * @param   {string} path
  * @returns {string}
  */
-exports.getHash = function getHash(path) {
+exports.path.getHash = function getHash(path) {
   var hashIndex = path.indexOf('#');
   if (hashIndex >= 0) {
     return path.substr(hashIndex);
@@ -1863,7 +1825,7 @@ exports.getHash = function getHash(path) {
  * @param   {string} path
  * @returns {string}
  */
-exports.stripHash = function stripHash(path) {
+exports.path.stripHash = function stripHash(path) {
   var hashIndex = path.indexOf('#');
   if (hashIndex >= 0) {
     path = path.substr(0, hashIndex);
@@ -1877,7 +1839,7 @@ exports.stripHash = function stripHash(path) {
  * @param   {string} path
  * @returns {string}
  */
-exports.extname = function extname(path) {
+exports.path.extname = function extname(path) {
   var lastDot = path.lastIndexOf('.');
   if (lastDot >= 0) {
     return path.substr(lastDot).toLowerCase();
@@ -1887,7 +1849,7 @@ exports.extname = function extname(path) {
 
 }).call(this,require('_process'))
 
-},{"_process":67}],14:[function(require,module,exports){
+},{"_process":67,"debug":21}],13:[function(require,module,exports){
 'use strict';
 
 var yaml = require('js-yaml');
@@ -1921,7 +1883,7 @@ module.exports = {
   }
 };
 
-},{"js-yaml":34}],15:[function(require,module,exports){
+},{"js-yaml":34}],14:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -2047,11 +2009,11 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 
-},{}],17:[function(require,module,exports){
-arguments[4][16][0].apply(exports,arguments)
-},{"dup":16}],18:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
+arguments[4][15][0].apply(exports,arguments)
+},{"dup":15}],17:[function(require,module,exports){
 (function (global){
 /*!
  * The buffer module from node.js, for the browser.
@@ -3598,7 +3560,7 @@ function blitBuffer (src, dst, offset, length) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"base64-js":15,"ieee754":28,"is-array":31}],19:[function(require,module,exports){
+},{"base64-js":14,"ieee754":28,"is-array":31}],18:[function(require,module,exports){
 module.exports = {
   "100": "Continue",
   "101": "Switching Protocols",
@@ -3659,7 +3621,32 @@ module.exports = {
   "511": "Network Authentication Required"
 }
 
-},{}],20:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
+(function (process,global){
+"use strict"
+
+var next = (global.process && process.nextTick) || global.setImmediate || function (f) {
+  setTimeout(f, 0)
+}
+
+module.exports = function maybe (cb, promise) {
+  if (cb) {
+    promise
+      .then(function (result) {
+        next(function () { cb(null, result) })
+      }, function (err) {
+        next(function () { cb(err) })
+      })
+    return undefined
+  }
+  else {
+    return promise
+  }
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+
+},{"_process":67}],20:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -14052,7 +14039,7 @@ module.exports = new Type('tag:yaml.org,2002:binary', {
   represent: representYamlBinary
 });
 
-},{"../type":47,"buffer":16}],49:[function(require,module,exports){
+},{"../type":47,"buffer":15}],49:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -17202,7 +17189,7 @@ function indexOf (xs, x) {
 
 }).call(this,require('_process'))
 
-},{"./_stream_duplex":74,"_process":67,"buffer":18,"core-util-is":20,"events":25,"inherits":30,"isarray":33,"process-nextick-args":66,"string_decoder/":89,"util":16}],77:[function(require,module,exports){
+},{"./_stream_duplex":74,"_process":67,"buffer":17,"core-util-is":20,"events":25,"inherits":30,"isarray":33,"process-nextick-args":66,"string_decoder/":89,"util":15}],77:[function(require,module,exports){
 // a transform stream is a readable/writable stream where you do
 // something with the data.  Sometimes it's called a "filter",
 // but that's not a great name for it, since that implies a thing where
@@ -17923,7 +17910,7 @@ function endWritable(stream, state, cb) {
   state.ended = true;
 }
 
-},{"./_stream_duplex":74,"buffer":18,"core-util-is":20,"events":25,"inherits":30,"process-nextick-args":66,"util-deprecate":91}],79:[function(require,module,exports){
+},{"./_stream_duplex":74,"buffer":17,"core-util-is":20,"events":25,"inherits":30,"process-nextick-args":66,"util-deprecate":91}],79:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
 },{"./lib/_stream_passthrough.js":75}],80:[function(require,module,exports){
@@ -18021,7 +18008,7 @@ http.METHODS = [
 	'UNLOCK',
 	'UNSUBSCRIBE'
 ]
-},{"./lib/request":85,"builtin-status-codes":19,"url":90,"xtend":94}],84:[function(require,module,exports){
+},{"./lib/request":85,"builtin-status-codes":18,"url":90,"xtend":94}],84:[function(require,module,exports){
 (function (global){
 exports.fetch = isFunction(global.fetch) && isFunction(global.ReadableByteStream)
 
@@ -18349,7 +18336,7 @@ var unsafeHeaders = [
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 
-},{"./capability":84,"./response":86,"_process":67,"buffer":18,"foreach":26,"indexof":29,"inherits":30,"object-keys":87,"stream":72}],86:[function(require,module,exports){
+},{"./capability":84,"./response":86,"_process":67,"buffer":17,"foreach":26,"indexof":29,"inherits":30,"object-keys":87,"stream":72}],86:[function(require,module,exports){
 (function (process,global,Buffer){
 var capability = require('./capability')
 var foreach = require('foreach')
@@ -18527,7 +18514,7 @@ IncomingMessage.prototype._onXHRProgress = function () {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 
-},{"./capability":84,"_process":67,"buffer":18,"foreach":26,"inherits":30,"stream":72}],87:[function(require,module,exports){
+},{"./capability":84,"_process":67,"buffer":17,"foreach":26,"inherits":30,"stream":72}],87:[function(require,module,exports){
 'use strict';
 
 // modified from https://github.com/es-shims/es5-shim
@@ -18893,7 +18880,7 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":18}],90:[function(require,module,exports){
+},{"buffer":17}],90:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a

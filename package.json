@@ -62,6 +62,7 @@
     "version-bump-prompt": "^1.5.2"
   },
   "dependencies": {
+    "call-me-maybe": "^1.0.1",
     "debug": "^2.2.0",
     "es6-promise": "^3.0.2",
     "js-yaml": "^3.4.2",
