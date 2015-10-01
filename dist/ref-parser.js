@@ -1,5 +1,5 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.$RefParser = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/**!
+/** !
  * JSON Schema $Ref Parser v1.3.1
  *
  * @link https://github.com/BigstickCarpet/json-schema-ref-parser
@@ -62,7 +62,7 @@ function remap($refs, options) {
  * @param {$RefParserOptions} options
  */
 function crawl(obj, path, $refs, remapped, options) {
-  if (obj && typeof(obj) === 'object') {
+  if (obj && typeof obj === 'object') {
     Object.keys(obj).forEach(function(key) {
       var keyPath = Pointer.join(path, key);
       var value = obj[key];
@@ -143,7 +143,7 @@ function dereference(parser, options) {
 function crawl(obj, path, parents, $refs, options) {
   var isCircular = false;
 
-  if (obj && typeof(obj) === 'object') {
+  if (obj && typeof obj === 'object') {
     parents.push(obj);
 
     Object.keys(obj).forEach(function(key) {
@@ -201,7 +201,7 @@ function crawl(obj, path, parents, $refs, options) {
  * @returns {*} - Returns the dereferenced value
  */
 function getDereferencedValue(currentValue, resolvedValue) {
-  if (resolvedValue && typeof(resolvedValue) === 'object' && Object.keys(currentValue).length > 1) {
+  if (resolvedValue && typeof resolvedValue === 'object' && Object.keys(currentValue).length > 1) {
     // The current value has additional properties (other than "$ref"),
     // so merge the resolved value rather than completely replacing the reference
     var merged = {};
@@ -303,7 +303,7 @@ function $RefParser() {
  * @returns {Promise} - The returned promise resolves with the parsed JSON schema object.
  */
 $RefParser.parse = function(schema, options, callback) {
-  var Class = this;
+  var Class = this; // eslint-disable-line consistent-this
   return new Class().parse(schema, options, callback);
 };
 
@@ -320,7 +320,7 @@ $RefParser.parse = function(schema, options, callback) {
 $RefParser.prototype.parse = function(schema, options, callback) {
   var args = normalizeArgs(arguments);
 
-  if (args.schema && typeof(args.schema) === 'object') {
+  if (args.schema && typeof args.schema === 'object') {
     // The schema is an object, not a path/url
     this.schema = args.schema;
     this._basePath = '';
@@ -330,7 +330,7 @@ $RefParser.prototype.parse = function(schema, options, callback) {
     return maybe(args.callback, Promise.resolve(this.schema));
   }
 
-  if (!args.schema || typeof(args.schema) !== 'string') {
+  if (!args.schema || typeof args.schema !== 'string') {
     var err = ono('Expected a file path, URL, or object. Got %s', args.schema);
     return maybe(args.callback, Promise.reject(err));
   }
@@ -345,17 +345,17 @@ $RefParser.prototype.parse = function(schema, options, callback) {
   // Read the schema file/url
   return read(args.schema, this.$refs, args.options)
     .then(function(cached$Ref) {
-      var $ref = cached$Ref.$ref;
-      if (!$ref.value || typeof($ref.value) !== 'object' || $ref.value instanceof Buffer) {
+      var value = cached$Ref.$ref.value;
+      if (!value || typeof value !== 'object' || value instanceof Buffer) {
         throw ono.syntax('"%s" is not a valid JSON Schema', me._basePath);
       }
       else {
-        me.schema = $ref.value;
+        me.schema = value;
         return maybe(args.callback, Promise.resolve(me.schema));
       }
     })
-    .catch(function(err) {
-      return maybe(args.callback, Promise.reject(err));
+    .catch(function(e) {
+      return maybe(args.callback, Promise.reject(e));
     });
 };
 
@@ -372,7 +372,7 @@ $RefParser.prototype.parse = function(schema, options, callback) {
  * The returned promise resolves with a {@link $Refs} object containing the resolved JSON references
  */
 $RefParser.resolve = function(schema, options, callback) {
-  var Class = this;
+  var Class = this; // eslint-disable-line consistent-this
   return new Class().resolve(schema, options, callback);
 };
 
@@ -415,7 +415,7 @@ $RefParser.prototype.resolve = function(schema, options, callback) {
  * @returns {Promise} - The returned promise resolves with the bundled JSON schema object.
  */
 $RefParser.bundle = function(schema, options, callback) {
-  var Class = this;
+  var Class = this; // eslint-disable-line consistent-this
   return new Class().bundle(schema, options, callback);
 };
 
@@ -453,7 +453,7 @@ $RefParser.prototype.bundle = function(schema, options, callback) {
  * @returns {Promise} - The returned promise resolves with the dereferenced JSON schema object.
  */
 $RefParser.dereference = function(schema, options, callback) {
-  var Class = this;
+  var Class = this; // eslint-disable-line consistent-this
   return new Class().dereference(schema, options, callback);
 };
 
@@ -488,7 +488,7 @@ $RefParser.prototype.dereference = function(schema, options, callback) {
  */
 function normalizeArgs(args) {
   var options = args[1], callback = args[2];
-  if (typeof(options) === 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = undefined;
   }
@@ -505,6 +505,7 @@ function normalizeArgs(args) {
 }).call(this,require("buffer").Buffer)
 
 },{"./bundle":1,"./dereference":2,"./options":4,"./promise":7,"./read":8,"./ref":9,"./refs":10,"./resolve":11,"./util":12,"./yaml":13,"buffer":17,"call-me-maybe":19,"ono":65,"url":90}],4:[function(require,module,exports){
+/* eslint lines-around-comment: [2, {beforeBlockComment: false}] */
 'use strict';
 
 module.exports = $RefParserOptions;
@@ -697,8 +698,8 @@ function parse(data, path, options) {
  */
 function isEmpty(value) {
   return !value ||
-    (typeof(value) === 'object' && Object.keys(value).length === 0) ||
-    (typeof(value) === 'string' && value.trim().length === 0) ||
+    (typeof value === 'object' && Object.keys(value).length === 0) ||
+    (typeof value === 'string' && value.trim().length === 0) ||
     (value instanceof Buffer && value.length === 0);
 }
 
@@ -941,7 +942,7 @@ function resolveIf$Ref(pointer, options) {
  * @returns {*} - Returns the assigned value
  */
 function setValue(pointer, token, value) {
-  if (pointer.value && typeof(pointer.value) === 'object') {
+  if (pointer.value && typeof pointer.value === 'object') {
     if (token === '-' && Array.isArray(pointer.value)) {
       pointer.value.push(value);
     }
@@ -956,8 +957,10 @@ function setValue(pointer, token, value) {
 }
 
 },{"./ref":9,"./util":12,"ono":65,"url":90}],7:[function(require,module,exports){
+'use strict';
+
 /** @type {Promise} **/
-module.exports = typeof(Promise) === 'function' ? Promise : require('es6-promise').Promise;
+module.exports = typeof Promise === 'function' ? Promise : require('es6-promise').Promise;
 
 },{"es6-promise":23}],8:[function(require,module,exports){
 (function (process,Buffer){
@@ -1137,16 +1140,16 @@ function download(protocol, u, options) {
       util.debug('Downloading file: %s', u);
 
       var req = protocol.get(
-        {
-          hostname: u.hostname,
-          port: u.port,
-          path: u.path,
-          auth: u.auth
-        },
-        onResponse
+          {
+            hostname: u.hostname,
+            port: u.port,
+            path: u.path,
+            auth: u.auth
+          },
+          onResponse
       );
 
-      if (typeof(req.setTimeout) === 'function') {
+      if (typeof req.setTimeout === 'function') {
         req.setTimeout(5000);
       }
 
@@ -1162,6 +1165,11 @@ function download(protocol, u, options) {
       reject(ono(err, 'Error downloading file "%s"', u.href));
     }
 
+    /**
+     * Handles the response
+     *
+     * @param {Response} res
+     */
     function onResponse(res) {
       var body;
 
@@ -1357,7 +1365,7 @@ $Ref.prototype.set = function(path, value, options) {
  * @returns {boolean}
  */
 $Ref.is$Ref = function(value) {
-  return value && typeof(value) === 'object' && typeof(value.$ref) === 'string' && value.$ref.length > 0;
+  return value && typeof value === 'object' && typeof value.$ref === 'string' && value.$ref.length > 0;
 };
 
 /**
@@ -1647,7 +1655,7 @@ function resolve(parser, options) {
 function crawl(obj, path, pathFromRoot, $refs, options) {
   var promises = [];
 
-  if (obj && typeof(obj) === 'object') {
+  if (obj && typeof obj === 'object') {
     var keys = Object.keys(obj);
 
     // If there's a "definitions" property, then crawl it FIRST.
@@ -1850,6 +1858,7 @@ exports.path.extname = function extname(path) {
 }).call(this,require('_process'))
 
 },{"_process":67,"debug":21}],13:[function(require,module,exports){
+/* eslint lines-around-comment: [2, {beforeBlockComment: false}] */
 'use strict';
 
 var yaml = require('js-yaml');
@@ -1878,7 +1887,7 @@ module.exports = {
    * @returns {string}
    */
   stringify: function yamlStringify(value, replacer, space) {
-    var indent = (typeof(space) === 'string' ? space.length : space) || 2;
+    var indent = (typeof space === 'string' ? space.length : space) || 2;
     return yaml.safeDump(value, {indent: indent});
   }
 };
