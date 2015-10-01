@@ -14,6 +14,11 @@
   helper.dereferenced = {};
 
   /**
+   * Expanded JSON schemas
+   */
+  helper.expanded = {};
+  
+  /**
    * Bundled JSON schemas
    */
   helper.bundled = {};
