@@ -172,7 +172,6 @@ function configureSauceLabs(config) {
   // probably due to zero-byte files and special characters in the paths.
   // So, exclude these tests when running on SauceLabs.
   config.exclude = [
-    'tests/fixtures/config.js',
     'tests/specs/__*/**',
     'tests/specs/blank/**',
     'tests/specs/unknown/**'

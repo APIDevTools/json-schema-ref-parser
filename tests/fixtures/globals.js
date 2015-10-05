@@ -15,11 +15,9 @@
     window.expect = chai.expect;
     window.userAgent = {
       isNode: false,
-      isBrowser: true
+      isBrowser: true,
+      isKarma: !!window.__karma__
     };
-
-    // Flag known slow environments (TravisCI and SauceLabs)
-    global.slowEnvironment = !!window.__karma__;
   }
   else {
     // Expose Node globals
@@ -29,11 +27,9 @@
 
     global.userAgent = {
       isNode: true,
-      isBrowser: false
+      isBrowser: false,
+      isTravisCI: !!process.env.TRAVIS
     };
-
-    // Flag known slow environments (TravisCI and SauceLabs)
-    global.slowEnvironment = !!process.env.TRAVIS;
   }
 
 })();
