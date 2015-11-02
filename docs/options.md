@@ -33,3 +33,4 @@ $RefParser.dereference("my-schema.yaml", {
 |`cache.fs`       |number   |60        |<a name="caching"></a>The length of time (in seconds) to cache local files.  The default is one minute.  Setting to zero will cache forever.
 |`cache.http`     |number   |300       |The length of time (in seconds) to cache HTTP URLs.  The default is five minutes.  Setting to zero will cache forever.
 |`cache.https`    |number   |300       |The length of time (in seconds) to cache HTTPS URLs.  The default is five minutes.  Setting to zero will cache forever.
+|`http.withCredentials`    |bool   |true       |When used in browser specifies `withCredentials` option of `XMLHttpRequest` object. Setting to `false` allows loading via CORS with `Access-Control-Allow-Origin` set to `*`
