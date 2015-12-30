@@ -150,6 +150,9 @@ To build/test the project locally on your computer:
 `npm run karma` (test in web browsers)<br>
 `npm test` (test in Node and browsers, and report code coverage)
 
+5. __Start the local web server__<br>
+`npm start` (then browse to [http://localhost:8080/tests/index.html](http://bigstickcarpet.com/json-schema-ref-parser/tests/index.html))
+
 
 License
 --------------------------

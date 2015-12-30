@@ -22,7 +22,7 @@
   "scripts": {
     "lint": "eslint lib && jscs lib --verbose",
     "build": "npm run lint && npm run browserify",
-    "browserify": "simplifyify lib/index.js --outfile dist/ref-parser.js --standalone \\$RefParser --debug --minify",
+    "browserify": "simplifyify lib/index.js --outfile dist/ref-parser.js --standalone \\$RefParser --bundle --debug --minify",
     "watch": "npm run browserify -- --watch",
     "mocha": "mocha --bail --recursive tests/fixtures tests/specs",
     "istanbul": "istanbul cover _mocha --dir coverage/node -- --bail --recursive tests/fixtures tests/specs",
@@ -30,15 +30,21 @@
     "test": "npm run browserify -- --test && npm run istanbul && npm run karma",
     "upgrade": "ncu --upgradeAll && npm update && bower update",
     "bump": "bump --prompt --grep lib/bundle.js dist/* --tag --push --all",
-    "release": "npm run upgrade && npm test && npm run bump && npm publish"
+    "release": "npm run upgrade && npm test && npm run bump && npm publish",
+    "start": "http-server -o -c-1"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/BigstickCarpet/json-schema-ref-parser.git"
   },
   "devDependencies": {
-    "simplifyify": "^2.0.1",
     "bower": "^1.7.1",
+    "chai": "^3.4.1",
+    "coveralls": "^2.11.6",
+    "eslint": "^1.10.3",
+    "http-server": "^0.8.5",
+    "istanbul": "^0.4.1",
+    "jscs": "^2.7.0",
     "karma": "^0.13.16",
     "karma-chrome-launcher": "^0.2.2",
     "karma-cli": "^0.1.2",
@@ -46,19 +52,15 @@
     "karma-firefox-launcher": "^0.1.7",
     "karma-ie-launcher": "^0.2.0",
     "karma-mocha": "^0.2.1",
-    "karma-mocha-reporter": "^1.1.4",
     "karma-phantomjs-launcher": "^0.2.2",
     "karma-safari-launcher": "^0.1.1",
     "karma-sauce-launcher": "^0.3.0",
-    "phantomjs": "^1.9.19",
-    "istanbul": "^0.4.1",
-    "coveralls": "^2.11.6",
+    "karma-verbose-reporter": "0.0.3",
     "mocha": "^2.3.4",
-    "chai": "^3.4.1",
-    "sinon": "^1.17.2",
-    "jscs": "^2.7.0",
-    "eslint": "^1.10.3",
     "npm-check-updates": "^2.5.6",
+    "phantomjs": "^1.9.19",
+    "simplifyify": "^2.0.1",
+    "sinon": "^1.17.2",
     "version-bump-prompt": "^1.5.2"
   },
   "dependencies": {
