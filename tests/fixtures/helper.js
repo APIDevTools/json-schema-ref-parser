@@ -21,9 +21,22 @@
   /**
    * Throws an error if called.
    */
-  helper.shouldNotGetCalled = function shouldNotGetCalled() {
-    throw new Error('This function should not have gotten called.');
-  };
+   helper.shouldNotGetCalled = function shouldNotGetCalled(done) {
+     var err = new Error('This function should not have gotten called.');
+     if (typeof done === 'function') {
+       return function(err2) {
+         if (err2 instanceof Error) {
+           done(err2);
+         }
+         else {
+           done(err);
+         }
+       }
+     }
+     else {
+       throw err;
+     }
+   };
 
   /**
    * Tests the {@link $RefParser.resolve} method,
@@ -73,7 +86,7 @@
 
           done();
         })
-        .catch(helper.shouldNotGetCalled);
+        .catch(helper.shouldNotGetCalled(done));
     }
   };
 
