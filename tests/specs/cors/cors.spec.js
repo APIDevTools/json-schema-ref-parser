@@ -43,15 +43,15 @@ describe('CORS support', function() {
         .parse('http://petstore.swagger.io:80/v2/swagger.json', {
           http: { withCredentials: true }
         })
-        .catch(function(err) {
-          // The request failed, which is expected
-          expect(err.message).to.contain('Error downloading file');
-        })
         .then(function(schema) {
           // The request succeeded, which means this browser doesn't support CORS.
           expect(schema).to.be.an('object');
           expect(schema).not.to.be.empty;
           expect(parser.schema).to.equal(schema);
+        })
+        .catch(function(err) {
+          // The request failed, which is expected
+          expect(err.message).to.contain('Error downloading file');
         })
         .then(function() {
           // Restore the original error handler
