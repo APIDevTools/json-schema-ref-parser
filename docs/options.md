@@ -33,4 +33,7 @@ $RefParser.dereference("my-schema.yaml", {
 |`cache.fs`            |number   |60        |<a name="caching"></a>The length of time (in seconds) to cache local files.  The default is one minute.  Setting to zero will cache forever.
 |`cache.http`          |number   |300       |The length of time (in seconds) to cache HTTP URLs.  The default is five minutes.  Setting to zero will cache forever.
 |`cache.https`         |number   |300       |The length of time (in seconds) to cache HTTPS URLs.  The default is five minutes.  Setting to zero will cache forever.
+|`http.headers`        |object   |`{}`      |HTTP to send when downloading files<br> (note: [some headers are protected](https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_header_name) and cannot be set)
+|`http.timeout`        |number   |5000      |The HTTP request timeout (in milliseconds)
+|`http.redirects`      |number   |5         |The maximum number of HTTP redirects to follow.  To disable automatic following of redirects, set this to zero.
 |`http.withCredentials`|bool     |false     |When used in browser specifies [`withCredentials`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials) option of [`XMLHttpRequest`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest) object. Set this to `true` if you're downloading files from a CORS-enabled server that requries authentication
