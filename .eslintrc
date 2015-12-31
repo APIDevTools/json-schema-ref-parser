@@ -242,7 +242,7 @@
     "padded-blocks":                   [2, "never"],      // enforce padding within blocks (off by default)
     "quote-props":                     [2, "as-needed"],  // require quotes around object literal property names (off by default)
     "quotes":                          [2, "single"],     // specify whether double or single quotes should be used
-    "require-jsdoc":                    2,                // require JSDoc comment
+    "require-jsdoc":                    1,                // require JSDoc comment
     "semi":                            [2, "always"],     // require or disallow use of semicolons instead of ASI
     "semi-spacing":                    [2, {              // enforce spacing before and after semicolons
       "before":                         false,            // require a space before semicolons
