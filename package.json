@@ -31,7 +31,7 @@
     "upgrade": "ncu --upgradeAll && npm update && bower update",
     "bump": "bump --prompt --grep lib/bundle.js dist/* --tag --push --all",
     "release": "npm run upgrade && npm test && npm run bump && npm publish",
-    "start": "http-server -o -c-1"
+    "start": "npm run watch & http-server -o -c-1"
   },
   "repository": {
     "type": "git",

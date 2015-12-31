@@ -1,21 +1,22 @@
 'use strict';
 
-describe('parse from CORS with Access-Control-Allow-Origin: *', function() {
-  var windowOnError, testDone;
-
-  beforeEach(function() {
-    windowOnError = global.onerror;
-    global.onerror = function() {
-      testDone();
-      return true;
-    }
+describe('CORS support', function() {
+  it('should download successfully by default', function() {
+    // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
+    // This should work by-default.
+    var parser = new $RefParser();
+    return parser
+      .parse('http://petstore.swagger.io:80/v2/swagger.json')
+      .then(function(schema) {
+        expect(schema).to.be.an('object');
+        expect(schema).not.to.be.empty;
+        expect(parser.schema).to.equal(schema);
+      });
   });
 
-  afterEach(function() {
-    global.onerror = windowOnError;
-  });
-
-  it('should parse successfully with http.withCredentials = false', function() {
+  it('should download successfully with http.withCredentials = false (default)', function() {
+    // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
+    // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
     var parser = new $RefParser();
     return parser
       .parse('http://petstore.swagger.io:80/v2/swagger.json', {
@@ -29,8 +30,14 @@ describe('parse from CORS with Access-Control-Allow-Origin: *', function() {
   });
 
   if (userAgent.isBrowser) {
-    it('should throw error in browser if http.withCredentials = true (default)', function(done) {
-      testDone = done;
+    it('should throw error in browser if http.withCredentials = true', function() {
+      // Some old Webkit browsers throw a global error
+      var oldOnError = global.onerror;
+      global.onerror = function() {
+        global.onerror = oldOnError; // restore the original error handler (failsafe)
+        return true;  // ignore the error
+      };
+
       var parser = new $RefParser();
       return parser
         .parse('http://petstore.swagger.io:80/v2/swagger.json', {
@@ -39,7 +46,9 @@ describe('parse from CORS with Access-Control-Allow-Origin: *', function() {
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           expect(err.message).to.contain('Error downloading file');
-          done();
+
+          // Restore the original error handler
+          global.onerror = oldOnError;
         });
     });
   }
