@@ -47,16 +47,10 @@ describe('Blank files', function() {
       .parse(path.rel('specs/blank/blank.yaml'), {allow: {empty: false}})
       .then(helper.shouldNotGetCalled)
       .catch(function(err) {
-        if (userAgent.isNode) {
-          expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing "');
-          expect(err.message).to.contain('blank/blank.yaml"');
-          expect(err.message).to.contain('Parsed value is empty');
-        }
-        else {
-          expect(err).to.be.an.instanceOf(Error);
-          expect(err.message).to.contain('HTTP 204: No Content');
-        }
+        expect(err).to.be.an.instanceOf(SyntaxError);
+        expect(err.message).to.contain('Error parsing "');
+        expect(err.message).to.contain('blank/blank.yaml"');
+        expect(err.message).to.contain('Parsed value is empty');
         done();
       });
   });
