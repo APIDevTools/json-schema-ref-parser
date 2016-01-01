@@ -16,6 +16,7 @@
     window.userAgent = {
       isNode: false,
       isBrowser: true,
+      isOldIE: navigator.userAgent.indexOf('MSIE') >= 0,
       isKarma: !!window.__karma__
     };
   }

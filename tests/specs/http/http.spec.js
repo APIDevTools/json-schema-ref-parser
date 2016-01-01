@@ -35,23 +35,26 @@ describe('HTTP options', function() {
         .catch(done);
     });
 
-    it('should set custom HTTP headers', function(done) {
-      testDone = done;
-      var parser = new $RefParser();
+    // Old versions of IE don't allow setting custom headers
+    if (!userAgent.isOldIE) {
+      it('should set custom HTTP headers', function(done) {
+        testDone = done;
+        var parser = new $RefParser();
 
-      parser.parse('http://httpbin.org/headers', {
-          http: {
-            headers: {
-              'my-custom-header': 'hello, world'
+        parser.parse('http://httpbin.org/headers', {
+            http: {
+              headers: {
+                'my-custom-header': 'hello, world'
+              }
             }
-          }
-        })
-        .then(function(schema) {
-          expect(schema.headers).to.have.property('My-Custom-Header', 'hello, world');
-          done();
-        })
-        .catch(done);
-    });
+          })
+          .then(function(schema) {
+            expect(schema.headers).to.have.property('My-Custom-Header', 'hello, world');
+            done();
+          })
+          .catch(done);
+      });
+    }
   });
 
   describe('options.http.redirect', function() {
