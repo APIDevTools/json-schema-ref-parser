@@ -13,8 +13,9 @@ describe('File names with special characters', function() {
   });
 
   it('should resolve successfully', helper.testResolve(
-    'specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.yaml', helper.parsed.specialCharacters.schema,
-    'specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.json', helper.parsed.specialCharacters.file
+    path.rel('specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.yaml'),
+    path.abs('specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.yaml'), helper.parsed.specialCharacters.schema,
+    path.abs('specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.json'), helper.parsed.specialCharacters.file
   ));
 
   it('should dereference successfully', function() {

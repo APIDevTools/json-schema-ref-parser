@@ -17,9 +17,10 @@ describe('Schema with deeply-nested circular $refs', function() {
   });
 
   it('should resolve successfully', helper.testResolve(
-    'specs/deep-circular/deep-circular.yaml', helper.parsed.deepCircular.schema,
-    'specs/deep-circular/definitions/name.yaml', helper.parsed.deepCircular.name,
-    'specs/deep-circular/definitions/required-string.yaml', helper.parsed.deepCircular.requiredString
+    path.rel('specs/deep-circular/deep-circular.yaml'),
+    path.abs('specs/deep-circular/deep-circular.yaml'), helper.parsed.deepCircular.schema,
+    path.abs('specs/deep-circular/definitions/name.yaml'), helper.parsed.deepCircular.name,
+    path.abs('specs/deep-circular/definitions/required-string.yaml'), helper.parsed.deepCircular.requiredString
   ));
 
   it('should dereference successfully', function() {

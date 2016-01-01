@@ -43,36 +43,41 @@
    * and asserts that the given file paths resolve to the given values.
    *
    * @param {string} filePath - The file path that should be resolved
-   * @param {*} resolvedValue - The resolved value of the file
-   * @param {...*} [params] - Additional file paths and resolved values
+   * @param {...*} [params] - The expected resolved file paths and values
    * @returns {Function}
    */
-  helper.testResolve = function testResolve(filePath, resolvedValue, params) {
-    var schemaFile = path.rel(arguments[0]);
-    var parsedSchema = arguments[1];
-    var expectedFiles = [], expectedValues = [];
-    for (var i = 0; i < arguments.length; i++) {
-      expectedFiles.push(path.abs(arguments[i]));
-      expectedValues.push(arguments[++i]);
+  helper.testResolve = function testResolve(filePath, params) {
+    var parsedSchema = arguments[2];
+    var expectedFiles = [], expectedValues = [], actualFiles;
+    for (var i = 1; i < arguments.length; i += 2) {
+      expectedFiles.push(arguments[i]);
+      expectedValues.push(arguments[i + 1]);
     }
 
     return function(done) {
       var parser = new $RefParser();
       parser
-        .resolve(schemaFile)
+        .resolve(filePath)
         .then(function($refs) {
           expect(parser.schema).to.deep.equal(parsedSchema);
           expect(parser.$refs).to.equal($refs);
 
           // Resolved file paths
-          expect($refs.paths()).to.have.same.members(expectedFiles);
-          if (userAgent.isNode) {
-            expect($refs.paths(['fs'])).to.have.same.members(expectedFiles);
-            expect($refs.paths('http', 'https')).to.be.an('array').with.lengthOf(0);
+          try {
+            expect((actualFiles = $refs.paths())).to.have.same.members(expectedFiles);
+            if (userAgent.isNode) {
+              expect((actualFiles = $refs.paths(['fs']))).to.have.same.members(expectedFiles);
+              expect($refs.paths('http', 'https')).to.be.an('array').with.lengthOf(0);
+            }
+            else {
+              expect((actualFiles = $refs.paths(['http', 'https']))).to.have.same.members(expectedFiles);
+              expect($refs.paths('fs')).to.be.an('array').with.lengthOf(0);
+            }
           }
-          else {
-            expect($refs.paths(['http', 'https'])).to.have.same.members(expectedFiles);
-            expect($refs.paths('fs')).to.be.an('array').with.lengthOf(0);
+          catch (e) {
+            console.log('Expected Files:', JSON.stringify(expectedFiles, null, 2));
+            console.log('Actual Files:', JSON.stringify(actualFiles, null, 2));
+            throw e;
           }
 
           // Resolved values

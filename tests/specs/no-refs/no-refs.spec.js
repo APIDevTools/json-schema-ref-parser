@@ -13,7 +13,8 @@ describe('Schema without any $refs', function() {
   });
 
   it('should resolve successfully', helper.testResolve(
-    'specs/no-refs/no-refs.yaml', helper.parsed.noRefs
+    path.rel('specs/no-refs/no-refs.yaml'),
+    path.abs('specs/no-refs/no-refs.yaml'), helper.parsed.noRefs
   ));
 
   it('should dereference successfully', function() {

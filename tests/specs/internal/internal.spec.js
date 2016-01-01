@@ -13,7 +13,8 @@ describe('Schema with internal $refs', function() {
   });
 
   it('should resolve successfully', helper.testResolve(
-    'specs/internal/internal.yaml', helper.parsed.internal
+    path.rel('specs/internal/internal.yaml'),
+    path.abs('specs/internal/internal.yaml'), helper.parsed.internal
   ));
 
   it('should dereference successfully', function() {

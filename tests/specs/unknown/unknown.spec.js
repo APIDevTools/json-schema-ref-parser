@@ -33,11 +33,12 @@ describe('Schema with $refs to unknown file types', function() {
   it('should resolve successfully', function(done) {
     testDone = done;
     helper.testResolve(
-      'specs/unknown/unknown.yaml', helper.parsed.unknown.schema,
-      'specs/unknown/files/blank', helper.parsed.unknown.blank,
-      'specs/unknown/files/text.txt', helper.parsed.unknown.text,
-      'specs/unknown/files/page.html', helper.parsed.unknown.html,
-      'specs/unknown/files/binary.png', helper.parsed.unknown.binary
+      path.rel('specs/unknown/unknown.yaml'),
+      path.abs('specs/unknown/unknown.yaml'), helper.parsed.unknown.schema,
+      path.abs('specs/unknown/files/blank'), helper.parsed.unknown.blank,
+      path.abs('specs/unknown/files/text.txt'), helper.parsed.unknown.text,
+      path.abs('specs/unknown/files/page.html'), helper.parsed.unknown.html,
+      path.abs('specs/unknown/files/binary.png'), helper.parsed.unknown.binary
     )(done);
   });
 

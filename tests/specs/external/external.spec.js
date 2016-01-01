@@ -1,7 +1,18 @@
 'use strict';
 
 describe('Schema with external $refs', function() {
-  it('should parse successfully', function() {
+  it('should parse successfully from an absolute path', function() {
+    var parser = new $RefParser();
+    return parser
+      .parse(path.abs('specs/external/external.yaml'))
+      .then(function(schema) {
+        expect(schema).to.equal(parser.schema);
+        expect(schema).to.deep.equal(helper.parsed.external.schema);
+        expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/external/external.yaml')]);
+      });
+  });
+
+  it('should parse successfully from a relative path', function() {
     var parser = new $RefParser();
     return parser
       .parse(path.rel('specs/external/external.yaml'))
@@ -12,11 +23,39 @@ describe('Schema with external $refs', function() {
       });
   });
 
-  it('should resolve successfully', helper.testResolve(
-    'specs/external/external.yaml', helper.parsed.external.schema,
-    'specs/external/definitions/definitions.json', helper.parsed.external.definitions,
-    'specs/external/definitions/name.yaml', helper.parsed.external.name,
-    'specs/external/definitions/required-string.yaml', helper.parsed.external.requiredString
+  it('should parse successfully from a url', function() {
+    var parser = new $RefParser();
+    return parser
+      .parse(path.url('specs/external/external.yaml'))
+      .then(function(schema) {
+        expect(schema).to.equal(parser.schema);
+        expect(schema).to.deep.equal(helper.parsed.external.schema);
+        expect(parser.$refs.paths()).to.deep.equal([path.url('specs/external/external.yaml')]);
+      });
+  });
+
+  it('should resolve successfully from an absolute path', helper.testResolve(
+    path.abs('specs/external/external.yaml'),
+    path.abs('specs/external/external.yaml'), helper.parsed.external.schema,
+    path.abs('specs/external/definitions/definitions.json'), helper.parsed.external.definitions,
+    path.abs('specs/external/definitions/name.yaml'), helper.parsed.external.name,
+    path.abs('specs/external/definitions/required-string.yaml'), helper.parsed.external.requiredString
+  ));
+
+  it('should resolve successfully from a relative path', helper.testResolve(
+    path.rel('specs/external/external.yaml'),
+    path.abs('specs/external/external.yaml'), helper.parsed.external.schema,
+    path.abs('specs/external/definitions/definitions.json'), helper.parsed.external.definitions,
+    path.abs('specs/external/definitions/name.yaml'), helper.parsed.external.name,
+    path.abs('specs/external/definitions/required-string.yaml'), helper.parsed.external.requiredString
+  ));
+
+  it('should resolve successfully from a url', helper.testResolve(
+    path.url('specs/external/external.yaml'),
+    path.url('specs/external/external.yaml'), helper.parsed.external.schema,
+    path.url('specs/external/definitions/definitions.json'), helper.parsed.external.definitions,
+    path.url('specs/external/definitions/name.yaml'), helper.parsed.external.name,
+    path.url('specs/external/definitions/required-string.yaml'), helper.parsed.external.requiredString
   ));
 
   it('should dereference successfully', function() {

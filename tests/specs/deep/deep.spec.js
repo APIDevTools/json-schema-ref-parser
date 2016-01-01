@@ -13,9 +13,10 @@ describe('Schema with deeply-nested $refs', function() {
   });
 
   it('should resolve successfully', helper.testResolve(
-    'specs/deep/deep.yaml', helper.parsed.deep.schema,
-    'specs/deep/definitions/name.yaml', helper.parsed.deep.name,
-    'specs/deep/definitions/required-string.yaml', helper.parsed.deep.requiredString
+    path.rel('specs/deep/deep.yaml'),
+    path.abs('specs/deep/deep.yaml'), helper.parsed.deep.schema,
+    path.abs('specs/deep/definitions/name.yaml'), helper.parsed.deep.name,
+    path.abs('specs/deep/definitions/required-string.yaml'), helper.parsed.deep.requiredString
   ));
 
   it('should dereference successfully', function() {

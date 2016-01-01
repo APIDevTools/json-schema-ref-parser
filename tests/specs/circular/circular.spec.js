@@ -18,7 +18,8 @@ describe('Schema with circular (recursive) $refs', function() {
     });
 
     it('should resolve successfully', helper.testResolve(
-      'specs/circular/circular-self.yaml', helper.parsed.circular.self
+      path.rel('specs/circular/circular-self.yaml'),
+      path.abs('specs/circular/circular-self.yaml'), helper.parsed.circular.self
     ));
 
     it('should dereference successfully', function() {
@@ -98,7 +99,8 @@ describe('Schema with circular (recursive) $refs', function() {
     });
 
     it('should resolve successfully', helper.testResolve(
-      'specs/circular/circular-ancestor.yaml', helper.parsed.circular.ancestor
+      path.rel('specs/circular/circular-ancestor.yaml'),
+      path.abs('specs/circular/circular-ancestor.yaml'), helper.parsed.circular.ancestor
     ));
 
     it('should dereference successfully', function() {
@@ -182,7 +184,8 @@ describe('Schema with circular (recursive) $refs', function() {
     });
 
     it('should resolve successfully', helper.testResolve(
-      'specs/circular/circular-indirect.yaml', helper.parsed.circular.indirect
+      path.rel('specs/circular/circular-indirect.yaml'),
+      path.abs('specs/circular/circular-indirect.yaml'), helper.parsed.circular.indirect
     ));
 
     it('should dereference successfully', function() {
@@ -268,7 +271,8 @@ describe('Schema with circular (recursive) $refs', function() {
     });
 
     it('should resolve successfully', helper.testResolve(
-      'specs/circular/circular-indirect-ancestor.yaml', helper.parsed.circular.indirectAncestor
+      path.rel('specs/circular/circular-indirect-ancestor.yaml'),
+      path.abs('specs/circular/circular-indirect-ancestor.yaml'), helper.parsed.circular.indirectAncestor
     ));
 
     it('should dereference successfully', function() {

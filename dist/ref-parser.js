@@ -1652,7 +1652,7 @@ function getPaths($refs, types) {
   return paths.map(function(path) {
     return {
       encoded: path,
-      decoded: $refs[path].pathType === 'fs' ? util.path.urlToLocalPath(path) : path
+      decoded: $refs[path].pathType === 'fs' ? util.path.urlToLocalPath(path, true) : path
     };
   });
 }
@@ -1791,7 +1791,7 @@ function crawl$Ref(path, pathFromRoot, $refs, options) {
 var debug               = require('debug'),
     isWindows           = /^win/.test(process.platform),
     forwardSlashPattern = /\//g,
-    protocolPattern     = /^[a-z0-9.+-]+:\/\//i;
+    protocolPattern     = /^([a-z0-9.+-]+):\/\//i;
 
 // RegExp patterns to URL-encode special characters in local filesystem paths
 var urlEncodePatterns = [
@@ -1837,7 +1837,12 @@ exports.path.cwd = function cwd() {
  * @returns {boolean}
  */
 exports.path.isUrl = function isUrl(path) {
-  return protocolPattern.test(path);
+  var protocol = protocolPattern.exec(path);
+  if (protocol) {
+    protocol = protocol[1].toLowerCase();
+    return protocol !== 'file';
+  }
+  return false;
 };
 
 /**
@@ -1861,13 +1866,17 @@ exports.path.localPathToUrl = function localPathToUrl(path) {
  * Converts a URL to a local filesystem path
  *
  * @param {string} url
+ * @param {boolean} [keepFileProtocol] - If true, then "file://" will NOT be stripped
  * @returns {string}
  */
-exports.path.urlToLocalPath = function urlToLocalPath(url) {
+exports.path.urlToLocalPath = function urlToLocalPath(url, keepFileProtocol) {
   url = decodeURI(url);
   // Manually decode characters that are not decoded by `decodeURI`
   for (var i = 0; i < urlDecodePatterns.length; i += 2) {
     url = url.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1]);
+  }
+  if (!keepFileProtocol && url.substr(0, 7).toLowerCase() === 'file://') {
+    url = url.substr(7);
   }
   if (isWindows) {
     url = url.replace(forwardSlashPattern, '\\');

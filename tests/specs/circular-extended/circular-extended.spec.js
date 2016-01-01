@@ -18,7 +18,8 @@ describe('Schema with circular $refs that extend each other', function() {
     });
 
     it('should resolve successfully', helper.testResolve(
-      'specs/circular-extended/circular-extended-self.yaml', helper.parsed.circularExtended.self
+      path.rel('specs/circular-extended/circular-extended-self.yaml'),
+      path.abs('specs/circular-extended/circular-extended-self.yaml'), helper.parsed.circularExtended.self
     ));
 
     it('should dereference successfully', function() {
@@ -95,7 +96,8 @@ describe('Schema with circular $refs that extend each other', function() {
     });
 
     it('should resolve successfully', helper.testResolve(
-      'specs/circular-extended/circular-extended-ancestor.yaml', helper.parsed.circularExtended.ancestor
+      path.rel('specs/circular-extended/circular-extended-ancestor.yaml'),
+      path.abs('specs/circular-extended/circular-extended-ancestor.yaml'), helper.parsed.circularExtended.ancestor
     ));
 
     it('should dereference successfully', function() {
@@ -181,7 +183,8 @@ describe('Schema with circular $refs that extend each other', function() {
     });
 
     it('should resolve successfully', helper.testResolve(
-      'specs/circular-extended/circular-extended-indirect.yaml', helper.parsed.circularExtended.indirect
+      path.rel('specs/circular-extended/circular-extended-indirect.yaml'),
+      path.abs('specs/circular-extended/circular-extended-indirect.yaml'), helper.parsed.circularExtended.indirect
     ));
 
     it('should dereference successfully', function() {
@@ -269,7 +272,8 @@ describe('Schema with circular $refs that extend each other', function() {
     });
 
     it('should resolve successfully', helper.testResolve(
-      'specs/circular-extended/circular-extended-indirect-ancestor.yaml', helper.parsed.circularExtended.indirectAncestor
+      path.rel('specs/circular-extended/circular-extended-indirect-ancestor.yaml'),
+      path.abs('specs/circular-extended/circular-extended-indirect-ancestor.yaml'), helper.parsed.circularExtended.indirectAncestor
     ));
 
     it('should dereference successfully', function() {

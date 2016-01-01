@@ -17,11 +17,12 @@ describe('Schema with circular (recursive) external $refs', function() {
   });
 
   it('should resolve successfully', helper.testResolve(
-    'specs/circular-external/circular-external.yaml', helper.parsed.circularExternal.schema,
-    'specs/circular-external/definitions/pet.yaml', helper.parsed.circularExternal.pet,
-    'specs/circular-external/definitions/child.yaml', helper.parsed.circularExternal.child,
-    'specs/circular-external/definitions/parent.yaml', helper.parsed.circularExternal.parent,
-    'specs/circular-external/definitions/person.yaml', helper.parsed.circularExternal.person
+    path.rel('specs/circular-external/circular-external.yaml'),
+    path.abs('specs/circular-external/circular-external.yaml'), helper.parsed.circularExternal.schema,
+    path.abs('specs/circular-external/definitions/pet.yaml'), helper.parsed.circularExternal.pet,
+    path.abs('specs/circular-external/definitions/child.yaml'), helper.parsed.circularExternal.child,
+    path.abs('specs/circular-external/definitions/parent.yaml'), helper.parsed.circularExternal.parent,
+    path.abs('specs/circular-external/definitions/person.yaml'), helper.parsed.circularExternal.person
   ));
 
   it('should dereference successfully', function() {
