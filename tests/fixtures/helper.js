@@ -49,6 +49,7 @@
   helper.testResolve = function testResolve(filePath, params) {
     var parsedSchema = arguments[2];
     var expectedFiles = [], expectedValues = [], actualFiles;
+
     for (var i = 1; i < arguments.length; i += 2) {
       expectedFiles.push(arguments[i]);
       expectedValues.push(arguments[i + 1]);
