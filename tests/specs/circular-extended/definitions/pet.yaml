@@ -1,0 +1,15 @@
+title: pet
+type:
+  $ref: "animals.yaml#/definitions/cat/type"                  # <-- deep linking into an extended object
+properties:
+  name:
+    $ref: "animals.yaml#/definitions/dog/properties/name"     # <-- deep linking into an extended object
+  age:
+    $ref: "animals.yaml#/definitions/bird/properties/age"     # <-- deep linking into an extended object
+  species:
+    type: string
+    enum:
+      - cat
+      - dog
+      - bird
+      - fish

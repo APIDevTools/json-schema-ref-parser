@@ -1,32 +1,6 @@
 definitions:
   person:
-    title: person
-    properties:
-      name:
-        type: string
-      spouse:
-        $ref: "#/definitions/person"
-        description: >
-          This JSON Reference has additional properties (other than $ref).
-          This creates a new type that extends "person".
-      pet:
-        $ref: '#/definitions/pet'
-        description: >
-          This JSON Reference has additional properties (other than $ref).
-          This creates a new type that extends "pet".
+    $ref: definitions/person-with-spouse.yaml
 
   pet:
-    title: pet
-    type: object
-    properties:
-      name:
-        type: string
-      age:
-        type: number
-      species:
-        type: string
-        enum:
-          - cat
-          - dog
-          - bird
-          - fish
+    $ref: definitions/pet.yaml

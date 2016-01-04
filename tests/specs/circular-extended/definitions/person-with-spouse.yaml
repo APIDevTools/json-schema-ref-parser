@@ -1,0 +1,14 @@
+title: person
+properties:
+  name:
+    type: string
+  spouse:
+    $ref: person-with-spouse.yaml
+    description: >
+      This JSON Reference has additional properties (other than $ref).
+      This creates a new type that extends "person".
+  pet:
+    $ref: pet.yaml
+    description: >
+      This JSON Reference has additional properties (other than $ref).
+      This creates a new type that extends "pet".

@@ -1,0 +1,25 @@
+definitions:
+  animal:
+    title: animal
+    type: object
+    properties:
+      name:
+        type: string
+      age:
+        type: number
+
+  cat:
+    title: cat
+    $ref: "#/definitions/animal"
+
+  dog:
+    title: dog
+    $ref: "#/definitions/animal"
+
+  bird:
+    title: bird
+    $ref: "#/definitions/animal"
+
+  fish:
+    title: fish
+    $ref: "#/definitions/animal"

@@ -1,0 +1,11 @@
+title: parent
+properties:
+  name:
+    type: string
+  children:
+    type: array
+    items:
+      $ref: child-with-parents.yaml
+      description: >
+        This JSON Reference has additional properties (other than $ref).
+        This creates a new type that extends "child".
