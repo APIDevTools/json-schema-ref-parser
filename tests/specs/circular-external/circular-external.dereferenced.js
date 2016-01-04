@@ -23,7 +23,7 @@ helper.dereferenced.circularExternal =
       },
     },
     "thing": {
-      "$ref": "circular-external.yaml#/definitions/thing"
+      "$ref": "#/definitions/thing"
     },
     "person": {
       "title": "person",
