@@ -1,0 +1,11 @@
+title: Person
+type: object
+required:
+  - name
+properties:
+  name:
+    $ref: "definitions/definitions.json#/name"
+  age:
+    $ref: "definitions/definitions.json#/age"
+  gender:
+    $ref: "definitions/definitions.json#/gender"
