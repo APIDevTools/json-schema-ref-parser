@@ -111,10 +111,10 @@ Install using [bower](http://bower.io/):
 bower install json-schema-ref-parser
 ```
 
-Then reference [`ref-parser.js`](dist/ref-parser.js) or [`ref-parser.min.js`](dist/ref-parser.min.js) in your HTML:
+Then reference [`json-schema-ref-parser.js`](dist/json-schema-ref-parser.js) or [`json-schema-ref-parser.min.js`](dist/json-schema-ref-parser.min.js) in your HTML:
 
 ```html
-<script src="bower_components/json-schema-ref-parser/dist/ref-parser.js"></script>
+<script src="bower_components/json-schema-ref-parser/dist/json-schema-ref-parser.js"></script>
 ```
 
 Or, if you're using AMD (Require.js), then import it into your module:
