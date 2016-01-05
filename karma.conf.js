@@ -11,7 +11,7 @@ var baseConfig = {
     'www/bower_components/sinon-js/sinon.js',
 
     // Json Schema $Ref Parser
-    'dist/ref-parser.min.js',
+    'dist/json-schema-ref-parser.min.js',
     {pattern: 'dist/*.map', included: false, served: true},
 
     // Test Fixtures
@@ -62,7 +62,7 @@ module.exports = function(config) {
  * This is intended for debugging purposes only.
  */
 function configureForDebugging(config) {
-  config.files.splice(config.files.indexOf('dist/ref-parser.min.js'), 1, 'dist/ref-parser.js');
+  config.files.splice(config.files.indexOf('dist/json-schema-ref-parser.min.js'), 1, 'dist/json-schema-ref-parser.js');
   config.browsers = ['Chrome'];
 }
 
@@ -71,7 +71,7 @@ function configureForDebugging(config) {
  */
 function configureCodeCoverage(config) {
   config.reporters.push('coverage');
-  config.files.splice(config.files.indexOf('dist/ref-parser.min.js'), 1, 'dist/ref-parser.test.js');
+  config.files.splice(config.files.indexOf('dist/json-schema-ref-parser.min.js'), 1, 'dist/json-schema-ref-parser.test.js');
   config.coverageReporter = {
     reporters: [
       {type: 'text-summary'},
