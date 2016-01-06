@@ -87,12 +87,12 @@ function crawl(obj, path, pathFromRoot, inventory, $refs, options) {
 function inventory$Ref($refParent, $refKey, path, pathFromRoot, inventory, $refs, options) {
   var $ref = $refParent[$refKey];
   var $refPath = url.resolve(path, $ref.$ref);
-  var pointer = $refs._resolve($refPath, options);
+  var pointer = $refs._resolve($refPath);
   var depth = Pointer.parse(pathFromRoot).length;
   var file = util.path.stripHash(pointer.path);
   var hash = util.path.getHash(pointer.path);
   var external = file !== $refs._basePath;
-  var extended = Object.keys($ref).length > 1;
+  var extended = $Ref.isExtended$Ref($ref);
 
   inventory.push({
     $ref: $ref,                   // The JSON Reference (e.g. {$ref: string})
@@ -175,7 +175,7 @@ function remap(inventory) {
 
       // This is the first $ref to point to this value, so dereference the value.
       // Any other $refs that point to the same value will point to this $ref instead
-      i.$ref = i.parent[i.key] = util.dereference(i.$ref, i.value);
+      i.$ref = i.parent[i.key] = $Ref.dereference(i.$ref, i.value);
 
       if (i.circular) {
         // This $ref points to itself
@@ -191,7 +191,7 @@ function remap(inventory) {
   });
 }
 
-},{"./pointer":8,"./ref":11,"./util":14,"url":90}],2:[function(require,module,exports){
+},{"./pointer":10,"./ref":14,"./util":17,"url":95}],2:[function(require,module,exports){
 'use strict';
 
 var $Ref    = require('./ref'),
@@ -238,7 +238,7 @@ function crawl(obj, path, pathFromRoot, parents, $refs, options) {
       var value = obj[key];
       var circular = false;
 
-      if ($Ref.isAllowed$Ref(value, options)) {
+      if ($Ref.is$Ref(value, options)) {
         var dereferenced = dereference$Ref(value, keyPath, keyPathFromRoot, parents, $refs, options);
         circular = dereferenced.circular;
         obj[key] = dereferenced.value;
@@ -276,7 +276,7 @@ function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
   util.debug('Dereferencing $ref pointer "%s" at %s', $ref.$ref, path);
 
   var $refPath = url.resolve(path, $ref.$ref);
-  var pointer = $refs._resolve($refPath, options);
+  var pointer = $refs._resolve($refPath);
 
   // Check for circular references
   var directCircular = pointer.circular;
@@ -284,7 +284,7 @@ function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
   circular && foundCircularReference(path, $refs, options);
 
   // Dereference the JSON reference
-  var dereferencedValue = util.dereference($ref, pointer.value);
+  var dereferencedValue = $Ref.dereference($ref, pointer.value);
 
   // Crawl the dereferenced value (unless it's circular)
   if (!circular) {
@@ -292,7 +292,7 @@ function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
     circular = crawl(dereferencedValue, pointer.path, pathFromRoot, parents, $refs, options);
   }
 
-  if (circular && !directCircular && options.$refs.circular === 'ignore') {
+  if (circular && !directCircular && options.dereference.circular === 'ignore') {
     // The user has chosen to "ignore" circular references, so don't change the value
     dereferencedValue = $ref;
   }
@@ -311,7 +311,7 @@ function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
 
 /**
  * Called when a circular reference is found.
- * It sets the {@link $Refs#circular} flag, and throws an error if options.$refs.circular is false.
+ * It sets the {@link $Refs#circular} flag, and throws an error if options.dereference.circular is false.
  *
  * @param {string} keyPath - The JSON Reference path of the circular reference
  * @param {$Refs} $refs
@@ -320,129 +320,17 @@ function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
  */
 function foundCircularReference(keyPath, $refs, options) {
   $refs.circular = true;
-  if (!options.$refs.circular) {
+  if (!options.dereference.circular) {
     throw ono.reference('Circular $ref pointer found at %s', keyPath);
   }
   return true;
 }
 
-},{"./pointer":8,"./ref":11,"./util":14,"ono":67,"url":90}],3:[function(require,module,exports){
+},{"./pointer":10,"./ref":14,"./util":17,"ono":71,"url":95}],3:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
-var http    = require('http'),
-    https   = require('https'),
-    url     = require('url'),
-    util    = require('./util'),
-    Promise = require('./promise'),
-    ono     = require('ono');
-
-module.exports = download;
-
-/**
- * Downloads the given file.
- *
- * @param {Url|string} u - The url to download (can be a parsed {@link Url} object)
- * @param {$RefParserOptions} options
- * @param {number} [redirects] - The redirect URLs that have already been followed
- *
- * @returns {Promise<Buffer>}
- * The promise resolves with the raw downloaded data, or rejects if there is an HTTP error.
- */
-function download(u, options, redirects) {
-  return new Promise(function(resolve, reject) {
-    u = url.parse(u);
-    redirects = redirects || [];
-    redirects.push(u.href);
-
-    get(u, options)
-      .then(function(res) {
-        if (res.statusCode >= 400) {
-          throw ono({status: res.statusCode}, 'HTTP ERROR %d', res.statusCode);
-        }
-        else if (res.statusCode >= 300) {
-          if (redirects.length > options.http.redirects) {
-            reject(ono({status: res.statusCode}, 'Error downloading %s. \nToo many redirects: \n  %s',
-              redirects[0], redirects.join(' \n  ')));
-          }
-          else if (!res.headers.location) {
-            throw ono({status: res.statusCode}, 'HTTP %d redirect with no location header', res.statusCode);
-          }
-          else {
-            util.debug('HTTP %d redirect %s -> %s', res.statusCode, u.href, res.headers.location);
-            var redirectTo = url.resolve(u, res.headers.location);
-            download(redirectTo, options, redirects).then(resolve, reject);
-          }
-        }
-        else if (res.statusCode === 204 && !options.allow.empty) {
-          throw ono({status: 204}, 'HTTP 204 (No Content)');
-        }
-        else {
-          resolve(res.body || new Buffer(0));
-        }
-      })
-      .catch(function(err) {
-        reject(ono(err, 'Error downloading', u.href));
-      });
-  });
-}
-
-/**
- * Sends an HTTP GET request.
- *
- * @param {Url} u - A parsed {@link Url} object
- * @param {$RefParserOptions} options
- *
- * @returns {Promise<Response>}
- * The promise resolves with the HTTP Response object.
- */
-function get(u, options) {
-  return new Promise(function(resolve, reject) {
-    util.debug('GET', u.href);
-
-    var protocol = u.protocol === 'https:' ? https : http;
-    var req = protocol.get({
-      hostname: u.hostname,
-      port: u.port,
-      path: u.path,
-      auth: u.auth,
-      headers: options.http.headers,
-      withCredentials: options.http.withCredentials
-    });
-
-    if (typeof req.setTimeout === 'function') {
-      req.setTimeout(options.http.timeout);
-    }
-
-    req.on('timeout', function() {
-      req.abort();
-    });
-
-    req.on('error', reject);
-
-    req.once('response', function(res) {
-      res.body = new Buffer(0);
-
-      res.on('data', function(data) {
-        res.body = Buffer.concat([res.body, new Buffer(data)]);
-      });
-
-      res.on('error', reject);
-
-      res.on('end', function() {
-        resolve(res);
-      });
-    });
-  });
-}
-
-}).call(this,require("buffer").Buffer)
-
-},{"./promise":9,"./util":14,"buffer":19,"http":85,"https":29,"ono":67,"url":90}],4:[function(require,module,exports){
-(function (Buffer){
-'use strict';
-
-var Promise     = require('./promise'),
+var Promise     = require('./util/promise'),
     Options     = require('./options'),
     $Refs       = require('./refs'),
     $Ref        = require('./ref'),
@@ -456,7 +344,7 @@ var Promise     = require('./promise'),
     ono         = require('ono');
 
 module.exports = $RefParser;
-module.exports.YAML = require('./yaml');
+module.exports.YAML = require('./util/yaml');
 
 /**
  * This class parses a JSON schema, builds a map of its JSON references and their resolved values,
@@ -535,7 +423,7 @@ $RefParser.prototype.parse = function(schema, options, callback) {
   return read(args.schema, this.$refs, args.options)
     .then(function(result) {
       var value = result.$ref.value;
-      if (!value || typeof value !== 'object' || value instanceof Buffer) {
+      if (!value || typeof value !== 'object' || Buffer.isBuffer(value)) {
         throw ono.syntax('"%s" is not a valid JSON Schema', me.$refs._basePath);
       }
       else {
@@ -691,11 +579,18 @@ function normalizeArgs(args) {
   };
 }
 
-}).call(this,require("buffer").Buffer)
+}).call(this,{"isBuffer":require("../node_modules/is-buffer/index.js")})
 
-},{"./bundle":1,"./dereference":2,"./options":5,"./promise":9,"./read":10,"./ref":11,"./refs":12,"./resolve":13,"./util":14,"./yaml":15,"buffer":19,"call-me-maybe":22,"ono":67,"url":90}],5:[function(require,module,exports){
+},{"../node_modules/is-buffer/index.js":38,"./bundle":1,"./dereference":2,"./options":4,"./read":13,"./ref":14,"./refs":15,"./resolve":16,"./util":17,"./util/promise":18,"./util/yaml":19,"call-me-maybe":26,"ono":71,"url":95}],4:[function(require,module,exports){
 /* eslint lines-around-comment: [2, {beforeBlockComment: false}] */
 'use strict';
+
+var parseJSON   = require('./parse/json'),
+    parseYAML   = require('./parse/yaml'),
+    parseText   = require('./parse/text'),
+    parseBinary = require('./parse/binary'),
+    readFile    = require('./read/file'),
+    readHttp    = require('./read/http');
 
 module.exports = $RefParserOptions;
 
@@ -707,204 +602,188 @@ module.exports = $RefParserOptions;
  */
 function $RefParserOptions(options) {
   /**
-   * Determines what types of files can be parsed
+   * Determines how different types of files will be parsed.
+   *
+   * You can add additional parsers of your own, replace an existing one with
+   * your own implemenation, or disable any parser by setting it to false.
+   *
+   * Each of the built-in parsers has the following options:
+   *
+   *  order   {number}    - The order in which the parsers will run
+   *
+   *  ext     {string[]}  - An array of file extensions and/or RegExp patterns.
+   *                        Only matching files will be parsed by this parser.
+   *
+   *  empty   {boolean}   - Whether to allow "empty" files. Enabled by default.
+   *                        "Empty" includes zero-byte files, as well as JSON/YAML files that
+   *                        don't contain any keys.
    */
-  this.allow = {
-    /**
-     * Are JSON files allowed?
-     * If false, then all schemas must be in YAML format.
-     * @type {boolean}
-     */
-    json: true,
+  this.parse = {
+    json: parseJSON,
+    yaml: parseYAML,
+    text: parseText,
+    binary: parseBinary,
+  };
 
-    /**
-     * Are YAML files allowed?
-     * If false, then all schemas must be in JSON format.
-     * @type {boolean}
-     */
-    yaml: true,
-
-    /**
-     * Are zero-byte files allowed?
-     * If false, then an error will be thrown if a file is empty.
-     * @type {boolean}
-     */
-    empty: true,
-
-    /**
-     * Can unknown file types be $referenced?
-     * If true, then they will be parsed as Buffers (byte arrays).
-     * If false, then an error will be thrown.
-     * @type {boolean}
-     */
-    unknown: true
+  /**
+   * Determines how external JSON References will be resolved.
+   *
+   * You can add additional readers of your own, replace an existing one with
+   * your own implemenation, or disable any reader by setting it to false.
+   *
+   * Each of the built-in readers has the following options:
+   *
+   *  order   {number}    - The order in which the reader will run
+   *
+   *  cache   {number}    - How long to cache files (in milliseconds)
+   *                        The default cache duration is different for each reader.
+   *                        Setting the cache duration to zero disables caching for that reader.
+   *
+   * The HTTP reader has additional options.  See read/http.js for details.
+   */
+  this.resolve = {
+    file: readFile,
+    http: readHttp,
   };
 
   /**
    * Determines the types of JSON references that are allowed.
    */
-  this.$refs = {
+  this.dereference = {
     /**
-     * Allow JSON references to other parts of the same file?
-     * @type {boolean}
-     */
-    internal: true,
-
-    /**
-     * Allow JSON references to external files/URLs?
-     * @type {boolean}
-     */
-    external: true,
-
-    /**
-     * Allow circular (recursive) JSON references?
+     * Dereference circular (recursive) JSON references?
      * If false, then a {@link ReferenceError} will be thrown if a circular reference is found.
      * If "ignore", then circular references will not be dereferenced.
+     *
      * @type {boolean|string}
      */
     circular: true
-  };
-
-  /**
-   * How long to cache files (in seconds).
-   */
-  this.cache = {
-    /**
-     * How long to cache local files, in seconds.
-     * @type {number}
-     */
-    fs: 60, // 1 minute
-
-    /**
-     * How long to cache files downloaded via HTTP, in seconds.
-     * @type {number}
-     */
-    http: 5 * 60, // 5 minutes
-
-    /**
-     * How long to cache files downloaded via HTTPS, in seconds.
-     * @type {number}
-     */
-    https: 5 * 60 // 5 minutes
-  };
-
-  /**
-   * HTTP request options
-   */
-  this.http = {
-    /**
-     * HTTP headers to send when downloading files.
-     */
-    headers: {},
-
-    /**
-     * HTTP request timeout (in milliseconds).
-     */
-    timeout: 5000,
-
-    /**
-     * The maximum number of HTTP redirects to follow.
-     * To disable automatic following of redirects, set this to zero.
-     */
-    redirects: 5,
-
-    /**
-     * The `withCredentials` option of XMLHttpRequest.
-     * Set this to `true` if you're downloading files from a CORS-enabled server that requires authentication
-     */
-    withCredentials: false,
-
   };
 
   merge(options, this);
 }
 
 /**
- * Fast, two-level object merge.
+ * Merges user-specified options with default options.
  *
- * @param {?object} src - The object to merge into dest
- * @param {object} dest - The object to be modified
+ * @param {?object} user - The options that were specified by the user
+ * @param {$RefParserOptions} defaults - The {@link $RefParserOptions} object that we're populating
  */
-function merge(src, dest) {
-  if (src) {
-    var topKeys = Object.keys(src);
-    for (var i = 0; i < topKeys.length; i++) {
-      var topKey = topKeys[i];
-      var srcChild = src[topKey];
-      if (dest[topKey] === undefined) {
-        dest[topKey] = srcChild;
+function merge(user, defaults) {
+  if (user) {
+    var keys = Object.keys(user);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var userSetting = user[key];
+      var defaultSetting = defaults[key];
+
+      if (userSetting && typeof userSetting === 'object' && !Array.isArray(userSetting)) {
+        // An object with nested options, so merge it too
+        defaults[key] = merge(userSetting, defaultSetting);
       }
       else {
-        var childKeys = Object.keys(srcChild);
-        for (var j = 0; j < childKeys.length; j++) {
-          var childKey = childKeys[j];
-          var srcChildValue = srcChild[childKey];
-          if (srcChildValue !== undefined) {
-            dest[topKey][childKey] = srcChildValue;
-          }
-        }
+        // A scalar value, function, or array. So override the default value.
+        defaults[key] = userSetting;
       }
     }
   }
 }
 
-},{}],6:[function(require,module,exports){
+},{"./parse/binary":5,"./parse/json":7,"./parse/text":8,"./parse/yaml":9,"./read/file":11,"./read/http":12}],5:[function(require,module,exports){
+'use strict';
+var Promise = require('../util/promise');
+
+module.exports = parseBinary;
+
+/**
+ * The order that this parser will run, in relation to other parsers.
+ */
+module.exports.order = 4;
+
+/**
+ * Whether to allow "empty" files (zero bytes).
+ */
+module.exports.empty = true;
+
+/**
+ * File extensions and/or RegExp patterns that will be parsed by this parser.
+ */
+module.exports.ext = [
+  '.jpeg', '.jpg', '.gif', '.png', '.bmp', '.ico'
+];
+
+/**
+ * Parses the given data as text
+ *
+ * @param {Buffer} data - The data to be parsed
+ * @param {string} path - The file path or URL that `data` came from
+ * @param {$RefParserOptions} options
+ * @returns {Promise<object>}
+ */
+function parseBinary(data, path, options) {
+  return new Promise(function(resolve) {
+    resolve(data);  // data is already a Buffer
+  });
+}
+
+},{"../util/promise":18}],6:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
-var YAML = require('./yaml'),
-    util = require('./util'),
-    ono  = require('ono');
+var util    = require('../util'),
+    Promise = require('../util/promise'),
+    ono     = require('ono');
 
 module.exports = parse;
 
 /**
- * Parses the given data as YAML, JSON, or a raw Buffer (byte array), depending on the options.
+ * Parses the given data according to the given options.
  *
- * @param {string|Buffer} data - The data to be parsed
+ * @param {Buffer} data - The data to be parsed
  * @param {string} path - The file path or URL that `data` came from
  * @param {$RefParserOptions} options
  *
- * @returns {string|Buffer|object}
- * If `data` can be parsed as YAML or JSON, then the returned value is a JavaScript object.
- * Otherwise, the returned value is the raw string or Buffer that was passed in.
+ * @returns {Promise<string|Buffer|object>}
  */
 function parse(data, path, options) {
-  var parsed;
+  return new Promise(function(resolve, reject) {
+    // Check each parser, in order, until one matches this file
+    var pathExt = util.path.extname(path);
+    var matchingParser, parserType, allowEmpty;
+    util.runInOrder(options.parse, function(type, parser) {
+      parser.ext.some(function(ext) {
+        if (ext === pathExt ||
+          (ext instanceof RegExp && ext.test(path))) {
+          matchingParser = parser;
+          parserType = type;
+          allowEmpty = parser.empty;
+          return true;
+        }
+      });
+    });
 
-  try {
-    if (options.allow.yaml) {
-      util.debug('Parsing YAML file: %s', path);
-      parsed = YAML.parse(data.toString());
-      util.debug('    Parsed successfully');
-    }
-    else if (options.allow.json) {
-      util.debug('Parsing JSON file: %s', path);
-      parsed = JSON.parse(data.toString());
-      util.debug('    Parsed successfully');
+    // If one of the parsers matched, then wait on it
+    if (matchingParser) {
+      util.debug('Parsing "%s" as %s', path, parserType);
+
+      matchingParser(data, path, options)
+      .then(
+        function(value) {
+          if (!allowEmpty && isEmpty(value)) {
+            reject(ono.syntax('Error parsing "%s" as %s. \nParsed value is empty', path, parserType));
+          }
+          else {
+            resolve(value);
+          }
+        },
+        function(err) {
+          reject(ono.syntax(err, 'Error parsing "%s" as %s', path, parserType));
+        });
     }
     else {
-      parsed = data;
+      reject(ono.syntax('Unable to parse "%s"', path));
     }
-  }
-  catch (e) {
-    var ext = util.path.extname(path);
-    if (options.allow.unknown && ['.json', '.yaml', '.yml'].indexOf(ext) === -1) {
-      // It's not a YAML or JSON file, and unknown formats are allowed,
-      // so ignore the parsing error and just return the raw data
-      util.debug('    Unknown file format. Not parsed.');
-      parsed = data;
-    }
-    else {
-      throw ono.syntax(e, 'Error parsing "%s"', path);
-    }
-  }
-
-  if (isEmpty(parsed) && !options.allow.empty) {
-    throw ono.syntax('Error parsing "%s". \nParsed value is empty', path);
-  }
-
-  return parsed;
+  });
 }
 
 /**
@@ -917,168 +796,126 @@ function isEmpty(value) {
   return !value ||
     (typeof value === 'object' && Object.keys(value).length === 0) ||
     (typeof value === 'string' && value.trim().length === 0) ||
-    (value instanceof Buffer && value.length === 0);
+    (Buffer.isBuffer(value) && value.length === 0);
 }
 
-}).call(this,require("buffer").Buffer)
+}).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
 
-},{"./util":14,"./yaml":15,"buffer":19,"ono":67}],7:[function(require,module,exports){
-(function (process){
+},{"../../node_modules/is-buffer/index.js":38,"../util":17,"../util/promise":18,"ono":71}],7:[function(require,module,exports){
 'use strict';
+var Promise = require('../util/promise');
 
-var isWindows           = /^win/.test(process.platform),
-    forwardSlashPattern = /\//g,
-    protocolPattern     = /^([a-z0-9.+-]+):\/\//i;
+module.exports = parseJSON;
 
-// RegExp patterns to URL-encode special characters in local filesystem paths
-var urlEncodePatterns = [
-  /\?/g, '%3F',
-  /\#/g, '%23',
-  isWindows ? /\\/g : /\//, '/'
+/**
+ * The order that this parser will run, in relation to other parsers.
+ */
+module.exports.order = 1;
+
+/**
+ * Whether to allow "empty" files. This includes zero-byte files, as well as empty JSON objects.
+ */
+module.exports.empty = true;
+
+/**
+ * File extensions and/or RegExp patterns that will be parsed by this parser.
+ */
+module.exports.ext = ['.json'];
+
+/**
+ * Parses the given data as JSON
+ *
+ * @param {Buffer} data - The data to be parsed
+ * @param {string} path - The file path or URL that `data` came from
+ * @param {$RefParserOptions} options
+ * @returns {Promise<object>}
+ */
+function parseJSON(data, path, options) {
+  return new Promise(function(resolve) {
+    resolve(JSON.parse(data.toString()));
+  });
+}
+
+},{"../util/promise":18}],8:[function(require,module,exports){
+'use strict';
+var Promise = require('../util/promise');
+
+module.exports = parseText;
+
+/**
+ * The order that this parser will run, in relation to other parsers.
+ */
+module.exports.order = 3;
+
+/**
+ * Whether to allow "empty" files (zero bytes).
+ */
+module.exports.empty = true;
+
+/**
+ * The encoding that the text is expected to be in.
+ */
+module.exports.encoding = 'utf8';
+
+/**
+ * File extensions and/or RegExp patterns that will be parsed by this parser.
+ */
+module.exports.ext = [
+  '.txt', '.htm', '.html', '.md', '.xml', '.js', '.css', '.scss', '.less',
+  '.min', '.map', '.svg'
 ];
 
-// RegExp patterns to URL-decode special characters for local filesystem paths
-var urlDecodePatterns = [
-  /\%23/g, '#',
-  /\%24/g, '$',
-  /\%26/g, '&',
-  /\%2C/g, ',',
-  /\%40/g, '@'
-];
+/**
+ * Parses the given data as text
+ *
+ * @param {Buffer} data - The data to be parsed
+ * @param {string} path - The file path or URL that `data` came from
+ * @param {$RefParserOptions} options
+ * @returns {Promise<object>}
+ */
+function parseText(data, path, options) {
+  return new Promise(function(resolve) {
+    resolve(data.toString(options.parse.text.encoding));
+  });
+}
+
+},{"../util/promise":18}],9:[function(require,module,exports){
+'use strict';
+var Promise = require('../util/promise'),
+    YAML    = require('../util/yaml');
+
+module.exports = parseYAML;
 
 /**
- * Returns the current working directory (in Node) or the current page URL (in browsers).
- *
- * @returns {string}
+ * The order that this parser will run, in relation to other parsers.
  */
-exports.cwd = function cwd() {
-  return process.browser ? location.href : process.cwd() + '/';
-};
+module.exports.order = 2;
 
 /**
- * Determines whether the given path is a URL.
- *
- * @param   {string} path
- * @returns {boolean}
+ * Whether to allow "empty" files. This includes zero-byte files, as well as empty JSON objects.
  */
-exports.isUrl = function isUrl(path) {
-  var protocol = protocolPattern.exec(path);
-  if (protocol) {
-    protocol = protocol[1].toLowerCase();
-    return protocol !== 'file';
-  }
-  return false;
-};
+module.exports.empty = true;
 
 /**
- * If the given path is a local filesystem path, it is converted to a URL.
- *
- * @param {string} path
- * @returns {string}
+ * File extensions and/or RegExp patterns that will be parsed by this parser.
  */
-exports.localPathToUrl = function localPathToUrl(path) {
-  if (!process.browser && !exports.isUrl(path)) {
-    // Manually encode characters that are not encoded by `encodeURI`
-    for (var i = 0; i < urlEncodePatterns.length; i += 2) {
-      path = path.replace(urlEncodePatterns[i], urlEncodePatterns[i + 1]);
-    }
-    path = encodeURI(path);
-  }
-  return path;
-};
+module.exports.ext = ['.yaml', '.yml', '.json'];  // <--- JSON is valid YAML
 
 /**
- * Converts a URL to a local filesystem path
+ * Parses the given data as YAML
  *
- * @param {string} url
- * @param {boolean} [keepFileProtocol] - If true, then "file://" will NOT be stripped
- * @returns {string}
+ * @param {Buffer} data - The data to be parsed
+ * @param {string} path - The file path or URL that `data` came from
+ * @param {$RefParserOptions} options
+ * @returns {Promise<object>}
  */
-exports.urlToLocalPath = function urlToLocalPath(url, keepFileProtocol) {
-  // Decode URL-encoded characters
-  url = decodeURI(url);
+function parseYAML(data, path, options) {
+  return new Promise(function(resolve) {
+    resolve(YAML.parse(data.toString()));
+  });
+}
 
-  // Manually decode characters that are not decoded by `decodeURI`
-  for (var i = 0; i < urlDecodePatterns.length; i += 2) {
-    url = url.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1]);
-  }
-
-  // Handle "file://" URLs
-  var isFileUrl = url.substr(0, 7).toLowerCase() === 'file://';
-  if (isFileUrl) {
-    var protocol = 'file:///';
-
-    // Remove the third "/" if there is one
-    var path = url[7] === '/' ? url.substr(8) : url.substr(7);
-
-    if (isWindows && path[1] === '/') {
-      // insert a colon (":") after the drive letter on Windows
-      path = path[0] + ':' + path.substr(1);
-    }
-
-    if (keepFileProtocol) {
-      url = protocol + path;
-    }
-    else {
-      isFileUrl = false;
-      url = isWindows ? path : '/' + path;
-    }
-  }
-
-  // Format path separators on Windows
-  if (isWindows && !isFileUrl) {
-    url = url.replace(forwardSlashPattern, '\\');
-  }
-
-  return url;
-};
-
-/**
- * Returns the hash (URL fragment), of the given path.
- * If there is no hash, then the root hash ("#") is returned.
- *
- * @param   {string} path
- * @returns {string}
- */
-exports.getHash = function getHash(path) {
-  var hashIndex = path.indexOf('#');
-  if (hashIndex >= 0) {
-    return path.substr(hashIndex);
-  }
-  return '#';
-};
-
-/**
- * Removes the hash (URL fragment), if any, from the given path.
- *
- * @param   {string} path
- * @returns {string}
- */
-exports.stripHash = function stripHash(path) {
-  var hashIndex = path.indexOf('#');
-  if (hashIndex >= 0) {
-    path = path.substr(0, hashIndex);
-  }
-  return path;
-};
-
-/**
- * Returns the file extension of the given path.
- *
- * @param   {string} path
- * @returns {string}
- */
-exports.extname = function extname(path) {
-  var lastDot = path.lastIndexOf('.');
-  if (lastDot >= 0) {
-    return path.substr(lastDot).toLowerCase();
-  }
-  return '';
-};
-
-}).call(this,require('_process'))
-
-},{"_process":69}],8:[function(require,module,exports){
+},{"../util/promise":18,"../util/yaml":19}],10:[function(require,module,exports){
 'use strict';
 
 module.exports = Pointer;
@@ -1131,7 +968,6 @@ function Pointer($ref, path) {
  * Resolves the value of a nested property within the given object.
  *
  * @param {*} obj - The object that will be crawled
- * @param {$RefParserOptions} [options]
  *
  * @returns {Pointer}
  * Returns a JSON pointer whose {@link Pointer#value} is the resolved value.
@@ -1139,13 +975,13 @@ function Pointer($ref, path) {
  * the {@link Pointer#$ref} and {@link Pointer#path} will reflect the resolution path
  * of the resolved value.
  */
-Pointer.prototype.resolve = function(obj, options) {
+Pointer.prototype.resolve = function(obj) {
   var tokens = Pointer.parse(this.path);
 
   // Crawl the object, one token at a time
   this.value = obj;
   for (var i = 0; i < tokens.length; i++) {
-    if (resolveIf$Ref(this, options)) {
+    if (resolveIf$Ref(this)) {
       // The $ref path has changed, so append the remaining tokens to the path
       this.path = Pointer.join(this.path, tokens.slice(i));
     }
@@ -1160,7 +996,7 @@ Pointer.prototype.resolve = function(obj, options) {
   }
 
   // Resolve the final value
-  resolveIf$Ref(this, options);
+  resolveIf$Ref(this);
   return this;
 };
 
@@ -1169,12 +1005,11 @@ Pointer.prototype.resolve = function(obj, options) {
  *
  * @param {*} obj - The object that will be crawled
  * @param {*} value - the value to assign
- * @param {$RefParserOptions} [options]
  *
  * @returns {*}
  * Returns the modified object, or an entirely new object if the entire object is overwritten.
  */
-Pointer.prototype.set = function(obj, value, options) {
+Pointer.prototype.set = function(obj, value) {
   var tokens = Pointer.parse(this.path);
   var token;
 
@@ -1187,7 +1022,7 @@ Pointer.prototype.set = function(obj, value, options) {
   // Crawl the object, one token at a time
   this.value = obj;
   for (var i = 0; i < tokens.length - 1; i++) {
-    resolveIf$Ref(this, options);
+    resolveIf$Ref(this);
 
     token = tokens[i];
     if (this.value && this.value[token] !== undefined) {
@@ -1201,7 +1036,7 @@ Pointer.prototype.set = function(obj, value, options) {
   }
 
   // Set the value of the final token
-  resolveIf$Ref(this, options);
+  resolveIf$Ref(this);
   token = tokens[tokens.length - 1];
   setValue(this, token, value);
 
@@ -1276,13 +1111,12 @@ Pointer.join = function(base, tokens) {
  * resolution path of the new value.
  *
  * @param {Pointer} pointer
- * @param {$RefParserOptions} [options]
  * @returns {boolean} - Returns `true` if the resolution path changed
  */
-function resolveIf$Ref(pointer, options) {
+function resolveIf$Ref(pointer) {
   // Is the value a JSON reference? (and allowed?)
 
-  if ($Ref.isAllowed$Ref(pointer.value, options)) {
+  if ($Ref.is$Ref(pointer.value)) {
     var $refPath = url.resolve(pointer.path, pointer.value.$ref);
 
     if ($refPath === pointer.path) {
@@ -1292,16 +1126,16 @@ function resolveIf$Ref(pointer, options) {
     else {
       var resolved = pointer.$ref.$refs._resolve($refPath);
 
-      if (Object.keys(pointer.value).length === 1) {
+      if ($Ref.isExtended$Ref(pointer.value)) {
+        // This JSON reference "extends" the resolved value, rather than simply pointing to it.
+        // So the resolved path does NOT change.  Just the value does.
+        pointer.value = $Ref.dereference(pointer.value, resolved.value);
+      }
+      else {
         // Resolve the reference
         pointer.$ref = resolved.$ref;
         pointer.path = resolved.path;
         pointer.value = resolved.value;
-      }
-      else {
-        // This JSON reference has additional properties (other than "$ref"),
-        // so it "extends" the resolved value, rather than simply pointing to it.
-        pointer.value = util.dereference(pointer.value, resolved.value);
       }
 
       return true;
@@ -1335,23 +1169,245 @@ function setValue(pointer, token, value) {
   return value;
 }
 
-},{"./ref":11,"./util":14,"ono":67,"url":90}],9:[function(require,module,exports){
-'use strict';
-
-/** @type {Promise} **/
-module.exports = typeof Promise === 'function' ? Promise : require('es6-promise').Promise;
-
-},{"es6-promise":26}],10:[function(require,module,exports){
+},{"./ref":14,"./util":17,"ono":71,"url":95}],11:[function(require,module,exports){
 (function (process){
 'use strict';
+var fs      = require('fs'),
+    ono     = require('ono'),
+    Promise = require('../util/promise'),
+    util    = require('../util');
 
-var fs       = require('fs'),
-    download = require('./download'),
-    parse    = require('./parse'),
-    util     = require('./util'),
-    $Ref     = require('./ref'),
-    Promise  = require('./promise'),
-    url      = require('url'),
+module.exports = readFile;
+
+/**
+ * The order that this reader will run, in relation to other readers.
+ */
+module.exports.order = 1;
+
+/**
+ * How long a file's contents will be cached before the file is re-read.
+ * Setting this to zero disables caching and the file will be re-read every time
+ * it is referenced in the JSON schema.
+ */
+module.exports.cache = 60000;  // 1 minute
+
+/**
+ * Reads the given file path and returns its raw contents as a Buffer.
+ *
+ * @param {string} path - The file path to read
+ * @param {$RefParserOptions} options
+ *
+ * @returns {Promise<Buffer>|undefined}
+ * If `path` is NOT a supported file path, then `undefiend` is returned.
+ * Otherwise, a Promise is returned, and it will resolve with the file contents as a Buffer.
+ */
+function readFile(path, options) {
+  if (process.browser || util.path.isUrl(path)) {
+    return;
+  }
+
+  return new Promise(function(resolve, reject) {
+    var file;
+    try {
+      file = util.path.urlToLocalPath(path);
+    }
+    catch (err) {
+      reject(ono.uri(err, 'Malformed URI: %s', path));
+    }
+
+    util.debug('Opening file: %s', file);
+
+    try {
+      fs.readFile(file, function(err, data) {
+        if (err) {
+          reject(ono(err, 'Error opening file "%s"', file));
+        }
+        else {
+          resolve(data);
+        }
+      });
+    }
+    catch (err) {
+      reject(ono(err, 'Error opening file "%s"', file));
+    }
+  });
+}
+
+}).call(this,require('_process'))
+
+},{"../util":17,"../util/promise":18,"_process":74,"fs":22,"ono":71}],12:[function(require,module,exports){
+(function (process,Buffer){
+'use strict';
+
+var http    = require('http'),
+    https   = require('https'),
+    url     = require('url'),
+    util    = require('../util'),
+    Promise = require('../util/promise'),
+    ono     = require('ono');
+
+module.exports = readHttp;
+
+/**
+ * The order that this reader will run, in relation to other readers.
+ */
+module.exports.order = 2;
+
+/**
+ * How long a URL's contents will be cached before it is re-downloaded.
+ * Setting this to zero disables caching and the file will be re-downloaded every time
+ * it is referenced in the JSON schema.
+ */
+module.exports.cache = 300000;  // 5 minutes
+
+/**
+ * HTTP headers to send when downloading files.
+ */
+module.exports.headers = null;
+
+/**
+ * HTTP request timeout (in milliseconds).
+ */
+module.exports.timeout = 5000; // 5 seconds
+
+/**
+ * The maximum number of HTTP redirects to follow.
+ * To disable automatic following of redirects, set this to zero.
+ */
+module.exports.redirects = 5;
+
+/**
+ * The `withCredentials` option of XMLHttpRequest.
+ * Set this to `true` if you're downloading files from a CORS-enabled server that requires authentication
+ */
+module.exports.withCredentials = false;
+
+/**
+ * Reads the given URL and returns its raw contents as a Buffer.
+ *
+ * @param {string} path - The URL to read
+ * @param {$RefParserOptions} options
+ *
+ * @returns {Promise<Buffer>|undefined}
+ * If `path` is NOT a supported URL, then `undefiend` is returned.
+ * Otherwise, a Promise is returned, and it will resolve with the downloaded contents as a Buffer.
+ */
+function readHttp(path, options) {
+  var u = url.parse(path);
+
+  if (process.browser && !u.protocol) {
+    // Use the protocol of the current page
+    u.protocol = url.parse(location.href).protocol;
+  }
+
+  if (u.protocol === 'http:' || u.protocol === 'https:') {
+    return download(u, options);
+  }
+}
+
+/**
+ * Downloads the given file.
+ *
+ * @param {Url|string} u - The url to download (can be a parsed {@link Url} object)
+ * @param {$RefParserOptions} options
+ * @param {number} [redirects] - The redirect URLs that have already been followed
+ *
+ * @returns {Promise<Buffer>}
+ * The promise resolves with the raw downloaded data, or rejects if there is an HTTP error.
+ */
+function download(u, options, redirects) {
+  return new Promise(function(resolve, reject) {
+    u = url.parse(u);
+    redirects = redirects || [];
+    redirects.push(u.href);
+
+    get(u, options)
+      .then(function(res) {
+        if (res.statusCode >= 400) {
+          throw ono({status: res.statusCode}, 'HTTP ERROR %d', res.statusCode);
+        }
+        else if (res.statusCode >= 300) {
+          if (redirects.length > options.resolve.http.redirects) {
+            reject(ono({status: res.statusCode}, 'Error downloading %s. \nToo many redirects: \n  %s',
+              redirects[0], redirects.join(' \n  ')));
+          }
+          else if (!res.headers.location) {
+            throw ono({status: res.statusCode}, 'HTTP %d redirect with no location header', res.statusCode);
+          }
+          else {
+            util.debug('HTTP %d redirect %s -> %s', res.statusCode, u.href, res.headers.location);
+            var redirectTo = url.resolve(u, res.headers.location);
+            download(redirectTo, options, redirects).then(resolve, reject);
+          }
+        }
+        else {
+          resolve(res.body || new Buffer(0));
+        }
+      })
+      .catch(function(err) {
+        reject(ono(err, 'Error downloading', u.href));
+      });
+  });
+}
+
+/**
+ * Sends an HTTP GET request.
+ *
+ * @param {Url} u - A parsed {@link Url} object
+ * @param {$RefParserOptions} options
+ *
+ * @returns {Promise<Response>}
+ * The promise resolves with the HTTP Response object.
+ */
+function get(u, options) {
+  return new Promise(function(resolve, reject) {
+    util.debug('GET', u.href);
+
+    var protocol = u.protocol === 'https:' ? https : http;
+    var req = protocol.get({
+      hostname: u.hostname,
+      port: u.port,
+      path: u.path,
+      auth: u.auth,
+      headers: options.resolve.http.headers || {},
+      withCredentials: options.resolve.http.withCredentials
+    });
+
+    if (typeof req.setTimeout === 'function') {
+      req.setTimeout(options.resolve.http.timeout);
+    }
+
+    req.on('timeout', function() {
+      req.abort();
+    });
+
+    req.on('error', reject);
+
+    req.once('response', function(res) {
+      res.body = new Buffer(0);
+
+      res.on('data', function(data) {
+        res.body = Buffer.concat([res.body, new Buffer(data)]);
+      });
+
+      res.on('error', reject);
+
+      res.on('end', function() {
+        resolve(res);
+      });
+    });
+  });
+}
+
+}).call(this,require('_process'),require("buffer").Buffer)
+
+},{"../util":17,"../util/promise":18,"_process":74,"buffer":23,"http":90,"https":33,"ono":71,"url":95}],13:[function(require,module,exports){
+'use strict';
+
+var parse    = require('../parse'),
+    $Ref     = require('../ref'),
+    util     = require('../util'),
+    Promise  = require('../util/promise'),
     ono      = require('ono');
 
 module.exports = read;
@@ -1386,8 +1442,23 @@ function read(path, $refs, options) {
     // Add a placeholder $ref to the cache, so we don't read this URL multiple times
     $ref = new $Ref($refs, path);
 
-    // Read and return the $ref
-    return read$Ref($ref, options);
+    // Read the file
+    return readers(path, options)
+      .then(function(reader) {
+        $ref.pathType = reader.pathType;
+
+        // Parse the raw file data
+        return parse(reader.data, path, options);
+      })
+      .then(function(parsed) {
+        // Update the $ref with the parsed file contents
+        $ref.setValue(parsed, options);
+
+        return {
+          $ref: $ref,
+          cached: false
+        };
+      });
   }
   catch (e) {
     return Promise.reject(e);
@@ -1395,116 +1466,42 @@ function read(path, $refs, options) {
 }
 
 /**
- * Reads the specified file path or URL and updates the given {@link $Ref} accordingly.
+ * Reads the given file path or URL and returns its raw contents as a Buffer.
  *
- * @param {$Ref} $ref - The {@link $Ref} to read and update
+ * @param {string} path - The file path or URL to read
  * @param {$RefParserOptions} options
- *
- * @returns {Promise}
- * The promise resolves with the updated {@link $Ref} object (the same instance that was passed in)
+ * @returns {Promise<Buffer>}
  */
-function read$Ref($ref, options) {
-  try {
-    var promise = options.$refs.external && (read$RefFile($ref, options) || read$RefUrl($ref, options));
+function readers(path, options) {
+  return new Promise(function(resolve, reject) {
+    var promise, pathType;
 
+    // Run each reader in order, until one returns a Promise
+    util.runInOrder(options.resolve, function(type, reader) {
+      promise = reader(path, options);
+      if (promise) {
+        pathType = type;
+        return true;
+      }
+    });
+
+    // If one of the readers returned a Promise, then wait on it
     if (promise) {
-      return promise
-        .then(function(data) {
-          // Update the $ref with the parsed file contents
-          var value = parse(data, $ref.path, options);
-          $ref.setValue(value, options);
-
-          return {
-            $ref: $ref,
-            cached: false
-          };
+      promise.then(
+        function(data) {
+          resolve({data: data, pathType: pathType});
+        },
+        function(err) {
+          reject(ono.syntax(err, 'Error reading "%s" as %s', path, pathType));
         });
     }
     else {
-      return Promise.reject(ono.syntax('Unable to resolve $ref pointer "%s"', $ref.path));
-    }
-  }
-  catch (e) {
-    return Promise.reject(e);
-  }
-}
-
-/**
- * If the given {@link $Ref#path} is a local file, then the file is read
- * and {@link $Ref#type} is set to "fs".
- *
- * @param {$Ref} $ref - The {@link $Ref} to read and update
- * @param {$RefParserOptions} options
- *
- * @returns {Promise|undefined}
- * Returns a promise if {@link $Ref#path} is a local file.
- * The promise resolves with the raw file contents.
- */
-function read$RefFile($ref, options) {
-  if (process.browser || util.path.isUrl($ref.path)) {
-    return;
-  }
-
-  $ref.pathType = 'fs';
-  return new Promise(function(resolve, reject) {
-    var file;
-    try {
-      file = util.path.urlToLocalPath($ref.path);
-    }
-    catch (err) {
-      reject(ono.uri(err, 'Malformed URI: %s', $ref.path));
-    }
-
-    util.debug('Opening file: %s', file);
-
-    try {
-      fs.readFile(file, function(err, data) {
-        if (err) {
-          reject(ono(err, 'Error opening file "%s"', $ref.path));
-        }
-        else {
-          resolve(data);
-        }
-      });
-    }
-    catch (err) {
-      reject(ono(err, 'Error opening file "%s"', file));
+      reject(ono.syntax('Unable to resolve $ref pointer "%s"', path));
     }
   });
 }
 
-/**
- * If the given {@link $Ref#path} is a URL, then the file is downloaded
- * and {@link $Ref#type} is set to "http" or "https".
- *
- * @param {$Ref} $ref - The {@link $Ref} to read and update
- * @param {$RefParserOptions} options
- *
- * @returns {Promise|undefined}
- * Returns a promise if {@link $Ref#path} is a URL.
- * The promise resolves with the raw file contents.
- */
-function read$RefUrl($ref, options) {
-  var u = url.parse($ref.path);
-
-  if (process.browser && !u.protocol) {
-    // Use the protocol of the current page
-    u.protocol = url.parse(location.href).protocol;
-  }
-
-  if (u.protocol === 'http:') {
-    $ref.pathType = 'http';
-    return download(u, options);
-  }
-  else if (u.protocol === 'https:') {
-    $ref.pathType = 'https';
-    return download(u, options);
-  }
-}
-
-}).call(this,require('_process'))
-
-},{"./download":3,"./parse":6,"./promise":9,"./ref":11,"./util":14,"_process":69,"fs":18,"ono":67,"url":90}],11:[function(require,module,exports){
+},{"../parse":6,"../ref":14,"../util":17,"../util/promise":18,"ono":71}],14:[function(require,module,exports){
 'use strict';
 
 module.exports = $Ref;
@@ -1544,7 +1541,7 @@ function $Ref($refs, path) {
   this.path = path;
 
   /**
-   * Indicates the type of {@link $Ref#path} (e.g. "fs", "http", or "https")
+   * Indicates the type of {@link $Ref#path} (e.g. "file", "http", etc.)
    * @type {?string}
    */
   this.pathType = undefined;
@@ -1569,7 +1566,8 @@ function $Ref($refs, path) {
  * @returns {boolean}
  */
 $Ref.prototype.isExpired = function() {
-  return !!(this.expires && this.expires <= new Date());
+  // If no value has been set yet (i.e. `this.expires === undefined`) then it's NOT expried
+  return !!(this.expires && this.expires <= Date.now());
 };
 
 /**
@@ -1589,10 +1587,13 @@ $Ref.prototype.setValue = function(value, options) {
   this.value = value;
 
   // Extend the cache expiration
-  var cacheDuration = options.cache[this.pathType];
+  var cacheDuration = options.resolve[this.pathType].cache;
   if (cacheDuration > 0) {
-    var expires = Date.now() + (cacheDuration * 1000);
+    var expires = Date.now() + cacheDuration;
     this.expires = new Date(expires);
+  }
+  else {
+    this.expires = new Date();
   }
 };
 
@@ -1616,23 +1617,21 @@ $Ref.prototype.exists = function(path) {
  * Resolves the given JSON reference within this {@link $Ref#value} and returns the resolved value.
  *
  * @param {string} path - The full path being resolved, optionally with a JSON pointer in the hash
- * @param {$RefParserOptions} options
  * @returns {*} - Returns the resolved value
  */
-$Ref.prototype.get = function(path, options) {
-  return this.resolve(path, options).value;
+$Ref.prototype.get = function(path) {
+  return this.resolve(path).value;
 };
 
 /**
  * Resolves the given JSON reference within this {@link $Ref#value}.
  *
  * @param {string} path - The full path being resolved, optionally with a JSON pointer in the hash
- * @param {$RefParserOptions} options
  * @returns {Pointer}
  */
-$Ref.prototype.resolve = function(path, options) {
+$Ref.prototype.resolve = function(path) {
   var pointer = new Pointer(this, path);
-  return pointer.resolve(this.value, options);
+  return pointer.resolve(this.value);
 };
 
 /**
@@ -1641,11 +1640,10 @@ $Ref.prototype.resolve = function(path, options) {
  *
  * @param {string} path - The full path of the property to set, optionally with a JSON pointer in the hash
  * @param {*} value - The value to assign
- * @param {$RefParserOptions} options
  */
-$Ref.prototype.set = function(path, value, options) {
+$Ref.prototype.set = function(path, value) {
   var pointer = new Pointer(this, path);
-  this.value = pointer.set(this.value, value, options);
+  this.value = pointer.set(this.value, value);
 };
 
 /**
@@ -1669,31 +1667,104 @@ $Ref.isExternal$Ref = function(value) {
 };
 
 /**
- * Determines whether the given value is a JSON reference, and whether it is allowed by the options.
- * For example, if it references an external file, then options.$refs.external must be true.
+ * Determines whether the given value is a JSON reference that "extends" its resolved value.
+ * That is, it has extra properties (in addition to "$ref"), so rather than simply pointing to
+ * an existing value, this $ref actually creates a NEW value that is a shallow copy of the resolved
+ * value, plus the extra properties.
+ *
+ * @example:
+ *  {
+ *    person: {
+ *      properties: {
+ *        firstName: { type: string }
+ *        lastName: { type: string }
+ *      }
+ *    }
+ *    employee: {
+ *      properties: {
+ *        $ref: #/person/properties
+ *        salary: { type: number }
+ *      }
+ *    }
+ *  }
+ *
+ *  In this example, "employee" is an extended $ref, since it extends "person" with an additional
+ *  property (salary).  The result is a NEW value that looks like this:
+ *
+ *  {
+ *    properties: {
+ *      firstName: { type: string }
+ *      lastName: { type: string }
+ *      salary: { type: number }
+ *    }
+ *  }
  *
  * @param {*} value - The value to inspect
- * @param {$RefParserOptions} options
  * @returns {boolean}
  */
-$Ref.isAllowed$Ref = function(value, options) {
-  if ($Ref.is$Ref(value)) {
-    if (value.$ref[0] === '#') {
-      if (options.$refs.internal) {
-        return true;
+$Ref.isExtended$Ref = function(value) {
+  return $Ref.is$Ref(value) && Object.keys(value).length > 1;
+};
+
+/**
+ * Returns the resolved value of a JSON Reference.
+ * If necessary, the resolved value is merged with the JSON Reference to create a new object
+ *
+ * @example:
+ *  {
+ *    person: {
+ *      properties: {
+ *        firstName: { type: string }
+ *        lastName: { type: string }
+ *      }
+ *    }
+ *    employee: {
+ *      properties: {
+ *        $ref: #/person/properties
+ *        salary: { type: number }
+ *      }
+ *    }
+ *  }
+ *
+ *  When "person" and "employee" are merged, you end up with the following object:
+ *
+ *  {
+ *    properties: {
+ *      firstName: { type: string }
+ *      lastName: { type: string }
+ *      salary: { type: number }
+ *    }
+ *  }
+ *
+ * @param {object} $ref - The JSON reference object (the one with the "$ref" property)
+ * @param {*} resolvedValue - The resolved value, which can be any type
+ * @returns {*} - Returns the dereferenced value
+ */
+$Ref.dereference = function($ref, resolvedValue) {
+  if (resolvedValue && typeof resolvedValue === 'object' && $Ref.isExtended$Ref($ref)) {
+    var merged = {};
+    Object.keys($ref).forEach(function(key) {
+      if (key !== '$ref') {
+        merged[key] = $ref[key];
       }
-    }
-    else if (options.$refs.external) {
-      return true;
-    }
+    });
+    Object.keys(resolvedValue).forEach(function(key) {
+      if (!(key in merged)) {
+        merged[key] = resolvedValue[key];
+      }
+    });
+    return merged;
+  }
+  else {
+    // Completely replace the original reference with the resolved value
+    return resolvedValue;
   }
 };
 
-},{"./pointer":8,"./util":14}],12:[function(require,module,exports){
+},{"./pointer":10,"./util":17}],15:[function(require,module,exports){
 'use strict';
 
-var Options = require('./options'),
-    util    = require('./util'),
+var util    = require('./util'),
     url     = require('url'),
     ono     = require('ono');
 
@@ -1809,11 +1880,10 @@ $Refs.prototype.exists = function(path) {
  * Resolves the given JSON reference and returns the resolved value.
  *
  * @param {string} path - The path being resolved, with a JSON pointer in the hash
- * @param {$RefParserOptions} options
  * @returns {*} - Returns the resolved value
  */
-$Refs.prototype.get = function(path, options) {
-  return this._resolve(path, options).value;
+$Refs.prototype.get = function(path) {
+  return this._resolve(path).value;
 };
 
 /**
@@ -1822,9 +1892,8 @@ $Refs.prototype.get = function(path, options) {
  *
  * @param {string} path - The path of the property to set, optionally with a JSON pointer in the hash
  * @param {*} value - The value to assign
- * @param {$RefParserOptions} options
  */
-$Refs.prototype.set = function(path, value, options) {
+$Refs.prototype.set = function(path, value) {
   path = url.resolve(this._basePath, path);
   var withoutHash = util.path.stripHash(path);
   var $ref = this._$refs[withoutHash];
@@ -1833,19 +1902,17 @@ $Refs.prototype.set = function(path, value, options) {
     throw ono('Error resolving $ref pointer "%s". \n"%s" not found.', path, withoutHash);
   }
 
-  options = new Options(options);
-  $ref.set(path, value, options);
+  $ref.set(path, value);
 };
 
 /**
  * Resolves the given JSON reference.
  *
  * @param {string} path - The path being resolved, optionally with a JSON pointer in the hash
- * @param {$RefParserOptions} options
  * @returns {Pointer}
  * @protected
  */
-$Refs.prototype._resolve = function(path, options) {
+$Refs.prototype._resolve = function(path) {
   path = url.resolve(this._basePath, path);
   var withoutHash = util.path.stripHash(path);
   var $ref = this._$refs[withoutHash];
@@ -1854,8 +1921,7 @@ $Refs.prototype._resolve = function(path, options) {
     throw ono('Error resolving $ref pointer "%s". \n"%s" not found.', path, withoutHash);
   }
 
-  options = new Options(options);
-  return $ref.resolve(path, options);
+  return $ref.resolve(path);
 };
 
 /**
@@ -1898,10 +1964,10 @@ function getPaths($refs, types) {
   });
 }
 
-},{"./options":5,"./util":14,"ono":67,"url":90}],13:[function(require,module,exports){
+},{"./util":17,"ono":71,"url":95}],16:[function(require,module,exports){
 'use strict';
 
-var Promise = require('./promise'),
+var Promise = require('./util/promise'),
     $Ref    = require('./ref'),
     Pointer = require('./pointer'),
     read    = require('./read'),
@@ -2001,11 +2067,11 @@ function resolve$Ref($ref, path, $refs, options) {
     });
 }
 
-},{"./pointer":8,"./promise":9,"./read":10,"./ref":11,"./util":14,"url":90}],14:[function(require,module,exports){
+},{"./pointer":10,"./read":13,"./ref":14,"./util":17,"./util/promise":18,"url":95}],17:[function(require,module,exports){
 'use strict';
 
 var debug = require('debug'),
-    path  = require('./path');
+    path  = require('path');
 
 /**
  * Writes messages to stdout.
@@ -2014,64 +2080,34 @@ var debug = require('debug'),
  */
 exports.debug = debug('json-schema-ref-parser');
 
+/**
+ * Utility functions for working with file paths and URLs
+ */
 exports.path = path;
 
 /**
- * Returns the resolved value of a JSON Reference.
- * If necessary, the resolved value is merged with the JSON Reference to create a new object
+ * Runs user-defined functions in order.
  *
- * @example:
- *  {
- *    person: {
- *      properties: {
- *        firstName: { type: string }
- *        lastName: { type: string }
- *      }
- *    }
- *    employee: {
- *      properties: {
- *        $ref: #/person/properties
- *        salary: { type: number }
- *      }
- *    }
- *  }
- *
- *  When "person" and "employee" are merged, you end up with the following object:
- *
- *  {
- *    properties: {
- *      firstName: { type: string }
- *      lastName: { type: string }
- *      salary: { type: number }
- *    }
- *  }
- *
- * @param {object} $ref - The JSON reference object (the one with the "$ref" property)
- * @param {*} resolvedValue - The resolved value, which can be any type
- * @returns {*} - Returns the dereferenced value
+ * @param {object} obj - An object with function properties. Each function can have an `order` property.
+ * @param {function} callback - A callback to execute for each function in `obj`
  */
-exports.dereference = function($ref, resolvedValue) {
-  if (resolvedValue && typeof resolvedValue === 'object' && Object.keys($ref).length > 1) {
-    var merged = {};
-    Object.keys($ref).forEach(function(key) {
-      if (key !== '$ref') {
-        merged[key] = $ref[key];
-      }
+exports.runInOrder = function(obj, callback) {
+  Object.keys(obj)
+    .map(function(key) { return {key: key, fn: obj[key]}; })
+    .filter(function(value) { return typeof value.fn === 'function'; })
+    .sort(function(a, b) { return a.fn.order - b.fn.order; })
+    .some(function(value) {
+      return callback(value.key, value.fn);
     });
-    Object.keys(resolvedValue).forEach(function(key) {
-      if (!(key in merged)) {
-        merged[key] = resolvedValue[key];
-      }
-    });
-    return merged;
-  }
-  else {
-    // Completely replace the original reference with the resolved value
-    return resolvedValue;
-  }
 };
 
-},{"./path":7,"debug":24}],15:[function(require,module,exports){
+},{"debug":28,"path":72}],18:[function(require,module,exports){
+'use strict';
+
+/** @type {Promise} **/
+module.exports = typeof Promise === 'function' ? Promise : require('es6-promise').Promise;
+
+},{"es6-promise":30}],19:[function(require,module,exports){
 /* eslint lines-around-comment: [2, {beforeBlockComment: false}] */
 'use strict';
 
@@ -2129,7 +2165,7 @@ module.exports = {
   }
 };
 
-},{"js-yaml":36,"ono":67}],16:[function(require,module,exports){
+},{"js-yaml":40,"ono":71}],20:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -2255,11 +2291,11 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],17:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 
-},{}],18:[function(require,module,exports){
-arguments[4][17][0].apply(exports,arguments)
-},{"dup":17}],19:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
+arguments[4][21][0].apply(exports,arguments)
+},{"dup":21}],23:[function(require,module,exports){
 (function (global){
 /*!
  * The buffer module from node.js, for the browser.
@@ -3812,14 +3848,14 @@ function blitBuffer (src, dst, offset, length) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"base64-js":16,"ieee754":30,"isarray":20}],20:[function(require,module,exports){
+},{"base64-js":20,"ieee754":34,"isarray":24}],24:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],21:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = {
   "100": "Continue",
   "101": "Switching Protocols",
@@ -3880,7 +3916,7 @@ module.exports = {
   "511": "Network Authentication Required"
 }
 
-},{}],22:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 (function (process,global){
 "use strict"
 
@@ -3905,7 +3941,7 @@ module.exports = function maybe (cb, promise) {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":69}],23:[function(require,module,exports){
+},{"_process":74}],27:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4017,7 +4053,7 @@ function objectToString(o) {
 
 }).call(this,{"isBuffer":require("../../is-buffer/index.js")})
 
-},{"../../is-buffer/index.js":34}],24:[function(require,module,exports){
+},{"../../is-buffer/index.js":38}],28:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -4187,7 +4223,7 @@ function localstorage(){
   } catch (e) {}
 }
 
-},{"./debug":25}],25:[function(require,module,exports){
+},{"./debug":29}],29:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -4386,7 +4422,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":66}],26:[function(require,module,exports){
+},{"ms":70}],30:[function(require,module,exports){
 (function (process,global){
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -5358,7 +5394,7 @@ function coerce(val) {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":69}],27:[function(require,module,exports){
+},{"_process":74}],31:[function(require,module,exports){
 /*
   Copyright (c) jQuery Foundation, Inc. and Contributors, All Rights Reserved.
 
@@ -11101,7 +11137,7 @@ function coerce(val) {
 }));
 /* vim: set sw=4 ts=4 et tw=80 : */
 
-},{}],28:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -11401,7 +11437,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],29:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 var http = require('http');
 
 var https = module.exports;
@@ -11417,7 +11453,7 @@ https.request = function (params, cb) {
     return http.request.call(this, params, cb);
 }
 
-},{"http":85}],30:[function(require,module,exports){
+},{"http":90}],34:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -11503,7 +11539,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],31:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 /*!
  * node-inherit
  * Copyright(c) 2011 Dmitry Filatov <dfilatov@yandex-team.ru>
@@ -11512,7 +11548,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 module.exports = require('./lib/inherit');
 
-},{"./lib/inherit":32}],32:[function(require,module,exports){
+},{"./lib/inherit":36}],36:[function(require,module,exports){
 /**
  * @module inherit
  * @version 2.2.2
@@ -11702,7 +11738,7 @@ defineAsGlobal && (global.inherit = inherit);
 
 })(this);
 
-},{}],33:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -11727,7 +11763,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],34:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 /**
  * Determine if an object is Buffer
  *
@@ -11746,12 +11782,12 @@ module.exports = function (obj) {
     ))
 }
 
-},{}],35:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],36:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 'use strict';
 
 
@@ -11760,7 +11796,7 @@ var yaml = require('./lib/js-yaml.js');
 
 module.exports = yaml;
 
-},{"./lib/js-yaml.js":37}],37:[function(require,module,exports){
+},{"./lib/js-yaml.js":41}],41:[function(require,module,exports){
 'use strict';
 
 
@@ -11801,7 +11837,7 @@ module.exports.parse          = deprecated('parse');
 module.exports.compose        = deprecated('compose');
 module.exports.addConstructor = deprecated('addConstructor');
 
-},{"./js-yaml/dumper":39,"./js-yaml/exception":40,"./js-yaml/loader":41,"./js-yaml/schema":43,"./js-yaml/schema/core":44,"./js-yaml/schema/default_full":45,"./js-yaml/schema/default_safe":46,"./js-yaml/schema/failsafe":47,"./js-yaml/schema/json":48,"./js-yaml/type":49}],38:[function(require,module,exports){
+},{"./js-yaml/dumper":43,"./js-yaml/exception":44,"./js-yaml/loader":45,"./js-yaml/schema":47,"./js-yaml/schema/core":48,"./js-yaml/schema/default_full":49,"./js-yaml/schema/default_safe":50,"./js-yaml/schema/failsafe":51,"./js-yaml/schema/json":52,"./js-yaml/type":53}],42:[function(require,module,exports){
 'use strict';
 
 
@@ -11864,7 +11900,7 @@ module.exports.repeat         = repeat;
 module.exports.isNegativeZero = isNegativeZero;
 module.exports.extend         = extend;
 
-},{}],39:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 'use strict';
 
 /*eslint-disable no-use-before-define*/
@@ -12714,7 +12750,7 @@ function safeDump(input, options) {
 module.exports.dump     = dump;
 module.exports.safeDump = safeDump;
 
-},{"./common":38,"./exception":40,"./schema/default_full":45,"./schema/default_safe":46}],40:[function(require,module,exports){
+},{"./common":42,"./exception":44,"./schema/default_full":49,"./schema/default_safe":50}],44:[function(require,module,exports){
 // YAML error class. http://stackoverflow.com/questions/8458984
 //
 'use strict';
@@ -12762,7 +12798,7 @@ YAMLException.prototype.toString = function toString(compact) {
 
 module.exports = YAMLException;
 
-},{"inherit":31}],41:[function(require,module,exports){
+},{"inherit":35}],45:[function(require,module,exports){
 'use strict';
 
 /*eslint-disable max-len,no-use-before-define*/
@@ -14342,7 +14378,7 @@ module.exports.load        = load;
 module.exports.safeLoadAll = safeLoadAll;
 module.exports.safeLoad    = safeLoad;
 
-},{"./common":38,"./exception":40,"./mark":42,"./schema/default_full":45,"./schema/default_safe":46}],42:[function(require,module,exports){
+},{"./common":42,"./exception":44,"./mark":46,"./schema/default_full":49,"./schema/default_safe":50}],46:[function(require,module,exports){
 'use strict';
 
 
@@ -14422,7 +14458,7 @@ Mark.prototype.toString = function toString(compact) {
 
 module.exports = Mark;
 
-},{"./common":38}],43:[function(require,module,exports){
+},{"./common":42}],47:[function(require,module,exports){
 'use strict';
 
 /*eslint-disable max-len*/
@@ -14528,7 +14564,7 @@ Schema.create = function createSchema() {
 
 module.exports = Schema;
 
-},{"./common":38,"./exception":40,"./type":49}],44:[function(require,module,exports){
+},{"./common":42,"./exception":44,"./type":53}],48:[function(require,module,exports){
 // Standard YAML's Core schema.
 // http://www.yaml.org/spec/1.2/spec.html#id2804923
 //
@@ -14548,7 +14584,7 @@ module.exports = new Schema({
   ]
 });
 
-},{"../schema":43,"./json":48}],45:[function(require,module,exports){
+},{"../schema":47,"./json":52}],49:[function(require,module,exports){
 // JS-YAML's default schema for `load` function.
 // It is not described in the YAML specification.
 //
@@ -14575,7 +14611,7 @@ module.exports = Schema.DEFAULT = new Schema({
   ]
 });
 
-},{"../schema":43,"../type/js/function":54,"../type/js/regexp":55,"../type/js/undefined":56,"./default_safe":46}],46:[function(require,module,exports){
+},{"../schema":47,"../type/js/function":58,"../type/js/regexp":59,"../type/js/undefined":60,"./default_safe":50}],50:[function(require,module,exports){
 // JS-YAML's default schema for `safeLoad` function.
 // It is not described in the YAML specification.
 //
@@ -14605,7 +14641,7 @@ module.exports = new Schema({
   ]
 });
 
-},{"../schema":43,"../type/binary":50,"../type/merge":58,"../type/omap":60,"../type/pairs":61,"../type/set":63,"../type/timestamp":65,"./core":44}],47:[function(require,module,exports){
+},{"../schema":47,"../type/binary":54,"../type/merge":62,"../type/omap":64,"../type/pairs":65,"../type/set":67,"../type/timestamp":69,"./core":48}],51:[function(require,module,exports){
 // Standard YAML's Failsafe schema.
 // http://www.yaml.org/spec/1.2/spec.html#id2802346
 
@@ -14624,7 +14660,7 @@ module.exports = new Schema({
   ]
 });
 
-},{"../schema":43,"../type/map":57,"../type/seq":62,"../type/str":64}],48:[function(require,module,exports){
+},{"../schema":47,"../type/map":61,"../type/seq":66,"../type/str":68}],52:[function(require,module,exports){
 // Standard YAML's JSON schema.
 // http://www.yaml.org/spec/1.2/spec.html#id2803231
 //
@@ -14651,7 +14687,7 @@ module.exports = new Schema({
   ]
 });
 
-},{"../schema":43,"../type/bool":51,"../type/float":52,"../type/int":53,"../type/null":59,"./failsafe":47}],49:[function(require,module,exports){
+},{"../schema":47,"../type/bool":55,"../type/float":56,"../type/int":57,"../type/null":63,"./failsafe":51}],53:[function(require,module,exports){
 'use strict';
 
 var YAMLException = require('./exception');
@@ -14714,7 +14750,7 @@ function Type(tag, options) {
 
 module.exports = Type;
 
-},{"./exception":40}],50:[function(require,module,exports){
+},{"./exception":44}],54:[function(require,module,exports){
 'use strict';
 
 /*eslint-disable no-bitwise*/
@@ -14850,7 +14886,7 @@ module.exports = new Type('tag:yaml.org,2002:binary', {
   represent: representYamlBinary
 });
 
-},{"../type":49,"buffer":17}],51:[function(require,module,exports){
+},{"../type":53,"buffer":21}],55:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -14889,7 +14925,7 @@ module.exports = new Type('tag:yaml.org,2002:bool', {
   defaultStyle: 'lowercase'
 });
 
-},{"../type":49}],52:[function(require,module,exports){
+},{"../type":53}],56:[function(require,module,exports){
 'use strict';
 
 var common = require('../common');
@@ -15008,7 +15044,7 @@ module.exports = new Type('tag:yaml.org,2002:float', {
   defaultStyle: 'lowercase'
 });
 
-},{"../common":38,"../type":49}],53:[function(require,module,exports){
+},{"../common":42,"../type":53}],57:[function(require,module,exports){
 'use strict';
 
 var common = require('../common');
@@ -15193,7 +15229,7 @@ module.exports = new Type('tag:yaml.org,2002:int', {
   }
 });
 
-},{"../common":38,"../type":49}],54:[function(require,module,exports){
+},{"../common":42,"../type":53}],58:[function(require,module,exports){
 'use strict';
 
 var esprima;
@@ -15279,7 +15315,7 @@ module.exports = new Type('tag:yaml.org,2002:js/function', {
   represent: representJavascriptFunction
 });
 
-},{"../../type":49,"esprima":27}],55:[function(require,module,exports){
+},{"../../type":53,"esprima":31}],59:[function(require,module,exports){
 'use strict';
 
 var Type = require('../../type');
@@ -15364,7 +15400,7 @@ module.exports = new Type('tag:yaml.org,2002:js/regexp', {
   represent: representJavascriptRegExp
 });
 
-},{"../../type":49}],56:[function(require,module,exports){
+},{"../../type":53}],60:[function(require,module,exports){
 'use strict';
 
 var Type = require('../../type');
@@ -15394,7 +15430,7 @@ module.exports = new Type('tag:yaml.org,2002:js/undefined', {
   represent: representJavascriptUndefined
 });
 
-},{"../../type":49}],57:[function(require,module,exports){
+},{"../../type":53}],61:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15404,7 +15440,7 @@ module.exports = new Type('tag:yaml.org,2002:map', {
   construct: function (data) { return null !== data ? data : {}; }
 });
 
-},{"../type":49}],58:[function(require,module,exports){
+},{"../type":53}],62:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15418,7 +15454,7 @@ module.exports = new Type('tag:yaml.org,2002:merge', {
   resolve: resolveYamlMerge
 });
 
-},{"../type":49}],59:[function(require,module,exports){
+},{"../type":53}],63:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15456,7 +15492,7 @@ module.exports = new Type('tag:yaml.org,2002:null', {
   defaultStyle: 'lowercase'
 });
 
-},{"../type":49}],60:[function(require,module,exports){
+},{"../type":53}],64:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15514,7 +15550,7 @@ module.exports = new Type('tag:yaml.org,2002:omap', {
   construct: constructYamlOmap
 });
 
-},{"../type":49}],61:[function(require,module,exports){
+},{"../type":53}],65:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15577,7 +15613,7 @@ module.exports = new Type('tag:yaml.org,2002:pairs', {
   construct: constructYamlPairs
 });
 
-},{"../type":49}],62:[function(require,module,exports){
+},{"../type":53}],66:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15587,7 +15623,7 @@ module.exports = new Type('tag:yaml.org,2002:seq', {
   construct: function (data) { return null !== data ? data : []; }
 });
 
-},{"../type":49}],63:[function(require,module,exports){
+},{"../type":53}],67:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15622,7 +15658,7 @@ module.exports = new Type('tag:yaml.org,2002:set', {
   construct: constructYamlSet
 });
 
-},{"../type":49}],64:[function(require,module,exports){
+},{"../type":53}],68:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15632,7 +15668,7 @@ module.exports = new Type('tag:yaml.org,2002:str', {
   construct: function (data) { return null !== data ? data : ''; }
 });
 
-},{"../type":49}],65:[function(require,module,exports){
+},{"../type":53}],69:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15727,7 +15763,7 @@ module.exports = new Type('tag:yaml.org,2002:timestamp', {
   represent: representYamlTimestamp
 });
 
-},{"../type":49}],66:[function(require,module,exports){
+},{"../type":53}],70:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -15854,7 +15890,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],67:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 /**!
  * Ono v2.0.1
  *
@@ -16016,7 +16052,236 @@ function errorToJSON() {
   return json;
 }
 
-},{"util":94}],68:[function(require,module,exports){
+},{"util":99}],72:[function(require,module,exports){
+(function (process){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// resolves . and .. elements in a path array with directory names there
+// must be no slashes, empty elements, or device names (c:\) in the array
+// (so also no leading and trailing slashes - it does not distinguish
+// relative and absolute paths)
+function normalizeArray(parts, allowAboveRoot) {
+  // if the path tries to go above the root, `up` ends up > 0
+  var up = 0;
+  for (var i = parts.length - 1; i >= 0; i--) {
+    var last = parts[i];
+    if (last === '.') {
+      parts.splice(i, 1);
+    } else if (last === '..') {
+      parts.splice(i, 1);
+      up++;
+    } else if (up) {
+      parts.splice(i, 1);
+      up--;
+    }
+  }
+
+  // if the path is allowed to go above the root, restore leading ..s
+  if (allowAboveRoot) {
+    for (; up--; up) {
+      parts.unshift('..');
+    }
+  }
+
+  return parts;
+}
+
+// Split a filename into [root, dir, basename, ext], unix version
+// 'root' is just a slash, or nothing.
+var splitPathRe =
+    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
+var splitPath = function(filename) {
+  return splitPathRe.exec(filename).slice(1);
+};
+
+// path.resolve([from ...], to)
+// posix version
+exports.resolve = function() {
+  var resolvedPath = '',
+      resolvedAbsolute = false;
+
+  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+    var path = (i >= 0) ? arguments[i] : process.cwd();
+
+    // Skip empty and invalid entries
+    if (typeof path !== 'string') {
+      throw new TypeError('Arguments to path.resolve must be strings');
+    } else if (!path) {
+      continue;
+    }
+
+    resolvedPath = path + '/' + resolvedPath;
+    resolvedAbsolute = path.charAt(0) === '/';
+  }
+
+  // At this point the path should be resolved to a full absolute path, but
+  // handle relative paths to be safe (might happen when process.cwd() fails)
+
+  // Normalize the path
+  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
+    return !!p;
+  }), !resolvedAbsolute).join('/');
+
+  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
+};
+
+// path.normalize(path)
+// posix version
+exports.normalize = function(path) {
+  var isAbsolute = exports.isAbsolute(path),
+      trailingSlash = substr(path, -1) === '/';
+
+  // Normalize the path
+  path = normalizeArray(filter(path.split('/'), function(p) {
+    return !!p;
+  }), !isAbsolute).join('/');
+
+  if (!path && !isAbsolute) {
+    path = '.';
+  }
+  if (path && trailingSlash) {
+    path += '/';
+  }
+
+  return (isAbsolute ? '/' : '') + path;
+};
+
+// posix version
+exports.isAbsolute = function(path) {
+  return path.charAt(0) === '/';
+};
+
+// posix version
+exports.join = function() {
+  var paths = Array.prototype.slice.call(arguments, 0);
+  return exports.normalize(filter(paths, function(p, index) {
+    if (typeof p !== 'string') {
+      throw new TypeError('Arguments to path.join must be strings');
+    }
+    return p;
+  }).join('/'));
+};
+
+
+// path.relative(from, to)
+// posix version
+exports.relative = function(from, to) {
+  from = exports.resolve(from).substr(1);
+  to = exports.resolve(to).substr(1);
+
+  function trim(arr) {
+    var start = 0;
+    for (; start < arr.length; start++) {
+      if (arr[start] !== '') break;
+    }
+
+    var end = arr.length - 1;
+    for (; end >= 0; end--) {
+      if (arr[end] !== '') break;
+    }
+
+    if (start > end) return [];
+    return arr.slice(start, end - start + 1);
+  }
+
+  var fromParts = trim(from.split('/'));
+  var toParts = trim(to.split('/'));
+
+  var length = Math.min(fromParts.length, toParts.length);
+  var samePartsLength = length;
+  for (var i = 0; i < length; i++) {
+    if (fromParts[i] !== toParts[i]) {
+      samePartsLength = i;
+      break;
+    }
+  }
+
+  var outputParts = [];
+  for (var i = samePartsLength; i < fromParts.length; i++) {
+    outputParts.push('..');
+  }
+
+  outputParts = outputParts.concat(toParts.slice(samePartsLength));
+
+  return outputParts.join('/');
+};
+
+exports.sep = '/';
+exports.delimiter = ':';
+
+exports.dirname = function(path) {
+  var result = splitPath(path),
+      root = result[0],
+      dir = result[1];
+
+  if (!root && !dir) {
+    // No dirname whatsoever
+    return '.';
+  }
+
+  if (dir) {
+    // It has a dirname, strip trailing slash
+    dir = dir.substr(0, dir.length - 1);
+  }
+
+  return root + dir;
+};
+
+
+exports.basename = function(path, ext) {
+  var f = splitPath(path)[2];
+  // TODO: make this comparison case-insensitive on windows?
+  if (ext && f.substr(-1 * ext.length) === ext) {
+    f = f.substr(0, f.length - ext.length);
+  }
+  return f;
+};
+
+
+exports.extname = function(path) {
+  return splitPath(path)[3];
+};
+
+function filter (xs, f) {
+    if (xs.filter) return xs.filter(f);
+    var res = [];
+    for (var i = 0; i < xs.length; i++) {
+        if (f(xs[i], i, xs)) res.push(xs[i]);
+    }
+    return res;
+}
+
+// String.prototype.substr - negative index don't work in IE8
+var substr = 'ab'.substr(-1) === 'b'
+    ? function (str, start, len) { return str.substr(start, len) }
+    : function (str, start, len) {
+        if (start < 0) start = str.length + start;
+        return str.substr(start, len);
+    }
+;
+
+}).call(this,require('_process'))
+
+},{"_process":74}],73:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -16041,7 +16306,7 @@ function nextTick(fn) {
 
 }).call(this,require('_process'))
 
-},{"_process":69}],69:[function(require,module,exports){
+},{"_process":74}],74:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -16134,7 +16399,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],70:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/punycode v1.4.0 by @mathias */
 ;(function(root) {
@@ -16672,7 +16937,7 @@ process.umask = function() { return 0; };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],71:[function(require,module,exports){
+},{}],76:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -16758,7 +17023,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],72:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -16845,16 +17110,16 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],73:[function(require,module,exports){
+},{}],78:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":71,"./encode":72}],74:[function(require,module,exports){
+},{"./decode":76,"./encode":77}],79:[function(require,module,exports){
 module.exports = require("./lib/_stream_duplex.js")
 
-},{"./lib/_stream_duplex.js":75}],75:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":80}],80:[function(require,module,exports){
 // a duplex stream is just a stream that is both readable and writable.
 // Since JS doesn't have multiple prototypal inheritance, this class
 // prototypally inherits from Readable, and then parasitically from
@@ -16938,7 +17203,7 @@ function forEach (xs, f) {
   }
 }
 
-},{"./_stream_readable":77,"./_stream_writable":79,"core-util-is":23,"inherits":33,"process-nextick-args":68}],76:[function(require,module,exports){
+},{"./_stream_readable":82,"./_stream_writable":84,"core-util-is":27,"inherits":37,"process-nextick-args":73}],81:[function(require,module,exports){
 // a passthrough stream.
 // basically just the most minimal sort of Transform stream.
 // Every written chunk gets output as-is.
@@ -16967,7 +17232,7 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
   cb(null, chunk);
 };
 
-},{"./_stream_transform":78,"core-util-is":23,"inherits":33}],77:[function(require,module,exports){
+},{"./_stream_transform":83,"core-util-is":27,"inherits":37}],82:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -17947,7 +18212,7 @@ function indexOf (xs, x) {
 
 }).call(this,require('_process'))
 
-},{"./_stream_duplex":75,"_process":69,"buffer":19,"core-util-is":23,"events":28,"inherits":33,"isarray":35,"process-nextick-args":68,"string_decoder/":89,"util":17}],78:[function(require,module,exports){
+},{"./_stream_duplex":80,"_process":74,"buffer":23,"core-util-is":27,"events":32,"inherits":37,"isarray":39,"process-nextick-args":73,"string_decoder/":94,"util":21}],83:[function(require,module,exports){
 // a transform stream is a readable/writable stream where you do
 // something with the data.  Sometimes it's called a "filter",
 // but that's not a great name for it, since that implies a thing where
@@ -18146,7 +18411,7 @@ function done(stream, er) {
   return stream.push(null);
 }
 
-},{"./_stream_duplex":75,"core-util-is":23,"inherits":33}],79:[function(require,module,exports){
+},{"./_stream_duplex":80,"core-util-is":27,"inherits":37}],84:[function(require,module,exports){
 // A bit simpler than readable streams.
 // Implement an async ._write(chunk, encoding, cb), and it'll handle all
 // the drain event emission and buffering.
@@ -18677,10 +18942,10 @@ function endWritable(stream, state, cb) {
   state.ended = true;
 }
 
-},{"./_stream_duplex":75,"buffer":19,"core-util-is":23,"events":28,"inherits":33,"process-nextick-args":68,"util-deprecate":92}],80:[function(require,module,exports){
+},{"./_stream_duplex":80,"buffer":23,"core-util-is":27,"events":32,"inherits":37,"process-nextick-args":73,"util-deprecate":97}],85:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
-},{"./lib/_stream_passthrough.js":76}],81:[function(require,module,exports){
+},{"./lib/_stream_passthrough.js":81}],86:[function(require,module,exports){
 var Stream = (function (){
   try {
     return require('st' + 'ream'); // hack to fix a circular dependency issue when used with browserify
@@ -18694,13 +18959,13 @@ exports.Duplex = require('./lib/_stream_duplex.js');
 exports.Transform = require('./lib/_stream_transform.js');
 exports.PassThrough = require('./lib/_stream_passthrough.js');
 
-},{"./lib/_stream_duplex.js":75,"./lib/_stream_passthrough.js":76,"./lib/_stream_readable.js":77,"./lib/_stream_transform.js":78,"./lib/_stream_writable.js":79}],82:[function(require,module,exports){
+},{"./lib/_stream_duplex.js":80,"./lib/_stream_passthrough.js":81,"./lib/_stream_readable.js":82,"./lib/_stream_transform.js":83,"./lib/_stream_writable.js":84}],87:[function(require,module,exports){
 module.exports = require("./lib/_stream_transform.js")
 
-},{"./lib/_stream_transform.js":78}],83:[function(require,module,exports){
+},{"./lib/_stream_transform.js":83}],88:[function(require,module,exports){
 module.exports = require("./lib/_stream_writable.js")
 
-},{"./lib/_stream_writable.js":79}],84:[function(require,module,exports){
+},{"./lib/_stream_writable.js":84}],89:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -18829,7 +19094,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":28,"inherits":33,"readable-stream/duplex.js":74,"readable-stream/passthrough.js":80,"readable-stream/readable.js":81,"readable-stream/transform.js":82,"readable-stream/writable.js":83}],85:[function(require,module,exports){
+},{"events":32,"inherits":37,"readable-stream/duplex.js":79,"readable-stream/passthrough.js":85,"readable-stream/readable.js":86,"readable-stream/transform.js":87,"readable-stream/writable.js":88}],90:[function(require,module,exports){
 var ClientRequest = require('./lib/request')
 var extend = require('xtend')
 var statusCodes = require('builtin-status-codes')
@@ -18904,7 +19169,7 @@ http.METHODS = [
 	'UNLOCK',
 	'UNSUBSCRIBE'
 ]
-},{"./lib/request":87,"builtin-status-codes":21,"url":90,"xtend":95}],86:[function(require,module,exports){
+},{"./lib/request":92,"builtin-status-codes":25,"url":95,"xtend":100}],91:[function(require,module,exports){
 (function (global){
 exports.fetch = isFunction(global.fetch) && isFunction(global.ReadableByteStream)
 
@@ -18949,7 +19214,7 @@ xhr = null // Help gc
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],87:[function(require,module,exports){
+},{}],92:[function(require,module,exports){
 (function (process,global,Buffer){
 // var Base64 = require('Base64')
 var capability = require('./capability')
@@ -19229,7 +19494,7 @@ var unsafeHeaders = [
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 
-},{"./capability":86,"./response":88,"_process":69,"buffer":19,"inherits":33,"stream":84}],88:[function(require,module,exports){
+},{"./capability":91,"./response":93,"_process":74,"buffer":23,"inherits":37,"stream":89}],93:[function(require,module,exports){
 (function (process,global,Buffer){
 var capability = require('./capability')
 var inherits = require('inherits')
@@ -19406,7 +19671,7 @@ IncomingMessage.prototype._onXHRProgress = function () {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 
-},{"./capability":86,"_process":69,"buffer":19,"inherits":33,"stream":84}],89:[function(require,module,exports){
+},{"./capability":91,"_process":74,"buffer":23,"inherits":37,"stream":89}],94:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19629,7 +19894,7 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":19}],90:[function(require,module,exports){
+},{"buffer":23}],95:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -20363,7 +20628,7 @@ Url.prototype.parseHost = function() {
   if (host) this.hostname = host;
 };
 
-},{"./util":91,"punycode":70,"querystring":73}],91:[function(require,module,exports){
+},{"./util":96,"punycode":75,"querystring":78}],96:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -20381,7 +20646,7 @@ module.exports = {
   }
 };
 
-},{}],92:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 (function (global){
 
 /**
@@ -20453,14 +20718,14 @@ function config (name) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],93:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],94:[function(require,module,exports){
+},{}],99:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -21051,7 +21316,7 @@ function hasOwnProperty(obj, prop) {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./support/isBuffer":93,"_process":69,"inherits":33}],95:[function(require,module,exports){
+},{"./support/isBuffer":98,"_process":74,"inherits":37}],100:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -21072,6 +21337,6 @@ function extend() {
     return target
 }
 
-},{}]},{},[4])(4)
+},{}]},{},[3])(3)
 });
 //# sourceMappingURL=ref-parser.js.map

@@ -15,8 +15,8 @@ This object is a map of JSON References and their resolved values.  It also has 
 - [`isExpired()`](#isexpiredref)
 - [`expire()`](#expireref)
 - [`exists()`](#existsref)
-- [`get()`](#getref-options)
-- [`set()`](#setref-value-options)
+- [`get()`](#getref)
+- [`set()`](#setref-value)
 
 
 ### `circular`
@@ -138,13 +138,10 @@ $RefParser.resolve("my-schema.json")
 ```
 
 
-### `get($ref, [options])`
+### `get($ref)`
 
 - **$ref** (_required_) - `string`<br>
 The JSON Reference path, optionally with a JSON Pointer in the hash
-
-- **options** (_optional_) - `object`<br>
-See [options](options.md) for the full list of options
 
 - **Return Value:** `boolean`<br>
 Gets the value at the given path in the schema. Throws an error if the path does not exist.
@@ -157,16 +154,13 @@ $RefParser.resolve("my-schema.json")
 ```
 
 
-### `set($ref, value, [options])`
+### `set($ref, value)`
 
 - **$ref** (_required_) - `string`<br>
 The JSON Reference path, optionally with a JSON Pointer in the hash
 
 - **value** (_required_)<br>
 The value to assign. Can be anything (object, string, number, etc.)
-
-- **options** (_optional_) - `object`<br>
-See [options](options.md) for the full list of options
 
 Sets the value at the given path in the schema. If the property, or any of its parents, don't exist, they will be created.
 

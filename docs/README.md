@@ -54,7 +54,7 @@ The difference is that in the second example you now have a reference to `parser
 
 
 ### Callbacks vs. Promises
-Many people prefer [ES6 Promise syntax](http://javascriptplayground.com/blog/2015/02/promises/) instead of callbacks.  JSON Schema $Ref Parser allows you to use whichever one you prefer.  
+Many people prefer [ES6 Promise syntax](http://javascriptplayground.com/blog/2015/02/promises/) instead of callbacks.  JSON Schema $Ref Parser allows you to use whichever one you prefer.
 
 If you pass a callback function to any method, then the method will call the callback using the Node.js error-first convention.  If you do _not_ pass a callback function, then the method will return an ES6 Promise.
 
@@ -87,7 +87,7 @@ $RefParser.dereference(mySchema)
 ### Circular $Refs
 JSON Schema files can contain [circular $ref pointers](https://gist.github.com/BigstickCarpet/d18278935fc73e3a0ee1), and JSON Schema $Ref Parser fully supports them. Circular references can be resolved and dereferenced just like any other reference.  However, if you intend to serialize the dereferenced schema as JSON, then you should be aware that [`JSON.stringify`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) does not support circular references by default, so you will need to [use a custom replacer function](https://stackoverflow.com/questions/11616630/json-stringify-avoid-typeerror-converting-circular-structure-to-json).
 
-You can disable circular references by setting the [`$refs.circular`](options.md) option to `false`. Then, if a circular reference is found, a `ReferenceError` will be thrown.
+You can disable circular references by setting the [`dereference.circular`](options.md) option to `false`. Then, if a circular reference is found, a `ReferenceError` will be thrown.
 
 Another option is to use the [`bundle`](ref-parser.md#bundleschema-options-callback) method rather than the [`dereference`](ref-parser.md#dereferenceschema-options-callback) method.  Bundling does _not_ result in circular references, because it simply converts _external_ `$ref` pointers to _internal_ ones.
 

@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Caching options', function() {
+describe.only('Caching options', function() {
   it('should only cache the main file when calling `parse()`', function() {
     var parser = new $RefParser();
     return parser
@@ -40,22 +40,19 @@ describe('Caching options', function() {
       });
   });
 
-  it('should not expire if the cache duration is set to zero', function(done) {
-    $RefParser
-      .resolve(path.abs('specs/external/external.yaml'), {cache: {fs: 0, http: 0, https: 0}})
+  it('should expire immediately if the cache duration is set to zero', function() {
+    return $RefParser
+      .resolve(path.abs('specs/external/external.yaml'), {resolve: {file: {cache: 0}, http: {cache: 0}}})
       .then(function($refs) {
-        setTimeout(function() {
-          $refs.paths().forEach(function(path) {
-            expect($refs.isExpired(path)).to.be.false;
-          });
-          done();
-        }, 1000);
+        $refs.paths().forEach(function(path) {
+          expect($refs.isExpired(path)).to.be.true;
+        });
       });
   });
 
   it('should expire after 1 second', function(done) {
     $RefParser
-      .resolve(path.abs('specs/external/external.yaml'), {cache: {fs: 1, http: 1, https: 1}})
+      .resolve(path.abs('specs/external/external.yaml'), {resolve: {file: {cache: 1000}, http: {cache: 1000}}})
       .then(function($refs) {
         setTimeout(function() {
           $refs.paths().forEach(function(path) {
