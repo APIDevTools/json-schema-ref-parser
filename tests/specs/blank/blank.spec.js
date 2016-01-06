@@ -38,7 +38,8 @@ describe('Blank files', function() {
         expect(err.message).to.contain('Error parsing "');
         expect(err.message).to.contain('blank/blank.yaml"');
         done();
-      });
+      })
+      .catch(done);
   });
 
   it('should throw an error if "options.allow.empty" is disabled', function(done) {
@@ -52,6 +53,7 @@ describe('Blank files', function() {
         expect(err.message).to.contain('blank/blank.yaml"');
         expect(err.message).to.contain('Parsed value is empty');
         done();
-      });
+      })
+      .catch(done);
   });
 });
