@@ -20,7 +20,7 @@ describe('$Refs object', function() {
       return $RefParser
         .resolve(path.abs('specs/external/external.yaml'))
         .then(function($refs) {
-          var cache = $refs.paths('fs');
+          var cache = $refs.paths('file');
           if (userAgent.isNode) {
             expect(cache).to.have.same.members([
               path.abs('specs/external/external.yaml'),
@@ -39,7 +39,7 @@ describe('$Refs object', function() {
       return $RefParser
         .resolve(path.abs('specs/external/external.yaml'))
         .then(function($refs) {
-          var cache = $refs.paths(['http', 'https']);
+          var cache = $refs.paths(['http']);
           if (userAgent.isBrowser) {
             expect(cache).to.have.same.members([
               path.url('specs/external/external.yaml'),
@@ -115,7 +115,7 @@ describe('$Refs object', function() {
       return $RefParser
         .resolve(path.abs('specs/external/external.yaml'))
         .then(function($refs) {
-          var cache = $refs.values('fs');
+          var cache = $refs.values('file');
           if (userAgent.isNode) {
             var expected = {};
             expected[path.abs('specs/external/external.yaml')] = helper.parsed.external.schema;
@@ -136,7 +136,7 @@ describe('$Refs object', function() {
       return $RefParser
         .resolve(path.abs('specs/external/external.yaml'))
         .then(function($refs) {
-          var cache = $refs.values(['http', 'https']);
+          var cache = $refs.values(['http']);
           if (userAgent.isBrowser) {
             var expected = {};
             expected[path.url('specs/external/external.yaml')] = helper.parsed.external.schema;
@@ -167,7 +167,12 @@ describe('$Refs object', function() {
 
     it('should expire after 1 second', function(done) {
       $RefParser
-        .resolve(path.abs('specs/external/external.yaml'), {cache: {fs: 1, http: 1, https: 1}})
+        .resolve(path.abs('specs/external/external.yaml'), {
+          resolve: {
+            http: {cache: 1000},
+            file: {cache: 1000},
+          }
+        })
         .then(function($refs) {
           setTimeout(function() {
             $refs.paths().forEach(function(path) {

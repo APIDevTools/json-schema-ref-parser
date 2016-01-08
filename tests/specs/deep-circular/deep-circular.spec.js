@@ -47,7 +47,7 @@ describe('Schema with deeply-nested circular $refs', function() {
   it('should throw an error if "options.$refs.circular" is false', function() {
     var parser = new $RefParser();
     return parser
-      .dereference(path.rel('specs/deep-circular/deep-circular.yaml'), {$refs: {circular: false}})
+      .dereference(path.rel('specs/deep-circular/deep-circular.yaml'), {dereference: {circular: false}})
       .then(helper.shouldNotGetCalled)
       .catch(function(err) {
         // A ReferenceError should have been thrown

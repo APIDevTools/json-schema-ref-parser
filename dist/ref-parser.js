@@ -326,7 +326,7 @@ function foundCircularReference(keyPath, $refs, options) {
   return true;
 }
 
-},{"./pointer":10,"./ref":14,"./util":17,"ono":71,"url":95}],3:[function(require,module,exports){
+},{"./pointer":10,"./ref":14,"./util":17,"ono":72,"url":95}],3:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -396,35 +396,36 @@ $RefParser.parse = function(schema, options, callback) {
  */
 $RefParser.prototype.parse = function(schema, options, callback) {
   var args = normalizeArgs(arguments);
+  var promise;
 
   if (args.schema && typeof args.schema === 'object') {
     // The schema is an object, not a path/url
-    this.schema = args.schema;
     this.$refs._basePath = '';
     var $ref = new $Ref(this.$refs, this.$refs._basePath);
-    $ref.setValue(this.schema, args.options);
-
-    return maybe(args.callback, Promise.resolve(this.schema));
+    $ref.value = args.schema;
+    promise = Promise.resolve({$ref: $ref});
   }
+  else {
+    if (!args.schema || typeof args.schema !== 'string') {
+      var err = ono('Expected a file path, URL, or object. Got %s', args.schema);
+      return maybe(args.callback, Promise.reject(err));
+    }
 
-  if (!args.schema || typeof args.schema !== 'string') {
-    var err = ono('Expected a file path, URL, or object. Got %s', args.schema);
-    return maybe(args.callback, Promise.reject(err));
+    // Resolve the absolute path of the schema
+    args.schema = util.path.localPathToUrl(args.schema);
+    args.schema = url.resolve(util.path.cwd(), args.schema);
+    this.$refs._basePath = util.path.stripHash(args.schema);
+
+    // Read the schema file/url
+    promise = read(args.schema, this.$refs, args.options);
   }
 
   var me = this;
-
-  // Resolve the absolute path of the schema
-  args.schema = util.path.localPathToUrl(args.schema);
-  args.schema = url.resolve(util.path.cwd(), args.schema);
-  this.$refs._basePath = util.path.stripHash(args.schema);
-
-  // Read the schema file/url
-  return read(args.schema, this.$refs, args.options)
+  return promise
     .then(function(result) {
       var value = result.$ref.value;
       if (!value || typeof value !== 'object' || Buffer.isBuffer(value)) {
-        throw ono.syntax('"%s" is not a valid JSON Schema', me.$refs._basePath);
+        throw ono.syntax('"%s" is not a valid JSON Schema', me.$refs._basePath || value);
       }
       else {
         me.schema = value;
@@ -581,7 +582,7 @@ function normalizeArgs(args) {
 
 }).call(this,{"isBuffer":require("../node_modules/is-buffer/index.js")})
 
-},{"../node_modules/is-buffer/index.js":38,"./bundle":1,"./dereference":2,"./options":4,"./read":13,"./ref":14,"./refs":15,"./resolve":16,"./util":17,"./util/promise":18,"./util/yaml":19,"call-me-maybe":26,"ono":71,"url":95}],4:[function(require,module,exports){
+},{"../node_modules/is-buffer/index.js":39,"./bundle":1,"./dereference":2,"./options":4,"./read":13,"./ref":14,"./refs":15,"./resolve":16,"./util":17,"./util/promise":19,"./util/yaml":20,"call-me-maybe":27,"ono":72,"url":95}],4:[function(require,module,exports){
 /* eslint lines-around-comment: [2, {beforeBlockComment: false}] */
 'use strict';
 
@@ -590,7 +591,8 @@ var parseJSON   = require('./parse/json'),
     parseText   = require('./parse/text'),
     parseBinary = require('./parse/binary'),
     readFile    = require('./read/file'),
-    readHttp    = require('./read/http');
+    readHttp    = require('./read/http'),
+    util        = require('./util');
 
 module.exports = $RefParserOptions;
 
@@ -668,6 +670,7 @@ function $RefParserOptions(options) {
  *
  * @param {?object} user - The options that were specified by the user
  * @param {$RefParserOptions} defaults - The {@link $RefParserOptions} object that we're populating
+ * @returns {*}
  */
 function merge(user, defaults) {
   if (user) {
@@ -678,8 +681,13 @@ function merge(user, defaults) {
       var defaultSetting = defaults[key];
 
       if (userSetting && typeof userSetting === 'object' && !Array.isArray(userSetting)) {
-        // An object with nested options, so merge it too
-        defaults[key] = merge(userSetting, defaultSetting);
+        if (typeof defaultSetting === 'function') {
+          // Create a copy of the default function, so the user can safely modify its options
+          defaultSetting = merge(defaultSetting, util.bind(defaultSetting));
+        }
+
+        // Merge the user-sepcified options for this object/function
+        defaults[key] = merge(userSetting, defaultSetting || {});
       }
       else {
         // A scalar value, function, or array. So override the default value.
@@ -687,11 +695,11 @@ function merge(user, defaults) {
       }
     }
   }
+  return defaults;
 }
 
-},{"./parse/binary":5,"./parse/json":7,"./parse/text":8,"./parse/yaml":9,"./read/file":11,"./read/http":12}],5:[function(require,module,exports){
+},{"./parse/binary":5,"./parse/json":7,"./parse/text":8,"./parse/yaml":9,"./read/file":11,"./read/http":12,"./util":17}],5:[function(require,module,exports){
 'use strict';
-var Promise = require('../util/promise');
 
 module.exports = parseBinary;
 
@@ -713,20 +721,19 @@ module.exports.ext = [
 ];
 
 /**
- * Parses the given data as text
+ * Parses the given data as a Buffer (byte array).
  *
  * @param {Buffer} data - The data to be parsed
  * @param {string} path - The file path or URL that `data` came from
  * @param {$RefParserOptions} options
- * @returns {Promise<object>}
+ * @returns {Buffer}
  */
 function parseBinary(data, path, options) {
-  return new Promise(function(resolve) {
-    resolve(data);  // data is already a Buffer
-  });
+  // data is already a Buffer
+  return data;
 }
 
-},{"../util/promise":18}],6:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -747,43 +754,98 @@ module.exports = parse;
  */
 function parse(data, path, options) {
   return new Promise(function(resolve, reject) {
-    // Check each parser, in order, until one matches this file
-    var pathExt = util.path.extname(path);
-    var matchingParser, parserType, allowEmpty;
-    util.runInOrder(options.parse, function(type, parser) {
-      parser.ext.some(function(ext) {
-        if (ext === pathExt ||
-          (ext instanceof RegExp && ext.test(path))) {
-          matchingParser = parser;
-          parserType = type;
-          allowEmpty = parser.empty;
-          return true;
+    var parser, value, lastError;
+
+    var parsers = getSortedParsers(path, options);
+    util.debug('These parsers match "%s":\n', path, parsers);
+    tryToParse(0);
+
+    function tryToParse(i) {
+      parser = parsers[i];
+      if (!parser) {
+        if (lastError) {
+          return reject(ono.syntax(lastError, 'Error parsing "%s"', path));
         }
-      });
-    });
+        else {
+          return reject(ono.syntax('Unable to parse "%s"', path));
+        }
+      }
 
-    // If one of the parsers matched, then wait on it
-    if (matchingParser) {
-      util.debug('Parsing "%s" as %s', path, parserType);
+      try {
+        util.debug('Parsing "%s" as %s', path, parser.name);
+        value = parser.fn(data, path, options);
+      }
+      catch (e) {
+        util.debug('    ', e.message);
+        lastError = e;
+        tryToParse(i + 1);
+      }
+    }
 
-      matchingParser(data, path, options)
-      .then(
-        function(value) {
-          if (!allowEmpty && isEmpty(value)) {
-            reject(ono.syntax('Error parsing "%s" as %s. \nParsed value is empty', path, parserType));
-          }
-          else {
-            resolve(value);
-          }
-        },
-        function(err) {
-          reject(ono.syntax(err, 'Error parsing "%s" as %s', path, parserType));
-        });
+    if (!parser.fn.empty && isEmpty(value)) {
+      reject(ono.syntax('Error parsing "%s" as %s. \nParsed value is empty', path, parser.name));
     }
     else {
-      reject(ono.syntax('Unable to parse "%s"', path));
+      resolve(value);
     }
   });
+}
+
+/**
+ * Returns the parsers for the given file, sorted by how likely they are  to successfully
+ * parse the file.  For example, a ".yaml" file is more likely to be successfully parsed
+ * by the YAML parser than by the JSON, Text, or Binary parsers.  Whereas a ".jpg" file
+ * is more likely to be successfully parsed by the Binary parser.
+ *
+ * @param {string} path - The file path or URL that `data` came from
+ * @param {$RefParserOptions} options
+ * @returns {{name: string, order: number, score: number, fn: function}[]}
+ */
+function getSortedParsers(path, options) {
+  var ext = util.path.extname(path);
+  var bestScore = 3;
+
+  return util.orderedFunctions(options.parse)
+    // Score each parser
+    .map(function(parser) {
+      var scoredParser = {
+        score: score(path, ext, parser.fn.ext),
+        order: parser.order,
+        name: parser.name,
+        fn: parser.fn,
+      };
+      bestScore = Math.min(scoredParser.score, bestScore);
+      return scoredParser;
+    })
+
+    // Only return parsers that scored 1 (exact match) or 2 (pattern match).
+    // If NONE of the parsers matched, then return ALL of them
+    .filter(function(parser) { return bestScore === 3 || parser.score < 3; })
+
+    // Sort by score (exact matches come first)
+    .sort(function(a, b) { return a.score - b.score; });
+}
+
+/**
+ * Returns a "score", based on how well the given file matches the given patterns.
+ *
+ * @param {string} path - The full file path or URL
+ * @param {string} ext - The file extension
+ * @param {array} patterns - An array of file extensions (strings) or RegExp patterns
+ * @returns {number} - 1 = exact match, 2 = pattern match, 3 = no match
+ */
+function score(path, ext, patterns) {
+  var bestScore = 3;
+  for (var i = 0; i < patterns.length; i++) {
+    var pattern = patterns[i];
+    if (pattern === ext) {
+      return 1;
+    }
+    if (pattern instanceof RegExp && pattern.test(path)) {
+      bestScore = Math.in(bestScore, 2);
+    }
+  }
+  return bestScore;
 }
 
 /**
@@ -801,9 +863,8 @@ function isEmpty(value) {
 
 }).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
 
-},{"../../node_modules/is-buffer/index.js":38,"../util":17,"../util/promise":18,"ono":71}],7:[function(require,module,exports){
+},{"../../node_modules/is-buffer/index.js":39,"../util":17,"../util/promise":19,"ono":72}],7:[function(require,module,exports){
 'use strict';
-var Promise = require('../util/promise');
 
 module.exports = parseJSON;
 
@@ -828,17 +889,14 @@ module.exports.ext = ['.json'];
  * @param {Buffer} data - The data to be parsed
  * @param {string} path - The file path or URL that `data` came from
  * @param {$RefParserOptions} options
- * @returns {Promise<object>}
+ * @returns {object}
  */
 function parseJSON(data, path, options) {
-  return new Promise(function(resolve) {
-    resolve(JSON.parse(data.toString()));
-  });
+  return JSON.parse(data.toString());
 }
 
-},{"../util/promise":18}],8:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 'use strict';
-var Promise = require('../util/promise');
 
 module.exports = parseText;
 
@@ -861,8 +919,8 @@ module.exports.encoding = 'utf8';
  * File extensions and/or RegExp patterns that will be parsed by this parser.
  */
 module.exports.ext = [
-  '.txt', '.htm', '.html', '.md', '.xml', '.js', '.css', '.scss', '.less',
-  '.min', '.map', '.svg'
+  '.txt', '.htm', '.html', '.md', '.xml', '.js', '.min', '.map',
+  '.css', '.scss', '.less', '.svg'
 ];
 
 /**
@@ -871,18 +929,15 @@ module.exports.ext = [
  * @param {Buffer} data - The data to be parsed
  * @param {string} path - The file path or URL that `data` came from
  * @param {$RefParserOptions} options
- * @returns {Promise<object>}
+ * @returns {string}
  */
 function parseText(data, path, options) {
-  return new Promise(function(resolve) {
-    resolve(data.toString(options.parse.text.encoding));
-  });
+  return data.toString(options.parse.text.encoding);
 }
 
-},{"../util/promise":18}],9:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
-var Promise = require('../util/promise'),
-    YAML    = require('../util/yaml');
+var YAML    = require('../util/yaml');
 
 module.exports = parseYAML;
 
@@ -907,15 +962,13 @@ module.exports.ext = ['.yaml', '.yml', '.json'];  // <--- JSON is valid YAML
  * @param {Buffer} data - The data to be parsed
  * @param {string} path - The file path or URL that `data` came from
  * @param {$RefParserOptions} options
- * @returns {Promise<object>}
+ * @returns {object}
  */
 function parseYAML(data, path, options) {
-  return new Promise(function(resolve) {
-    resolve(YAML.parse(data.toString()));
-  });
+  return YAML.parse(data.toString());
 }
 
-},{"../util/promise":18,"../util/yaml":19}],10:[function(require,module,exports){
+},{"../util/yaml":20}],10:[function(require,module,exports){
 'use strict';
 
 module.exports = Pointer;
@@ -1169,7 +1222,7 @@ function setValue(pointer, token, value) {
   return value;
 }
 
-},{"./ref":14,"./util":17,"ono":71,"url":95}],11:[function(require,module,exports){
+},{"./ref":14,"./util":17,"ono":72,"url":95}],11:[function(require,module,exports){
 (function (process){
 'use strict';
 var fs      = require('fs'),
@@ -1186,8 +1239,7 @@ module.exports.order = 1;
 
 /**
  * How long a file's contents will be cached before the file is re-read.
- * Setting this to zero disables caching and the file will be re-read every time
- * it is referenced in the JSON schema.
+ * Setting this to zero disables caching and the file will be re-read every time.
  */
 module.exports.cache = 60000;  // 1 minute
 
@@ -1235,7 +1287,7 @@ function readFile(path, options) {
 
 }).call(this,require('_process'))
 
-},{"../util":17,"../util/promise":18,"_process":74,"fs":22,"ono":71}],12:[function(require,module,exports){
+},{"../util":17,"../util/promise":19,"_process":74,"fs":23,"ono":72}],12:[function(require,module,exports){
 (function (process,Buffer){
 'use strict';
 
@@ -1255,8 +1307,7 @@ module.exports.order = 2;
 
 /**
  * How long a URL's contents will be cached before it is re-downloaded.
- * Setting this to zero disables caching and the file will be re-downloaded every time
- * it is referenced in the JSON schema.
+ * Setting this to zero disables caching and the file will be re-downloaded every time.
  */
 module.exports.cache = 300000;  // 5 minutes
 
@@ -1401,7 +1452,7 @@ function get(u, options) {
 
 }).call(this,require('_process'),require("buffer").Buffer)
 
-},{"../util":17,"../util/promise":18,"_process":74,"buffer":23,"http":90,"https":33,"ono":71,"url":95}],13:[function(require,module,exports){
+},{"../util":17,"../util/promise":19,"_process":74,"buffer":24,"http":90,"https":34,"ono":72,"url":95}],13:[function(require,module,exports){
 'use strict';
 
 var parse    = require('../parse'),
@@ -1446,18 +1497,11 @@ function read(path, $refs, options) {
     return readers(path, options)
       .then(function(reader) {
         $ref.pathType = reader.pathType;
-
-        // Parse the raw file data
         return parse(reader.data, path, options);
       })
       .then(function(parsed) {
-        // Update the $ref with the parsed file contents
-        $ref.setValue(parsed, options);
-
-        return {
-          $ref: $ref,
-          cached: false
-        };
+        $ref.value = parsed;
+        return {$ref: $ref, cached: false};
       });
   }
   catch (e) {
@@ -1477,13 +1521,14 @@ function readers(path, options) {
     var promise, pathType;
 
     // Run each reader in order, until one returns a Promise
-    util.runInOrder(options.resolve, function(type, reader) {
-      promise = reader(path, options);
-      if (promise) {
-        pathType = type;
-        return true;
-      }
-    });
+    util.orderedFunctions(options.resolve)
+      .some(function(reader) {
+        promise = reader.fn(path, options);
+        if (promise) {
+          pathType = reader.name;
+          return true;
+        }
+      });
 
     // If one of the readers returned a Promise, then wait on it
     if (promise) {
@@ -1491,9 +1536,7 @@ function readers(path, options) {
         function(data) {
           resolve({data: data, pathType: pathType});
         },
-        function(err) {
-          reject(ono.syntax(err, 'Error reading "%s" as %s', path, pathType));
-        });
+        reject);
     }
     else {
       reject(ono.syntax('Unable to resolve $ref pointer "%s"', path));
@@ -1501,7 +1544,7 @@ function readers(path, options) {
   });
 }
 
-},{"../parse":6,"../ref":14,"../util":17,"../util/promise":18,"ono":71}],14:[function(require,module,exports){
+},{"../parse":6,"../ref":14,"../util":17,"../util/promise":19,"ono":72}],14:[function(require,module,exports){
 'use strict';
 
 module.exports = $Ref;
@@ -1566,7 +1609,7 @@ function $Ref($refs, path) {
  * @returns {boolean}
  */
 $Ref.prototype.isExpired = function() {
-  // If no value has been set yet (i.e. `this.expires === undefined`) then it's NOT expried
+  // If no expiration has been set yet (i.e. `this.expires === undefined`) then it's NOT expried
   return !!(this.expires && this.expires <= Date.now());
 };
 
@@ -1578,22 +1621,27 @@ $Ref.prototype.expire = function() {
 };
 
 /**
- * Sets the {@link $Ref#value} and renews the cache expiration.
+ * Sets the {@link $Ref#expires}, based on the {@link $Ref#pathType}.
  *
- * @param {*} value
  * @param {$RefParserOptions} options
  */
-$Ref.prototype.setValue = function(value, options) {
-  this.value = value;
-
-  // Extend the cache expiration
-  var cacheDuration = options.resolve[this.pathType].cache;
-  if (cacheDuration > 0) {
-    var expires = Date.now() + cacheDuration;
-    this.expires = new Date(expires);
+$Ref.prototype.setExpiration = function(options) {
+  var resolver = options.resolve[this.pathType];
+  if (resolver) {
+    var cacheDuration = resolver.cache;
+    if (cacheDuration > 0) {
+      // Extend the cache expiration
+      var expires = Date.now() + cacheDuration;
+      this.expires = new Date(expires);
+    }
+    else {
+      // Expire immediately
+      this.expires = new Date();
+    }
   }
   else {
-    this.expires = new Date();
+    // Never expire
+    this.expires = undefined;
   }
 };
 
@@ -1803,7 +1851,7 @@ function $Refs() {
  * Returns the paths of all the files/URLs that are referenced by the JSON schema,
  * including the schema itself.
  *
- * @param {...string|string[]} [types] - Only return paths of the given types ("fs", "http", "https")
+ * @param {...string|string[]} [types] - Only return paths of the given types ("file", "http", etc.)
  * @returns {string[]}
  */
 $Refs.prototype.paths = function(types) {
@@ -1816,7 +1864,7 @@ $Refs.prototype.paths = function(types) {
 /**
  * Returns the map of JSON references and their resolved values.
  *
- * @param {...string|string[]} [types] - Only return references of the given types ("fs", "http", "https")
+ * @param {...string|string[]} [types] - Only return references of the given types ("file", "http", etc.)
  * @returns {object}
  */
 $Refs.prototype.values = function(types) {
@@ -1938,10 +1986,23 @@ $Refs.prototype._get$Ref = function(path) {
 };
 
 /**
+ * Sets the {@link $Ref#expires}, based on the {@link $Ref#pathType}.
+ *
+ * @param {$RefParserOptions} options
+ */
+$Refs.prototype._setExpirations = function(options) {
+  var me = this;
+  Object.keys(this._$refs).forEach(function(key) {
+    var $ref = me._$refs[key];
+    $ref.setExpiration(options);
+  });
+};
+
+/**
  * Returns the encoded and decoded paths keys of the given object.
  *
  * @param {object} $refs - The object whose keys are URL-encoded paths
- * @param {...string|string[]} [types] - Only return paths of the given types ("fs", "http", "https")
+ * @param {...string|string[]} [types] - Only return paths of the given types ("file", "http", etc.)
  * @returns {object[]}
  */
 function getPaths($refs, types) {
@@ -1959,12 +2020,12 @@ function getPaths($refs, types) {
   return paths.map(function(path) {
     return {
       encoded: path,
-      decoded: $refs[path].pathType === 'fs' ? util.path.urlToLocalPath(path, true) : path
+      decoded: $refs[path].pathType === 'file' ? util.path.urlToLocalPath(path, true) : path
     };
   });
 }
 
-},{"./util":17,"ono":71,"url":95}],16:[function(require,module,exports){
+},{"./util":17,"ono":72,"url":95}],16:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./util/promise'),
@@ -1991,16 +2052,20 @@ module.exports = resolve;
  */
 function resolve(parser, options) {
   try {
-    if (!options.$refs.external) {
-      // Nothing to resolve, so exit early
-      return Promise.resolve();
-    }
-
     util.debug('Resolving $ref pointers in %s', parser.$refs._basePath);
     var promises = crawl(parser.schema, parser.$refs._basePath + '#', parser.$refs, options);
-    return Promise.all(promises);
+
+    return Promise.all(promises)
+      .then(function() {
+        parser.$refs._setExpirations(options);
+      })
+      .catch(function(err) {
+        parser.$refs._setExpirations(options);
+        throw err;
+      });
   }
   catch (e) {
+    parser.$refs._setExpirations(options);
     return Promise.reject(e);
   }
 }
@@ -2067,11 +2132,11 @@ function resolve$Ref($ref, path, $refs, options) {
     });
 }
 
-},{"./pointer":10,"./read":13,"./ref":14,"./util":17,"./util/promise":18,"url":95}],17:[function(require,module,exports){
+},{"./pointer":10,"./read":13,"./ref":14,"./util":17,"./util/promise":19,"url":95}],17:[function(require,module,exports){
 'use strict';
 
 var debug = require('debug'),
-    path  = require('path');
+    path  = require('./path');
 
 /**
  * Writes messages to stdout.
@@ -2086,28 +2151,194 @@ exports.debug = debug('json-schema-ref-parser');
 exports.path = path;
 
 /**
- * Runs user-defined functions in order.
+ * A poor-man's `function.bind()`, for browsers that don't support it
  *
- * @param {object} obj - An object with function properties. Each function can have an `order` property.
- * @param {function} callback - A callback to execute for each function in `obj`
+ * @param {function} func
+ * @param {*} [context]
+ * @returns {function}
  */
-exports.runInOrder = function(obj, callback) {
-  Object.keys(obj)
-    .map(function(key) { return {key: key, fn: obj[key]}; })
-    .filter(function(value) { return typeof value.fn === 'function'; })
-    .sort(function(a, b) { return a.fn.order - b.fn.order; })
-    .some(function(value) {
-      return callback(value.key, value.fn);
-    });
+exports.bind = function(func, context) {
+  return function() {
+    return func.apply(context, arguments);
+  };
 };
 
-},{"debug":28,"path":72}],18:[function(require,module,exports){
+/**
+ * Returns an array of user-defined functions, sorted by their `order` property.
+ *
+ * @param {object} obj - An object with function properties. Each function can have an `order` property.
+ * @returns {{order: number, name: string, fn: function}[]}
+ */
+exports.orderedFunctions = function(obj) {
+  return Object.keys(obj)
+    .map(function(key) { return {order: obj[key].order, name: key, fn: obj[key]}; })
+    .filter(function(value) { return typeof value.fn === 'function'; })
+    .sort(function(a, b) { return a.order - b.order; });
+};
+
+},{"./path":18,"debug":29}],18:[function(require,module,exports){
+(function (process){
+'use strict';
+
+var isWindows           = /^win/.test(process.platform),
+    forwardSlashPattern = /\//g,
+    protocolPattern     = /^([a-z0-9.+-]+):\/\//i;
+
+// RegExp patterns to URL-encode special characters in local filesystem paths
+var urlEncodePatterns = [
+  /\?/g, '%3F',
+  /\#/g, '%23',
+  isWindows ? /\\/g : /\//, '/'
+];
+
+// RegExp patterns to URL-decode special characters for local filesystem paths
+var urlDecodePatterns = [
+  /\%23/g, '#',
+  /\%24/g, '$',
+  /\%26/g, '&',
+  /\%2C/g, ',',
+  /\%40/g, '@'
+];
+
+/**
+ * Returns the current working directory (in Node) or the current page URL (in browsers).
+ *
+ * @returns {string}
+ */
+exports.cwd = function cwd() {
+  return process.browser ? location.href : process.cwd() + '/';
+};
+
+/**
+ * Determines whether the given path is a URL.
+ *
+ * @param   {string} path
+ * @returns {boolean}
+ */
+exports.isUrl = function isUrl(path) {
+  var protocol = protocolPattern.exec(path);
+  if (protocol) {
+    protocol = protocol[1].toLowerCase();
+    return protocol !== 'file';
+  }
+  return false;
+};
+
+/**
+ * If the given path is a local filesystem path, it is converted to a URL.
+ *
+ * @param {string} path
+ * @returns {string}
+ */
+exports.localPathToUrl = function localPathToUrl(path) {
+  if (!process.browser && !exports.isUrl(path)) {
+    // Manually encode characters that are not encoded by `encodeURI`
+    for (var i = 0; i < urlEncodePatterns.length; i += 2) {
+      path = path.replace(urlEncodePatterns[i], urlEncodePatterns[i + 1]);
+    }
+    path = encodeURI(path);
+  }
+  return path;
+};
+
+/**
+ * Converts a URL to a local filesystem path
+ *
+ * @param {string} url
+ * @param {boolean} [keepFileProtocol] - If true, then "file://" will NOT be stripped
+ * @returns {string}
+ */
+exports.urlToLocalPath = function urlToLocalPath(url, keepFileProtocol) {
+  // Decode URL-encoded characters
+  url = decodeURI(url);
+
+  // Manually decode characters that are not decoded by `decodeURI`
+  for (var i = 0; i < urlDecodePatterns.length; i += 2) {
+    url = url.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1]);
+  }
+
+  // Handle "file://" URLs
+  var isFileUrl = url.substr(0, 7).toLowerCase() === 'file://';
+  if (isFileUrl) {
+    var protocol = 'file:///';
+
+    // Remove the third "/" if there is one
+    var path = url[7] === '/' ? url.substr(8) : url.substr(7);
+
+    if (isWindows && path[1] === '/') {
+      // insert a colon (":") after the drive letter on Windows
+      path = path[0] + ':' + path.substr(1);
+    }
+
+    if (keepFileProtocol) {
+      url = protocol + path;
+    }
+    else {
+      isFileUrl = false;
+      url = isWindows ? path : '/' + path;
+    }
+  }
+
+  // Format path separators on Windows
+  if (isWindows && !isFileUrl) {
+    url = url.replace(forwardSlashPattern, '\\');
+  }
+
+  return url;
+};
+
+/**
+ * Returns the hash (URL fragment), of the given path.
+ * If there is no hash, then the root hash ("#") is returned.
+ *
+ * @param   {string} path
+ * @returns {string}
+ */
+exports.getHash = function getHash(path) {
+  var hashIndex = path.indexOf('#');
+  if (hashIndex >= 0) {
+    return path.substr(hashIndex);
+  }
+  return '#';
+};
+
+/**
+ * Removes the hash (URL fragment), if any, from the given path.
+ *
+ * @param   {string} path
+ * @returns {string}
+ */
+exports.stripHash = function stripHash(path) {
+  var hashIndex = path.indexOf('#');
+  if (hashIndex >= 0) {
+    path = path.substr(0, hashIndex);
+  }
+  return path;
+};
+
+/**
+ * Returns the file extension of the given path.
+ *
+ * @param   {string} path
+ * @returns {string}
+ */
+exports.extname = function extname(path) {
+  var lastDot = path.lastIndexOf('.');
+  if (lastDot >= 0) {
+    return path.substr(lastDot).toLowerCase();
+  }
+  return '';
+};
+
+}).call(this,require('_process'))
+
+},{"_process":74}],19:[function(require,module,exports){
 'use strict';
 
 /** @type {Promise} **/
 module.exports = typeof Promise === 'function' ? Promise : require('es6-promise').Promise;
 
-},{"es6-promise":30}],19:[function(require,module,exports){
+},{"es6-promise":31}],20:[function(require,module,exports){
 /* eslint lines-around-comment: [2, {beforeBlockComment: false}] */
 'use strict';
 
@@ -2165,7 +2396,7 @@ module.exports = {
   }
 };
 
-},{"js-yaml":40,"ono":71}],20:[function(require,module,exports){
+},{"js-yaml":41,"ono":72}],21:[function(require,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -2291,11 +2522,11 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],21:[function(require,module,exports){
-
 },{}],22:[function(require,module,exports){
-arguments[4][21][0].apply(exports,arguments)
-},{"dup":21}],23:[function(require,module,exports){
+
+},{}],23:[function(require,module,exports){
+arguments[4][22][0].apply(exports,arguments)
+},{"dup":22}],24:[function(require,module,exports){
 (function (global){
 /*!
  * The buffer module from node.js, for the browser.
@@ -3848,14 +4079,14 @@ function blitBuffer (src, dst, offset, length) {
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"base64-js":20,"ieee754":34,"isarray":24}],24:[function(require,module,exports){
+},{"base64-js":21,"ieee754":35,"isarray":25}],25:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = {
   "100": "Continue",
   "101": "Switching Protocols",
@@ -3916,7 +4147,7 @@ module.exports = {
   "511": "Network Authentication Required"
 }
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function (process,global){
 "use strict"
 
@@ -3941,7 +4172,7 @@ module.exports = function maybe (cb, promise) {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":74}],27:[function(require,module,exports){
+},{"_process":74}],28:[function(require,module,exports){
 (function (Buffer){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4053,7 +4284,7 @@ function objectToString(o) {
 
 }).call(this,{"isBuffer":require("../../is-buffer/index.js")})
 
-},{"../../is-buffer/index.js":38}],28:[function(require,module,exports){
+},{"../../is-buffer/index.js":39}],29:[function(require,module,exports){
 
 /**
  * This is the web browser implementation of `debug()`.
@@ -4223,7 +4454,7 @@ function localstorage(){
   } catch (e) {}
 }
 
-},{"./debug":29}],29:[function(require,module,exports){
+},{"./debug":30}],30:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -4422,7 +4653,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":70}],30:[function(require,module,exports){
+},{"ms":71}],31:[function(require,module,exports){
 (function (process,global){
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -5394,7 +5625,7 @@ function coerce(val) {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":74}],31:[function(require,module,exports){
+},{"_process":74}],32:[function(require,module,exports){
 /*
   Copyright (c) jQuery Foundation, Inc. and Contributors, All Rights Reserved.
 
@@ -11137,7 +11368,7 @@ function coerce(val) {
 }));
 /* vim: set sw=4 ts=4 et tw=80 : */
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -11437,7 +11668,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 var http = require('http');
 
 var https = module.exports;
@@ -11453,7 +11684,7 @@ https.request = function (params, cb) {
     return http.request.call(this, params, cb);
 }
 
-},{"http":90}],34:[function(require,module,exports){
+},{"http":90}],35:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -11539,7 +11770,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 /*!
  * node-inherit
  * Copyright(c) 2011 Dmitry Filatov <dfilatov@yandex-team.ru>
@@ -11548,7 +11779,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 module.exports = require('./lib/inherit');
 
-},{"./lib/inherit":36}],36:[function(require,module,exports){
+},{"./lib/inherit":37}],37:[function(require,module,exports){
 /**
  * @module inherit
  * @version 2.2.2
@@ -11738,7 +11969,7 @@ defineAsGlobal && (global.inherit = inherit);
 
 })(this);
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -11763,7 +11994,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /**
  * Determine if an object is Buffer
  *
@@ -11782,12 +12013,12 @@ module.exports = function (obj) {
     ))
 }
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports = Array.isArray || function (arr) {
   return Object.prototype.toString.call(arr) == '[object Array]';
 };
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 'use strict';
 
 
@@ -11796,7 +12027,7 @@ var yaml = require('./lib/js-yaml.js');
 
 module.exports = yaml;
 
-},{"./lib/js-yaml.js":41}],41:[function(require,module,exports){
+},{"./lib/js-yaml.js":42}],42:[function(require,module,exports){
 'use strict';
 
 
@@ -11837,7 +12068,7 @@ module.exports.parse          = deprecated('parse');
 module.exports.compose        = deprecated('compose');
 module.exports.addConstructor = deprecated('addConstructor');
 
-},{"./js-yaml/dumper":43,"./js-yaml/exception":44,"./js-yaml/loader":45,"./js-yaml/schema":47,"./js-yaml/schema/core":48,"./js-yaml/schema/default_full":49,"./js-yaml/schema/default_safe":50,"./js-yaml/schema/failsafe":51,"./js-yaml/schema/json":52,"./js-yaml/type":53}],42:[function(require,module,exports){
+},{"./js-yaml/dumper":44,"./js-yaml/exception":45,"./js-yaml/loader":46,"./js-yaml/schema":48,"./js-yaml/schema/core":49,"./js-yaml/schema/default_full":50,"./js-yaml/schema/default_safe":51,"./js-yaml/schema/failsafe":52,"./js-yaml/schema/json":53,"./js-yaml/type":54}],43:[function(require,module,exports){
 'use strict';
 
 
@@ -11900,7 +12131,7 @@ module.exports.repeat         = repeat;
 module.exports.isNegativeZero = isNegativeZero;
 module.exports.extend         = extend;
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 'use strict';
 
 /*eslint-disable no-use-before-define*/
@@ -12750,7 +12981,7 @@ function safeDump(input, options) {
 module.exports.dump     = dump;
 module.exports.safeDump = safeDump;
 
-},{"./common":42,"./exception":44,"./schema/default_full":49,"./schema/default_safe":50}],44:[function(require,module,exports){
+},{"./common":43,"./exception":45,"./schema/default_full":50,"./schema/default_safe":51}],45:[function(require,module,exports){
 // YAML error class. http://stackoverflow.com/questions/8458984
 //
 'use strict';
@@ -12798,7 +13029,7 @@ YAMLException.prototype.toString = function toString(compact) {
 
 module.exports = YAMLException;
 
-},{"inherit":35}],45:[function(require,module,exports){
+},{"inherit":36}],46:[function(require,module,exports){
 'use strict';
 
 /*eslint-disable max-len,no-use-before-define*/
@@ -14378,7 +14609,7 @@ module.exports.load        = load;
 module.exports.safeLoadAll = safeLoadAll;
 module.exports.safeLoad    = safeLoad;
 
-},{"./common":42,"./exception":44,"./mark":46,"./schema/default_full":49,"./schema/default_safe":50}],46:[function(require,module,exports){
+},{"./common":43,"./exception":45,"./mark":47,"./schema/default_full":50,"./schema/default_safe":51}],47:[function(require,module,exports){
 'use strict';
 
 
@@ -14458,7 +14689,7 @@ Mark.prototype.toString = function toString(compact) {
 
 module.exports = Mark;
 
-},{"./common":42}],47:[function(require,module,exports){
+},{"./common":43}],48:[function(require,module,exports){
 'use strict';
 
 /*eslint-disable max-len*/
@@ -14564,7 +14795,7 @@ Schema.create = function createSchema() {
 
 module.exports = Schema;
 
-},{"./common":42,"./exception":44,"./type":53}],48:[function(require,module,exports){
+},{"./common":43,"./exception":45,"./type":54}],49:[function(require,module,exports){
 // Standard YAML's Core schema.
 // http://www.yaml.org/spec/1.2/spec.html#id2804923
 //
@@ -14584,7 +14815,7 @@ module.exports = new Schema({
   ]
 });
 
-},{"../schema":47,"./json":52}],49:[function(require,module,exports){
+},{"../schema":48,"./json":53}],50:[function(require,module,exports){
 // JS-YAML's default schema for `load` function.
 // It is not described in the YAML specification.
 //
@@ -14611,7 +14842,7 @@ module.exports = Schema.DEFAULT = new Schema({
   ]
 });
 
-},{"../schema":47,"../type/js/function":58,"../type/js/regexp":59,"../type/js/undefined":60,"./default_safe":50}],50:[function(require,module,exports){
+},{"../schema":48,"../type/js/function":59,"../type/js/regexp":60,"../type/js/undefined":61,"./default_safe":51}],51:[function(require,module,exports){
 // JS-YAML's default schema for `safeLoad` function.
 // It is not described in the YAML specification.
 //
@@ -14641,7 +14872,7 @@ module.exports = new Schema({
   ]
 });
 
-},{"../schema":47,"../type/binary":54,"../type/merge":62,"../type/omap":64,"../type/pairs":65,"../type/set":67,"../type/timestamp":69,"./core":48}],51:[function(require,module,exports){
+},{"../schema":48,"../type/binary":55,"../type/merge":63,"../type/omap":65,"../type/pairs":66,"../type/set":68,"../type/timestamp":70,"./core":49}],52:[function(require,module,exports){
 // Standard YAML's Failsafe schema.
 // http://www.yaml.org/spec/1.2/spec.html#id2802346
 
@@ -14660,7 +14891,7 @@ module.exports = new Schema({
   ]
 });
 
-},{"../schema":47,"../type/map":61,"../type/seq":66,"../type/str":68}],52:[function(require,module,exports){
+},{"../schema":48,"../type/map":62,"../type/seq":67,"../type/str":69}],53:[function(require,module,exports){
 // Standard YAML's JSON schema.
 // http://www.yaml.org/spec/1.2/spec.html#id2803231
 //
@@ -14687,7 +14918,7 @@ module.exports = new Schema({
   ]
 });
 
-},{"../schema":47,"../type/bool":55,"../type/float":56,"../type/int":57,"../type/null":63,"./failsafe":51}],53:[function(require,module,exports){
+},{"../schema":48,"../type/bool":56,"../type/float":57,"../type/int":58,"../type/null":64,"./failsafe":52}],54:[function(require,module,exports){
 'use strict';
 
 var YAMLException = require('./exception');
@@ -14750,7 +14981,7 @@ function Type(tag, options) {
 
 module.exports = Type;
 
-},{"./exception":44}],54:[function(require,module,exports){
+},{"./exception":45}],55:[function(require,module,exports){
 'use strict';
 
 /*eslint-disable no-bitwise*/
@@ -14886,7 +15117,7 @@ module.exports = new Type('tag:yaml.org,2002:binary', {
   represent: representYamlBinary
 });
 
-},{"../type":53,"buffer":21}],55:[function(require,module,exports){
+},{"../type":54,"buffer":22}],56:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -14925,7 +15156,7 @@ module.exports = new Type('tag:yaml.org,2002:bool', {
   defaultStyle: 'lowercase'
 });
 
-},{"../type":53}],56:[function(require,module,exports){
+},{"../type":54}],57:[function(require,module,exports){
 'use strict';
 
 var common = require('../common');
@@ -15044,7 +15275,7 @@ module.exports = new Type('tag:yaml.org,2002:float', {
   defaultStyle: 'lowercase'
 });
 
-},{"../common":42,"../type":53}],57:[function(require,module,exports){
+},{"../common":43,"../type":54}],58:[function(require,module,exports){
 'use strict';
 
 var common = require('../common');
@@ -15229,7 +15460,7 @@ module.exports = new Type('tag:yaml.org,2002:int', {
   }
 });
 
-},{"../common":42,"../type":53}],58:[function(require,module,exports){
+},{"../common":43,"../type":54}],59:[function(require,module,exports){
 'use strict';
 
 var esprima;
@@ -15315,7 +15546,7 @@ module.exports = new Type('tag:yaml.org,2002:js/function', {
   represent: representJavascriptFunction
 });
 
-},{"../../type":53,"esprima":31}],59:[function(require,module,exports){
+},{"../../type":54,"esprima":32}],60:[function(require,module,exports){
 'use strict';
 
 var Type = require('../../type');
@@ -15400,7 +15631,7 @@ module.exports = new Type('tag:yaml.org,2002:js/regexp', {
   represent: representJavascriptRegExp
 });
 
-},{"../../type":53}],60:[function(require,module,exports){
+},{"../../type":54}],61:[function(require,module,exports){
 'use strict';
 
 var Type = require('../../type');
@@ -15430,7 +15661,7 @@ module.exports = new Type('tag:yaml.org,2002:js/undefined', {
   represent: representJavascriptUndefined
 });
 
-},{"../../type":53}],61:[function(require,module,exports){
+},{"../../type":54}],62:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15440,7 +15671,7 @@ module.exports = new Type('tag:yaml.org,2002:map', {
   construct: function (data) { return null !== data ? data : {}; }
 });
 
-},{"../type":53}],62:[function(require,module,exports){
+},{"../type":54}],63:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15454,7 +15685,7 @@ module.exports = new Type('tag:yaml.org,2002:merge', {
   resolve: resolveYamlMerge
 });
 
-},{"../type":53}],63:[function(require,module,exports){
+},{"../type":54}],64:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15492,7 +15723,7 @@ module.exports = new Type('tag:yaml.org,2002:null', {
   defaultStyle: 'lowercase'
 });
 
-},{"../type":53}],64:[function(require,module,exports){
+},{"../type":54}],65:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15550,7 +15781,7 @@ module.exports = new Type('tag:yaml.org,2002:omap', {
   construct: constructYamlOmap
 });
 
-},{"../type":53}],65:[function(require,module,exports){
+},{"../type":54}],66:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15613,7 +15844,7 @@ module.exports = new Type('tag:yaml.org,2002:pairs', {
   construct: constructYamlPairs
 });
 
-},{"../type":53}],66:[function(require,module,exports){
+},{"../type":54}],67:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15623,7 +15854,7 @@ module.exports = new Type('tag:yaml.org,2002:seq', {
   construct: function (data) { return null !== data ? data : []; }
 });
 
-},{"../type":53}],67:[function(require,module,exports){
+},{"../type":54}],68:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15658,7 +15889,7 @@ module.exports = new Type('tag:yaml.org,2002:set', {
   construct: constructYamlSet
 });
 
-},{"../type":53}],68:[function(require,module,exports){
+},{"../type":54}],69:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15668,7 +15899,7 @@ module.exports = new Type('tag:yaml.org,2002:str', {
   construct: function (data) { return null !== data ? data : ''; }
 });
 
-},{"../type":53}],69:[function(require,module,exports){
+},{"../type":54}],70:[function(require,module,exports){
 'use strict';
 
 var Type = require('../type');
@@ -15763,7 +15994,7 @@ module.exports = new Type('tag:yaml.org,2002:timestamp', {
   represent: representYamlTimestamp
 });
 
-},{"../type":53}],70:[function(require,module,exports){
+},{"../type":54}],71:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -15890,7 +16121,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 /**!
  * Ono v2.0.1
  *
@@ -16052,236 +16283,7 @@ function errorToJSON() {
   return json;
 }
 
-},{"util":99}],72:[function(require,module,exports){
-(function (process){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// resolves . and .. elements in a path array with directory names there
-// must be no slashes, empty elements, or device names (c:\) in the array
-// (so also no leading and trailing slashes - it does not distinguish
-// relative and absolute paths)
-function normalizeArray(parts, allowAboveRoot) {
-  // if the path tries to go above the root, `up` ends up > 0
-  var up = 0;
-  for (var i = parts.length - 1; i >= 0; i--) {
-    var last = parts[i];
-    if (last === '.') {
-      parts.splice(i, 1);
-    } else if (last === '..') {
-      parts.splice(i, 1);
-      up++;
-    } else if (up) {
-      parts.splice(i, 1);
-      up--;
-    }
-  }
-
-  // if the path is allowed to go above the root, restore leading ..s
-  if (allowAboveRoot) {
-    for (; up--; up) {
-      parts.unshift('..');
-    }
-  }
-
-  return parts;
-}
-
-// Split a filename into [root, dir, basename, ext], unix version
-// 'root' is just a slash, or nothing.
-var splitPathRe =
-    /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/;
-var splitPath = function(filename) {
-  return splitPathRe.exec(filename).slice(1);
-};
-
-// path.resolve([from ...], to)
-// posix version
-exports.resolve = function() {
-  var resolvedPath = '',
-      resolvedAbsolute = false;
-
-  for (var i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
-    var path = (i >= 0) ? arguments[i] : process.cwd();
-
-    // Skip empty and invalid entries
-    if (typeof path !== 'string') {
-      throw new TypeError('Arguments to path.resolve must be strings');
-    } else if (!path) {
-      continue;
-    }
-
-    resolvedPath = path + '/' + resolvedPath;
-    resolvedAbsolute = path.charAt(0) === '/';
-  }
-
-  // At this point the path should be resolved to a full absolute path, but
-  // handle relative paths to be safe (might happen when process.cwd() fails)
-
-  // Normalize the path
-  resolvedPath = normalizeArray(filter(resolvedPath.split('/'), function(p) {
-    return !!p;
-  }), !resolvedAbsolute).join('/');
-
-  return ((resolvedAbsolute ? '/' : '') + resolvedPath) || '.';
-};
-
-// path.normalize(path)
-// posix version
-exports.normalize = function(path) {
-  var isAbsolute = exports.isAbsolute(path),
-      trailingSlash = substr(path, -1) === '/';
-
-  // Normalize the path
-  path = normalizeArray(filter(path.split('/'), function(p) {
-    return !!p;
-  }), !isAbsolute).join('/');
-
-  if (!path && !isAbsolute) {
-    path = '.';
-  }
-  if (path && trailingSlash) {
-    path += '/';
-  }
-
-  return (isAbsolute ? '/' : '') + path;
-};
-
-// posix version
-exports.isAbsolute = function(path) {
-  return path.charAt(0) === '/';
-};
-
-// posix version
-exports.join = function() {
-  var paths = Array.prototype.slice.call(arguments, 0);
-  return exports.normalize(filter(paths, function(p, index) {
-    if (typeof p !== 'string') {
-      throw new TypeError('Arguments to path.join must be strings');
-    }
-    return p;
-  }).join('/'));
-};
-
-
-// path.relative(from, to)
-// posix version
-exports.relative = function(from, to) {
-  from = exports.resolve(from).substr(1);
-  to = exports.resolve(to).substr(1);
-
-  function trim(arr) {
-    var start = 0;
-    for (; start < arr.length; start++) {
-      if (arr[start] !== '') break;
-    }
-
-    var end = arr.length - 1;
-    for (; end >= 0; end--) {
-      if (arr[end] !== '') break;
-    }
-
-    if (start > end) return [];
-    return arr.slice(start, end - start + 1);
-  }
-
-  var fromParts = trim(from.split('/'));
-  var toParts = trim(to.split('/'));
-
-  var length = Math.min(fromParts.length, toParts.length);
-  var samePartsLength = length;
-  for (var i = 0; i < length; i++) {
-    if (fromParts[i] !== toParts[i]) {
-      samePartsLength = i;
-      break;
-    }
-  }
-
-  var outputParts = [];
-  for (var i = samePartsLength; i < fromParts.length; i++) {
-    outputParts.push('..');
-  }
-
-  outputParts = outputParts.concat(toParts.slice(samePartsLength));
-
-  return outputParts.join('/');
-};
-
-exports.sep = '/';
-exports.delimiter = ':';
-
-exports.dirname = function(path) {
-  var result = splitPath(path),
-      root = result[0],
-      dir = result[1];
-
-  if (!root && !dir) {
-    // No dirname whatsoever
-    return '.';
-  }
-
-  if (dir) {
-    // It has a dirname, strip trailing slash
-    dir = dir.substr(0, dir.length - 1);
-  }
-
-  return root + dir;
-};
-
-
-exports.basename = function(path, ext) {
-  var f = splitPath(path)[2];
-  // TODO: make this comparison case-insensitive on windows?
-  if (ext && f.substr(-1 * ext.length) === ext) {
-    f = f.substr(0, f.length - ext.length);
-  }
-  return f;
-};
-
-
-exports.extname = function(path) {
-  return splitPath(path)[3];
-};
-
-function filter (xs, f) {
-    if (xs.filter) return xs.filter(f);
-    var res = [];
-    for (var i = 0; i < xs.length; i++) {
-        if (f(xs[i], i, xs)) res.push(xs[i]);
-    }
-    return res;
-}
-
-// String.prototype.substr - negative index don't work in IE8
-var substr = 'ab'.substr(-1) === 'b'
-    ? function (str, start, len) { return str.substr(start, len) }
-    : function (str, start, len) {
-        if (start < 0) start = str.length + start;
-        return str.substr(start, len);
-    }
-;
-
-}).call(this,require('_process'))
-
-},{"_process":74}],73:[function(require,module,exports){
+},{"util":99}],73:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -17203,7 +17205,7 @@ function forEach (xs, f) {
   }
 }
 
-},{"./_stream_readable":82,"./_stream_writable":84,"core-util-is":27,"inherits":37,"process-nextick-args":73}],81:[function(require,module,exports){
+},{"./_stream_readable":82,"./_stream_writable":84,"core-util-is":28,"inherits":38,"process-nextick-args":73}],81:[function(require,module,exports){
 // a passthrough stream.
 // basically just the most minimal sort of Transform stream.
 // Every written chunk gets output as-is.
@@ -17232,7 +17234,7 @@ PassThrough.prototype._transform = function(chunk, encoding, cb) {
   cb(null, chunk);
 };
 
-},{"./_stream_transform":83,"core-util-is":27,"inherits":37}],82:[function(require,module,exports){
+},{"./_stream_transform":83,"core-util-is":28,"inherits":38}],82:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -18212,7 +18214,7 @@ function indexOf (xs, x) {
 
 }).call(this,require('_process'))
 
-},{"./_stream_duplex":80,"_process":74,"buffer":23,"core-util-is":27,"events":32,"inherits":37,"isarray":39,"process-nextick-args":73,"string_decoder/":94,"util":21}],83:[function(require,module,exports){
+},{"./_stream_duplex":80,"_process":74,"buffer":24,"core-util-is":28,"events":33,"inherits":38,"isarray":40,"process-nextick-args":73,"string_decoder/":94,"util":22}],83:[function(require,module,exports){
 // a transform stream is a readable/writable stream where you do
 // something with the data.  Sometimes it's called a "filter",
 // but that's not a great name for it, since that implies a thing where
@@ -18411,7 +18413,7 @@ function done(stream, er) {
   return stream.push(null);
 }
 
-},{"./_stream_duplex":80,"core-util-is":27,"inherits":37}],84:[function(require,module,exports){
+},{"./_stream_duplex":80,"core-util-is":28,"inherits":38}],84:[function(require,module,exports){
 // A bit simpler than readable streams.
 // Implement an async ._write(chunk, encoding, cb), and it'll handle all
 // the drain event emission and buffering.
@@ -18942,7 +18944,7 @@ function endWritable(stream, state, cb) {
   state.ended = true;
 }
 
-},{"./_stream_duplex":80,"buffer":23,"core-util-is":27,"events":32,"inherits":37,"process-nextick-args":73,"util-deprecate":97}],85:[function(require,module,exports){
+},{"./_stream_duplex":80,"buffer":24,"core-util-is":28,"events":33,"inherits":38,"process-nextick-args":73,"util-deprecate":97}],85:[function(require,module,exports){
 module.exports = require("./lib/_stream_passthrough.js")
 
 },{"./lib/_stream_passthrough.js":81}],86:[function(require,module,exports){
@@ -19094,7 +19096,7 @@ Stream.prototype.pipe = function(dest, options) {
   return dest;
 };
 
-},{"events":32,"inherits":37,"readable-stream/duplex.js":79,"readable-stream/passthrough.js":85,"readable-stream/readable.js":86,"readable-stream/transform.js":87,"readable-stream/writable.js":88}],90:[function(require,module,exports){
+},{"events":33,"inherits":38,"readable-stream/duplex.js":79,"readable-stream/passthrough.js":85,"readable-stream/readable.js":86,"readable-stream/transform.js":87,"readable-stream/writable.js":88}],90:[function(require,module,exports){
 var ClientRequest = require('./lib/request')
 var extend = require('xtend')
 var statusCodes = require('builtin-status-codes')
@@ -19169,7 +19171,7 @@ http.METHODS = [
 	'UNLOCK',
 	'UNSUBSCRIBE'
 ]
-},{"./lib/request":92,"builtin-status-codes":25,"url":95,"xtend":100}],91:[function(require,module,exports){
+},{"./lib/request":92,"builtin-status-codes":26,"url":95,"xtend":100}],91:[function(require,module,exports){
 (function (global){
 exports.fetch = isFunction(global.fetch) && isFunction(global.ReadableByteStream)
 
@@ -19494,7 +19496,7 @@ var unsafeHeaders = [
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 
-},{"./capability":91,"./response":93,"_process":74,"buffer":23,"inherits":37,"stream":89}],93:[function(require,module,exports){
+},{"./capability":91,"./response":93,"_process":74,"buffer":24,"inherits":38,"stream":89}],93:[function(require,module,exports){
 (function (process,global,Buffer){
 var capability = require('./capability')
 var inherits = require('inherits')
@@ -19671,7 +19673,7 @@ IncomingMessage.prototype._onXHRProgress = function () {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
 
-},{"./capability":91,"_process":74,"buffer":23,"inherits":37,"stream":89}],94:[function(require,module,exports){
+},{"./capability":91,"_process":74,"buffer":24,"inherits":38,"stream":89}],94:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19894,7 +19896,7 @@ function base64DetectIncompleteChar(buffer) {
   this.charLength = this.charReceived ? 3 : 0;
 }
 
-},{"buffer":23}],95:[function(require,module,exports){
+},{"buffer":24}],95:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21316,7 +21318,7 @@ function hasOwnProperty(obj, prop) {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"./support/isBuffer":98,"_process":74,"inherits":37}],100:[function(require,module,exports){
+},{"./support/isBuffer":98,"_process":74,"inherits":38}],100:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;

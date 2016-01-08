@@ -16,17 +16,15 @@ describe('HTTP options', function() {
     global.onerror = windowOnError;
   });
 
-  describe('options.http.headers', function() {
+  describe('http.headers', function() {
     it('should override default HTTP headers', function(done) {
       testDone = done;
       var parser = new $RefParser();
 
       parser.parse('http://httpbin.org/headers', {
-          http: {
-            headers: {
-              'accept': 'application/json'
-            }
-          }
+          resolve: { http: { headers: {
+            'accept': 'application/json'
+          }}}
         })
         .then(function(schema) {
           expect(schema.headers).to.have.property('Accept', 'application/json');
@@ -42,11 +40,9 @@ describe('HTTP options', function() {
         var parser = new $RefParser();
 
         parser.parse('http://httpbin.org/headers', {
-            http: {
-              headers: {
-                'my-custom-header': 'hello, world'
-              }
-            }
+            resolve: { http: { headers: {
+              'my-custom-header': 'hello, world'
+            }}}
           })
           .then(function(schema) {
             expect(schema.headers).to.have.property('My-Custom-Header', 'hello, world');
@@ -57,7 +53,7 @@ describe('HTTP options', function() {
     }
   });
 
-  describe('options.http.redirect', function() {
+  describe('http.redirect', function() {
     beforeEach(function() {
       // Increase the timeout for these tests, to allow for multiple redirects
       this.currentTest.timeout(8000);
@@ -112,12 +108,12 @@ describe('HTTP options', function() {
         .catch(done);
     });
 
-    it('should follow 10 redirects if options.http.redirects = 10', function(done) {
+    it('should follow 10 redirects if http.redirects = 10', function(done) {
       testDone = done;
       var parser = new $RefParser();
 
       parser.parse('http://httpbin.org/redirect/10', {
-          http: { redirects: 10 }
+          resolve: { http: { redirects: 10 }}
         })
         .then(function(schema) {
           expect(schema.url).to.equal('http://httpbin.org/get');
@@ -126,12 +122,12 @@ describe('HTTP options', function() {
         .catch(done);
     });
 
-    it('should not follow any redirects if options.http.redirects = 0', function(done) {
+    it('should not follow any redirects if http.redirects = 0', function(done) {
       testDone = done;
       var parser = new $RefParser();
 
       parser.parse('http://httpbin.org/redirect/1', {
-          http: { redirects: 0 }
+          resolve: { http: { redirects: 0 }}
         })
         .then(function(schema) {
           if (userAgent.isNode) {
@@ -160,7 +156,7 @@ describe('HTTP options', function() {
     });
   });
 
-  describe('options.http.withCredentials', function(done) {
+  describe('http.withCredentials', function(done) {
     it('should work by default with CORS "Access-Control-Allow-Origin: *"', function(done) {
       testDone = done;
       var parser = new $RefParser();
@@ -184,7 +180,7 @@ describe('HTTP options', function() {
       // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
       // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
       parser.parse('http://petstore.swagger.io:80/v2/swagger.json', {
-          http: { withCredentials: false }
+          resolve: { http: { withCredentials: false }}
         })
         .then(function(schema) {
           expect(schema).to.be.an('object');
@@ -203,7 +199,7 @@ describe('HTTP options', function() {
         // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
         // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
         parser.parse('http://petstore.swagger.io:80/v2/swagger.json', {
-            http: { withCredentials: true }
+            resolve: { http: { withCredentials: true }}
           })
           .then(function(schema) {
             // The request succeeded, which means this browser doesn't support CORS.

@@ -67,12 +67,12 @@
           try {
             expect((actualFiles = $refs.paths())).to.have.same.members(expectedFiles);
             if (userAgent.isNode) {
-              expect((actualFiles = $refs.paths(['fs']))).to.have.same.members(expectedFiles);
-              expect($refs.paths('http', 'https')).to.be.an('array').with.lengthOf(0);
+              expect((actualFiles = $refs.paths(['file']))).to.have.same.members(expectedFiles);
+              expect($refs.paths('http')).to.be.an('array').with.lengthOf(0);
             }
             else {
-              expect((actualFiles = $refs.paths(['http', 'https']))).to.have.same.members(expectedFiles);
-              expect($refs.paths('fs')).to.be.an('array').with.lengthOf(0);
+              expect((actualFiles = $refs.paths(['http']))).to.have.same.members(expectedFiles);
+              expect($refs.paths('file')).to.be.an('array').with.lengthOf(0);
             }
           }
           catch (e) {

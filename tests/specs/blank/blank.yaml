@@ -1,0 +1,10 @@
+json:
+  $ref: files/blank.json
+yaml:
+  $ref: files/blank.yaml
+text:
+  $ref: files/blank.txt
+binary:
+  $ref: files/blank.png
+unknown:
+  $ref: files/blank.foo

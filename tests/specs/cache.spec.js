@@ -1,6 +1,6 @@
 'use strict';
 
-describe.only('Caching options', function() {
+describe('Caching options', function() {
   it('should only cache the main file when calling `parse()`', function() {
     var parser = new $RefParser();
     return parser

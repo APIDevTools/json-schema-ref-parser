@@ -45,9 +45,9 @@ describe('Empty schema', function() {
       });
   });
 
-  it('should throw an error if "options.allow.empty" is disabled', function() {
+  it('should throw an error if "parse.json.empty" is disabled', function() {
     return $RefParser
-      .parse(path.rel('specs/empty/empty.json'), {allow: {empty: false}})
+      .parse(path.rel('specs/empty/empty.json'), {parse: {json: {empty: false}}})
       .then(helper.shouldNotGetCalled)
       .catch(function(err) {
         expect(err).to.be.an.instanceOf(SyntaxError);

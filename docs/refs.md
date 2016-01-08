@@ -39,7 +39,7 @@ parser.dereference("my-schema.json")
 ### `paths([types])`
 
 - **types** (_optional_) - `string` (one or more)<br>
-Optionally only return certain types of paths ("fs", "http", "https")
+Optionally only return certain types of paths ("file", "http", etc.)
 
 - **Return Value:** `array` of `string`<br>
 Returns the paths/URLs of all the files in your schema (including the main schema file).
@@ -51,17 +51,17 @@ $RefParser.resolve("my-schema.json")
     $refs.paths();
 
     // Get the paths of local files only
-    $refs.paths("fs");
+    $refs.paths("file");
 
     // Get all URLs
-    $refs.paths("http", "https");
+    $refs.paths("http");
   });
 ```
 
 ### `values([types])`
 
 - **types** (_optional_) - `string` (one or more)<br>
-Optionally only return values from certain locations ("fs", "http", "https")
+Optionally only return values from certain locations ("file", "http", etc.)
 
 - **Return Value:** `object`<br>
 Returns a map of paths/URLs and their correspond values.

@@ -41,7 +41,7 @@ describe('Schema with circular (recursive) $refs', function() {
     it('should produce the same results if "options.$refs.circular" is "ignore"', function() {
       var parser = new $RefParser();
       return parser
-        .dereference(path.rel('specs/circular/circular-self.yaml'), {$refs: {circular: 'ignore'}})
+        .dereference(path.rel('specs/circular/circular-self.yaml'), {dereference: {circular: 'ignore'}})
         .then(function(schema) {
           expect(schema).to.equal(parser.schema);
           expect(schema).to.deep.equal(helper.dereferenced.circular.self);
@@ -54,7 +54,7 @@ describe('Schema with circular (recursive) $refs', function() {
     it('should throw an error if "options.$refs.circular" is false', function() {
       var parser = new $RefParser();
       return parser
-        .dereference(path.rel('specs/circular/circular-self.yaml'), {$refs: {circular: false}})
+        .dereference(path.rel('specs/circular/circular-self.yaml'), {dereference: {circular: false}})
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           // A ReferenceError should have been thrown
@@ -123,7 +123,7 @@ describe('Schema with circular (recursive) $refs', function() {
     it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', function() {
       var parser = new $RefParser();
       return parser
-        .dereference(path.rel('specs/circular/circular-ancestor.yaml'), {$refs: {circular: 'ignore'}})
+        .dereference(path.rel('specs/circular/circular-ancestor.yaml'), {dereference: {circular: 'ignore'}})
         .then(function(schema) {
           expect(schema).to.equal(parser.schema);
           expect(schema).to.deep.equal(helper.dereferenced.circular.ancestor.ignoreCircular$Refs);
@@ -139,7 +139,7 @@ describe('Schema with circular (recursive) $refs', function() {
     it('should throw an error if "options.$refs.circular" is false', function() {
       var parser = new $RefParser();
       return parser
-        .dereference(path.rel('specs/circular/circular-ancestor.yaml'), {$refs: {circular: false}})
+        .dereference(path.rel('specs/circular/circular-ancestor.yaml'), {dereference: {circular: false}})
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           // A ReferenceError should have been thrown
@@ -210,7 +210,7 @@ describe('Schema with circular (recursive) $refs', function() {
     it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', function() {
       var parser = new $RefParser();
       return parser
-        .dereference(path.rel('specs/circular/circular-indirect.yaml'), {$refs: {circular: 'ignore'}})
+        .dereference(path.rel('specs/circular/circular-indirect.yaml'), {dereference: {circular: 'ignore'}})
         .then(function(schema) {
           expect(schema).to.equal(parser.schema);
           expect(schema).to.deep.equal(helper.dereferenced.circular.indirect.ignoreCircular$Refs);
@@ -226,7 +226,7 @@ describe('Schema with circular (recursive) $refs', function() {
     it('should throw an error if "options.$refs.circular" is false', function() {
       var parser = new $RefParser();
       return parser
-        .dereference(path.rel('specs/circular/circular-indirect.yaml'), {$refs: {circular: false}})
+        .dereference(path.rel('specs/circular/circular-indirect.yaml'), {dereference: {circular: false}})
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           // A ReferenceError should have been thrown
@@ -297,7 +297,7 @@ describe('Schema with circular (recursive) $refs', function() {
     it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', function() {
       var parser = new $RefParser();
       return parser
-        .dereference(path.rel('specs/circular/circular-indirect-ancestor.yaml'), {$refs: {circular: 'ignore'}})
+        .dereference(path.rel('specs/circular/circular-indirect-ancestor.yaml'), {dereference: {circular: 'ignore'}})
         .then(function(schema) {
           expect(schema).to.equal(parser.schema);
           expect(schema).to.deep.equal(helper.dereferenced.circular.indirectAncestor.ignoreCircular$Refs);
@@ -313,7 +313,7 @@ describe('Schema with circular (recursive) $refs', function() {
     it('should throw an error if "options.$refs.circular" is false', function() {
       var parser = new $RefParser();
       return parser
-        .dereference(path.rel('specs/circular/circular-indirect-ancestor.yaml'), {$refs: {circular: false}})
+        .dereference(path.rel('specs/circular/circular-indirect-ancestor.yaml'), {dereference: {circular: false}})
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           // A ReferenceError should have been thrown
