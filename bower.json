@@ -10,7 +10,7 @@
   ],
   "license": "MIT",
   "homepage": "https://github.com/BigstickCarpet/json-schema-ref-parser",
-  "main": "dist/json-schema-ref-parser.js",
+  "main": "dist/ref-parser.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/BigstickCarpet/json-schema-ref-parser.git"
