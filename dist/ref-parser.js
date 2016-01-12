@@ -87,7 +87,7 @@ function crawl(obj, path, pathFromRoot, inventory, $refs, options) {
 function inventory$Ref($refParent, $refKey, path, pathFromRoot, inventory, $refs, options) {
   var $ref = $refParent[$refKey];
   var $refPath = url.resolve(path, $ref.$ref);
-  var pointer = $refs._resolve($refPath);
+  var pointer = $refs._resolve($refPath, options);
   var depth = Pointer.parse(pathFromRoot).length;
   var file = util.path.stripHash(pointer.path);
   var hash = util.path.getHash(pointer.path);
@@ -238,7 +238,7 @@ function crawl(obj, path, pathFromRoot, parents, $refs, options) {
       var value = obj[key];
       var circular = false;
 
-      if ($Ref.is$Ref(value, options)) {
+      if ($Ref.isAllowed$Ref(value, options)) {
         var dereferenced = dereference$Ref(value, keyPath, keyPathFromRoot, parents, $refs, options);
         circular = dereferenced.circular;
         obj[key] = dereferenced.value;
@@ -276,7 +276,7 @@ function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
   util.debug('Dereferencing $ref pointer "%s" at %s', $ref.$ref, path);
 
   var $refPath = url.resolve(path, $ref.$ref);
-  var pointer = $refs._resolve($refPath);
+  var pointer = $refs._resolve($refPath, options);
 
   // Check for circular references
   var directCircular = pointer.circular;
@@ -646,6 +646,15 @@ function $RefParserOptions(options) {
   this.resolve = {
     file: readFile,
     http: readHttp,
+
+    /**
+     * Determines whether external $ref pointers will be resolved.
+     * If this option is disabled, then none of above resolvers will be called.
+     * Instead, external $ref pointers will simply be ignored.
+     *
+     * @type {boolean}
+     */
+    external: true,
   };
 
   /**
@@ -699,14 +708,17 @@ function merge(user, defaults) {
 }
 
 },{"./parse/binary":5,"./parse/json":7,"./parse/text":8,"./parse/yaml":9,"./read/file":11,"./read/http":12,"./util":17}],5:[function(require,module,exports){
+(function (Buffer){
 'use strict';
+
+var Promise = require('../util/promise');
 
 module.exports = parseBinary;
 
 /**
  * The order that this parser will run, in relation to other parsers.
  */
-module.exports.order = 4;
+module.exports.order = 400;
 
 /**
  * Whether to allow "empty" files (zero bytes).
@@ -723,17 +735,26 @@ module.exports.ext = [
 /**
  * Parses the given data as a Buffer (byte array).
  *
- * @param {Buffer} data - The data to be parsed
+ * @param {*} data - The data to be parsed
  * @param {string} path - The file path or URL that `data` came from
  * @param {$RefParserOptions} options
- * @returns {Buffer}
+ * @returns {Promise<Buffer>}
  */
 function parseBinary(data, path, options) {
-  // data is already a Buffer
-  return data;
+  return new Promise(function(resolve, reject) {
+    if (Buffer.isBuffer(data)) {
+      resolve(data);
+    }
+    else {
+      // This will reject if data is anything other than a string or typed array
+      resolve(new Buffer(data));
+    }
+  });
 }
 
-},{}],6:[function(require,module,exports){
+}).call(this,require("buffer").Buffer)
+
+},{"../util/promise":19,"buffer":24}],6:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -746,7 +767,7 @@ module.exports = parse;
 /**
  * Parses the given data according to the given options.
  *
- * @param {Buffer} data - The data to be parsed
+ * @param {*} data - The data to be parsed
  * @param {string} path - The file path or URL that `data` came from
  * @param {$RefParserOptions} options
  *
@@ -754,39 +775,26 @@ module.exports = parse;
  */
 function parse(data, path, options) {
   return new Promise(function(resolve, reject) {
-    var parser, value, lastError;
-
+    util.debug('Parsing %s', path);
     var parsers = getSortedParsers(path, options);
-    util.debug('These parsers match "%s":\n', path, parsers);
-    tryToParse(0);
+    util.runOrderedFunctions(parsers, data, path, options).then(onParsed, onError);
 
-    function tryToParse(i) {
-      parser = parsers[i];
-      if (!parser) {
-        if (lastError) {
-          return reject(ono.syntax(lastError, 'Error parsing "%s"', path));
-        }
-        else {
-          return reject(ono.syntax('Unable to parse "%s"', path));
-        }
+    function onParsed(parser) {
+      if (!parser.fn.empty && isEmpty(parser.result)) {
+        reject(ono.syntax('Error parsing "%s" as %s. \nParsed value is empty', path, parser.name));
       }
-
-      try {
-        util.debug('Parsing "%s" as %s', path, parser.name);
-        value = parser.fn(data, path, options);
-      }
-      catch (e) {
-        util.debug('    ', e.message);
-        lastError = e;
-        tryToParse(i + 1);
+      else {
+        resolve(parser.result);
       }
     }
 
-    if (!parser.fn.empty && isEmpty(value)) {
-      reject(ono.syntax('Error parsing "%s" as %s. \nParsed value is empty', path, parser.name));
-    }
-    else {
-      resolve(value);
+    function onError(err) {
+      if (err) {
+        reject(ono.syntax(err, 'Error parsing %s', path));
+      }
+      else {
+        reject(ono.syntax('Unable to parse %s', path));
+      }
     }
   });
 }
@@ -805,7 +813,7 @@ function getSortedParsers(path, options) {
   var ext = util.path.extname(path);
   var bestScore = 3;
 
-  return util.orderedFunctions(options.parse)
+  return util.getOrderedFunctions(options.parse)
     // Score each parser
     .map(function(parser) {
       var scoredParser = {
@@ -836,13 +844,14 @@ function getSortedParsers(path, options) {
  */
 function score(path, ext, patterns) {
   var bestScore = 3;
+  patterns = Array.isArray(patterns) ? patterns : [patterns];
   for (var i = 0; i < patterns.length; i++) {
     var pattern = patterns[i];
     if (pattern === ext) {
       return 1;
     }
     if (pattern instanceof RegExp && pattern.test(path)) {
-      bestScore = Math.in(bestScore, 2);
+      bestScore = Math.min(bestScore, 2);
     }
   }
   return bestScore;
@@ -864,14 +873,17 @@ function isEmpty(value) {
 }).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
 
 },{"../../node_modules/is-buffer/index.js":39,"../util":17,"../util/promise":19,"ono":72}],7:[function(require,module,exports){
+(function (Buffer){
 'use strict';
+
+var Promise = require('../util/promise');
 
 module.exports = parseJSON;
 
 /**
  * The order that this parser will run, in relation to other parsers.
  */
-module.exports.order = 1;
+module.exports.order = 100;
 
 /**
  * Whether to allow "empty" files. This includes zero-byte files, as well as empty JSON objects.
@@ -886,24 +898,46 @@ module.exports.ext = ['.json'];
 /**
  * Parses the given data as JSON
  *
- * @param {Buffer} data - The data to be parsed
+ * @param {*} data - The data to be parsed
  * @param {string} path - The file path or URL that `data` came from
  * @param {$RefParserOptions} options
- * @returns {object}
+ * @returns {Promise}
  */
 function parseJSON(data, path, options) {
-  return JSON.parse(data.toString());
+  return new Promise(function(resolve, reject) {
+    if (Buffer.isBuffer(data)) {
+      var json = data.toString();
+      resolve(JSON.parse(json));
+    }
+    else if (typeof data === 'string') {
+      if (data.trim().length === 0) {
+        resolve(null);  // This mirrors the YAML behavior
+      }
+      else {
+        resolve(JSON.parse(data));
+      }
+    }
+    else {
+      // data is already a JavaScript value (object, array, number, null, NaN, etc.)
+      resolve(data);
+    }
+  });
 }
 
-},{}],8:[function(require,module,exports){
+}).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
+
+},{"../../node_modules/is-buffer/index.js":39,"../util/promise":19}],8:[function(require,module,exports){
+(function (Buffer){
 'use strict';
+
+var Promise = require('../util/promise');
 
 module.exports = parseText;
 
 /**
  * The order that this parser will run, in relation to other parsers.
  */
-module.exports.order = 3;
+module.exports.order = 300;
 
 /**
  * Whether to allow "empty" files (zero bytes).
@@ -926,25 +960,40 @@ module.exports.ext = [
 /**
  * Parses the given data as text
  *
- * @param {Buffer} data - The data to be parsed
+ * @param {*} data - The data to be parsed
  * @param {string} path - The file path or URL that `data` came from
  * @param {$RefParserOptions} options
- * @returns {string}
+ * @returns {Promise<string>}
  */
 function parseText(data, path, options) {
-  return data.toString(options.parse.text.encoding);
+  return new Promise(function(resolve, reject) {
+    if (typeof data === 'string') {
+      resolve(data);
+    }
+    else if (Buffer.isBuffer(data)) {
+      resolve(data.toString(options.parse.text.encoding));
+    }
+    else {
+      reject(new Error('data is not text'));
+    }
+  });
 }
 
-},{}],9:[function(require,module,exports){
+}).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
+
+},{"../../node_modules/is-buffer/index.js":39,"../util/promise":19}],9:[function(require,module,exports){
+(function (Buffer){
 'use strict';
-var YAML    = require('../util/yaml');
+
+var Promise = require('../util/promise'),
+    YAML    = require('../util/yaml');
 
 module.exports = parseYAML;
 
 /**
  * The order that this parser will run, in relation to other parsers.
  */
-module.exports.order = 2;
+module.exports.order = 200;
 
 /**
  * Whether to allow "empty" files. This includes zero-byte files, as well as empty JSON objects.
@@ -959,16 +1008,30 @@ module.exports.ext = ['.yaml', '.yml', '.json'];  // <--- JSON is valid YAML
 /**
  * Parses the given data as YAML
  *
- * @param {Buffer} data - The data to be parsed
+ * @param {*} data - The data to be parsed
  * @param {string} path - The file path or URL that `data` came from
  * @param {$RefParserOptions} options
- * @returns {object}
+ * @returns {Promise}
  */
 function parseYAML(data, path, options) {
-  return YAML.parse(data.toString());
+  return new Promise(function(resolve, reject) {
+    if (Buffer.isBuffer(data)) {
+      var yaml = data.toString();
+      resolve(YAML.parse(yaml));
+    }
+    else if (typeof data === 'string') {
+      resolve(YAML.parse(data));
+    }
+    else {
+      // data is already a JavaScript value (object, array, number, null, NaN, etc.)
+      resolve(data);
+    }
+  });
 }
 
-},{"../util/yaml":20}],10:[function(require,module,exports){
+}).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
+
+},{"../../node_modules/is-buffer/index.js":39,"../util/promise":19,"../util/yaml":20}],10:[function(require,module,exports){
 'use strict';
 
 module.exports = Pointer;
@@ -1021,6 +1084,7 @@ function Pointer($ref, path) {
  * Resolves the value of a nested property within the given object.
  *
  * @param {*} obj - The object that will be crawled
+ * @param {$RefParserOptions} options
  *
  * @returns {Pointer}
  * Returns a JSON pointer whose {@link Pointer#value} is the resolved value.
@@ -1028,13 +1092,13 @@ function Pointer($ref, path) {
  * the {@link Pointer#$ref} and {@link Pointer#path} will reflect the resolution path
  * of the resolved value.
  */
-Pointer.prototype.resolve = function(obj) {
+Pointer.prototype.resolve = function(obj, options) {
   var tokens = Pointer.parse(this.path);
 
   // Crawl the object, one token at a time
   this.value = obj;
   for (var i = 0; i < tokens.length; i++) {
-    if (resolveIf$Ref(this)) {
+    if (resolveIf$Ref(this, options)) {
       // The $ref path has changed, so append the remaining tokens to the path
       this.path = Pointer.join(this.path, tokens.slice(i));
     }
@@ -1049,7 +1113,7 @@ Pointer.prototype.resolve = function(obj) {
   }
 
   // Resolve the final value
-  resolveIf$Ref(this);
+  resolveIf$Ref(this, options);
   return this;
 };
 
@@ -1058,11 +1122,12 @@ Pointer.prototype.resolve = function(obj) {
  *
  * @param {*} obj - The object that will be crawled
  * @param {*} value - the value to assign
+ * @param {$RefParserOptions} options
  *
  * @returns {*}
  * Returns the modified object, or an entirely new object if the entire object is overwritten.
  */
-Pointer.prototype.set = function(obj, value) {
+Pointer.prototype.set = function(obj, value, options) {
   var tokens = Pointer.parse(this.path);
   var token;
 
@@ -1075,7 +1140,7 @@ Pointer.prototype.set = function(obj, value) {
   // Crawl the object, one token at a time
   this.value = obj;
   for (var i = 0; i < tokens.length - 1; i++) {
-    resolveIf$Ref(this);
+    resolveIf$Ref(this, options);
 
     token = tokens[i];
     if (this.value && this.value[token] !== undefined) {
@@ -1089,7 +1154,7 @@ Pointer.prototype.set = function(obj, value) {
   }
 
   // Set the value of the final token
-  resolveIf$Ref(this);
+  resolveIf$Ref(this, options);
   token = tokens[tokens.length - 1];
   setValue(this, token, value);
 
@@ -1164,12 +1229,13 @@ Pointer.join = function(base, tokens) {
  * resolution path of the new value.
  *
  * @param {Pointer} pointer
+ * @param {$RefParserOptions} options
  * @returns {boolean} - Returns `true` if the resolution path changed
  */
-function resolveIf$Ref(pointer) {
+function resolveIf$Ref(pointer, options) {
   // Is the value a JSON reference? (and allowed?)
 
-  if ($Ref.is$Ref(pointer.value)) {
+  if ($Ref.isAllowed$Ref(pointer.value, options)) {
     var $refPath = url.resolve(pointer.path, pointer.value.$ref);
 
     if ($refPath === pointer.path) {
@@ -1177,7 +1243,7 @@ function resolveIf$Ref(pointer) {
       pointer.circular = true;
     }
     else {
-      var resolved = pointer.$ref.$refs._resolve($refPath);
+      var resolved = pointer.$ref.$refs._resolve($refPath, options);
 
       if ($Ref.isExtended$Ref(pointer.value)) {
         // This JSON reference "extends" the resolved value, rather than simply pointing to it.
@@ -1255,7 +1321,7 @@ module.exports.cache = 60000;  // 1 minute
  */
 function readFile(path, options) {
   if (process.browser || util.path.isUrl(path)) {
-    return;
+    return Promise.reject(new SyntaxError('Not a local file'));
   }
 
   return new Promise(function(resolve, reject) {
@@ -1353,6 +1419,9 @@ function readHttp(path, options) {
 
   if (u.protocol === 'http:' || u.protocol === 'https:') {
     return download(u, options);
+  }
+  else {
+    return Promise.reject(new SyntaxError('Not an HTTP/HTTPS URL'));
   }
 }
 
@@ -1478,12 +1547,11 @@ function read(path, $refs, options) {
   try {
     // Remove the URL fragment, if any
     path = util.path.stripHash(path);
-    util.debug('Reading %s', path);
 
     // Return from cache, if possible
     var $ref = $refs._get$Ref(path);
     if ($ref && !$ref.isExpired()) {
-      util.debug('    cached from %s', $ref.pathType);
+      util.debug('Reading "%s" from cache', path);
       return Promise.resolve({
         $ref: $ref,
         cached: true
@@ -1493,8 +1561,8 @@ function read(path, $refs, options) {
     // Add a placeholder $ref to the cache, so we don't read this URL multiple times
     $ref = new $Ref($refs, path);
 
-    // Read the file
-    return readers(path, options)
+    // Resolve the path and parse the data
+    return resolveAndRead(path, options)
       .then(function(reader) {
         $ref.pathType = reader.pathType;
         return parse(reader.data, path, options);
@@ -1510,35 +1578,29 @@ function read(path, $refs, options) {
 }
 
 /**
- * Reads the given file path or URL and returns its raw contents as a Buffer.
+ * Resolves the given file path or URL and returns its contents.
  *
  * @param {string} path - The file path or URL to read
  * @param {$RefParserOptions} options
- * @returns {Promise<Buffer>}
+ * @returns {Promise}
  */
-function readers(path, options) {
+function resolveAndRead(path, options) {
   return new Promise(function(resolve, reject) {
-    var promise, pathType;
+    util.debug('Resolving %s', path);
+    var resolvers = util.getOrderedFunctions(options.resolve);
+    util.runOrderedFunctions(resolvers, path, options).then(onResolved, onError);
 
-    // Run each reader in order, until one returns a Promise
-    util.orderedFunctions(options.resolve)
-      .some(function(reader) {
-        promise = reader.fn(path, options);
-        if (promise) {
-          pathType = reader.name;
-          return true;
-        }
+    function onResolved(resolver) {
+      resolve({
+        pathType: resolver.name,
+        data: resolver.result
       });
-
-    // If one of the readers returned a Promise, then wait on it
-    if (promise) {
-      promise.then(
-        function(data) {
-          resolve({data: data, pathType: pathType});
-        },
-        reject);
     }
-    else {
+
+    function onError(err) {
+      if (err && !(err instanceof SyntaxError)) {
+        reject(err);
+      }
       reject(ono.syntax('Unable to resolve $ref pointer "%s"', path));
     }
   });
@@ -1649,11 +1711,12 @@ $Ref.prototype.setExpiration = function(options) {
  * Determines whether the given JSON reference exists within this {@link $Ref#value}.
  *
  * @param {string} path - The full path being resolved, optionally with a JSON pointer in the hash
+ * @param {$RefParserOptions} options
  * @returns {boolean}
  */
-$Ref.prototype.exists = function(path) {
+$Ref.prototype.exists = function(path, options) {
   try {
-    this.resolve(path);
+    this.resolve(path, options);
     return true;
   }
   catch (e) {
@@ -1665,21 +1728,23 @@ $Ref.prototype.exists = function(path) {
  * Resolves the given JSON reference within this {@link $Ref#value} and returns the resolved value.
  *
  * @param {string} path - The full path being resolved, optionally with a JSON pointer in the hash
+ * @param {$RefParserOptions} options
  * @returns {*} - Returns the resolved value
  */
-$Ref.prototype.get = function(path) {
-  return this.resolve(path).value;
+$Ref.prototype.get = function(path, options) {
+  return this.resolve(path, options).value;
 };
 
 /**
  * Resolves the given JSON reference within this {@link $Ref#value}.
  *
  * @param {string} path - The full path being resolved, optionally with a JSON pointer in the hash
+ * @param {$RefParserOptions} options
  * @returns {Pointer}
  */
-$Ref.prototype.resolve = function(path) {
+$Ref.prototype.resolve = function(path, options) {
   var pointer = new Pointer(this, path);
-  return pointer.resolve(this.value);
+  return pointer.resolve(this.value, options);
 };
 
 /**
@@ -1712,6 +1777,22 @@ $Ref.is$Ref = function(value) {
  */
 $Ref.isExternal$Ref = function(value) {
   return $Ref.is$Ref(value) && value.$ref[0] !== '#';
+};
+
+/**
+ * Determines whether the given value is a JSON reference, and whether it is allowed by the options.
+ * For example, if it references an external file, then options.resolve.external must be true.
+ *
+ * @param {*} value - The value to inspect
+ * @param {$RefParserOptions} options
+ * @returns {boolean}
+ */
+$Ref.isAllowed$Ref = function(value, options) {
+  if ($Ref.is$Ref(value)) {
+    if (value.$ref[0] === '#' || !options || options.resolve.external) {
+      return true;
+    }
+  }
 };
 
 /**
@@ -1912,11 +1993,12 @@ $Refs.prototype.expire = function(path) {
  * Determines whether the given JSON reference exists.
  *
  * @param {string} path - The path being resolved, optionally with a JSON pointer in the hash
+ * @param {$RefParserOptions} [options]
  * @returns {boolean}
  */
-$Refs.prototype.exists = function(path) {
+$Refs.prototype.exists = function(path, options) {
   try {
-    this._resolve(path);
+    this._resolve(path, options);
     return true;
   }
   catch (e) {
@@ -1928,10 +2010,11 @@ $Refs.prototype.exists = function(path) {
  * Resolves the given JSON reference and returns the resolved value.
  *
  * @param {string} path - The path being resolved, with a JSON pointer in the hash
+ * @param {$RefParserOptions} [options]
  * @returns {*} - Returns the resolved value
  */
-$Refs.prototype.get = function(path) {
-  return this._resolve(path).value;
+$Refs.prototype.get = function(path, options) {
+  return this._resolve(path, options).value;
 };
 
 /**
@@ -1957,10 +2040,11 @@ $Refs.prototype.set = function(path, value) {
  * Resolves the given JSON reference.
  *
  * @param {string} path - The path being resolved, optionally with a JSON pointer in the hash
+ * @param {$RefParserOptions} [options]
  * @returns {Pointer}
  * @protected
  */
-$Refs.prototype._resolve = function(path) {
+$Refs.prototype._resolve = function(path, options) {
   path = url.resolve(this._basePath, path);
   var withoutHash = util.path.stripHash(path);
   var $ref = this._$refs[withoutHash];
@@ -1969,7 +2053,7 @@ $Refs.prototype._resolve = function(path) {
     throw ono('Error resolving $ref pointer "%s". \n"%s" not found.', path, withoutHash);
   }
 
-  return $ref.resolve(path);
+  return $ref.resolve(path, options);
 };
 
 /**
@@ -2051,6 +2135,12 @@ module.exports = resolve;
  * including nested references that are contained in externally-referenced files.
  */
 function resolve(parser, options) {
+  if (!options.resolve.external) {
+    // Nothing to resolve, so exit early
+    parser.$refs._setExpirations(options);
+    return Promise.resolve();
+  }
+
   try {
     util.debug('Resolving $ref pointers in %s', parser.$refs._basePath);
     var promises = crawl(parser.schema, parser.$refs._basePath + '#', parser.$refs, options);
@@ -2135,8 +2225,10 @@ function resolve$Ref($ref, path, $refs, options) {
 },{"./pointer":10,"./read":13,"./ref":14,"./util":17,"./util/promise":19,"url":95}],17:[function(require,module,exports){
 'use strict';
 
-var debug = require('debug'),
-    path  = require('./path');
+var debug   = require('debug'),
+    Promise = require('../util/promise'),
+    path    = require('./path'),
+    util    = exports;
 
 /**
  * Writes messages to stdout.
@@ -2169,14 +2261,86 @@ exports.bind = function(func, context) {
  * @param {object} obj - An object with function properties. Each function can have an `order` property.
  * @returns {{order: number, name: string, fn: function}[]}
  */
-exports.orderedFunctions = function(obj) {
+exports.getOrderedFunctions = function(obj) {
   return Object.keys(obj)
-    .map(function(key) { return {order: obj[key].order, name: key, fn: obj[key]}; })
+    .map(function(key) {
+      return {
+        order: obj[key].order || Number.MAX_SAFE_INTEGER,
+        name: key || 'UNKNOWN',
+        fn: obj[key]
+      };
+    })
     .filter(function(value) { return typeof value.fn === 'function'; })
     .sort(function(a, b) { return a.order - b.order; });
 };
 
-},{"./path":18,"debug":29}],18:[function(require,module,exports){
+/**
+ * Runs the given user-defined functions in order, until one of them returns a successful result.
+ * Each function can return a Promise or call an error-first callback.
+ * If the promise resolves successfully, or the callback is called without an error, then the result
+ * is immediately returned and no further functions are called.
+ * If the promise rejects, or the callback is called with an error, then the next function is called.
+ * If ALL functions fail, then the last error is thrown.
+ *
+ * @param {{order: number, name: string, fn: function}[]} funcs - The results of {@link util.getOrderedFunctions}
+ * @param {...*} [args] - One or more arguments to pass to each function
+ * @returns {Promise}
+ */
+exports.runOrderedFunctions = function(funcs, args) {
+  var func, lastError, index = 0;
+  args = Array.prototype.slice.call(arguments, 1);
+
+  return new Promise(function(resolve, reject) {
+    args.push(callback);
+    runNextFunction();
+
+    function runNextFunction() {
+      func = funcs[index++];
+      if (!func) {
+        // There are no more functions, so re-throw the last error
+        return reject(lastError);
+      }
+
+      try {
+        util.debug('  %s', func.name);
+        var promise = func.fn.apply(null, args);
+        if (promise) {
+          promise.then(onSuccess, onError);
+        }
+      }
+      catch (e) {
+        onError(e);
+      }
+    }
+
+    function callback(err, result) {
+      if (err) {
+        onError(err);
+      }
+      else {
+        onSuccess(result);
+      }
+    }
+
+    function onSuccess(result) {
+      util.debug('    success');
+      resolve({
+        order: func.order,
+        name: func.name,
+        fn: func.fn,
+        result: result
+      });
+    }
+
+    function onError(err) {
+      util.debug('    %s', err.message || err);
+      lastError = err;
+      runNextFunction();
+    }
+  });
+};
+
+},{"../util/promise":19,"./path":18,"debug":29}],18:[function(require,module,exports){
 (function (process){
 'use strict';
 

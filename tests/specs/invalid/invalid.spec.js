@@ -8,8 +8,8 @@ describe('Invalid syntax', function() {
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing "');
-          expect(err.message).to.contain('invalid/invalid.yaml"');
+          expect(err.message).to.contain('Error parsing ');
+          expect(err.message).to.contain('invalid/invalid.yaml');
         });
     });
 
@@ -19,8 +19,8 @@ describe('Invalid syntax', function() {
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing "');
-          expect(err.message).to.contain('invalid/invalid.json"');
+          expect(err.message).to.contain('Error parsing ');
+          expect(err.message).to.contain('invalid/invalid.json');
         });
     });
 
@@ -30,8 +30,8 @@ describe('Invalid syntax', function() {
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing "');
-          expect(err.message).to.contain('invalid/invalid.json"');
+          expect(err.message).to.contain('Error parsing ');
+          expect(err.message).to.contain('invalid/invalid.json');
         });
     });
 
@@ -53,8 +53,8 @@ describe('Invalid syntax', function() {
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing "');
-          expect(err.message).to.contain('invalid/invalid.yaml"');
+          expect(err.message).to.contain('Error parsing ');
+          expect(err.message).to.contain('invalid/invalid.yaml');
         });
     });
 
@@ -64,8 +64,8 @@ describe('Invalid syntax', function() {
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing "');
-          expect(err.message).to.contain('invalid/invalid.json"');
+          expect(err.message).to.contain('Error parsing ');
+          expect(err.message).to.contain('invalid/invalid.json');
         });
     });
 
@@ -77,8 +77,8 @@ describe('Invalid syntax', function() {
         .then(helper.shouldNotGetCalled)
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing "');
-          expect(err.message).to.contain('invalid/invalid.json"');
+          expect(err.message).to.contain('Error parsing ');
+          expect(err.message).to.contain('invalid/invalid.json');
         });
     });
 

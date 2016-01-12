@@ -149,7 +149,7 @@ See [Callbacks vs. Promises](README.md#callbacks-vs-promises)
 
 > This method is used internally by other methods, such as [`bundle`](#bundleschema-options-callback) and [`dereference`](#dereferenceschema-options-callback).  You probably won't need to call this method yourself.
 
-Resolves all JSON references (`$ref` pointers) in the given JSON Schema file.  If it references any other files/URLs, then they will be downloaded and resolved as well (unless `options.$refs.external` is false).   This method **does not** dereference anything.  It simply gives you a [`$Refs`](refs.md) object, which is a map of all the resolved references and their values.
+Resolves all JSON references (`$ref` pointers) in the given JSON Schema file.  If it references any other files/URLs, then they will be downloaded and resolved as well.   This method **does not** dereference anything.  It simply gives you a [`$Refs`](refs.md) object, which is a map of all the resolved references and their values.
 
 ```javascript
 $RefParser.resolve("my-schema.yaml")

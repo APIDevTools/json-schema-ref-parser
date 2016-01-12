@@ -37,8 +37,8 @@ describe('Blank files', function() {
         .then(helper.shouldNotGetCalled(done))
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing "');
-          expect(err.message).to.contain('blank/files/blank.yaml"');
+          expect(err.message).to.contain('Error parsing ');
+          expect(err.message).to.contain('blank/files/blank.yaml');
           expect(err.message).to.contain('Parsed value is empty');
           done();
         })
@@ -52,8 +52,8 @@ describe('Blank files', function() {
         .then(helper.shouldNotGetCalled(done))
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing "');
-          expect(err.message).to.contain('blank/files/blank.json"');
+          expect(err.message).to.contain('Error parsing ');
+          expect(err.message).to.contain('blank/files/blank.json');
           done();
         })
         .catch(done);
@@ -115,8 +115,8 @@ describe('Blank files', function() {
         .then(helper.shouldNotGetCalled(done))
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing "');
-          expect(err.message).to.contain('blank/files/blank.png"');
+          expect(err.message).to.contain('Error parsing ');
+          expect(err.message).to.contain('blank/files/blank.png');
           expect(err.message).to.contain('Parsed value is empty');
           done();
         })

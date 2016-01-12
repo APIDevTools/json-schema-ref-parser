@@ -74,7 +74,7 @@
     "no-sparse-arrays":                 2,                // disallow sparse arrays
     "no-unreachable":                   2,                // disallow unreachable statements after a return, throw, continue, or break statement
     "use-isnan":                        2,                // disallow comparisons with the value NaN
-    "valid-jsdoc":                     [2, {              // Ensure JSDoc comments are valid (off by default)
+    "valid-jsdoc":                     [1, {              // Ensure JSDoc comments are valid (off by default)
       "requireReturn":                  false,            // require an @returns tag for all functions, even if they don't return anything
       "requireParamDescription":        false,            // require a description for all @param tags
       "requireReturnDescription":       false             // require a description for the @returns tag
