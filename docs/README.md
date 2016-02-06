@@ -50,7 +50,7 @@ var parser = new $RefParser();
 parser.bundle("my-schema.json");
 ```
 
-The difference is that in the second example you now have a reference to `parser`, which means you can access the results ([`parser.schema`](ref-parser.md#schema) and [`parser.$refs`](ref-parser.md#refs)) anytime you want, rather than just in the callback function. Also, having a `$RefParser` instance allows you to benefit from **[caching](options.md#caching)**, so the next time you call [`parser.resolve()`](ref-parser.md#resolveschema-options-callback), it won't need to re-download those files again (as long as the cache hasn't expired).
+The difference is that in the second example you now have a reference to `parser`, which means you can access the results ([`parser.schema`](ref-parser.md#schema) and [`parser.$refs`](ref-parser.md#refs)) anytime you want, rather than just in the callback function. Also, having a `$RefParser` instance allows you to benefit from **[caching](options.md#cache)**, so the next time you call [`parser.resolve()`](ref-parser.md#resolveschema-options-callback), it won't need to re-download those files again (as long as the cache hasn't expired).
 
 
 ### Callbacks vs. Promises

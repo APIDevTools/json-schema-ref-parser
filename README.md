@@ -67,8 +67,8 @@ $RefParser.dereference(mySchema, function(err, schema) {
     console.error(err);
   }
   else {
-    // `schema` is just a normal JavaScript object that contains your
-    // entire JSON Schema - even if it spans multiple files
+    // `schema` is just a normal JavaScript object that contains your entire JSON Schema,
+    // including referenced files, combined into a single object
     console.log(schema.definitions.person.properties.firstName);
   }
 });
