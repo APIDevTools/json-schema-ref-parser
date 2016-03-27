@@ -75,7 +75,7 @@ $RefParser.dereference("my-schema.yaml", {
 ```
 
 #### `empty`
-All of the built-in parsers allow empty files by default. The JSON and YAML parsers will parse empty files as `null`. The text parser will parse empty files as an empty string.  The binary parser will parse empty files as an empty byte array.
+All of the built-in parsers allow empty files by default. The JSON and YAML parsers will parse empty files as `undefined`. The text parser will parse empty files as an empty string.  The binary parser will parse empty files as an empty byte array.
 
 You can set `empty: false` on any parser, which will cause an error to be thrown if a file empty.
 
@@ -83,11 +83,117 @@ You can set `empty: false` on any parser, which will cause an error to be thrown
 Parsers can have other options that are specific to that parser.  Currently, the only such option is `text.encoding`, which allows you to set the encoding for parsing text-based files.  The default encoding is `utf8`.
 
 #### Adding a custom parser
-TODO
+To add your own custom parser, just define a function that accepts the following parameters:
+
+|Parameter  |Type       |Description
+|:----------|:----------|:----------
+|`data`     |`string`, [`Buffer`](https://nodejs.org/api/buffer.html#buffer_buffer), `object`, etc.|This is the file data to be parsed. This will usually be a Buffer object, which allows you to efficiently process binary data formats, if necessary. Or you can just call its `.toString()` method to convert it to a string.<br><br>The actual data type of this parameter depends on the [resolver](#resolve-options) that read the file. The built-in resolvers return Buffer objects, but custom resolvers could potentially return any data type.
+|`path`     |`string`   |The file path or URL that `data` came from. This may be useful if your parser needs to perform conditional logic based on the file's source or file extension.
+|`options`  |[`options`](options.md) |The full options object. This may be useful if your parser needs to perform conditional logic based on the options that were specified.
+|`callback` |`function` |Your parser _must_ either return a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) or call this callback. The first parameter of the callback should be `null` if `data` was parsed successfully; otherwise, it should be an Error object. The second parameter is the parsed value, which can be any JavaScript type.
+
+Here is a simple example of a custom parser.  For more complex examples refer to any of [the built-in parsers](../lib/parse).
+
+```javascript
+  // A custom parser that returns reversed strings
+  function myCustomParser(data, path, options, callback) {
+    var reversed = data.toString().split('').reverse().join('');
+    callback(null, reversed);
+  }
+
+  // This parser only parses .foo files
+  myCustomParser.ext = '.foo';
+  
+  // This parser runs first (before any other parsers)
+  myCustomParser.order = 1;
+
+  // Use the custom parser
+  $RefParser.dereference(mySchema, {parse: {custom: myCustomParser}});
+```
 
 
 `resolve` Options
 -------------------
+The `resolve` options control how JSON Schema $Ref Parser will resolve file paths and URLs, and how those files will be read/downloaded.
+
+JSON Schema $Ref Parser comes with built-in support for HTTP and HTTPS, as well as support for local files (when running in Node.js).  You can configure or disable either of these built-in resolvers. You can also add your own custom resolvers if you want.
+
+#### Disabling a resolver
+To disable a resolver, just set it to `false`, like this:
+
+```javascript
+// Disable HTTP/HTTPS support
+$RefParser.dereference("my-schema.yaml", { resolve: { http: false } });
+```
+
+#### `order`
+Resolvers run in a specific order, relative to other resolvers. For example, a resolver with `order: 5` will run _before_ a resolver with `order: 10`.  If a resolver is unable to successfully resolve a path, then the next resolver is tried, until one succeeds or they all fail.
+
+You can change the order in which resolvers run, which is useful if you know that most of your file references will be a certain type, or if you add your own custom resolver that you want to run _first_. 
+
+```javascript
+// Run the HTTP resolver first
+$RefParser.dereference("my-schema.yaml", { resolve: { http: { order: 1 } } });
+```
+
+#### `cache`
+JSON Schema $Ref Parser can automatically cache files, so they don't need to be re-downloaded or re-read every time.  You can specify a different cache duration (in milliseconds) for each resolver, or you can disable caching for a given resolver by setting the duration to zero.
+
+```javascript
+$RefParser.dereference("my-schema.yaml", { 
+  resolve: {     
+    // Cache downloaded files for 30 seconds
+    http: { cache: 30000 },
+
+    // Don't cache local files (re-read them every time)
+    file: { cache: 0 }
+  }
+});
+```
+
+#### Resolver-specific options
+Resolvers can have other options that are specific to that resolver.  For example, the [HTTP resolver](../lib/read/http.js) has options that allow you to customize the HTTP headers, timeout, credentials, etc.
+
+#### Adding a custom resolver
+To add your own custom resolver, just define a function that accepts the following parameters:
+
+|Parameter  |Type       |Description
+|:----------|:----------|:----------
+|`path`     |`string`   |The path to resolve. The path will already be resolved according to [RFC 3986](https://tools.ietf.org/html/rfc3986#section-5.2), as required by [JSON Reference](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03#section-4). It will not contain any URL fragment, as that will be parsed separately, according to [RFC 6901 (JSON Pointer)](https://tools.ietf.org/html/rfc6901)
+|`options`  |[`options`](options.md) |The full options object. This may be useful if your resolver needs to perform conditional logic based on the options that were specified.
+|`callback` |`function` |Your parser _must_ either return a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) or call this callback. The first parameter of the callback should be `null` if the file was successfully resolved; otherwise, it should be an Error object. The second parameter is the resolved file contents, which can be any data type, but a [`Buffer`](https://nodejs.org/api/buffer.html#buffer_buffer) is recommended.
+
+Here is a simple example of a custom resolver.  For more complex examples refer to any of [the built-in resolvers](../lib/read).
+
+```javascript
+  // A custom resolver that reads from a MongoDB database 
+  function mongoDb(path, options, callback) {
+    // If it's not a MongoDB URL, then error-out, so the next resolver can be tried
+    if (path.substr(0, 10) !== "mongodb://") {
+      callback("Not a MongoDB URL");
+    }
+    
+    mongoClient.connect(path, function(err, db) {
+      if (err) {
+        callback(err);
+      }
+      else {
+        db.collection("documents").find({}, callback);
+      }
+    });
+  }
+
+  // This parser only parses .foo files
+  myCustomParser.ext = '.foo';
+  
+  // This parser runs first (before any other parsers)
+  myCustomParser.order = 1;
+
+  // Use the custom parser
+  $RefParser.dereference(mySchema, {parse: {custom: myCustomParser}});
+```
+
+
 
 
 `dereference` Options
