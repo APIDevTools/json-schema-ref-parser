@@ -9,5 +9,6 @@ definitions:
     $ref: files/binary.png
   unknown:
     $ref: files/unknown.foo
-
+  empty:
+    $ref: files/empty
 

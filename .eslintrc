@@ -32,7 +32,7 @@
     "browser":                          true,             // browser global variables.
     "node":                             true,             // Node.js global variables and Node.js-specific rules.
     "amd":                              false,            // defines require() and define() as global variables as per the amd spec.
-    "mocha":                            true,             // adds all of the Mocha testing global variables.
+    "mocha":                            false,            // adds all of the Mocha testing global variables.
     "jasmine":                          false,            // adds all of the Jasmine testing global variables for version 0.3 and 0.0.
     "phantomjs":                        false,            // phantomjs global variables.
     "jquery":                           false,            // jquery global variables.
@@ -207,7 +207,7 @@
       "beforeColon":                    false,            // require a space before the colon in a key/value pair
       "afterColon":                     true              // require a space after the colon in a key/value pair
     }],
-    "lines-around-comment":            [2, {              // enforce empty lines around comments
+    "lines-around-comment":            [0, {              // enforce empty lines around comments
       "beforeBlockComment":             true,             // require a blank line before block comments
       "afterBlockComment":              false,            // require a blank line after block comments
       "beforeLineComment":              false,            // require a blank line before line comments

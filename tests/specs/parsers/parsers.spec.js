@@ -1,6 +1,6 @@
 'use strict';
 
-describe('References to non-JSON files', function() {
+describe.only('References to non-JSON files', function() {
   it('should parse successfully', function() {
     return $RefParser
       .parse(path.rel('specs/parsers/parsers.yaml'))
@@ -16,7 +16,8 @@ describe('References to non-JSON files', function() {
     path.abs('specs/parsers/files/page.html'), helper.dereferenced.parsers.defaultParsers.definitions.html,
     path.abs('specs/parsers/files/style.css'), helper.dereferenced.parsers.defaultParsers.definitions.css,
     path.abs('specs/parsers/files/binary.png'), helper.dereferenced.parsers.defaultParsers.definitions.binary,
-    path.abs('specs/parsers/files/unknown.foo'), helper.dereferenced.parsers.defaultParsers.definitions.unknown
+    path.abs('specs/parsers/files/unknown.foo'), helper.dereferenced.parsers.defaultParsers.definitions.unknown,
+    path.abs('specs/parsers/files/empty'), helper.dereferenced.parsers.defaultParsers.definitions.empty
   ));
 
   it('should dereference successfully', function() {
@@ -45,13 +46,14 @@ describe('References to non-JSON files', function() {
 
   it('should parse text as binary if "parse.text" is disabled', function() {
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {parse: {text: false}})
+      .dereference(path.rel('specs/parsers/parsers.yaml'), {parse: {text: false, binary: {ext: ''}}})
       .then(function(schema) {
         schema.definitions.markdown = helper.convertNodeBuffersToPOJOs(schema.definitions.markdown);
         schema.definitions.html = helper.convertNodeBuffersToPOJOs(schema.definitions.html);
         schema.definitions.css = helper.convertNodeBuffersToPOJOs(schema.definitions.css);
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         schema.definitions.unknown = helper.convertNodeBuffersToPOJOs(schema.definitions.unknown);
+        schema.definitions.empty = helper.convertNodeBuffersToPOJOs(schema.definitions.empty);
         expect(schema).to.deep.equal(helper.dereferenced.parsers.binaryParser);
       });
   });
@@ -63,6 +65,23 @@ describe('References to non-JSON files', function() {
       .catch(function(err) {
         expect(err).to.be.an.instanceOf(SyntaxError);
         expect(err.message).to.contain('Error parsing ');
+      });
+  });
+
+  it('should use a custom parser that returns a value', function() {
+    // A custom parser that returns reversed strings
+    function myCustomParser(data, path, options, callback) {
+      return data.toString().split('').reverse().join('');
+    }
+
+    // This parser only parses .foo files
+    myCustomParser.ext = '.foo';
+
+    return $RefParser
+      .dereference(path.rel('specs/parsers/parsers.yaml'), {parse: {custom: myCustomParser}})
+      .then(function(schema) {
+        schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
+        expect(schema).to.deep.equal(helper.dereferenced.parsers.customParser);
       });
   });
 

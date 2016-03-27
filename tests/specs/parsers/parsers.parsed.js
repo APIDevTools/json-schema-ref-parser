@@ -16,6 +16,9 @@ helper.parsed.parsers =
       },
       unknown: {
         $ref: "files/unknown.foo"
+      },
+      empty: {
+        $ref: "files/empty"
       }
     }
   },

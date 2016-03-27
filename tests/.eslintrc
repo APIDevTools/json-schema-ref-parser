@@ -1,0 +1,20 @@
+{
+  // ESLint config
+  // http://eslint.org/docs/rules/
+
+  "env": {
+    "mocha":          true,         // Mocha
+  },
+
+  "globals": {
+    "$RefParser":     true,         // JSON Schema $Ref Parser
+    "helper":         true,         // Test fixtures
+    "userAgent":      true,         // Test fixtrues
+    "expect":         true,         // Chai
+    "path":           true,         // Node
+  },
+
+  "rules": {
+    "require-jsdoc":  0,            // Don't require doc comments for tests
+  }
+}
