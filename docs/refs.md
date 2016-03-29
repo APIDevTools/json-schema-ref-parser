@@ -12,8 +12,6 @@ This object is a map of JSON References and their resolved values.  It also has 
 ##### Methods
 - [`paths()`](#pathstypes)
 - [`values()`](#valuestypes)
-- [`isExpired()`](#isexpiredref)
-- [`expire()`](#expireref)
 - [`exists()`](#existsref)
 - [`get()`](#getref)
 - [`set()`](#setref-value)
@@ -76,47 +74,6 @@ $RefParser.resolve("my-schema.json")
     values["schemas/people/Bruce-Wayne.json"];
     values["schemas/places.yaml"];
     values["http://wayne-enterprises.com/things/batmobile"];
-  });
-```
-
-
-### `isExpired($ref)`
-
-- **$ref** (_required_) - `string`<br>
-The JSON Reference path, optionally with a JSON Pointer in the hash
-
-- **Return Value:** `boolean`<br>
-Returns `true` if the given JSON reference has expired (or if it doesn't exist); otherwise, returns `false`
-
-```javascript
-$RefParser.resolve("my-schema.json")
-  .then(function($refs) {
-    // Hasn't expired yet
-    $refs.isExpired("schemas/places.yaml");   // => false
-
-    // Check again after 10 minutes
-    setTimeout(function() {
-      $refs.isExpired("schemas/places.yaml"); // => true
-    }, 600000);
-  });
-```
-
-
-### `expire($ref)`
-
-- **$ref** (_required_) - `string`<br>
-The JSON Reference path, optionally with a JSON Pointer in the hash
-
-Immediately expires the given JSON reference, so the next time you call a method such as [`parse`](ref-parser.md#parseschema-options-callback) or [`dereference`](ref-parser.md#dereferenceschema-options-callback), the file will be refreshed rather than reusing the cached value.
-
-```javascript
-$RefParser.resolve("my-schema.json")
-  .then(function($refs) {
-    $refs.isExpired("schemas/places.yaml");   // => false
-
-    $refs.expire("schemas/places.yaml");
-
-    $refs.isExpired("schemas/places.yaml");   // => true
   });
 ```
 

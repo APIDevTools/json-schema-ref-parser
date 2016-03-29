@@ -50,7 +50,6 @@ JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/d
 
 - Use **JSON** or **YAML** schemas &mdash; or even a mix of both!
 - Fully supports `$ref` pointers to external files and URLs
-- Configurable caching of referenced files
 - Can [bundle](docs/ref-parser.md#bundlepath-options-callback) multiple files into a single schema that only has _internal_ `$ref` pointers
 - Can [dereference](docs/ref-parser.md#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
 - Supports [circular references](docs/README.md#circular-refs), nested references, back-references, and cross-references between files

@@ -23,9 +23,8 @@ $RefParser.dereference("my-schema.yaml", {
   resolve: {
     file: false,               // Don't resolve local file references
     http: {
-      cache: 30000,            // Cache downloaded files for 30 seconds
       timeout: 2000            // 2 second timeout
-    }    
+    }
   },
   dereference: {
     circular: false            // Don't allow circular $refs
@@ -49,7 +48,7 @@ $RefParser.dereference("my-schema.yaml", { parse: { json: false } });
 #### `order`
 Parsers run in a specific order, relative to other parsers. For example, a parser with `order: 5` will run _before_ a parser with `order: 10`.  If a parser is unable to successfully parse a file, then the next parser is tried, until one succeeds or they all fail.
 
-You can change the order in which parsers run, which is useful if you know that most of your referenced files will be a certain type, or if you add your own custom parser that you want to run _first_. 
+You can change the order in which parsers run, which is useful if you know that most of your referenced files will be a certain type, or if you add your own custom parser that you want to run _first_.
 
 ```javascript
 // Run the plain-text parser first
@@ -64,11 +63,11 @@ Multiple parsers can contain the same file extensions. For example, both the JSO
 You can set your own file extensions for any parser.  Each extension can be a string or a regular expression to test against the _full file path_.  Here's an example:
 
 ```javascript
-$RefParser.dereference("my-schema.yaml", { 
-  parse: { 
-    text: { 
+$RefParser.dereference("my-schema.yaml", {
+  parse: {
+    text: {
         // parse text, html, and readme files as plain-text
-        ext: [".txt", ".html", /docs\/README/i] 
+        ext: [".txt", ".html", /docs\/README/i]
     }
   }
 });
@@ -103,7 +102,7 @@ Here is a simple example of a custom parser.  For more complex examples refer to
 
   // This parser only parses .foo files
   myCustomParser.ext = '.foo';
-  
+
   // This parser runs first (before any other parsers)
   myCustomParser.order = 1;
 
@@ -129,26 +128,11 @@ $RefParser.dereference("my-schema.yaml", { resolve: { http: false } });
 #### `order`
 Resolvers run in a specific order, relative to other resolvers. For example, a resolver with `order: 5` will run _before_ a resolver with `order: 10`.  If a resolver is unable to successfully resolve a path, then the next resolver is tried, until one succeeds or they all fail.
 
-You can change the order in which resolvers run, which is useful if you know that most of your file references will be a certain type, or if you add your own custom resolver that you want to run _first_. 
+You can change the order in which resolvers run, which is useful if you know that most of your file references will be a certain type, or if you add your own custom resolver that you want to run _first_.
 
 ```javascript
 // Run the HTTP resolver first
 $RefParser.dereference("my-schema.yaml", { resolve: { http: { order: 1 } } });
-```
-
-#### `cache`
-JSON Schema $Ref Parser can automatically cache files, so they don't need to be re-downloaded or re-read every time.  You can specify a different cache duration (in milliseconds) for each resolver, or you can disable caching for a given resolver by setting the duration to zero.
-
-```javascript
-$RefParser.dereference("my-schema.yaml", { 
-  resolve: {     
-    // Cache downloaded files for 30 seconds
-    http: { cache: 30000 },
-
-    // Don't cache local files (re-read them every time)
-    file: { cache: 0 }
-  }
-});
 ```
 
 #### Resolver-specific options
@@ -166,13 +150,13 @@ To add your own custom resolver, just define a function that accepts the followi
 Here is a simple example of a custom resolver.  For more complex examples refer to any of [the built-in resolvers](../lib/read).
 
 ```javascript
-  // A custom resolver that reads from a MongoDB database 
+  // A custom resolver that reads from a MongoDB database
   function mongoDb(path, options, callback) {
     // If it's not a MongoDB URL, then error-out, so the next resolver can be tried
     if (path.substr(0, 10) !== "mongodb://") {
       callback("Not a MongoDB URL");
     }
-    
+
     mongoClient.connect(path, function(err, db) {
       if (err) {
         callback(err);
@@ -185,7 +169,7 @@ Here is a simple example of a custom resolver.  For more complex examples refer 
 
   // This parser only parses .foo files
   myCustomParser.ext = '.foo';
-  
+
   // This parser runs first (before any other parsers)
   myCustomParser.order = 1;
 
@@ -203,9 +187,6 @@ Here is a simple example of a custom resolver.  For more complex examples refer 
 |Option                |Type     |Default   |Description
 |:---------------------|:--------|:---------|:----------
 |`$refs.circular`      |bool or "ignore"     |true      |Determines whether [circular `$ref` pointers](README.md#circular-refs) are allowed. If `false`, then a `ReferenceError` will be thrown if the schema contains a circular reference.<br><br> If set to `"ignore"`, then circular references will _not_ be dereferenced, even when calling [`dereference()`](ref-parser.md#dereferenceschema-options-callback). No error will be thrown, but the [`$Refs.circular`](refs.md#circular) property will still be set to `true`.
-|`cache.fs`            |number   |60        |<a name="caching"></a>The length of time (in seconds) to cache local files.  The default is one minute.  Setting to zero will cache forever.
-|`cache.http`          |number   |300       |The length of time (in seconds) to cache HTTP URLs.  The default is five minutes.  Setting to zero will cache forever.
-|`cache.https`         |number   |300       |The length of time (in seconds) to cache HTTPS URLs.  The default is five minutes.  Setting to zero will cache forever.
 |`http.headers`        |object   |`{}`      |HTTP to send when downloading files<br> (note: [some headers are protected](https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_header_name) and cannot be set)
 |`http.timeout`        |number   |5000      |The HTTP request timeout (in milliseconds)
 |`http.redirects`      |number   |5         |The maximum number of HTTP redirects to follow.  To disable automatic following of redirects, set this to zero.
