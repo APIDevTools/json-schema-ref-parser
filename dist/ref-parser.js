@@ -23,11 +23,11 @@ module.exports = bundle;
  * @param {$RefParserOptions} options
  */
 function bundle(parser, options) {
-  debug('Bundling $ref pointers in %s', parser.$refs._basePath);
+  debug('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
 
   // Build an inventory of all $ref pointers in the JSON Schema
   var inventory = [];
-  crawl(parser.schema, parser.$refs._basePath + '#', '#', inventory, parser.$refs, options);
+  crawl(parser.schema, parser.$refs._root$Ref.path + '#', '#', inventory, parser.$refs, options);
 
   // Remap all $ref pointers
   remap(inventory);
@@ -91,7 +91,7 @@ function inventory$Ref($refParent, $refKey, path, pathFromRoot, inventory, $refs
   var depth = Pointer.parse(pathFromRoot).length;
   var file = url.stripHash(pointer.path);
   var hash = url.getHash(pointer.path);
-  var external = file !== $refs._basePath;
+  var external = file !== $refs._root$Ref.path;
   var extended = $Ref.isExtended$Ref($ref);
 
   inventory.push({
@@ -210,9 +210,9 @@ module.exports = dereference;
  * @param {$RefParserOptions} options
  */
 function dereference(parser, options) {
-  debug('Dereferencing $ref pointers in %s', parser.$refs._basePath);
+  debug('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
   parser.$refs.circular = false;
-  crawl(parser.schema, parser.$refs._basePath, '#', [], parser.$refs, options);
+  crawl(parser.schema, parser.$refs._root$Ref.path, '#', [], parser.$refs, options);
 }
 
 /**
@@ -409,7 +409,6 @@ $RefParser.prototype.parse = function(schema, options, callback) {
   if (typeof args.schema === 'object') {
     // The schema is an object, not a path/url.
     // So immediately add a new $Ref with the schema object as its value
-    this.$refs._basePath = '';
     this.$refs._add('', args.schema);
     promise = Promise.resolve(args.schema);
   }
@@ -430,9 +429,6 @@ $RefParser.prototype.parse = function(schema, options, callback) {
     // Resolve the absolute path of the schema
     path = url.resolve(url.cwd(), path);
 
-    // The basePath from which $ref pointers will start being resolved
-    this.$refs._basePath = url.stripHash(path);
-
     // Parse the schema file/url
     promise = parse(path, this.$refs, args.options);
   }
@@ -441,7 +437,7 @@ $RefParser.prototype.parse = function(schema, options, callback) {
   return promise
     .then(function(result) {
       if (!result || typeof result !== 'object' || Buffer.isBuffer(result)) {
-        throw ono.syntax('"%s" is not a valid JSON Schema', me.$refs._basePath || result);
+        throw ono.syntax('"%s" is not a valid JSON Schema', me.$refs._root$Ref.path || result);
       }
       else {
         me.schema = result;
@@ -1656,21 +1652,20 @@ function $Refs() {
   this.circular = false;
 
   /**
-   * The file path or URL of the main JSON schema file.
-   * This will be empty if the schema was passed as an object rather than a path.
-   *
-   * @type {string}
-   * @protected
-   */
-  this._basePath = '';
-
-  /**
    * A map of paths/urls to {@link $Ref} objects
    *
    * @type {object}
    * @protected
    */
   this._$refs = {};
+
+  /**
+   * The {@link $Ref} object that is the root of the JSON schema.
+   *
+   * @type {$Ref}
+   * @protected
+   */
+  this._root$Ref = null;
 }
 
 /**
@@ -1745,7 +1740,7 @@ $Refs.prototype.get = function(path, options) {
  * @param {*} value - The value to assign
  */
 $Refs.prototype.set = function(path, value) {
-  path = url.resolve(this._basePath, path);
+  path = url.resolve(this._root$Ref.path, path);
   var withoutHash = url.stripHash(path);
   var $ref = this._$refs[withoutHash];
 
@@ -1764,10 +1759,15 @@ $Refs.prototype.set = function(path, value) {
  */
 $Refs.prototype._add = function(path, value) {
   var withoutHash = url.stripHash(path);
-  var $ref = this._$refs[withoutHash] = new $Ref();
-  $ref.path = path;
+
+  var $ref = new $Ref();
+  $ref.path = withoutHash;
   $ref.value = value;
   $ref.$refs = this;
+
+  this._$refs[withoutHash] = $ref;
+  this._root$Ref = this._root$Ref || $ref;
+
   return $ref;
 };
 
@@ -1780,7 +1780,7 @@ $Refs.prototype._add = function(path, value) {
  * @protected
  */
 $Refs.prototype._resolve = function(path, options) {
-  path = url.resolve(this._basePath, path);
+  path = url.resolve(this._root$Ref.path, path);
   var withoutHash = url.stripHash(path);
   var $ref = this._$refs[withoutHash];
 
@@ -1799,7 +1799,7 @@ $Refs.prototype._resolve = function(path, options) {
  * @protected
  */
 $Refs.prototype._get$Ref = function(path) {
-  path = url.resolve(this._basePath, path);
+  path = url.resolve(this._root$Ref.path, path);
   var withoutHash = url.stripHash(path);
   return this._$refs[withoutHash];
 };
@@ -1863,8 +1863,8 @@ function resolve(parser, options) {
   }
 
   try {
-    debug('Resolving $ref pointers in %s', parser.$refs._basePath);
-    var promises = crawl(parser.schema, parser.$refs._basePath + '#', parser.$refs, options);
+    debug('Resolving $ref pointers in %s', parser.$refs._root$Ref.path);
+    var promises = crawl(parser.schema, parser.$refs._root$Ref.path + '#', parser.$refs, options);
     return Promise.all(promises);
   }
   catch (e) {
