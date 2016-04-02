@@ -13,7 +13,7 @@ $RefParser.dereference("my-schema.yaml", {
   parse: {
     json: false,               // Disable the JSON parser
     yaml: {
-      empty: false             // Don't allow empty YAML files
+      allowEmpty: false             // Don't allow empty YAML files
     },
     text: {
       ext: [".txt", ".html"],  // Parse .txt and .html files as plain text (strings)
@@ -73,10 +73,10 @@ $RefParser.dereference("my-schema.yaml", {
 });
 ```
 
-#### `empty`
+#### `allowEmpty`
 All of the built-in parsers allow empty files by default. The JSON and YAML parsers will parse empty files as `undefined`. The text parser will parse empty files as an empty string.  The binary parser will parse empty files as an empty byte array.
 
-You can set `empty: false` on any parser, which will cause an error to be thrown if a file empty.
+You can set `allowEmpty: false` on any parser, which will cause an error to be thrown if a file empty.
 
 #### Parser-specific options
 Parsers can have other options that are specific to that parser.  Currently, the only such option is `text.encoding`, which allows you to set the encoding for parsing text-based files.  The default encoding is `utf8`.

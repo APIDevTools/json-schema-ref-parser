@@ -9,7 +9,7 @@ describe('Blank files', function() {
     global.onerror = function() {
       testDone();
       return true;
-    }
+    };
   });
 
   afterEach(function() {
@@ -30,10 +30,10 @@ describe('Blank files', function() {
         .catch(done);
     });
 
-    it('should throw a different error if "parse.yaml.empty" is disabled', function(done) {
+    it('should throw a different error if "parse.yaml.allowEmpty" is disabled', function(done) {
       testDone = done;
       return $RefParser
-        .parse(path.rel('specs/blank/files/blank.yaml'), {parse: {yaml: {empty: false}}})
+        .parse(path.rel('specs/blank/files/blank.yaml'), {parse: {yaml: {allowEmpty: false}}})
         .then(helper.shouldNotGetCalled(done))
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
@@ -48,7 +48,7 @@ describe('Blank files', function() {
     it('should throw an error for a blank JSON file', function(done) {
       testDone = done;
       return $RefParser
-        .parse(path.rel('specs/blank/files/blank.json'), {parse: {yaml: false}})
+        .parse(path.rel('specs/blank/files/blank.json'), {parse: {json: { allowEmpty: false }}})
         .then(helper.shouldNotGetCalled(done))
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
@@ -106,11 +106,11 @@ describe('Blank files', function() {
         .catch(done);
     });
 
-    it('should throw an error if "parse.xxx.empty" is disabled', function(done) {
+    it('should throw an error if "allowEmpty" is disabled', function(done) {
       testDone = done;
       return $RefParser
         .dereference(path.rel('specs/blank/blank.yaml'), {
-          parse: {binary: {empty: false}}
+          parse: {binary: {allowEmpty: false}}
         })
         .then(helper.shouldNotGetCalled(done))
         .catch(function(err) {
