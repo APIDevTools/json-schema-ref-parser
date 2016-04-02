@@ -19,49 +19,103 @@ describe('options.resolve', function() {
       });
   });
 
-  it('should use a custom resolver that calls a callback', function() {
-    // A custom resolver for "foo://" URLs
-    function myCustomResolver(path, options, callback) {
-      if (path.substr(0, 6) === 'foo://') {
-        // Resolve with a fake object
-        callback(null, {
-          bar: {
-            baz: "hello world"
-          }
-        });
-      }
-      else {
-        callback('Not a foo:// URL');   // <-- Any truthy value is treated as an error
-      }
-    }
-
+  it('should use a custom resolver with static values', function() {
     return $RefParser
-      .dereference(path.abs('specs/resolvers/resolvers.yaml'), {resolve: {custom: myCustomResolver}})
+      .dereference(path.abs('specs/resolvers/resolvers.yaml'), {
+        resolve: {
+          // A custom resolver for "foo://" URLs
+          foo: {
+            canRead: /^foo\:\/\//i,
+
+            read: {bar: {baz: 'hello world'}}
+          }
+        }
+      })
+      .then(function(schema) {
+        expect(schema).to.deep.equal(helper.dereferenced.resolvers);
+      });
+  });
+
+  it('should use a custom resolver that returns a value', function() {
+    return $RefParser
+      .dereference(path.abs('specs/resolvers/resolvers.yaml'), {
+        resolve: {
+          // A custom resolver for "foo://" URLs
+          foo: {
+            canRead: /^foo\:\/\//i,
+
+            read: function(file) {
+              return {bar: {baz: 'hello world'}};
+            }
+          }
+        }
+      })
+      .then(function(schema) {
+        expect(schema).to.deep.equal(helper.dereferenced.resolvers);
+      });
+  });
+
+  it('should use a custom resolver that calls a callback', function() {
+    return $RefParser
+      .dereference(path.abs('specs/resolvers/resolvers.yaml'), {
+        resolve: {
+          // A custom resolver for "foo://" URLs
+          foo: {
+            canRead: /^foo\:\/\//i,
+
+            read: function(file, callback) {
+              callback(null, {bar: {baz: 'hello world'}});
+            }
+          }
+        }
+      })
       .then(function(schema) {
         expect(schema).to.deep.equal(helper.dereferenced.resolvers);
       });
   });
 
   it('should use a custom resolver that returns a promise', function() {
-    // A custom resolver for "foo://" URLs
-    function myCustomResolver(path, options) {
-      return new Promise(function(resolve, reject) {
-        if (path.substr(0, 6) === 'foo://') {
-          // Resolve with a fake object
-          resolve({
-            bar: {
-              baz: "hello world"
-            }
-          });
-        }
-        else {
-          reject('Not a foo:// URL');   // <-- Any truthy value is treated as an error
-        }
-      });
-    }
-
     return $RefParser
-      .dereference(path.abs('specs/resolvers/resolvers.yaml'), {resolve: {custom: myCustomResolver}})
+    .dereference(path.abs('specs/resolvers/resolvers.yaml'), {
+      resolve: {
+        // A custom resolver for "foo://" URLs
+        foo: {
+          canRead: /^foo\:\/\//i,
+
+          read: function(file) {
+            return Promise.resolve({bar: {baz: 'hello world'}});
+          }
+        }
+      }
+    })
+      .then(function(schema) {
+        expect(schema).to.deep.equal(helper.dereferenced.resolvers);
+      });
+  });
+
+  it('should continue resolving if a custom resolver fails', function() {
+    return $RefParser
+    .dereference(path.abs('specs/resolvers/resolvers.yaml'), {
+      resolve: {
+        // A custom resolver that always fails
+        badResolver: {
+          order: 1,
+
+          canRead: true,
+
+          read: function(file) {
+            throw new Error('BOMB!!!');
+          }
+        },
+
+        // A custom resolver for "foo://" URLs
+        foo: {
+          canRead: /^foo\:\/\//i,
+
+          read: {bar: {baz: 'hello world'}}
+        }
+      }
+    })
       .then(function(schema) {
         expect(schema).to.deep.equal(helper.dereferenced.resolvers);
       });

@@ -9,8 +9,8 @@
 
 var $Ref    = require('./ref'),
     Pointer = require('./pointer'),
-    util    = require('./util'),
-    url     = require('url');
+    debug   = require('./util/debug'),
+    url     = require('./util/url');
 
 module.exports = bundle;
 
@@ -23,7 +23,7 @@ module.exports = bundle;
  * @param {$RefParserOptions} options
  */
 function bundle(parser, options) {
-  util.debug('Bundling $ref pointers in %s', parser.$refs._basePath);
+  debug('Bundling $ref pointers in %s', parser.$refs._basePath);
 
   // Build an inventory of all $ref pointers in the JSON Schema
   var inventory = [];
@@ -89,8 +89,8 @@ function inventory$Ref($refParent, $refKey, path, pathFromRoot, inventory, $refs
   var $refPath = url.resolve(path, $ref.$ref);
   var pointer = $refs._resolve($refPath, options);
   var depth = Pointer.parse(pathFromRoot).length;
-  var file = util.path.stripHash(pointer.path);
-  var hash = util.path.getHash(pointer.path);
+  var file = url.stripHash(pointer.path);
+  var hash = url.getHash(pointer.path);
   var external = file !== $refs._basePath;
   var extended = $Ref.isExtended$Ref($ref);
 
@@ -161,7 +161,7 @@ function remap(inventory) {
 
   var file, hash, pathFromRoot;
   inventory.forEach(function(i) {
-    util.debug('Re-mapping $ref pointer "%s" at %s', i.$ref.$ref, i.pathFromRoot);
+    debug('Re-mapping $ref pointer "%s" at %s', i.$ref.$ref, i.pathFromRoot);
 
     if (!i.external) {
       // This $ref already resolves to the main JSON Schema file
@@ -187,18 +187,18 @@ function remap(inventory) {
       i.$ref.$ref = Pointer.join(pathFromRoot, Pointer.parse(i.hash));
     }
 
-    util.debug('    new value: %s', (i.$ref && i.$ref.$ref) ? i.$ref.$ref : '[object Object]');
+    debug('    new value: %s', (i.$ref && i.$ref.$ref) ? i.$ref.$ref : '[object Object]');
   });
 }
 
-},{"./pointer":10,"./ref":14,"./util":17,"url":92}],2:[function(require,module,exports){
+},{"./pointer":10,"./ref":11,"./util/debug":16,"./util/url":19}],2:[function(require,module,exports){
 'use strict';
 
 var $Ref    = require('./ref'),
     Pointer = require('./pointer'),
-    util    = require('./util'),
     ono     = require('ono'),
-    url     = require('url');
+    debug   = require('./util/debug'),
+    url     = require('./util/url');
 
 module.exports = dereference;
 
@@ -210,7 +210,7 @@ module.exports = dereference;
  * @param {$RefParserOptions} options
  */
 function dereference(parser, options) {
-  util.debug('Dereferencing $ref pointers in %s', parser.$refs._basePath);
+  debug('Dereferencing $ref pointers in %s', parser.$refs._basePath);
   parser.$refs.circular = false;
   crawl(parser.schema, parser.$refs._basePath, '#', [], parser.$refs, options);
 }
@@ -273,7 +273,7 @@ function crawl(obj, path, pathFromRoot, parents, $refs, options) {
  * @returns {object}
  */
 function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
-  util.debug('Dereferencing $ref pointer "%s" at %s', $ref.$ref, path);
+  debug('Dereferencing $ref pointer "%s" at %s', $ref.$ref, path);
 
   var $refPath = url.resolve(path, $ref.$ref);
   var pointer = $refs._resolve($refPath, options);
@@ -326,20 +326,18 @@ function foundCircularReference(keyPath, $refs, options) {
   return true;
 }
 
-},{"./pointer":10,"./ref":14,"./util":17,"ono":69,"url":92}],3:[function(require,module,exports){
+},{"./pointer":10,"./ref":11,"./util/debug":16,"./util/url":19,"ono":69}],3:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
 var Promise     = require('./util/promise'),
     Options     = require('./options'),
     $Refs       = require('./refs'),
-    $Ref        = require('./ref'),
-    read        = require('./read'),
+    parse       = require('./parse'),
     resolve     = require('./resolve'),
     bundle      = require('./bundle'),
     dereference = require('./dereference'),
-    util        = require('./util'),
-    url         = require('url'),
+    url         = require('./util/url'),
     maybe       = require('call-me-maybe'),
     ono         = require('ono');
 
@@ -365,6 +363,7 @@ function $RefParser() {
    * The resolved JSON references
    *
    * @type {$Refs}
+   * @readonly
    */
   this.$refs = new $Refs();
 }
@@ -398,37 +397,54 @@ $RefParser.prototype.parse = function(schema, options, callback) {
   var args = normalizeArgs(arguments);
   var promise;
 
-  if (args.schema && typeof args.schema === 'object') {
-    // The schema is an object, not a path/url
+  if (!args.schema || (typeof args.schema !== 'string' && typeof args.schema !== 'object')) {
+    var err = ono('Expected a file path, URL, or object. Got %s', args.schema);
+    return maybe(args.callback, Promise.reject(err));
+  }
+
+  // Reset everything
+  this.schema = null;
+  this.$refs = new $Refs();
+
+  if (typeof args.schema === 'object') {
+    // The schema is an object, not a path/url.
+    // So immediately add a new $Ref with the schema object as its value
     this.$refs._basePath = '';
-    var $ref = new $Ref(this.$refs, this.$refs._basePath);
-    $ref.value = args.schema;
-    promise = Promise.resolve({$ref: $ref});
+    this.$refs._add('', args.schema);
+    promise = Promise.resolve(args.schema);
   }
   else {
-    if (!args.schema || typeof args.schema !== 'string') {
-      var err = ono('Expected a file path, URL, or object. Got %s', args.schema);
-      return maybe(args.callback, Promise.reject(err));
+    // The schema is a path/url
+    var path = args.schema;
+
+    // If it's a filesystem path, then convert it to a URL.
+    // NOTE: According to the JSON Reference spec, these should already be URLs,
+    // but, in practice, many people use local filesystem paths instead.
+    // So we're being generous here and doing the conversion automatically.
+    // This is not intended to be a 100% bulletproof solution.
+    // If it doesn't work for your use-case, then use a URL instead.
+    if (url.isFileSystemPath(path)) {
+      path = url.fromFileSystemPath(path);
     }
 
     // Resolve the absolute path of the schema
-    args.schema = util.path.localPathToUrl(args.schema);
-    args.schema = url.resolve(util.path.cwd(), args.schema);
-    this.$refs._basePath = util.path.stripHash(args.schema);
+    path = url.resolve(url.cwd(), path);
 
-    // Read the schema file/url
-    promise = read(args.schema, this.$refs, args.options);
+    // The basePath from which $ref pointers will start being resolved
+    this.$refs._basePath = url.stripHash(path);
+
+    // Parse the schema file/url
+    promise = parse(path, this.$refs, args.options);
   }
 
   var me = this;
   return promise
     .then(function(result) {
-      var value = result.$ref.value;
-      if (!value || typeof value !== 'object' || Buffer.isBuffer(value)) {
-        throw ono.syntax('"%s" is not a valid JSON Schema', me.$refs._basePath || value);
+      if (!result || typeof result !== 'object' || Buffer.isBuffer(result)) {
+        throw ono.syntax('"%s" is not a valid JSON Schema', me.$refs._basePath || result);
       }
       else {
-        me.schema = value;
+        me.schema = result;
         return maybe(args.callback, Promise.resolve(me.schema));
       }
     })
@@ -582,27 +598,31 @@ function normalizeArgs(args) {
 
 }).call(this,{"isBuffer":require("../node_modules/is-buffer/index.js")})
 
-},{"../node_modules/is-buffer/index.js":36,"./bundle":1,"./dereference":2,"./options":4,"./read":13,"./ref":14,"./refs":15,"./resolve":16,"./util":17,"./util/promise":19,"./util/yaml":20,"call-me-maybe":27,"ono":69,"url":92}],4:[function(require,module,exports){
+},{"../node_modules/is-buffer/index.js":36,"./bundle":1,"./dereference":2,"./options":4,"./parse":5,"./refs":12,"./resolve":13,"./util/promise":18,"./util/url":19,"./util/yaml":20,"call-me-maybe":27,"ono":69}],4:[function(require,module,exports){
 /* eslint lines-around-comment: [2, {beforeBlockComment: false}] */
 'use strict';
 
-var parseJSON   = require('./parse/json'),
-    parseYAML   = require('./parse/yaml'),
-    parseText   = require('./parse/text'),
-    parseBinary = require('./parse/binary'),
-    readFile    = require('./read/file'),
-    readHttp    = require('./read/http'),
-    util        = require('./util');
+var jsonParser   = require('./parsers/json'),
+    yamlParser   = require('./parsers/yaml'),
+    textParser   = require('./parsers/text'),
+    binaryParser = require('./parsers/binary'),
+    fileResolver = require('./resolvers/file'),
+    httpResolver = require('./resolvers/http');
 
 module.exports = $RefParserOptions;
 
 /**
- * Options that determine how JSON schemas are parsed, dereferenced, and cached.
+ * Options that determine how JSON schemas are parsed, resolved, and dereferenced.
  *
  * @param {object|$RefParserOptions} [options] - Overridden options
  * @constructor
  */
 function $RefParserOptions(options) {
+  merge(this, $RefParserOptions.defaults);
+  merge(this, options);
+}
+
+$RefParserOptions.defaults = {
   /**
    * Determines how different types of files will be parsed.
    *
@@ -620,32 +640,28 @@ function $RefParserOptions(options) {
    *                        "Empty" includes zero-byte files, as well as JSON/YAML files that
    *                        don't contain any keys.
    */
-  this.parse = {
-    json: parseJSON,
-    yaml: parseYAML,
-    text: parseText,
-    binary: parseBinary,
-  };
+  parse: {
+    json: jsonParser,
+    yaml: yamlParser,
+    text: textParser,
+    binary: binaryParser,
+  },
 
   /**
-   * Determines how external JSON References will be resolved.
+   * Determines how JSON References will be resolved.
    *
-   * You can add additional readers of your own, replace an existing one with
-   * your own implemenation, or disable any reader by setting it to false.
+   * You can add additional resolvers of your own, replace an existing one with
+   * your own implemenation, or disable any resolver by setting it to false.
    *
-   * Each of the built-in readers has the following options:
+   * Each of the built-in resolvers has the following options:
    *
-   *  order   {number}    - The order in which the reader will run
+   *  order   {number}    - The order in which the resolver will run
    *
-   *  cache   {number}    - How long to cache files (in milliseconds)
-   *                        The default cache duration is different for each reader.
-   *                        Setting the cache duration to zero disables caching for that reader.
-   *
-   * The HTTP reader has additional options.  See read/http.js for details.
+   * The HTTP resolver has additional options.  See read/http.js for details.
    */
-  this.resolve = {
-    file: readFile,
-    http: readHttp,
+  resolve: {
+    file: fileResolver,
+    http: httpResolver,
 
     /**
      * Determines whether external $ref pointers will be resolved.
@@ -655,12 +671,12 @@ function $RefParserOptions(options) {
      * @type {boolean}
      */
     external: true,
-  };
+  },
 
   /**
    * Determines the types of JSON references that are allowed.
    */
-  this.dereference = {
+  dereference: {
     /**
      * Dereference circular (recursive) JSON references?
      * If false, then a {@link ReferenceError} will be thrown if a circular reference is found.
@@ -669,192 +685,190 @@ function $RefParserOptions(options) {
      * @type {boolean|string}
      */
     circular: true
-  };
-
-  merge(options, this);
-}
+  },
+};
 
 /**
- * Merges user-specified options with default options.
+ * Merges the properties of the source object into the target object.
  *
- * @param {?object} user - The options that were specified by the user
- * @param {$RefParserOptions} defaults - The {@link $RefParserOptions} object that we're populating
- * @returns {*}
+ * @param {object} target - The object that we're populating
+ * @param {?object} source - The options that are being merged
+ * @returns {object}
  */
-function merge(user, defaults) {
-  if (user) {
-    var keys = Object.keys(user);
+function merge(target, source) {
+  if (isMergeable(source)) {
+    var keys = Object.keys(source);
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
-      var userSetting = user[key];
-      var defaultSetting = defaults[key];
+      var sourceSetting = source[key];
+      var targetSetting = target[key];
 
-      if (userSetting && typeof userSetting === 'object' && !Array.isArray(userSetting)) {
-        if (typeof defaultSetting === 'function') {
-          // Create a copy of the default function, so the user can safely modify its options
-          defaultSetting = merge(defaultSetting, util.bind(defaultSetting));
-        }
-
-        // Merge the user-sepcified options for this object/function
-        defaults[key] = merge(userSetting, defaultSetting || {});
+      if (isMergeable(sourceSetting)) {
+        // It's a nested object, so merge it recursively
+        target[key] = merge(targetSetting || {}, sourceSetting);
       }
-      else {
-        // A scalar value, function, or array. So override the default value.
-        defaults[key] = userSetting;
+      else if (sourceSetting !== undefined) {
+        // It's a scalar value, function, or array. No merging necessary. Just overwrite the target value.
+        target[key] = sourceSetting;
       }
     }
   }
-  return defaults;
+  return target;
 }
 
-},{"./parse/binary":5,"./parse/json":7,"./parse/text":8,"./parse/yaml":9,"./read/file":11,"./read/http":12,"./util":17}],5:[function(require,module,exports){
-(function (Buffer){
-'use strict';
-
-var Promise = require('../util/promise');
-
-module.exports = parseBinary;
-
 /**
- * The order that this parser will run, in relation to other parsers.
- */
-module.exports.order = 400;
-
-/**
- * Whether to allow "empty" files (zero bytes).
- */
-module.exports.empty = true;
-
-/**
- * File extensions and/or RegExp patterns that will be parsed by this parser.
- */
-module.exports.ext = [
-  '.jpeg', '.jpg', '.gif', '.png', '.bmp', '.ico'
-];
-
-/**
- * Parses the given data as a Buffer (byte array).
+ * Determines whether the given value can be merged,
+ * or if it is a scalar value that should just override the target value.
  *
- * @param {*} data - The data to be parsed
- * @param {string} path - The file path or URL that `data` came from
- * @param {$RefParserOptions} options
- * @returns {Promise<Buffer>}
+ * @param   {*}  val
+ * @returns {Boolean}
  */
-function parseBinary(data, path, options) {
-  return new Promise(function(resolve, reject) {
-    if (Buffer.isBuffer(data)) {
-      resolve(data);
-    }
-    else {
-      // This will reject if data is anything other than a string or typed array
-      resolve(new Buffer(data));
-    }
-  });
+function isMergeable(val) {
+  return val &&
+    (typeof val === 'object') &&
+    !Array.isArray(val) &&
+    !(val instanceof RegExp) &&
+    !(val instanceof Date);
 }
 
-}).call(this,require("buffer").Buffer)
-
-},{"../util/promise":19,"buffer":24}],6:[function(require,module,exports){
+},{"./parsers/binary":6,"./parsers/json":7,"./parsers/text":8,"./parsers/yaml":9,"./resolvers/file":14,"./resolvers/http":15}],5:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
-var util    = require('../util'),
-    Promise = require('../util/promise'),
-    ono     = require('ono');
+var ono      = require('ono'),
+    debug    = require('./util/debug'),
+    url      = require('./util/url'),
+    plugins  = require('./util/plugins'),
+    Promise  = require('./util/promise');
 
 module.exports = parse;
 
 /**
- * Parses the given data according to the given options.
+ * Reads and parses the specified file path or URL.
  *
- * @param {*} data - The data to be parsed
- * @param {string} path - The file path or URL that `data` came from
+ * @param {string} path - This path MUST already be resolved, since `read` doesn't know the resolution context
+ * @param {$Refs} $refs
  * @param {$RefParserOptions} options
  *
- * @returns {Promise<string|Buffer|object>}
+ * @returns {Promise}
+ * The promise resolves with the parsed file contents, NOT the raw (Buffer) contents.
  */
-function parse(data, path, options) {
-  return new Promise(function(resolve, reject) {
-    util.debug('Parsing %s', path);
-    var parsers = getSortedParsers(path, options);
-    util.runOrderedFunctions(parsers, data, path, options).then(onParsed, onError);
+function parse(path, $refs, options) {
+  try {
+    // Remove the URL fragment, if any
+    path = url.stripHash(path);
 
-    function onParsed(parser) {
-      if (!parser.fn.empty && isEmpty(parser.result)) {
-        reject(ono.syntax('Error parsing "%s" as %s. \nParsed value is empty', path, parser.name));
+    // Add a new $Ref for this file, even though we don't have the value yet.
+    // This ensures that we don't simultaneously read & parse the same file multiple times
+    var $ref = $refs._add(path);
+
+    // This "file object" will be passed to all resolvers and parsers.
+    var file = {
+      url: path,
+      extension: url.getExtension(path),
+    };
+
+    // Read the file and then parse the data
+    return readFile(file, options)
+      .then(function(resolver) {
+        $ref.pathType = resolver.plugin.name;
+        file.data = resolver.result;
+        return parseFile(file, options);
+      })
+      .then(function(parser) {
+        $ref.value = parser.result;
+        return parser.result;
+      });
+  }
+  catch (e) {
+    return Promise.reject(e);
+  }
+}
+
+/**
+ * Reads the given file, using the configured resolver plugins
+ *
+ * @param {object} file           - An object containing information about the referenced file
+ * @param {string} file.url       - The full URL of the referenced file
+ * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+ * @param {$RefParserOptions} options
+ *
+ * @returns {Promise}
+ * The promise resolves with the raw file contents and the resolver that was used.
+ */
+function readFile(file, options) {
+  return new Promise(function(resolve, reject) {
+    debug('Reading %s', file.url);
+
+    // Find the resolvers that can read this file
+    var resolvers = plugins.all(options.resolve);
+    resolvers = plugins.filter(resolvers, 'canRead', file);
+
+    // Run the resolvers, in order, until one of them succeeds
+    plugins.sort(resolvers);
+    plugins.run(resolvers, 'read', file)
+      .then(resolve, onError);
+
+    function onError(err) {
+      // Throw the original error, if it's one of our own (user-friendly) errors.
+      // Otherwise, throw a generic, friendly error.
+      if (err && !(err instanceof SyntaxError)) {
+        reject(err);
       }
       else {
-        resolve(parser.result);
+        reject(ono.syntax('Unable to resolve $ref pointer "%s"', file.url));
+      }
+    }
+  });
+}
+
+/**
+ * Parses the given file's contents, using the configured parser plugins.
+ *
+ * @param {object} file           - An object containing information about the referenced file
+ * @param {string} file.url       - The full URL of the referenced file
+ * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+ * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
+ * @param {$RefParserOptions} options
+ *
+ * @returns {Promise}
+ * The promise resolves with the parsed file contents and the parser that was used.
+ */
+function parseFile(file, options) {
+  return new Promise(function(resolve, reject) {
+    debug('Parsing %s', file.url);
+
+    // Find the parsers that can read this file type.
+    // If none of the parsers are an exact match for this file, then we'll try ALL of them.
+    // This handles situations where the file IS a supported type, just with an unknown extension.
+    var allParsers = plugins.all(options.parse);
+    var filteredParsers = plugins.filter(allParsers, 'canParse', file);
+    var parsers = filteredParsers.length > 0 ? filteredParsers : allParsers;
+
+    // Run the parsers, in order, until one of them succeeds
+    plugins.sort(parsers);
+    plugins.run(parsers, 'parse', file)
+      .then(onParsed, onError);
+
+    function onParsed(parser) {
+      if (!parser.plugin.allowEmpty && isEmpty(parser.result)) {
+        reject(ono.syntax('Error parsing "%s" as %s. \nParsed value is empty', file.url, parser.plugin.name));
+      }
+      else {
+        resolve(parser);
       }
     }
 
     function onError(err) {
       if (err) {
-        reject(ono.syntax(err, 'Error parsing %s', path));
+        err = err instanceof Error ? err : new Error(err);
+        reject(ono.syntax(err, 'Error parsing %s', file.url));
       }
       else {
-        reject(ono.syntax('Unable to parse %s', path));
+        reject(ono.syntax('Unable to parse %s', file.url));
       }
     }
   });
-}
-
-/**
- * Returns the parsers for the given file, sorted by how likely they are  to successfully
- * parse the file.  For example, a ".yaml" file is more likely to be successfully parsed
- * by the YAML parser than by the JSON, Text, or Binary parsers.  Whereas a ".jpg" file
- * is more likely to be successfully parsed by the Binary parser.
- *
- * @param {string} path - The file path or URL that `data` came from
- * @param {$RefParserOptions} options
- * @returns {{name: string, order: number, score: number, fn: function}[]}
- */
-function getSortedParsers(path, options) {
-  var ext = util.path.extname(path);
-  var bestScore = 3;
-
-  return util.getOrderedFunctions(options.parse)
-    // Score each parser
-    .map(function(parser) {
-      var scoredParser = {
-        score: score(path, ext, parser.fn.ext),
-        order: parser.order,
-        name: parser.name,
-        fn: parser.fn,
-      };
-      bestScore = Math.min(scoredParser.score, bestScore);
-      return scoredParser;
-    })
-
-    // Only return parsers that scored 1 (exact match) or 2 (pattern match).
-    // If NONE of the parsers matched, then return ALL of them
-    .filter(function(parser) { return bestScore === 3 || parser.score < 3; })
-
-    // Sort by score (exact matches come first)
-    .sort(function(a, b) { return a.score - b.score; });
-}
-
-/**
- * Returns a "score", based on how well the given file matches the given patterns.
- *
- * @param {string} path - The full file path or URL
- * @param {string} ext - The file extension
- * @param {array} patterns - An array of file extensions (strings) or RegExp patterns
- * @returns {number} - 1 = exact match, 2 = pattern match, 3 = no match
- */
-function score(path, ext, patterns) {
-  var bestScore = 3;
-  patterns = Array.isArray(patterns) ? patterns : [patterns];
-  for (var i = 0; i < patterns.length; i++) {
-    var pattern = patterns[i];
-    if (pattern === ext) {
-      return 1;
-    }
-    if (pattern instanceof RegExp && pattern.test(path)) {
-      bestScore = Math.min(bestScore, 2);
-    }
-  }
-  return bestScore;
 }
 
 /**
@@ -864,181 +878,286 @@ function score(path, ext, patterns) {
  * @returns {boolean}
  */
 function isEmpty(value) {
-  return !value ||
+  return value === undefined ||
     (typeof value === 'object' && Object.keys(value).length === 0) ||
     (typeof value === 'string' && value.trim().length === 0) ||
     (Buffer.isBuffer(value) && value.length === 0);
 }
 
-}).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
+}).call(this,{"isBuffer":require("../node_modules/is-buffer/index.js")})
 
-},{"../../node_modules/is-buffer/index.js":36,"../util":17,"../util/promise":19,"ono":69}],7:[function(require,module,exports){
+},{"../node_modules/is-buffer/index.js":36,"./util/debug":16,"./util/plugins":17,"./util/promise":18,"./util/url":19,"ono":69}],6:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
 var Promise = require('../util/promise');
 
-module.exports = parseJSON;
+var BINARY_REGEXP = /\.(jpeg|jpg|gif|png|bmp|ico)$/i;
 
-/**
- * The order that this parser will run, in relation to other parsers.
- */
-module.exports.order = 100;
+module.exports = {
+  /**
+   * The order that this parser will run, in relation to other parsers.
+   *
+   * @type {number}
+   */
+  order: 400,
 
-/**
- * Whether to allow "empty" files. This includes zero-byte files, as well as empty JSON objects.
- */
-module.exports.empty = true;
+  /**
+   * Whether to allow "empty" files (zero bytes).
+   *
+   * @type {boolean}
+   */
+  allowEmpty: true,
 
-/**
- * File extensions and/or RegExp patterns that will be parsed by this parser.
- */
-module.exports.ext = ['.json'];
+  /**
+   * Determines whether this parser can parse a given file reference.
+   * Parsers that return true will be tried, in order, until one successfully parses the file.
+   * Parsers that return false will be skipped, UNLESS all parsers returned false, in which case
+   * every parser will be tried.
+   *
+   * @param {object} file           - An object containing information about the referenced file
+   * @param {string} file.url       - The full URL of the referenced file
+   * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+   * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
+   * @returns {boolean}
+   */
+  canParse: function isBinary(file) {
+    // Use this parser if the file is a Buffer, and has a known binary extension
+    return Buffer.isBuffer(file.data) && BINARY_REGEXP.test(file.url);
+  },
 
-/**
- * Parses the given data as JSON
- *
- * @param {*} data - The data to be parsed
- * @param {string} path - The file path or URL that `data` came from
- * @param {$RefParserOptions} options
- * @returns {Promise}
- */
-function parseJSON(data, path, options) {
-  return new Promise(function(resolve, reject) {
-    if (Buffer.isBuffer(data)) {
-      var json = data.toString();
-      resolve(JSON.parse(json));
-    }
-    else if (typeof data === 'string') {
-      if (data.trim().length === 0) {
-        resolve(null);  // This mirrors the YAML behavior
+  /**
+   * Parses the given data as a Buffer (byte array).
+   *
+   * @param {object} file           - An object containing information about the referenced file
+   * @param {string} file.url       - The full URL of the referenced file
+   * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+   * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
+   * @returns {Promise<Buffer>}
+   */
+  parse: function parseBinary(file) {
+    return new Promise(function(resolve, reject) {
+      if (Buffer.isBuffer(file.data)) {
+        resolve(file.data);
       }
       else {
-        resolve(JSON.parse(data));
+        // This will reject if data is anything other than a string or typed array
+        resolve(new Buffer(file.data));
       }
-    }
-    else {
-      // data is already a JavaScript value (object, array, number, null, NaN, etc.)
-      resolve(data);
-    }
-  });
-}
+    });
+  }
+};
 
-}).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
+}).call(this,require("buffer").Buffer)
 
-},{"../../node_modules/is-buffer/index.js":36,"../util/promise":19}],8:[function(require,module,exports){
+},{"../util/promise":18,"buffer":24}],7:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
 var Promise = require('../util/promise');
 
-module.exports = parseText;
+module.exports = {
+  /**
+   * The order that this parser will run, in relation to other parsers.
+   *
+   * @type {number}
+   */
+  order: 100,
 
-/**
- * The order that this parser will run, in relation to other parsers.
- */
-module.exports.order = 300;
+  /**
+   * Whether to allow "empty" files. This includes zero-byte files, as well as empty JSON objects.
+   *
+   * @type {boolean}
+   */
+  allowEmpty: true,
 
-/**
- * Whether to allow "empty" files (zero bytes).
- */
-module.exports.empty = true;
+  /**
+   * Determines whether this parser can parse a given file reference.
+   * Parsers that match will be tried, in order, until one successfully parses the file.
+   * Parsers that don't match will be skipped, UNLESS none of the parsers match, in which case
+   * every parser will be tried.
+   *
+   * @type {RegExp|string[]|function}
+   */
+  canParse: /\.json$/i,
 
-/**
- * The encoding that the text is expected to be in.
- */
-module.exports.encoding = 'utf8';
+  /**
+   * Parses the given file as JSON
+   *
+   * @param {object} file           - An object containing information about the referenced file
+   * @param {string} file.url       - The full URL of the referenced file
+   * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+   * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
+   * @returns {Promise}
+   */
+  parse: function parseJSON(file) {
+    return new Promise(function(resolve, reject) {
+      var data = file.data;
+      if (Buffer.isBuffer(data)) {
+        data = data.toString();
+      }
 
-/**
- * File extensions and/or RegExp patterns that will be parsed by this parser.
- */
-module.exports.ext = [
-  '.txt', '.htm', '.html', '.md', '.xml', '.js', '.min', '.map',
-  '.css', '.scss', '.less', '.svg'
-];
-
-/**
- * Parses the given data as text
- *
- * @param {*} data - The data to be parsed
- * @param {string} path - The file path or URL that `data` came from
- * @param {$RefParserOptions} options
- * @returns {Promise<string>}
- */
-function parseText(data, path, options) {
-  return new Promise(function(resolve, reject) {
-    if (typeof data === 'string') {
-      resolve(data);
-    }
-    else if (Buffer.isBuffer(data)) {
-      resolve(data.toString(options.parse.text.encoding));
-    }
-    else {
-      reject(new Error('data is not text'));
-    }
-  });
-}
+      if (typeof data === 'string') {
+        if (data.trim().length === 0) {
+          resolve(undefined);  // This mirrors the YAML behavior
+        }
+        else {
+          resolve(JSON.parse(data));
+        }
+      }
+      else {
+        // data is already a JavaScript value (object, array, number, null, NaN, etc.)
+        resolve(data);
+      }
+    });
+  }
+};
 
 }).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
 
-},{"../../node_modules/is-buffer/index.js":36,"../util/promise":19}],9:[function(require,module,exports){
+},{"../../node_modules/is-buffer/index.js":36,"../util/promise":18}],8:[function(require,module,exports){
+(function (Buffer){
+'use strict';
+
+var Promise = require('../util/promise');
+
+var TEXT_REGEXP = /\.(txt|htm|html|md|xml|js|min|map|css|scss|less|svg)$/i;
+
+module.exports = {
+  /**
+   * The order that this parser will run, in relation to other parsers.
+   *
+   * @type {number}
+   */
+  order: 300,
+
+  /**
+   * Whether to allow "empty" files (zero bytes).
+   *
+   * @type {boolean}
+   */
+  allowEmpty: true,
+
+  /**
+   * The encoding that the text is expected to be in.
+   *
+   * @type {string}
+   */
+  encoding: 'utf8',
+
+  /**
+   * Determines whether this parser can parse a given file reference.
+   * Parsers that return true will be tried, in order, until one successfully parses the file.
+   * Parsers that return false will be skipped, UNLESS all parsers returned false, in which case
+   * every parser will be tried.
+   *
+   * @param {object} file           - An object containing information about the referenced file
+   * @param {string} file.url       - The full URL of the referenced file
+   * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+   * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
+   * @returns {boolean}
+   */
+  canParse: function isText(file) {
+    // Use this parser if the file is a string or Buffer, and has a known text-based extension
+    return (typeof file.data === 'string' || Buffer.isBuffer(file.data)) && TEXT_REGEXP.test(file.url);
+  },
+
+  /**
+   * Parses the given file as text
+   *
+   * @param {object} file           - An object containing information about the referenced file
+   * @param {string} file.url       - The full URL of the referenced file
+   * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+   * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
+   * @returns {Promise<string>}
+   */
+  parse: function parseText(file) {
+    var me = this;
+
+    return new Promise(function(resolve, reject) {
+      if (typeof file.data === 'string') {
+        resolve(file.data);
+      }
+      else if (Buffer.isBuffer(file.data)) {
+        resolve(file.data.toString(me.encoding));
+      }
+      else {
+        reject(new Error('data is not text'));
+      }
+    });
+  }
+};
+
+}).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
+
+},{"../../node_modules/is-buffer/index.js":36,"../util/promise":18}],9:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
 var Promise = require('../util/promise'),
     YAML    = require('../util/yaml');
 
-module.exports = parseYAML;
+module.exports = {
+  /**
+   * The order that this parser will run, in relation to other parsers.
+   *
+   * @type {number}
+   */
+  order: 200,
 
-/**
- * The order that this parser will run, in relation to other parsers.
- */
-module.exports.order = 200;
+  /**
+   * Whether to allow "empty" files. This includes zero-byte files, as well as empty JSON objects.
+   *
+   * @type {boolean}
+   */
+  allowEmpty: true,
 
-/**
- * Whether to allow "empty" files. This includes zero-byte files, as well as empty JSON objects.
- */
-module.exports.empty = true;
+  /**
+   * Determines whether this parser can parse a given file reference.
+   * Parsers that match will be tried, in order, until one successfully parses the file.
+   * Parsers that don't match will be skipped, UNLESS none of the parsers match, in which case
+   * every parser will be tried.
+   *
+   * @type {RegExp|string[]|function}
+   */
+  canParse: ['.yaml', '.yml', '.json'],  // JSON is valid YAML
 
-/**
- * File extensions and/or RegExp patterns that will be parsed by this parser.
- */
-module.exports.ext = ['.yaml', '.yml', '.json'];  // <--- JSON is valid YAML
+  /**
+   * Parses the given file as YAML
+   *
+   * @param {object} file           - An object containing information about the referenced file
+   * @param {string} file.url       - The full URL of the referenced file
+   * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+   * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
+   * @returns {Promise}
+   */
+  parse: function parseYAML(file) {
+    return new Promise(function(resolve, reject) {
+      var data = file.data;
+      if (Buffer.isBuffer(data)) {
+        data = data.toString();
+      }
 
-/**
- * Parses the given data as YAML
- *
- * @param {*} data - The data to be parsed
- * @param {string} path - The file path or URL that `data` came from
- * @param {$RefParserOptions} options
- * @returns {Promise}
- */
-function parseYAML(data, path, options) {
-  return new Promise(function(resolve, reject) {
-    if (Buffer.isBuffer(data)) {
-      var yaml = data.toString();
-      resolve(YAML.parse(yaml));
-    }
-    else if (typeof data === 'string') {
-      resolve(YAML.parse(data));
-    }
-    else {
-      // data is already a JavaScript value (object, array, number, null, NaN, etc.)
-      resolve(data);
-    }
-  });
-}
+      if (typeof data === 'string') {
+        resolve(YAML.parse(data));
+      }
+      else {
+        // data is already a JavaScript value (object, array, number, null, NaN, etc.)
+        resolve(data);
+      }
+    });
+  }
+};
 
 }).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
 
-},{"../../node_modules/is-buffer/index.js":36,"../util/promise":19,"../util/yaml":20}],10:[function(require,module,exports){
+},{"../../node_modules/is-buffer/index.js":36,"../util/promise":18,"../util/yaml":20}],10:[function(require,module,exports){
 'use strict';
 
 module.exports = Pointer;
 
 var $Ref         = require('./ref'),
-    util         = require('./util'),
-    url          = require('url'),
+    url          = require('./util/url'),
     ono          = require('ono'),
     slashes      = /\//g,
     tildes       = /~/g,
@@ -1175,7 +1294,7 @@ Pointer.prototype.set = function(obj, value, options) {
  */
 Pointer.parse = function(path) {
   // Get the JSON pointer from the path's hash
-  var pointer = util.path.getHash(path).substr(1);
+  var pointer = url.getHash(path).substr(1);
 
   // If there's no pointer, then there are no tokens,
   // so return an empty array
@@ -1288,351 +1407,19 @@ function setValue(pointer, token, value) {
   return value;
 }
 
-},{"./ref":14,"./util":17,"ono":69,"url":92}],11:[function(require,module,exports){
-(function (process){
-'use strict';
-var fs      = require('fs'),
-    ono     = require('ono'),
-    Promise = require('../util/promise'),
-    util    = require('../util');
-
-module.exports = readFile;
-
-/**
- * The order that this reader will run, in relation to other readers.
- */
-module.exports.order = 1;
-
-/**
- * How long a file's contents will be cached before the file is re-read.
- * Setting this to zero disables caching and the file will be re-read every time.
- */
-module.exports.cache = 60000;  // 1 minute
-
-/**
- * Reads the given file path and returns its raw contents as a Buffer.
- *
- * @param {string} path - The file path to read
- * @param {$RefParserOptions} options
- *
- * @returns {Promise<Buffer>|undefined}
- * If `path` is NOT a supported file path, then `undefiend` is returned.
- * Otherwise, a Promise is returned, and it will resolve with the file contents as a Buffer.
- */
-function readFile(path, options) {
-  if (process.browser || util.path.isUrl(path)) {
-    return Promise.reject(new SyntaxError('Not a local file'));
-  }
-
-  return new Promise(function(resolve, reject) {
-    var file;
-    try {
-      file = util.path.urlToLocalPath(path);
-    }
-    catch (err) {
-      reject(ono.uri(err, 'Malformed URI: %s', path));
-    }
-
-    util.debug('Opening file: %s', file);
-
-    try {
-      fs.readFile(file, function(err, data) {
-        if (err) {
-          reject(ono(err, 'Error opening file "%s"', file));
-        }
-        else {
-          resolve(data);
-        }
-      });
-    }
-    catch (err) {
-      reject(ono(err, 'Error opening file "%s"', file));
-    }
-  });
-}
-
-}).call(this,require('_process'))
-
-},{"../util":17,"../util/promise":19,"_process":71,"fs":23,"ono":69}],12:[function(require,module,exports){
-(function (process,Buffer){
-'use strict';
-
-var http    = require('http'),
-    https   = require('https'),
-    url     = require('url'),
-    util    = require('../util'),
-    Promise = require('../util/promise'),
-    ono     = require('ono');
-
-module.exports = readHttp;
-
-/**
- * The order that this reader will run, in relation to other readers.
- */
-module.exports.order = 2;
-
-/**
- * How long a URL's contents will be cached before it is re-downloaded.
- * Setting this to zero disables caching and the file will be re-downloaded every time.
- */
-module.exports.cache = 300000;  // 5 minutes
-
-/**
- * HTTP headers to send when downloading files.
- */
-module.exports.headers = null;
-
-/**
- * HTTP request timeout (in milliseconds).
- */
-module.exports.timeout = 5000; // 5 seconds
-
-/**
- * The maximum number of HTTP redirects to follow.
- * To disable automatic following of redirects, set this to zero.
- */
-module.exports.redirects = 5;
-
-/**
- * The `withCredentials` option of XMLHttpRequest.
- * Set this to `true` if you're downloading files from a CORS-enabled server that requires authentication
- */
-module.exports.withCredentials = false;
-
-/**
- * Reads the given URL and returns its raw contents as a Buffer.
- *
- * @param {string} path - The URL to read
- * @param {$RefParserOptions} options
- *
- * @returns {Promise<Buffer>|undefined}
- * If `path` is NOT a supported URL, then `undefiend` is returned.
- * Otherwise, a Promise is returned, and it will resolve with the downloaded contents as a Buffer.
- */
-function readHttp(path, options) {
-  var u = url.parse(path);
-
-  if (process.browser && !u.protocol) {
-    // Use the protocol of the current page
-    u.protocol = url.parse(location.href).protocol;
-  }
-
-  if (u.protocol === 'http:' || u.protocol === 'https:') {
-    return download(u, options);
-  }
-  else {
-    return Promise.reject(new SyntaxError('Not an HTTP/HTTPS URL'));
-  }
-}
-
-/**
- * Downloads the given file.
- *
- * @param {Url|string} u - The url to download (can be a parsed {@link Url} object)
- * @param {$RefParserOptions} options
- * @param {number} [redirects] - The redirect URLs that have already been followed
- *
- * @returns {Promise<Buffer>}
- * The promise resolves with the raw downloaded data, or rejects if there is an HTTP error.
- */
-function download(u, options, redirects) {
-  return new Promise(function(resolve, reject) {
-    u = url.parse(u);
-    redirects = redirects || [];
-    redirects.push(u.href);
-
-    get(u, options)
-      .then(function(res) {
-        if (res.statusCode >= 400) {
-          throw ono({status: res.statusCode}, 'HTTP ERROR %d', res.statusCode);
-        }
-        else if (res.statusCode >= 300) {
-          if (redirects.length > options.resolve.http.redirects) {
-            reject(ono({status: res.statusCode}, 'Error downloading %s. \nToo many redirects: \n  %s',
-              redirects[0], redirects.join(' \n  ')));
-          }
-          else if (!res.headers.location) {
-            throw ono({status: res.statusCode}, 'HTTP %d redirect with no location header', res.statusCode);
-          }
-          else {
-            util.debug('HTTP %d redirect %s -> %s', res.statusCode, u.href, res.headers.location);
-            var redirectTo = url.resolve(u, res.headers.location);
-            download(redirectTo, options, redirects).then(resolve, reject);
-          }
-        }
-        else {
-          resolve(res.body || new Buffer(0));
-        }
-      })
-      .catch(function(err) {
-        reject(ono(err, 'Error downloading', u.href));
-      });
-  });
-}
-
-/**
- * Sends an HTTP GET request.
- *
- * @param {Url} u - A parsed {@link Url} object
- * @param {$RefParserOptions} options
- *
- * @returns {Promise<Response>}
- * The promise resolves with the HTTP Response object.
- */
-function get(u, options) {
-  return new Promise(function(resolve, reject) {
-    util.debug('GET', u.href);
-
-    var protocol = u.protocol === 'https:' ? https : http;
-    var req = protocol.get({
-      hostname: u.hostname,
-      port: u.port,
-      path: u.path,
-      auth: u.auth,
-      headers: options.resolve.http.headers || {},
-      withCredentials: options.resolve.http.withCredentials
-    });
-
-    if (typeof req.setTimeout === 'function') {
-      req.setTimeout(options.resolve.http.timeout);
-    }
-
-    req.on('timeout', function() {
-      req.abort();
-    });
-
-    req.on('error', reject);
-
-    req.once('response', function(res) {
-      res.body = new Buffer(0);
-
-      res.on('data', function(data) {
-        res.body = Buffer.concat([res.body, new Buffer(data)]);
-      });
-
-      res.on('error', reject);
-
-      res.on('end', function() {
-        resolve(res);
-      });
-    });
-  });
-}
-
-}).call(this,require('_process'),require("buffer").Buffer)
-
-},{"../util":17,"../util/promise":19,"_process":71,"buffer":24,"http":87,"https":33,"ono":69,"url":92}],13:[function(require,module,exports){
-'use strict';
-
-var parse    = require('../parse'),
-    $Ref     = require('../ref'),
-    util     = require('../util'),
-    Promise  = require('../util/promise'),
-    ono      = require('ono');
-
-module.exports = read;
-
-/**
- * Reads the specified file path or URL, possibly from cache.
- *
- * @param {string} path - This path MUST already be resolved, since `read` doesn't know the resolution context
- * @param {$Refs} $refs
- * @param {$RefParserOptions} options
- *
- * @returns {Promise}
- * The promise resolves with an object that contains a {@link $Ref}
- * and a flag indicating whether the {@link $Ref} came from cache or not.
- */
-function read(path, $refs, options) {
-  try {
-    // Remove the URL fragment, if any
-    path = util.path.stripHash(path);
-
-    // Return from cache, if possible
-    var $ref = $refs._get$Ref(path);
-    if ($ref && !$ref.isExpired()) {
-      util.debug('Reading "%s" from cache', path);
-      return Promise.resolve({
-        $ref: $ref,
-        cached: true
-      });
-    }
-
-    // Add a placeholder $ref to the cache, so we don't read this URL multiple times
-    $ref = new $Ref($refs, path);
-
-    // Resolve the path and parse the data
-    return resolveAndRead(path, options)
-      .then(function(reader) {
-        $ref.pathType = reader.pathType;
-        return parse(reader.data, path, options);
-      })
-      .then(function(parsed) {
-        $ref.value = parsed;
-        return {$ref: $ref, cached: false};
-      });
-  }
-  catch (e) {
-    return Promise.reject(e);
-  }
-}
-
-/**
- * Resolves the given file path or URL and returns its contents.
- *
- * @param {string} path - The file path or URL to read
- * @param {$RefParserOptions} options
- * @returns {Promise}
- */
-function resolveAndRead(path, options) {
-  return new Promise(function(resolve, reject) {
-    util.debug('Resolving %s', path);
-    var resolvers = util.getOrderedFunctions(options.resolve);
-    util.runOrderedFunctions(resolvers, path, options).then(onResolved, onError);
-
-    function onResolved(resolver) {
-      resolve({
-        pathType: resolver.name,
-        data: resolver.result
-      });
-    }
-
-    function onError(err) {
-      if (err && !(err instanceof SyntaxError)) {
-        reject(err);
-      }
-      reject(ono.syntax('Unable to resolve $ref pointer "%s"', path));
-    }
-  });
-}
-
-},{"../parse":6,"../ref":14,"../util":17,"../util/promise":19,"ono":69}],14:[function(require,module,exports){
+},{"./ref":11,"./util/url":19,"ono":69}],11:[function(require,module,exports){
 'use strict';
 
 module.exports = $Ref;
 
-var Pointer = require('./pointer'),
-    util    = require('./util');
+var Pointer = require('./pointer');
 
 /**
  * This class represents a single JSON reference and its resolved value.
  *
- * @param {$Refs} $refs
- * @param {string} path
  * @constructor
  */
-function $Ref($refs, path) {
-  path = util.path.stripHash(path);
-
-  // Add this $ref to its parent collection
-  $refs._$refs[path] = this;
-
-  /**
-   * The {@link $Refs} object that contains this {@link $Ref} object.
-   * @type {$Refs}
-   */
-  this.$refs = $refs;
-
+function $Ref() {
   /**
    * The file path or URL of the referenced file.
    * This path is relative to the path of the main JSON schema file.
@@ -1643,13 +1430,7 @@ function $Ref($refs, path) {
    *
    * @type {string}
    */
-  this.path = path;
-
-  /**
-   * Indicates the type of {@link $Ref#path} (e.g. "file", "http", etc.)
-   * @type {?string}
-   */
-  this.pathType = undefined;
+  this.path = undefined;
 
   /**
    * The resolved value of the JSON reference.
@@ -1659,53 +1440,17 @@ function $Ref($refs, path) {
   this.value = undefined;
 
   /**
-   * The date/time that the cached value will expire.
-   * @type {?Date}
+   * The {@link $Refs} object that contains this {@link $Ref} object.
+   * @type {$Refs}
    */
-  this.expires = undefined;
+  this.$refs = undefined;
+
+  /**
+   * Indicates the type of {@link $Ref#path} (e.g. "file", "http", etc.)
+   * @type {?string}
+   */
+  this.pathType = undefined;
 }
-
-/**
- * Determines whether the {@link $Ref#value} has expired.
- *
- * @returns {boolean}
- */
-$Ref.prototype.isExpired = function() {
-  // If no expiration has been set yet (i.e. `this.expires === undefined`) then it's NOT expried
-  return !!(this.expires && this.expires <= Date.now());
-};
-
-/**
- * Immediately expires the {@link $Ref#value}.
- */
-$Ref.prototype.expire = function() {
-  this.expires = new Date();
-};
-
-/**
- * Sets the {@link $Ref#expires}, based on the {@link $Ref#pathType}.
- *
- * @param {$RefParserOptions} options
- */
-$Ref.prototype.setExpiration = function(options) {
-  var resolver = options.resolve[this.pathType];
-  if (resolver) {
-    var cacheDuration = resolver.cache;
-    if (cacheDuration > 0) {
-      // Extend the cache expiration
-      var expires = Date.now() + cacheDuration;
-      this.expires = new Date(expires);
-    }
-    else {
-      // Expire immediately
-      this.expires = new Date();
-    }
-  }
-  else {
-    // Never expire
-    this.expires = undefined;
-  }
-};
 
 /**
  * Determines whether the given JSON reference exists within this {@link $Ref#value}.
@@ -1890,12 +1635,12 @@ $Ref.dereference = function($ref, resolvedValue) {
   }
 };
 
-},{"./pointer":10,"./util":17}],15:[function(require,module,exports){
+},{"./pointer":10}],12:[function(require,module,exports){
 'use strict';
 
-var util    = require('./util'),
-    url     = require('url'),
-    ono     = require('ono');
+var ono  = require('ono'),
+    $Ref = require('./ref'),
+    url  = require('./util/url');
 
 module.exports = $Refs;
 
@@ -1965,31 +1710,6 @@ $Refs.prototype.values = function(types) {
 $Refs.prototype.toJSON = $Refs.prototype.values;
 
 /**
- * Determines whether the given JSON reference has expired.
- * Returns true if the reference does not exist.
- *
- * @param {string} path - The path being resolved, optionally with a JSON pointer in the hash
- * @returns {boolean}
- */
-$Refs.prototype.isExpired = function(path) {
-  var $ref = this._get$Ref(path);
-  return $ref === undefined || $ref.isExpired();
-};
-
-/**
- * Immediately expires the given JSON reference.
- * If the reference does not exist, nothing happens.
- *
- * @param {string} path - The path being resolved, optionally with a JSON pointer in the hash
- */
-$Refs.prototype.expire = function(path) {
-  var $ref = this._get$Ref(path);
-  if ($ref) {
-    $ref.expire();
-  }
-};
-
-/**
  * Determines whether the given JSON reference exists.
  *
  * @param {string} path - The path being resolved, optionally with a JSON pointer in the hash
@@ -2026,7 +1746,7 @@ $Refs.prototype.get = function(path, options) {
  */
 $Refs.prototype.set = function(path, value) {
   path = url.resolve(this._basePath, path);
-  var withoutHash = util.path.stripHash(path);
+  var withoutHash = url.stripHash(path);
   var $ref = this._$refs[withoutHash];
 
   if (!$ref) {
@@ -2034,6 +1754,21 @@ $Refs.prototype.set = function(path, value) {
   }
 
   $ref.set(path, value);
+};
+
+/**
+ * Creates a new {@link $Ref} object and adds it to this {@link $Refs} object.
+ *
+ * @param {string} path  - The file path or URL of the referenced file
+ * @param {*} [value] - Optional. The value of the $ref.
+ */
+$Refs.prototype._add = function(path, value) {
+  var withoutHash = url.stripHash(path);
+  var $ref = this._$refs[withoutHash] = new $Ref();
+  $ref.path = path;
+  $ref.value = value;
+  $ref.$refs = this;
+  return $ref;
 };
 
 /**
@@ -2046,7 +1781,7 @@ $Refs.prototype.set = function(path, value) {
  */
 $Refs.prototype._resolve = function(path, options) {
   path = url.resolve(this._basePath, path);
-  var withoutHash = util.path.stripHash(path);
+  var withoutHash = url.stripHash(path);
   var $ref = this._$refs[withoutHash];
 
   if (!$ref) {
@@ -2065,21 +1800,8 @@ $Refs.prototype._resolve = function(path, options) {
  */
 $Refs.prototype._get$Ref = function(path) {
   path = url.resolve(this._basePath, path);
-  var withoutHash = util.path.stripHash(path);
+  var withoutHash = url.stripHash(path);
   return this._$refs[withoutHash];
-};
-
-/**
- * Sets the {@link $Ref#expires}, based on the {@link $Ref#pathType}.
- *
- * @param {$RefParserOptions} options
- */
-$Refs.prototype._setExpirations = function(options) {
-  var me = this;
-  Object.keys(this._$refs).forEach(function(key) {
-    var $ref = me._$refs[key];
-    $ref.setExpiration(options);
-  });
 };
 
 /**
@@ -2104,20 +1826,20 @@ function getPaths($refs, types) {
   return paths.map(function(path) {
     return {
       encoded: path,
-      decoded: $refs[path].pathType === 'file' ? util.path.urlToLocalPath(path, true) : path
+      decoded: $refs[path].pathType === 'file' ? url.toFileSystemPath(path, true) : path
     };
   });
 }
 
-},{"./util":17,"ono":69,"url":92}],16:[function(require,module,exports){
+},{"./ref":11,"./util/url":19,"ono":69}],13:[function(require,module,exports){
 'use strict';
 
 var Promise = require('./util/promise'),
     $Ref    = require('./ref'),
     Pointer = require('./pointer'),
-    read    = require('./read'),
-    util    = require('./util'),
-    url     = require('url');
+    parse   = require('./parse'),
+    debug   = require('./util/debug'),
+    url     = require('./util/url');
 
 module.exports = resolve;
 
@@ -2137,25 +1859,15 @@ module.exports = resolve;
 function resolve(parser, options) {
   if (!options.resolve.external) {
     // Nothing to resolve, so exit early
-    parser.$refs._setExpirations(options);
     return Promise.resolve();
   }
 
   try {
-    util.debug('Resolving $ref pointers in %s', parser.$refs._basePath);
+    debug('Resolving $ref pointers in %s', parser.$refs._basePath);
     var promises = crawl(parser.schema, parser.$refs._basePath + '#', parser.$refs, options);
-
-    return Promise.all(promises)
-      .then(function() {
-        parser.$refs._setExpirations(options);
-      })
-      .catch(function(err) {
-        parser.$refs._setExpirations(options);
-        throw err;
-      });
+    return Promise.all(promises);
   }
   catch (e) {
-    parser.$refs._setExpirations(options);
     return Promise.reject(e);
   }
 }
@@ -2207,106 +1919,383 @@ function crawl(obj, path, $refs, options) {
  * including nested references that are contained in externally-referenced files.
  */
 function resolve$Ref($ref, path, $refs, options) {
-  util.debug('Resolving $ref pointer "%s" at %s', $ref.$ref, path);
-  var resolvedPath = url.resolve(path, $ref.$ref);
+  debug('Resolving $ref pointer "%s" at %s', $ref.$ref, path);
 
-  return read(resolvedPath, $refs, options)
+  var resolvedPath = url.resolve(path, $ref.$ref);
+  var withoutHash = url.stripHash(resolvedPath);
+
+  // Do we already have this $ref?
+  $ref = $refs._get$Ref(withoutHash);
+  if ($ref) {
+    // We've already parsed this $ref, so use the existing value
+    return Promise.resolve($ref.value);
+  }
+
+  // Parse the $referenced file/url
+  return parse(resolvedPath, $refs, options)
     .then(function(result) {
-      // If the result was already cached, then we DON'T need to crawl it
-      if (!result.cached) {
-        // Crawl the new $ref
-        util.debug('Resolving $ref pointers in %s', result.$ref.path);
-        var promises = crawl(result.$ref.value, result.$ref.path + '#', $refs, options);
-        return Promise.all(promises);
-      }
+      // Crawl the parsed value
+      debug('Resolving $ref pointers in %s', withoutHash);
+      var promises = crawl(result, withoutHash + '#', $refs, options);
+      return Promise.all(promises);
     });
 }
 
-},{"./pointer":10,"./read":13,"./ref":14,"./util":17,"./util/promise":19,"url":92}],17:[function(require,module,exports){
+},{"./parse":5,"./pointer":10,"./ref":11,"./util/debug":16,"./util/promise":18,"./util/url":19}],14:[function(require,module,exports){
+'use strict';
+var fs      = require('fs'),
+    ono     = require('ono'),
+    Promise = require('../util/promise'),
+    url     = require('../util/url'),
+    debug   = require('../util/debug');
+
+module.exports = {
+  /**
+   * The order that this resolver will run, in relation to other resolvers.
+   *
+   * @type {number}
+   */
+  order: 100,
+
+  /**
+   * Determines whether this resolver can read a given file reference.
+   * Resolvers that return true will be tried, in order, until one successfully resolves the file.
+   * Resolvers that return false will not be given a chance to resolve the file.
+   *
+   * @param {object} file           - An object containing information about the referenced file
+   * @param {string} file.url       - The full URL of the referenced file
+   * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+   * @returns {boolean}
+   */
+  canRead: function isFile(file) {
+    return url.isFileSystemPath(file.url);
+  },
+
+  /**
+   * Reads the given file and returns its raw contents as a Buffer.
+   *
+   * @param {object} file           - An object containing information about the referenced file
+   * @param {string} file.url       - The full URL of the referenced file
+   * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+   * @returns {Promise<Buffer>}
+   */
+  read: function readFile(file) {
+    return new Promise(function(resolve, reject) {
+      var path;
+      try {
+        path = url.toFileSystemPath(file.url);
+      }
+      catch (err) {
+        reject(ono.uri(err, 'Malformed URI: %s', file.url));
+      }
+
+      debug('Opening file: %s', path);
+
+      try {
+        fs.readFile(path, function(err, data) {
+          if (err) {
+            reject(ono(err, 'Error opening file "%s"', path));
+          }
+          else {
+            resolve(data);
+          }
+        });
+      }
+      catch (err) {
+        reject(ono(err, 'Error opening file "%s"', path));
+      }
+    });
+  }
+};
+
+},{"../util/debug":16,"../util/promise":18,"../util/url":19,"fs":23,"ono":69}],15:[function(require,module,exports){
+(function (process,Buffer){
 'use strict';
 
-var debug   = require('debug'),
-    Promise = require('../util/promise'),
-    path    = require('./path'),
-    util    = exports;
+var http    = require('http'),
+    https   = require('https'),
+    ono     = require('ono'),
+    url     = require('../util/url'),
+    debug   = require('../util/debug'),
+    Promise = require('../util/promise');
+
+module.exports = {
+  /**
+   * The order that this resolver will run, in relation to other resolvers.
+   *
+   * @type {number}
+   */
+  order: 200,
+
+  /**
+   * HTTP headers to send when downloading files.
+   *
+   * @example:
+   * {
+   *   "User-Agent": "JSON Schema $Ref Parser",
+   *   Accept: "application/json"
+   * }
+   *
+   * @type {object}
+   */
+  headers: null,
+
+  /**
+   * HTTP request timeout (in milliseconds).
+   *
+   * @type {number}
+   */
+  timeout: 5000, // 5 seconds
+
+  /**
+   * The maximum number of HTTP redirects to follow.
+   * To disable automatic following of redirects, set this to zero.
+   *
+   * @type {number}
+   */
+  redirects: 5,
+
+  /**
+   * The `withCredentials` option of XMLHttpRequest.
+   * Set this to `true` if you're downloading files from a CORS-enabled server that requires authentication
+   *
+   * @type {boolean}
+   */
+  withCredentials: false,
+
+  /**
+   * Determines whether this resolver can read a given file reference.
+   * Resolvers that return true will be tried in order, until one successfully resolves the file.
+   * Resolvers that return false will not be given a chance to resolve the file.
+   *
+   * @param {object} file           - An object containing information about the referenced file
+   * @param {string} file.url       - The full URL of the referenced file
+   * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+   * @returns {boolean}
+   */
+  canRead: function isHttp(file) {
+    return url.isHttp(file.url);
+  },
+
+  /**
+   * Reads the given URL and returns its raw contents as a Buffer.
+   *
+   * @param {object} file           - An object containing information about the referenced file
+   * @param {string} file.url       - The full URL of the referenced file
+   * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
+   * @returns {Promise<Buffer>}
+   */
+  read: function readHttp(file) {
+    var u = url.parse(file.url);
+
+    if (process.browser && !u.protocol) {
+      // Use the protocol of the current page
+      u.protocol = url.parse(location.href).protocol;
+    }
+
+    return download(u, this);
+  }
+};
+
+/**
+ * Downloads the given file.
+ *
+ * @param {Url|string} u        - The url to download (can be a parsed {@link Url} object)
+ * @param {object} httpOptions  - The `options.resolve.http` object
+ * @param {number} [redirects]  - The redirect URLs that have already been followed
+ *
+ * @returns {Promise<Buffer>}
+ * The promise resolves with the raw downloaded data, or rejects if there is an HTTP error.
+ */
+function download(u, httpOptions, redirects) {
+  return new Promise(function(resolve, reject) {
+    u = url.parse(u);
+    redirects = redirects || [];
+    redirects.push(u.href);
+
+    get(u, httpOptions)
+      .then(function(res) {
+        if (res.statusCode >= 400) {
+          throw ono({status: res.statusCode}, 'HTTP ERROR %d', res.statusCode);
+        }
+        else if (res.statusCode >= 300) {
+          if (redirects.length > httpOptions.redirects) {
+            reject(ono({status: res.statusCode}, 'Error downloading %s. \nToo many redirects: \n  %s',
+              redirects[0], redirects.join(' \n  ')));
+          }
+          else if (!res.headers.location) {
+            throw ono({status: res.statusCode}, 'HTTP %d redirect with no location header', res.statusCode);
+          }
+          else {
+            debug('HTTP %d redirect %s -> %s', res.statusCode, u.href, res.headers.location);
+            var redirectTo = url.resolve(u, res.headers.location);
+            download(redirectTo, httpOptions, redirects).then(resolve, reject);
+          }
+        }
+        else {
+          resolve(res.body || new Buffer(0));
+        }
+      })
+      .catch(function(err) {
+        reject(ono(err, 'Error downloading', u.href));
+      });
+  });
+}
+
+/**
+ * Sends an HTTP GET request.
+ *
+ * @param {Url} u - A parsed {@link Url} object
+ * @param {object} httpOptions - The `options.resolve.http` object
+ *
+ * @returns {Promise<Response>}
+ * The promise resolves with the HTTP Response object.
+ */
+function get(u, httpOptions) {
+  return new Promise(function(resolve, reject) {
+    debug('GET', u.href);
+
+    var protocol = u.protocol === 'https:' ? https : http;
+    var req = protocol.get({
+      hostname: u.hostname,
+      port: u.port,
+      path: u.path,
+      auth: u.auth,
+      headers: httpOptions.headers || {},
+      withCredentials: httpOptions.withCredentials
+    });
+
+    if (typeof req.setTimeout === 'function') {
+      req.setTimeout(httpOptions.timeout);
+    }
+
+    req.on('timeout', function() {
+      req.abort();
+    });
+
+    req.on('error', reject);
+
+    req.once('response', function(res) {
+      res.body = new Buffer(0);
+
+      res.on('data', function(data) {
+        res.body = Buffer.concat([res.body, new Buffer(data)]);
+      });
+
+      res.on('error', reject);
+
+      res.on('end', function() {
+        resolve(res);
+      });
+    });
+  });
+}
+
+}).call(this,require('_process'),require("buffer").Buffer)
+
+},{"../util/debug":16,"../util/promise":18,"../util/url":19,"_process":71,"buffer":24,"http":87,"https":33,"ono":69}],16:[function(require,module,exports){
+'use strict';
+
+var debug = require('debug');
 
 /**
  * Writes messages to stdout.
  * Log messages are suppressed by default, but can be enabled by setting the DEBUG variable.
  * @type {function}
  */
-exports.debug = debug('json-schema-ref-parser');
+module.exports = debug('json-schema-ref-parser');
+
+},{"debug":29}],17:[function(require,module,exports){
+'use strict';
+
+var Promise = require('./promise'),
+    debug   = require('./debug');
 
 /**
- * Utility functions for working with file paths and URLs
- */
-exports.path = path;
-
-/**
- * A poor-man's `function.bind()`, for browsers that don't support it
+ * Returns the given plugins as an array, rather than an object map.
+ * All other methods in this module expect an array of plugins rather than an object map.
  *
- * @param {function} func
- * @param {*} [context]
- * @returns {function}
+ * @param  {object} plugins - A map of plugin objects
+ * @return {object[]}
  */
-exports.bind = function(func, context) {
-  return function() {
-    return func.apply(context, arguments);
-  };
-};
-
-/**
- * Returns an array of user-defined functions, sorted by their `order` property.
- *
- * @param {object} obj - An object with function properties. Each function can have an `order` property.
- * @returns {{order: number, name: string, fn: function}[]}
- */
-exports.getOrderedFunctions = function(obj) {
-  return Object.keys(obj)
-    .map(function(key) {
-      return {
-        order: obj[key].order || Number.MAX_SAFE_INTEGER,
-        name: key || 'UNKNOWN',
-        fn: obj[key]
-      };
+exports.all = function(plugins) {
+  return Object.keys(plugins)
+    .filter(function(key) {
+      return typeof plugins[key] === 'object';
     })
-    .filter(function(value) { return typeof value.fn === 'function'; })
-    .sort(function(a, b) { return a.order - b.order; });
+    .map(function(key) {
+      plugins[key].name = key;
+      return plugins[key];
+    });
 };
 
 /**
- * Runs the given user-defined functions in order, until one of them returns a successful result.
- * Each function can return a Promise or call an error-first callback.
- * If the promise resolves successfully, or the callback is called without an error, then the result
- * is immediately returned and no further functions are called.
- * If the promise rejects, or the callback is called with an error, then the next function is called.
- * If ALL functions fail, then the last error is thrown.
+ * Filters the given plugins, returning only the ones return `true` for the given method.
  *
- * @param {{order: number, name: string, fn: function}[]} funcs - The results of {@link util.getOrderedFunctions}
- * @param {...*} [args] - One or more arguments to pass to each function
+ * @param  {object[]} plugins - An array of plugin objects
+ * @param  {string}   method  - The name of the filter method to invoke for each plugin
+ * @param  {object}   file    - A file info object, which will be passed to each method
+ * @return {object[]}
+ */
+exports.filter = function(plugins, method, file) {
+  return plugins
+    .filter(function(plugin) {
+      return !!getResult(plugin, method, file);
+    });
+};
+
+/**
+ * Sorts the given plugins, in place, by their `order` property.
+ *
+ * @param {object[]} plugins - An array of plugin objects
+ * @returns {object[]}
+ */
+exports.sort = function(plugins) {
+  plugins.forEach(function(plugin) {
+    plugin.order = plugin.order || Number.MAX_SAFE_INTEGER;
+  });
+
+  return plugins.sort(function(a, b) { return a.order - b.order; });
+};
+
+/**
+ * Runs the specified method of the given plugins, in order, until one of them returns a successful result.
+ * Each method can return a synchronous value, a Promise, or call an error-first callback.
+ * If the promise resolves successfully, or the callback is called without an error, then the result
+ * is immediately returned and no further plugins are called.
+ * If the promise rejects, or the callback is called with an error, then the next plugin is called.
+ * If ALL plugins fail, then the last error is thrown.
+ *
+ * @param {object[]}  plugins - An array of plugin objects
+ * @param {string}    method  - The name of the method to invoke for each plugin
+ * @param {object}    file    - A file info object, which will be passed to each method
  * @returns {Promise}
  */
-exports.runOrderedFunctions = function(funcs, args) {
-  var func, lastError, index = 0;
-  args = Array.prototype.slice.call(arguments, 1);
+exports.run = function(plugins, method, file) {
+  var plugin, lastError, index = 0;
 
   return new Promise(function(resolve, reject) {
-    args.push(callback);
-    runNextFunction();
+    runNextPlugin();
 
-    function runNextFunction() {
-      func = funcs[index++];
-      if (!func) {
+    function runNextPlugin() {
+      plugin = plugins[index++];
+      if (!plugin) {
         // There are no more functions, so re-throw the last error
         return reject(lastError);
       }
 
       try {
-        util.debug('  %s', func.name);
-        var promise = func.fn.apply(null, args);
-        if (promise) {
-          promise.then(onSuccess, onError);
+        debug('  %s', plugin.name);
+        var result = getResult(plugin, method, file, callback);
+        if (result && typeof result.then === 'function') {
+          // A promise was returned
+          result.then(onSuccess, onError);
         }
+        else if (result !== undefined) {
+          // A synchronous result was returned
+          onSuccess(result);
+        }
+        // else { the callback will be called }
       }
       catch (e) {
         onError(e);
@@ -2323,30 +2312,64 @@ exports.runOrderedFunctions = function(funcs, args) {
     }
 
     function onSuccess(result) {
-      util.debug('    success');
+      debug('    success');
       resolve({
-        order: func.order,
-        name: func.name,
-        fn: func.fn,
+        plugin: plugin,
         result: result
       });
     }
 
     function onError(err) {
-      util.debug('    %s', err.message || err);
+      debug('    %s', err.message || err);
       lastError = err;
-      runNextFunction();
+      runNextPlugin();
     }
   });
 };
 
-},{"../util/promise":19,"./path":18,"debug":29}],18:[function(require,module,exports){
+/**
+ * Returns the value of the given property.
+ * If the property is a function, then the result of the function is returned.
+ * If the value is a RegExp, then it will be tested against the file URL.
+ * If the value is an aray, then it will be compared against the file extension.
+ *
+ * @param   {object}   obj        - The object whose property/method is called
+ * @param   {string}   prop       - The name of the property/method to invoke
+ * @param   {object}   file       - A file info object, which will be passed to the method
+ * @param   {function} [callback] - A callback function, which will be passed to the method
+ * @returns {*}
+ */
+function getResult(obj, prop, file, callback) {
+  var value = obj[prop];
+
+  if (typeof value === 'function') {
+    return value.apply(obj, [file, callback]);
+  }
+  else if (value instanceof RegExp) {
+    return value.test(file.url);
+  }
+  else if (Array.isArray(value)) {
+    return value.indexOf(file.extension) !== -1;
+  }
+  else {
+    return value;
+  }
+}
+
+},{"./debug":16,"./promise":18}],18:[function(require,module,exports){
+'use strict';
+
+/** @type {Promise} **/
+module.exports = typeof Promise === 'function' ? Promise : require('es6-promise').Promise;
+
+},{"es6-promise":31}],19:[function(require,module,exports){
 (function (process){
 'use strict';
 
 var isWindows           = /^win/.test(process.platform),
     forwardSlashPattern = /\//g,
-    protocolPattern     = /^([a-z0-9.+-]+):\/\//i;
+    protocolPattern     = /^([a-z0-9.+-]+):\/\//i,
+    url                 = module.exports;
 
 // RegExp patterns to URL-encode special characters in local filesystem paths
 var urlEncodePatterns = [
@@ -2364,6 +2387,9 @@ var urlDecodePatterns = [
   /\%40/g, '@'
 ];
 
+exports.parse = require('url').parse;
+exports.resolve = require('url').resolve;
+
 /**
  * Returns the current working directory (in Node) or the current page URL (in browsers).
  *
@@ -2374,81 +2400,31 @@ exports.cwd = function cwd() {
 };
 
 /**
- * Determines whether the given path is a URL.
+ * Returns the protocol of the given URL, or `undefined` if it has no protocol.
  *
  * @param   {string} path
- * @returns {boolean}
+ * @returns {?string}
  */
-exports.isUrl = function isUrl(path) {
-  var protocol = protocolPattern.exec(path);
-  if (protocol) {
-    protocol = protocol[1].toLowerCase();
-    return protocol !== 'file';
+exports.getProtocol = function getProtocol(path) {
+  var match = protocolPattern.exec(path);
+  if (match) {
+    return match[1].toLowerCase();
   }
-  return false;
 };
 
 /**
- * If the given path is a local filesystem path, it is converted to a URL.
+ * Returns the lowercased file extension of the given URL,
+ * or an empty string if it has no extension.
  *
- * @param {string} path
+ * @param   {string} path
  * @returns {string}
  */
-exports.localPathToUrl = function localPathToUrl(path) {
-  if (!process.browser && !exports.isUrl(path)) {
-    // Manually encode characters that are not encoded by `encodeURI`
-    for (var i = 0; i < urlEncodePatterns.length; i += 2) {
-      path = path.replace(urlEncodePatterns[i], urlEncodePatterns[i + 1]);
-    }
-    path = encodeURI(path);
+exports.getExtension = function getExtension(path) {
+  var lastDot = path.lastIndexOf('.');
+  if (lastDot >= 0) {
+    return path.substr(lastDot).toLowerCase();
   }
-  return path;
-};
-
-/**
- * Converts a URL to a local filesystem path
- *
- * @param {string} url
- * @param {boolean} [keepFileProtocol] - If true, then "file://" will NOT be stripped
- * @returns {string}
- */
-exports.urlToLocalPath = function urlToLocalPath(url, keepFileProtocol) {
-  // Decode URL-encoded characters
-  url = decodeURI(url);
-
-  // Manually decode characters that are not decoded by `decodeURI`
-  for (var i = 0; i < urlDecodePatterns.length; i += 2) {
-    url = url.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1]);
-  }
-
-  // Handle "file://" URLs
-  var isFileUrl = url.substr(0, 7).toLowerCase() === 'file://';
-  if (isFileUrl) {
-    var protocol = 'file:///';
-
-    // Remove the third "/" if there is one
-    var path = url[7] === '/' ? url.substr(8) : url.substr(7);
-
-    if (isWindows && path[1] === '/') {
-      // insert a colon (":") after the drive letter on Windows
-      path = path[0] + ':' + path.substr(1);
-    }
-
-    if (keepFileProtocol) {
-      url = protocol + path;
-    }
-    else {
-      isFileUrl = false;
-      url = isWindows ? path : '/' + path;
-    }
-  }
-
-  // Format path separators on Windows
-  if (isWindows && !isFileUrl) {
-    url = url.replace(forwardSlashPattern, '\\');
-  }
-
-  return url;
+  return '';
 };
 
 /**
@@ -2481,28 +2457,129 @@ exports.stripHash = function stripHash(path) {
 };
 
 /**
- * Returns the file extension of the given path.
+ * Determines whether the given path is an HTTP(S) URL.
  *
  * @param   {string} path
+ * @returns {boolean}
+ */
+exports.isHttp = function isHttp(path) {
+  var protocol = url.getProtocol(path);
+  if (protocol === 'http' || protocol === 'https') {
+    return true;
+  }
+  else if (protocol === undefined) {
+    // There is no protocol.  If we're running in a browser, then assume it's HTTP.
+    return process.browser;
+  }
+  else {
+    // It's some other protocol, such as "ftp://", "mongodb://", etc.
+    return false;
+  }
+};
+
+/**
+ * Determines whether the given path is a filesystem path.
+ * This includes "file://" URLs.
+ *
+ * @param   {string} path
+ * @returns {boolean}
+ */
+exports.isFileSystemPath = function isFileSystemPath(path) {
+  if (process.browser) {
+    // We're running in a browser, so assume that all paths are URLs.
+    // This way, even relative paths will be treated as URLs rather than as filesystem paths
+    return false;
+  }
+
+  var protocol = url.getProtocol(path);
+  return protocol === undefined || protocol === 'file';
+};
+
+/**
+ * Converts a filesystem path to a properly-encoded URL.
+ *
+ * This is intended to handle situations where JSON Schema $Ref Parser is called
+ * with a filesystem path that contains characters which are not allowed in URLs.
+ *
+ * @example
+ * The following filesystem paths would be converted to the following URLs:
+ *
+ *    <"!@#$%^&*+=?'>.json              ==>   %3C%22!@%23$%25%5E&*+=%3F\'%3E.json
+ *    C:\\My Documents\\File (1).json   ==>   C:/My%20Documents/File%20(1).json
+ *    file://Project #42/file.json      ==>   file://Project%20%2342/file.json
+ *
+ * @param {string} path
  * @returns {string}
  */
-exports.extname = function extname(path) {
-  var lastDot = path.lastIndexOf('.');
-  if (lastDot >= 0) {
-    return path.substr(lastDot).toLowerCase();
+exports.fromFileSystemPath = function fromFileSystemPath(path) {
+  // Step 1: Manually encode characters that are not encoded by `encodeURI`.
+  // This includes characters such as "#" and "?", which have special meaning in URLs,
+  // but are just normal characters in a filesystem path.
+  // On Windows, this will also replace backslashes with forward slashes,
+  // rather than encoding them as special characters.
+  for (var i = 0; i < urlEncodePatterns.length; i += 2) {
+    path = path.replace(urlEncodePatterns[i], urlEncodePatterns[i + 1]);
   }
-  return '';
+
+  // Step 2: `encodeURI` will take care of all other characters
+  return encodeURI(path);
+};
+
+/**
+ * Converts a URL to a local filesystem path.
+ *
+ * @param {string}  path
+ * @param {boolean} [keepFileProtocol] - If true, then "file://" will NOT be stripped
+ * @returns {string}
+ */
+exports.toFileSystemPath = function toFileSystemPath(path, keepFileProtocol) {
+  // Step 1: `decodeURI` will decode characters such as Cyrillic characters, spaces, etc.
+  path = decodeURI(path);
+
+  // Step 2: Manually decode characters that are not decoded by `decodeURI`.
+  // This includes characters such as "#" and "?", which have special meaning in URLs,
+  // but are just normal characters in a filesystem path.
+  for (var i = 0; i < urlDecodePatterns.length; i += 2) {
+    path = path.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1]);
+  }
+
+  // Step 3: If it's a "file://" URL, then format it consistently
+  // or convert it to a local filesystem path
+  var isFileUrl = path.substr(0, 7).toLowerCase() === 'file://';
+  if (isFileUrl) {
+    // Strip-off the protocol, and the initial "/", if there is one
+    path = path[7] === '/' ? path.substr(8) : path.substr(7);
+
+    // insert a colon (":") after the drive letter on Windows
+    if (isWindows && path[1] === '/') {
+      path = path[0] + ':' + path.substr(1);
+    }
+
+    if (keepFileProtocol) {
+      // Return the consistently-formatted "file://" URL
+      path = 'file:///' + path;
+    }
+    else {
+      // Convert the "file://" URL to a local filesystem path.
+      // On Windows, it will start with something like "C:/".
+      // On Posix, it will start with "/"
+      isFileUrl = false;
+      path = isWindows ? path : '/' + path;
+    }
+  }
+
+  // Step 4: On Windows, convert backslashes to forward slashes,
+  // unless it's a "file://" URL
+  if (isWindows && !isFileUrl) {
+    path = path.replace(forwardSlashPattern, '\\');
+  }
+
+  return path;
 };
 
 }).call(this,require('_process'))
 
-},{"_process":71}],19:[function(require,module,exports){
-'use strict';
-
-/** @type {Promise} **/
-module.exports = typeof Promise === 'function' ? Promise : require('es6-promise').Promise;
-
-},{"es6-promise":31}],20:[function(require,module,exports){
+},{"_process":71,"url":92}],20:[function(require,module,exports){
 /* eslint lines-around-comment: [2, {beforeBlockComment: false}] */
 'use strict';
 

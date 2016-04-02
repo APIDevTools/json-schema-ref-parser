@@ -15,6 +15,22 @@ helper.dereferenced.parsers = {
     }
   },
 
+  staticParser: {
+    "definitions": {
+      markdown: "The quick brown fox jumped over the lazy dog",
+
+      html: "The quick brown fox jumped over the lazy dog",
+
+      css: "The quick brown fox jumped over the lazy dog",
+
+      binary: "The quick brown fox jumped over the lazy dog",
+
+      unknown: "The quick brown fox jumped over the lazy dog",
+
+      empty: "The quick brown fox jumped over the lazy dog"
+    }
+  },
+
   customParser: {
     "definitions": {
       markdown: "Hello\nWorld:\n",

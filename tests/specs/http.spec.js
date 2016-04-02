@@ -9,7 +9,7 @@ describe('HTTP options', function() {
     global.onerror = function() {
       testDone();
       return true;
-    }
+    };
   });
 
   afterEach(function() {
@@ -22,15 +22,15 @@ describe('HTTP options', function() {
       var parser = new $RefParser();
 
       parser.parse('http://httpbin.org/headers', {
-          resolve: { http: { headers: {
-            'accept': 'application/json'
-          }}}
-        })
-        .then(function(schema) {
-          expect(schema.headers).to.have.property('Accept', 'application/json');
-          done();
-        })
-        .catch(done);
+        resolve: { http: { headers: {
+          accept: 'application/json'
+        }}}
+      })
+      .then(function(schema) {
+        expect(schema.headers).to.have.property('Accept', 'application/json');
+        done();
+      })
+      .catch(done);
     });
 
     // Old versions of IE don't allow setting custom headers
@@ -40,15 +40,15 @@ describe('HTTP options', function() {
         var parser = new $RefParser();
 
         parser.parse('http://httpbin.org/headers', {
-            resolve: { http: { headers: {
-              'my-custom-header': 'hello, world'
-            }}}
-          })
-          .then(function(schema) {
-            expect(schema.headers).to.have.property('My-Custom-Header', 'hello, world');
-            done();
-          })
-          .catch(done);
+          resolve: { http: { headers: {
+            'my-custom-header': 'hello, world'
+          }}}
+        })
+        .then(function(schema) {
+          expect(schema.headers).to.have.property('My-Custom-Header', 'hello, world');
+          done();
+        })
+        .catch(done);
       });
     }
   });
@@ -113,13 +113,13 @@ describe('HTTP options', function() {
       var parser = new $RefParser();
 
       parser.parse('http://httpbin.org/redirect/10', {
-          resolve: { http: { redirects: 10 }}
-        })
-        .then(function(schema) {
-          expect(schema.url).to.equal('http://httpbin.org/get');
-          done();
-        })
-        .catch(done);
+        resolve: { http: { redirects: 10 }}
+      })
+      .then(function(schema) {
+        expect(schema.url).to.equal('http://httpbin.org/get');
+        done();
+      })
+      .catch(done);
     });
 
     it('should not follow any redirects if http.redirects = 0', function(done) {
@@ -127,36 +127,36 @@ describe('HTTP options', function() {
       var parser = new $RefParser();
 
       parser.parse('http://httpbin.org/redirect/1', {
-          resolve: { http: { redirects: 0 }}
-        })
-        .then(function(schema) {
-          if (userAgent.isNode) {
-            throw new Error('The redirect was followed. That should NOT have happened!');
-          }
-          else {
-            // Some web browsers will automatically follow redirects.
-            // Nothing we can do about that.
-            expect(schema.url).to.equal('http://httpbin.org/get');
-            done();
-          }
-        })
-        .catch(function(err) {
-          expect(err).to.be.an.instanceOf(Error);
-          expect(err.message).to.contain('Error downloading http://httpbin.org/redirect/1');
-          if (userAgent.isNode) {
-            expect(err.message).to.equal(
-              'Error downloading http://httpbin.org/redirect/1. \n' +
-              'Too many redirects: \n' +
-              '  http://httpbin.org/redirect/1'
-            );
-          }
+        resolve: { http: { redirects: 0 }}
+      })
+      .then(function(schema) {
+        if (userAgent.isNode) {
+          throw new Error('The redirect was followed. That should NOT have happened!');
+        }
+        else {
+          // Some web browsers will automatically follow redirects.
+          // Nothing we can do about that.
+          expect(schema.url).to.equal('http://httpbin.org/get');
           done();
-        })
-        .catch(done);
+        }
+      })
+      .catch(function(err) {
+        expect(err).to.be.an.instanceOf(Error);
+        expect(err.message).to.contain('Error downloading http://httpbin.org/redirect/1');
+        if (userAgent.isNode) {
+          expect(err.message).to.equal(
+            'Error downloading http://httpbin.org/redirect/1. \n' +
+            'Too many redirects: \n' +
+            '  http://httpbin.org/redirect/1'
+          );
+        }
+        done();
+      })
+      .catch(done);
     });
   });
 
-  describe('http.withCredentials', function(done) {
+  describe('http.withCredentials', function() {
     it('should work by default with CORS "Access-Control-Allow-Origin: *"', function(done) {
       testDone = done;
       var parser = new $RefParser();
@@ -180,15 +180,15 @@ describe('HTTP options', function() {
       // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
       // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
       parser.parse('http://petstore.swagger.io:80/v2/swagger.json', {
-          resolve: { http: { withCredentials: false }}
-        })
-        .then(function(schema) {
-          expect(schema).to.be.an('object');
-          expect(schema).not.to.be.empty;
-          expect(parser.schema).to.equal(schema);
-          done();
-        })
-        .catch(done);
+        resolve: { http: { withCredentials: false }}
+      })
+      .then(function(schema) {
+        expect(schema).to.be.an('object');
+        expect(schema).not.to.be.empty;
+        expect(parser.schema).to.equal(schema);
+        done();
+      })
+      .catch(done);
     });
 
     if (userAgent.isBrowser) {
@@ -199,20 +199,20 @@ describe('HTTP options', function() {
         // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
         // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
         parser.parse('http://petstore.swagger.io:80/v2/swagger.json', {
-            resolve: { http: { withCredentials: true }}
-          })
-          .then(function(schema) {
-            // The request succeeded, which means this browser doesn't support CORS.
-            expect(schema).to.be.an('object');
-            expect(schema).not.to.be.empty;
-            expect(parser.schema).to.equal(schema);
-            done();
-          })
-          .catch(function(err) {
-            // The request failed, which is expected
-            expect(err.message).to.contain('Error downloading http://petstore.swagger.io:80/v2/swagger.json');
-            done();
-          });
+          resolve: { http: { withCredentials: true }}
+        })
+        .then(function(schema) {
+          // The request succeeded, which means this browser doesn't support CORS.
+          expect(schema).to.be.an('object');
+          expect(schema).not.to.be.empty;
+          expect(parser.schema).to.equal(schema);
+          done();
+        })
+        .catch(function(err) {
+          // The request failed, which is expected
+          expect(err.message).to.contain('Error downloading http://petstore.swagger.io:80/v2/swagger.json');
+          done();
+        });
       });
     }
   });

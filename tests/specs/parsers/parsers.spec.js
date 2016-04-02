@@ -1,6 +1,6 @@
 'use strict';
 
-describe.only('References to non-JSON files', function() {
+describe('References to non-JSON files', function() {
   it('should parse successfully', function() {
     return $RefParser
       .parse(path.rel('specs/parsers/parsers.yaml'))
@@ -46,7 +46,19 @@ describe.only('References to non-JSON files', function() {
 
   it('should parse text as binary if "parse.text" is disabled', function() {
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {parse: {text: false, binary: {ext: ''}}})
+      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+        parse: {
+          // Disable the text parser
+          text: false,
+
+          // Parse all non-YAML files as binary
+          binary: {
+            canParse: function(file) {
+              return file.url.substr(-5) !== '.yaml';
+            }
+          }
+        }
+      })
       .then(function(schema) {
         schema.definitions.markdown = helper.convertNodeBuffersToPOJOs(schema.definitions.markdown);
         schema.definitions.html = helper.convertNodeBuffersToPOJOs(schema.definitions.html);
@@ -68,17 +80,39 @@ describe.only('References to non-JSON files', function() {
       });
   });
 
-  it('should use a custom parser that returns a value', function() {
-    // A custom parser that returns reversed strings
-    function myCustomParser(data, path, options, callback) {
-      return data.toString().split('').reverse().join('');
-    }
-
-    // This parser only parses .foo files
-    myCustomParser.ext = '.foo';
-
+  it('should use a custom parser with static values', function() {
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {parse: {custom: myCustomParser}})
+      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+        parse: {
+          // A custom parser that always returns the same value
+          staticParser: {
+            order: 201,
+            canParse: true,
+            parse: 'The quick brown fox jumped over the lazy dog'
+          }
+        }
+      })
+      .then(function(schema) {
+        expect(schema).to.deep.equal(helper.dereferenced.parsers.staticParser);
+      });
+  });
+
+  it('should use a custom parser that returns a value', function() {
+    return $RefParser
+      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+        parse: {
+          // A custom parser that returns the contents of ".foo" files, in reverse
+          reverseFooParser: {
+            canParse: function(file) {
+              return file.url.substr(-4) === '.foo';
+            },
+
+            parse: function(file) {
+              return file.data.toString().split('').reverse().join('');
+            }
+          }
+        }
+      })
       .then(function(schema) {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         expect(schema).to.deep.equal(helper.dereferenced.parsers.customParser);
@@ -86,17 +120,20 @@ describe.only('References to non-JSON files', function() {
   });
 
   it('should use a custom parser that calls a callback', function() {
-    // A custom parser that returns reversed strings
-    function myCustomParser(data, path, options, callback) {
-      var reversed = data.toString().split('').reverse().join('');
-      callback(null, reversed);
-    }
-
-    // This parser only parses .foo files
-    myCustomParser.ext = '.foo';
-
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {parse: {custom: myCustomParser}})
+      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+        parse: {
+          // A custom parser that returns the contents of ".foo" files, in reverse
+          reverseFooParser: {
+            canParse: /\.FOO$/i,
+
+            parse: function(file, callback) {
+              var reversed = file.data.toString().split('').reverse().join('');
+              callback(null, reversed);
+            }
+          }
+        }
+      })
       .then(function(schema) {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         expect(schema).to.deep.equal(helper.dereferenced.parsers.customParser);
@@ -104,19 +141,22 @@ describe.only('References to non-JSON files', function() {
   });
 
   it('should use a custom parser that returns a promise', function() {
-    // A custom parser that returns reversed strings
-    function myCustomParser(data, path, options) {
-      return new Promise(function(resolve, reject) {
-        var reversed = data.toString().split('').reverse().join('');
-        resolve(reversed);
-      });
-    }
-
-    // This parser parses .foo files and .bar files
-    myCustomParser.ext = /\.(foo|bar)$/i;
-
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {parse: {custom: myCustomParser}})
+      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+        parse: {
+          // A custom parser that returns the contents of ".foo" files, in reverse
+          reverseFooParser: {
+            canParse: /\.foo$/,
+
+            parse: function(file) {
+              return new Promise(function(resolve, reject) {
+                var reversed = file.data.toString().split('').reverse().join('');
+                resolve(reversed);
+              });
+            }
+          }
+        }
+      })
       .then(function(schema) {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         expect(schema).to.deep.equal(helper.dereferenced.parsers.customParser);
@@ -124,19 +164,22 @@ describe.only('References to non-JSON files', function() {
   });
 
   it('should continue parsing if a custom parser fails', function() {
-    // A custom parser that always fails
-    function myCustomParser(data, path, options, callback) {
-      callback('BOMB!!!');  // Any truthy value is considered an error
-    }
-
-    // This parser runs first, before any other parser
-    myCustomParser.order = 1;
-
-    // This parser parses all file types
-    myCustomParser.ext = ['.json', '.yaml', '.html', '.css', '.md', '.png'];
-
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {parse: {custom: myCustomParser}})
+      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+        parse: {
+          // A custom parser that always fails,
+          // so the built-in parsers will be used as a fallback
+          badParser: {
+            order: 1,
+
+            canParse: /\.(md|html|css|png)$/i,
+
+            parse: function(file, callback) {
+              callback('BOMB!!!');
+            }
+          }
+        }
+      })
       .then(function(schema) {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         expect(schema).to.deep.equal(helper.dereferenced.parsers.defaultParsers);
