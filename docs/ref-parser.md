@@ -14,7 +14,7 @@ This is the default export of JSON Schema $Ref Parser.  You can creates instance
 - [`resolve()`](#resolveschema-options-callback)
 
 
-### `Schema`
+### `schema`
 The `schema` property is the parsed/bundled/dereferenced JSON Schema object.  This is the same value that is passed to the callback function (or Promise) when calling the [`parse`](#parseschema-options-callback), [`bundle`](#bundleschema-options-callback), or [`dereference`](#dereferenceschema-options-callback) methods.
 
 ```javascript

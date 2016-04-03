@@ -1002,7 +1002,7 @@ module.exports = {
    *
    * @type {RegExp|string[]|function}
    */
-  canParse: /\.json$/i,
+  canParse: '.json',
 
   /**
    * Parses the given file as JSON
@@ -2377,15 +2377,23 @@ function getResult(obj, prop, file, callback) {
   if (typeof value === 'function') {
     return value.apply(obj, [file, callback]);
   }
-  else if (value instanceof RegExp) {
-    return value.test(file.url);
+
+  if (!callback) {
+    // The synchronous plugin functions (canParse and canRead)
+    // allow a "shorthand" syntax, where the user can match
+    // files by RegExp or by file extension.
+    if (value instanceof RegExp) {
+      return value.test(file.url);
+    }
+    else if (typeof value === 'string') {
+      return value === file.extension;
+    }
+    else if (Array.isArray(value)) {
+      return value.indexOf(file.extension) !== -1;
+    }
   }
-  else if (Array.isArray(value)) {
-    return value.indexOf(file.extension) !== -1;
-  }
-  else {
-    return value;
-  }
+
+  return value;
 }
 
 },{"./debug":16,"./promise":18}],18:[function(require,module,exports){
