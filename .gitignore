@@ -4,8 +4,8 @@
 **/*~
 **/._*
 **/.DS_Store
-**/.sublime-project
-**/.sublime-workspace
+*.sublime-project
+*.sublime-workspace
 npm-debug.log
 /.idea
 /coverage
