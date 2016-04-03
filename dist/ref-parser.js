@@ -27,7 +27,7 @@ function bundle(parser, options) {
 
   // Build an inventory of all $ref pointers in the JSON Schema
   var inventory = [];
-  crawl(parser.schema, parser.$refs._root$Ref.path + '#', '#', inventory, parser.$refs, options);
+  crawl(parser, 'schema', parser.$refs._root$Ref.path + '#', '#', inventory, parser.$refs, options);
 
   // Remap all $ref pointers
   remap(inventory);
@@ -36,39 +36,44 @@ function bundle(parser, options) {
 /**
  * Recursively crawls the given value, and inventories all JSON references.
  *
- * @param {*} obj - The value to crawl. If it's not an object or array, it will be ignored.
- * @param {string} path - The full path of `obj`, possibly with a JSON Pointer in the hash
- * @param {string} pathFromRoot - The path of `obj` from the schema root
+ * @param {object} parent - The object containing the value to crawl. If the value is not an object or array, it will be ignored.
+ * @param {string} key - The property key of `parent` to be crawled
+ * @param {string} path - The full path of the property being crawled, possibly with a JSON Pointer in the hash
+ * @param {string} pathFromRoot - The path of the property being crawled, from the schema root
  * @param {object[]} inventory - An array of already-inventoried $ref pointers
  * @param {$Refs} $refs
  * @param {$RefParserOptions} options
  */
-function crawl(obj, path, pathFromRoot, inventory, $refs, options) {
+function crawl(parent, key, path, pathFromRoot, inventory, $refs, options) {
+  var obj = key === null ? parent : parent[key];
+
   if (obj && typeof obj === 'object') {
-    var keys = Object.keys(obj);
-
-    // Most people will expect references to be bundled into the the "definitions" property,
-    // so we always crawl that property first, if it exists.
-    var defs = keys.indexOf('definitions');
-    if (defs > 0) {
-      keys.splice(0, 0, keys.splice(defs, 1)[0]);
+    if ($Ref.is$Ref(obj)) {
+      inventory$Ref(parent, key, path, pathFromRoot, inventory, $refs, options);
     }
+    else {
+      var keys = Object.keys(obj);
 
-    keys.forEach(function(key) {
-      var keyPath = Pointer.join(path, key);
-      var keyPathFromRoot = Pointer.join(pathFromRoot, key);
-      var value = obj[key];
+      // Most people will expect references to be bundled into the the "definitions" property,
+      // so we always crawl that property first, if it exists.
+      var defs = keys.indexOf('definitions');
+      if (defs > 0) {
+        keys.splice(0, 0, keys.splice(defs, 1)[0]);
+      }
 
-      if ($Ref.is$Ref(value)) {
-        // Skip this $ref if we've already inventoried it
-        if (!inventory.some(function(i) { return i.parent === obj && i.key === key; })) {
+      keys.forEach(function(key) {
+        var keyPath = Pointer.join(path, key);
+        var keyPathFromRoot = Pointer.join(pathFromRoot, key);
+        var value = obj[key];
+
+        if ($Ref.is$Ref(value)) {
           inventory$Ref(obj, key, path, keyPathFromRoot, inventory, $refs, options);
         }
-      }
-      else {
-        crawl(value, keyPath, keyPathFromRoot, inventory, $refs, options);
-      }
-    });
+        else {
+          crawl(obj, key, keyPath, keyPathFromRoot, inventory, $refs, options);
+        }
+      });
+    }
   }
 }
 
@@ -85,7 +90,12 @@ function crawl(obj, path, pathFromRoot, inventory, $refs, options) {
  * @param {$RefParserOptions} options
  */
 function inventory$Ref($refParent, $refKey, path, pathFromRoot, inventory, $refs, options) {
-  var $ref = $refParent[$refKey];
+  if (inventory.some(function(i) { return i.parent === $refParent && i.key === $refKey; })) {
+    // This $Ref has already been inventoried, so we don't need to process it again
+    return;
+  }
+
+  var $ref = $refKey === null ? $refParent : $refParent[$refKey];
   var $refPath = url.resolve(path, $ref.$ref);
   var pointer = $refs._resolve($refPath, options);
   var depth = Pointer.parse(pathFromRoot).length;
@@ -109,7 +119,7 @@ function inventory$Ref($refParent, $refKey, path, pathFromRoot, inventory, $refs
   });
 
   // Recursively crawl the resolved value
-  crawl(pointer.value, pointer.path, pathFromRoot, inventory, $refs, options);
+  crawl(pointer.value, null, pointer.path, pathFromRoot, inventory, $refs, options);
 }
 
 /**
@@ -211,8 +221,9 @@ module.exports = dereference;
  */
 function dereference(parser, options) {
   debug('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
-  parser.$refs.circular = false;
-  crawl(parser.schema, parser.$refs._root$Ref.path, '#', [], parser.$refs, options);
+  var dereferenced = crawl(parser.schema, parser.$refs._root$Ref.path, '#', [], parser.$refs, options);
+  parser.$refs.circular = dereferenced.circular;
+  parser.schema = dereferenced.value;
 }
 
 /**
@@ -224,41 +235,55 @@ function dereference(parser, options) {
  * @param {object[]} parents - An array of the parent objects that have already been dereferenced
  * @param {$Refs} $refs
  * @param {$RefParserOptions} options
- * @returns {boolean} - Returns true if a circular reference was found
+ * @returns {{value: object, circular: boolean}}
  */
 function crawl(obj, path, pathFromRoot, parents, $refs, options) {
-  var isCircular = false;
+  var dereferenced;
+  var result = {
+    value: obj,
+    circular: false
+  };
 
   if (obj && typeof obj === 'object') {
     parents.push(obj);
 
-    Object.keys(obj).forEach(function(key) {
-      var keyPath = Pointer.join(path, key);
-      var keyPathFromRoot = Pointer.join(pathFromRoot, key);
-      var value = obj[key];
-      var circular = false;
+    if ($Ref.isAllowed$Ref(obj, options)) {
+      dereferenced = dereference$Ref(obj, path, pathFromRoot, parents, $refs, options);
+      result.circular = dereferenced.circular;
+      result.value = dereferenced.value;
+    }
+    else {
+      Object.keys(obj).forEach(function(key) {
+        var keyPath = Pointer.join(path, key);
+        var keyPathFromRoot = Pointer.join(pathFromRoot, key);
+        var value = obj[key];
+        var circular = false;
 
-      if ($Ref.isAllowed$Ref(value, options)) {
-        var dereferenced = dereference$Ref(value, keyPath, keyPathFromRoot, parents, $refs, options);
-        circular = dereferenced.circular;
-        obj[key] = dereferenced.value;
-      }
-      else {
-        if (parents.indexOf(value) === -1) {
-          circular = crawl(value, keyPath, keyPathFromRoot, parents, $refs, options);
+        if ($Ref.isAllowed$Ref(value, options)) {
+          dereferenced = dereference$Ref(value, keyPath, keyPathFromRoot, parents, $refs, options);
+          circular = dereferenced.circular;
+          obj[key] = dereferenced.value;
         }
         else {
-          circular = foundCircularReference(keyPath, $refs, options);
+          if (parents.indexOf(value) === -1) {
+            dereferenced = crawl(value, keyPath, keyPathFromRoot, parents, $refs, options);
+            circular = dereferenced.circular;
+            obj[key] = dereferenced.value;
+          }
+          else {
+            circular = foundCircularReference(keyPath, $refs, options);
+          }
         }
-      }
 
-      // Set the "isCircular" flag if this or any other property is circular
-      isCircular = isCircular || circular;
-    });
+        // Set the "isCircular" flag if this or any other property is circular
+        result.circular = result.circular || circular;
+      });
+    }
 
     parents.pop();
   }
-  return isCircular;
+
+  return result;
 }
 
 /**
@@ -270,7 +295,7 @@ function crawl(obj, path, pathFromRoot, parents, $refs, options) {
  * @param {object[]} parents - An array of the parent objects that have already been dereferenced
  * @param {$Refs} $refs
  * @param {$RefParserOptions} options
- * @returns {object}
+ * @returns {{value: object, circular: boolean}}
  */
 function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
   debug('Dereferencing $ref pointer "%s" at %s', $ref.$ref, path);
@@ -288,8 +313,10 @@ function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
 
   // Crawl the dereferenced value (unless it's circular)
   if (!circular) {
-    // If the `crawl` method returns true, then dereferenced value is circular
-    circular = crawl(dereferencedValue, pointer.path, pathFromRoot, parents, $refs, options);
+    // Determine if the dereferenced value is circular
+    var dereferenced = crawl(dereferencedValue, pointer.path, pathFromRoot, parents, $refs, options);
+    circular = dereferenced.circular;
+    dereferencedValue = dereferenced.value;
   }
 
   if (circular && !directCircular && options.dereference.circular === 'ignore') {
@@ -1890,19 +1917,24 @@ function crawl(obj, path, $refs, options) {
   var promises = [];
 
   if (obj && typeof obj === 'object') {
-    Object.keys(obj).forEach(function(key) {
-      var keyPath = Pointer.join(path, key);
-      var value = obj[key];
+    if ($Ref.isExternal$Ref(obj)) {
+      promises.push(resolve$Ref(obj, path, $refs, options));
+    }
+    else {
+      Object.keys(obj).forEach(function(key) {
+        var keyPath = Pointer.join(path, key);
+        var value = obj[key];
 
-      if ($Ref.isExternal$Ref(value)) {
-        var promise = resolve$Ref(value, keyPath, $refs, options);
-        promises.push(promise);
-      }
-      else {
-        promises = promises.concat(crawl(value, keyPath, $refs, options));
-      }
-    });
+        if ($Ref.isExternal$Ref(value)) {
+          promises.push(resolve$Ref(value, keyPath, $refs, options));
+        }
+        else {
+          promises = promises.concat(crawl(value, keyPath, $refs, options));
+        }
+      });
+    }
   }
+
   return promises;
 }
 

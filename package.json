@@ -20,7 +20,7 @@
   "homepage": "https://github.com/BigstickCarpet/json-schema-ref-parser",
   "main": "lib/index.js",
   "scripts": {
-    "lint": "eslint lib && jscs lib --verbose",
+    "lint": "eslint lib --fix && jscs lib --verbose",
     "build": "npm run lint && npm run browserify",
     "browserify": "simplifyify lib/index.js --outfile dist/ref-parser.js --standalone \\$RefParser --bundle --debug --minify",
     "watch": "npm run browserify -- --watch",
