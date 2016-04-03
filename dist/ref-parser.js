@@ -177,7 +177,15 @@ function remap(inventory) {
       // This $ref already resolves to the main JSON Schema file
       i.$ref.$ref = i.hash;
     }
-    else if (i.file !== file || i.hash.indexOf(hash) !== 0) {
+    else if (i.file === file && i.hash === hash) {
+      // This $ref points to the same value as the prevous $ref, so remap it to the same path
+      i.$ref.$ref = pathFromRoot;
+    }
+    else if (i.file === file && i.hash.indexOf(hash + '/') === 0) {
+      // This $ref points to the a sub-value as the prevous $ref, so remap it beneath that path
+      i.$ref.$ref = Pointer.join(pathFromRoot, Pointer.parse(i.hash));
+    }
+    else {
       // We've moved to a new file or new hash
       file = i.file;
       hash = i.hash;
@@ -191,10 +199,6 @@ function remap(inventory) {
         // This $ref points to itself
         i.$ref.$ref = i.pathFromRoot;
       }
-    }
-    else {
-      // This $ref points to the same value as the prevous $ref
-      i.$ref.$ref = Pointer.join(pathFromRoot, Pointer.parse(i.hash));
     }
 
     debug('    new value: %s', (i.$ref && i.$ref.$ref) ? i.$ref.$ref : '[object Object]');
@@ -913,8 +917,6 @@ function isEmpty(value) {
 (function (Buffer){
 'use strict';
 
-var Promise = require('../util/promise');
-
 var BINARY_REGEXP = /\.(jpeg|jpg|gif|png|bmp|ico)$/i;
 
 module.exports = {
@@ -959,21 +961,19 @@ module.exports = {
    * @returns {Promise<Buffer>}
    */
   parse: function parseBinary(file) {
-    return new Promise(function(resolve, reject) {
-      if (Buffer.isBuffer(file.data)) {
-        resolve(file.data);
-      }
-      else {
-        // This will reject if data is anything other than a string or typed array
-        resolve(new Buffer(file.data));
-      }
-    });
+    if (Buffer.isBuffer(file.data)) {
+      return file.data;
+    }
+    else {
+      // This will reject if data is anything other than a string or typed array
+      return new Buffer(file.data);
+    }
   }
 };
 
 }).call(this,require("buffer").Buffer)
 
-},{"../util/promise":18,"buffer":24}],7:[function(require,module,exports){
+},{"buffer":24}],7:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -1042,8 +1042,6 @@ module.exports = {
 (function (Buffer){
 'use strict';
 
-var Promise = require('../util/promise');
-
 var TEXT_REGEXP = /\.(txt|htm|html|md|xml|js|min|map|css|scss|less|svg)$/i;
 
 module.exports = {
@@ -1095,25 +1093,21 @@ module.exports = {
    * @returns {Promise<string>}
    */
   parse: function parseText(file) {
-    var me = this;
-
-    return new Promise(function(resolve, reject) {
-      if (typeof file.data === 'string') {
-        resolve(file.data);
-      }
-      else if (Buffer.isBuffer(file.data)) {
-        resolve(file.data.toString(me.encoding));
-      }
-      else {
-        reject(new Error('data is not text'));
-      }
-    });
+    if (typeof file.data === 'string') {
+      return file.data;
+    }
+    else if (Buffer.isBuffer(file.data)) {
+      return file.data.toString(this.encoding);
+    }
+    else {
+      throw new Error('data is not text');
+    }
   }
 };
 
 }).call(this,{"isBuffer":require("../../node_modules/is-buffer/index.js")})
 
-},{"../../node_modules/is-buffer/index.js":36,"../util/promise":18}],9:[function(require,module,exports){
+},{"../../node_modules/is-buffer/index.js":36}],9:[function(require,module,exports){
 (function (Buffer){
 'use strict';
 

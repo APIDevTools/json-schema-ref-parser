@@ -1,0 +1,10 @@
+definitions:
+  string:
+    type: string
+  string-with-min-length:
+    type: string
+    min-length: 1
+  string-with-min-length-max-length:
+    type: string
+    min-length: 1
+    max-length: 20

@@ -1,0 +1,13 @@
+title: Person
+type: object
+required:
+  - name
+properties:
+  firstName:
+    $ref: "#/definitions/name"
+  middleName:
+    $ref: "#/definitions/name-with-min-length"
+  lastName:
+    $ref: "#/definitions/name-with-min-length-max-length"
+definitions:
+  $ref: definitions/definitions.json

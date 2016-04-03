@@ -1,0 +1,11 @@
+{
+  "name": {
+    "$ref": "strings.yaml#/definitions/string"
+  },
+  "name-with-min-length": {
+    "$ref": "../definitions/strings.yaml#/definitions/string-with-min-length"
+  },
+  "name-with-min-length-max-length": {
+    "$ref": "./strings.yaml#/definitions/string-with-min-length-max-length"
+  }
+}
