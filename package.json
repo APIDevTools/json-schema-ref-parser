@@ -63,6 +63,7 @@
   },
   "dependencies": {
     "call-me-maybe": "^1.0.1",
+    "debug": "^2.2.0",
     "es6-promise": "^3.1.2",
     "js-yaml": "^3.5.5",
     "ono": "^2.2.1",
