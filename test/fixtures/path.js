@@ -26,12 +26,12 @@
     file = encodeFile(file);
 
     if (window.location.href.indexOf(_testsDir) === 0) {
-      // Return the relative path from "/tests/index.html"
+      // Return the relative path from "/test/index.html"
       return file;
     }
 
     // We're running in a test-runner (such as Karma), so return an absolute path,
-    // since we don't know the relative path of the "tests" directory.
+    // since we don't know the relative path of the "test" directory.
     return _testsDir.replace(/^https?:\/\/[^\/]+(\/.*)/, '$1' + file);
   };
 
@@ -53,11 +53,11 @@
   };
 
   /**
-   * Returns the path of a file in the "tests" directory as a URL.
+   * Returns the path of a file in the "test" directory as a URL.
    */
   path.url = function(file) {
     if (userAgent.isBrowser) {
-      // In browsers, just return the absolute URL (e.g. "http://localhost/tests/files/...")
+      // In browsers, just return the absolute URL (e.g. "http://localhost/test/files/...")
       return path.abs(file);
     }
 

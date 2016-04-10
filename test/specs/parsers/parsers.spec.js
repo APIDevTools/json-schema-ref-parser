@@ -146,7 +146,7 @@ describe('References to non-JSON files', function() {
         parse: {
           // A custom parser that returns the contents of ".foo" files, in reverse
           reverseFooParser: {
-            canParse: /\.foo$/,
+            canParse: ['.foo'],
 
             parse: function(file) {
               return new Promise(function(resolve, reject) {

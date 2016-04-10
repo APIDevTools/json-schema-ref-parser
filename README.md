@@ -49,12 +49,12 @@ The Solution:
 JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03) and [JSON Pointer](https://tools.ietf.org/html/rfc6901) implementation that crawls even the most complex [JSON Schemas](http://json-schema.org/latest/json-schema-core.html) and gives you simple, straightforward JavaScript objects.
 
 - Use **JSON** or **YAML** schemas &mdash; or even a mix of both!
-- Fully supports `$ref` pointers to external files and URLs
+- Supports `$ref` pointers to external files and URLs, as well as [custom sources](docs/plugins/resolvers.md) such as databases
 - Can [bundle](docs/ref-parser.md#bundlepath-options-callback) multiple files into a single schema that only has _internal_ `$ref` pointers
 - Can [dereference](docs/ref-parser.md#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
 - Supports [circular references](docs/README.md#circular-refs), nested references, back-references, and cross-references between files
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object instance
-- [Tested](http://bigstickcarpet.github.io/json-schema-ref-parser/tests/index.html) in Node, io.js, and all major web browsers on Windows, Mac, and Linux
+- [Tested](http://bigstickcarpet.github.io/json-schema-ref-parser/test/index.html) in Node, io.js, and all major web browsers on Windows, Mac, and Linux
 
 
 Example
@@ -150,7 +150,7 @@ To build/test the project locally on your computer:
 `npm test` (test in Node and browsers, and report code coverage)
 
 5. __Start the local web server__<br>
-`npm start` (then browse to [http://localhost:8080/tests/index.html](http://bigstickcarpet.com/json-schema-ref-parser/tests/index.html))
+`npm start` (then browse to [http://localhost:8080/test/index.html](http://bigstickcarpet.com/json-schema-ref-parser/test/index.html))
 
 
 License

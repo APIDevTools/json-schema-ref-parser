@@ -24,8 +24,8 @@
     "build": "npm run lint && npm run browserify",
     "browserify": "simplifyify lib/index.js --outfile dist/ref-parser.js --standalone \\$RefParser --bundle --debug --minify",
     "watch": "npm run browserify -- --watch",
-    "mocha": "mocha --bail --recursive tests/fixtures tests/specs",
-    "istanbul": "istanbul cover _mocha --dir coverage/node -- --bail --recursive tests/fixtures tests/specs",
+    "mocha": "mocha",
+    "istanbul": "istanbul cover _mocha --dir coverage/node",
     "karma": "karma start --single-run",
     "test": "npm run browserify -- --test && npm run istanbul && npm run karma",
     "upgrade": "ncu --upgradeAll && npm update && bower update",
@@ -63,9 +63,9 @@
   },
   "dependencies": {
     "call-me-maybe": "^1.0.1",
-    "debug": "^2.2.0",
     "es6-promise": "^3.1.2",
     "js-yaml": "^3.5.5",
-    "ono": "^2.2.1"
+    "ono": "^2.2.1",
+    "z-schema": "^3.17.0"
   }
 }

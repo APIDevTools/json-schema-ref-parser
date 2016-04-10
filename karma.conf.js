@@ -15,11 +15,11 @@ var baseConfig = {
     {pattern: 'dist/*.map', included: false, served: true},
 
     // Test Fixtures
-    'tests/fixtures/**/*.js',
+    'test/fixtures/**/*.js',
 
     // Tests
-    'tests/specs/**/*.js',
-    {pattern: 'tests/specs/**', included: false, served: true}
+    'test/specs/**/*.js',
+    {pattern: 'test/specs/**', included: false, served: true}
   ]
 };
 
@@ -172,8 +172,8 @@ function configureSauceLabs(config) {
   // probably due to zero-byte files and special characters in the paths.
   // So, exclude these tests when running on SauceLabs.
   config.exclude = [
-    'tests/specs/__*/**',
-    'tests/specs/blank/**',
-    'tests/specs/parsers/**'
+    'test/specs/__*/**',
+    'test/specs/blank/**',
+    'test/specs/parsers/**'
   ];
 }

@@ -24,7 +24,7 @@ Lots of little bug fixes.  The only major bug fix is to [support root-level `$re
 
 This version includes a **complete rewrite** of the [`bundle` method](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/ref-parser.md#bundleschema-options-callback) method, mostly to fix [this bug](https://github.com/BigstickCarpet/swagger-parser/issues/16), but also to address a few [edge-cases](https://github.com/BigstickCarpet/json-schema-ref-parser/commit/ca9b322879519e4bcb2dcf6e63f08ac254b90868) that weren't handled before.  As a side-effect of this rewrite, there was also some pretty significant refactoring and code-cleanup done throughout the codebase.
 
-Despite the significant code changes, there were no changes to any public-facing APIs, and [all tests are passing](http://bigstickcarpet.com/json-schema-ref-parser/tests/index.html) as expected.
+Despite the significant code changes, there were no changes to any public-facing APIs, and [all tests are passing](http://bigstickcarpet.com/json-schema-ref-parser/test/index.html) as expected.
 
 [Full Changelog](https://github.com/BigstickCarpet/json-schema-ref-parser/compare/v2.1.0...v2.2.0)
 
