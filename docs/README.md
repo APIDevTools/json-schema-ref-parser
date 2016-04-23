@@ -27,10 +27,6 @@ Classes & Methods
 - [`get()`](refs.md#getref-options)
 - [`set()`](refs.md#setref-value-options)
 
-#### [`YAML`](yaml.md)
-- [`parse()`](yaml.md#parsetext)
-- [`stringify()`](yaml.md#stringifyvalue)
-
 #### [`Options`](options.md)
 
 
