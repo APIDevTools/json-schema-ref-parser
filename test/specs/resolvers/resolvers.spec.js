@@ -25,9 +25,9 @@ describe('options.resolve', function() {
         resolve: {
           // A custom resolver for "foo://" URLs
           foo: {
-            canRead: /^foo\:\/\//i,
+            canResolve: /^foo\:\/\//i,
 
-            read: {bar: {baz: 'hello world'}}
+            resolve: {bar: {baz: 'hello world'}}
           }
         }
       })
@@ -42,9 +42,9 @@ describe('options.resolve', function() {
         resolve: {
           // A custom resolver for "foo://" URLs
           foo: {
-            canRead: /^foo\:\/\//i,
+            canResolve: /^foo\:\/\//i,
 
-            read: function(file) {
+            resolve: function(file) {
               return {bar: {baz: 'hello world'}};
             }
           }
@@ -61,9 +61,9 @@ describe('options.resolve', function() {
         resolve: {
           // A custom resolver for "foo://" URLs
           foo: {
-            canRead: /^foo\:\/\//i,
+            canResolve: /^foo\:\/\//i,
 
-            read: function(file, callback) {
+            resolve: function(file, callback) {
               callback(null, {bar: {baz: 'hello world'}});
             }
           }
@@ -80,9 +80,9 @@ describe('options.resolve', function() {
       resolve: {
         // A custom resolver for "foo://" URLs
         foo: {
-          canRead: /^foo\:\/\//i,
+          canResolve: /^foo\:\/\//i,
 
-          read: function(file) {
+          resolve: function(file) {
             return Promise.resolve({bar: {baz: 'hello world'}});
           }
         }
@@ -101,18 +101,18 @@ describe('options.resolve', function() {
         badResolver: {
           order: 1,
 
-          canRead: true,
+          canResolve: true,
 
-          read: function(file) {
+          resolve: function(file) {
             throw new Error('BOMB!!!');
           }
         },
 
         // A custom resolver for "foo://" URLs
         foo: {
-          canRead: /^foo\:\/\//i,
+          canResolve: /^foo\:\/\//i,
 
-          read: {bar: {baz: 'hello world'}}
+          resolve: {bar: {baz: 'hello world'}}
         }
       }
     })

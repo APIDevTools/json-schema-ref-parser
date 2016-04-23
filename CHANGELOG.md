@@ -3,6 +3,19 @@ All notable changes will be documented in this file.
 JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [v4.0.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v4.0.0) (2016-04-23)
+
+#### Breaking Changes
+
+- **YAML object Removed**<br>
+The `$RefParser.YAML` object has been removed. Previously, this object allowed you to use `YAML.parse()` to parse YAML strings into objects and then pass those objects to any of the JSON Schema $Ref Parser methods.  But now all of the methods allow you to simply pass-in a YAML string instead.
+
+- **Changes to plug-in method names**<br>
+Version 3.0 introduced the ability to create your own plug-ins. But the method names weren't very consistent. So that's been resolved.  If you created your own [resolver plug-ins](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/plugins/resolvers.md), then just change the names of the `canRead()` and `read()` methods to `canResolve()` and `resolve()`. No other changes are needed.
+
+[Full Changelog](https://github.com/BigstickCarpet/json-schema-ref-parser/compare/v3.0.0...v4.0.0)
+
+
 ## [v3.0.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v3.0.0) (2016-04-03)
 
 #### Plug-ins !!!
