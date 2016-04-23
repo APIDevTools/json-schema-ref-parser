@@ -42,7 +42,7 @@ describe('Callback & Promise syntax', function() {
           done();
         }
         catch (e) {
-          done(e)
+          done(e);
         }
       });
     }
