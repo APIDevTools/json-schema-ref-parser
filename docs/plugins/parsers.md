@@ -43,7 +43,7 @@ canParse: true
 // An array of file extensions (lowercased)
 canParse: [".txt", ".csv"]
 
-// A regular expression (matched against the FULL file path)
+// A regular expression (matched against the FULL file URL)
 canParse: /\.(txt|csv)$/i
 
 // A function that returns a truthy/falsy value
