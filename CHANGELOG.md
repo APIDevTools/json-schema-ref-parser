@@ -3,7 +3,7 @@ All notable changes will be documented in this file.
 JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 
 
-## [v4.0.0-beta.1](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v4.0.0) (2016-04-24)
+## [v4.0.0-beta.1](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v4.0.0-beta.1) (2016-04-24)
 
 #### Major API Changes
 The API has been significantly cleaned up and streamlined.  It (hopefully) makes a lot more sense now, and is easier for newcomers to learn.  There will be a few more beta releases before the final v4.0 release, so if you have any recommendations for improvements to the API, then now's the time to [let me know](https://github.com/BigstickCarpet/json-schema-ref-parser/issues).
@@ -14,10 +14,10 @@ I also plan to some significant behind-the-scenes refactoring that shouldn't aff
 #### $RefParser is no longer a class
 Previously, `$RefParser` was a class that had both [static and instance methods](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v3.0.0/docs#class-methods-vs-instance-methods).  Now it's just an object with methods. If you were previously calling the static methods, then the syntax is exactly the same. If you were creating a `$RefParser` instance and then calling the instance methods, then you'll need to switch to the static syntax instead.
 
-The only reason for creating a `$RefParser` instance before was so you could access the [instance properties](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/v3.0.0/docs/ref-parser.md#refparser-class), such as `parser.schema` and `parser.$refs`, but neither of these properties exist anymore. Instead, all methods return a [Schema](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/v3.0.0/lib/schema.js) object, which gives you access to the same data as before.
+The only reason for creating a `$RefParser` instance before was so you could access the [instance properties](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/v3.0.0/docs/ref-parser.md#refparser-class), such as `parser.schema` and `parser.$refs`, but neither of these properties exist anymore. Instead, all methods return a [Schema](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/releases/4.0.0/lib/schema.js.js) object, which gives you access to the same data as before.
 
 #### All methods now return a Schema object
-Previously, some methods returned the parsed JSON Schema as a POJO (plain-old javascript object), and other methods returned a [$Refs object](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/v3.0.0/docs/refs.md). Now all methods return a [Schema](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/v3.0.0/lib/schema.js) object instead.  This is a new object that replaces the old $Refs object and provides even more functionality than before.
+Previously, some methods returned the parsed JSON Schema as a POJO (plain-old javascript object), and other methods returned a [$Refs object](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/v3.0.0/docs/refs.md). Now all methods return a [Schema](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/releases/4.0.0/lib/schema.js.js) object instead.  This is a new object that replaces the old $Refs object and provides even more functionality than before.
 
 ```javascript
 $RefParser.dereference('http://example.com/my-schema.json')
@@ -52,7 +52,7 @@ $RefParser.dereference('http://example.com/my-schema.json')
 ```
 
 #### $Refs class removed
-The [$Refs](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/v3.0.0/docs/refs.md) class has been removed and replaced with the [Schema](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/v3.0.0/lib/schema.js) class. The `$refs.paths()` and `$refs.values()` methods have been replaced with the `schema.files` property as shown above.  All other properties and methods of the $Refs class have been moved to the Schema class. Other than that, they have not changed. Here's an example:
+The [$Refs](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/v3.0.0/docs/refs.md) class has been removed and replaced with the [Schema](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/releases/4.0.0/lib/schema.js.js) class. The `$refs.paths()` and `$refs.values()` methods have been replaced with the `schema.files` property as shown above.  All other properties and methods of the $Refs class have been moved to the Schema class. Other than that, they have not changed. Here's an example:
 
 ```javascript
 $RefParser.dereference('http://example.com/my-schema.json')
@@ -82,7 +82,7 @@ The `$RefParser.YAML` object has been removed. Previously, this object allowed y
 #### Resolvers are now readers
 Version 3.0 introduced the ability to create your own [resolver plug-ins](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/v3.0.0/docs/plugins/resolvers.md). But really, those plug-ins were for _reading_ files, not resolving them. So "resolvers" have now been renamed "readers", and they have moved to a new `read` option. This also means that the built-in readers (`resolve.file` and `resolve.http`) have moved to `read.file` and `read.http`.
 
-[Full Changelog](https://github.com/BigstickCarpet/json-schema-ref-parser/compare/v3.0.0...v4.0.0)
+[Full Changelog](https://github.com/BigstickCarpet/json-schema-ref-parser/compare/v3.0.0...v4.0.0-beta.1)
 
 
 ## [v3.0.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v3.0.0) (2016-04-03)
