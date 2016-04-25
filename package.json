@@ -38,13 +38,13 @@
     "url": "https://github.com/BigstickCarpet/json-schema-ref-parser.git"
   },
   "devDependencies": {
-    "bower": "^1.7.7",
+    "bower": "^1.7.9",
     "chai": "^3.5.0",
     "coveralls": "^2.11.9",
-    "eslint": "^2.6.0",
+    "eslint": "^2.8.0",
     "http-server": "^0.9.0",
-    "istanbul": "^0.4.2",
-    "jscs": "^2.11.0",
+    "istanbul": "^0.4.3",
+    "jscs": "^3.0.3",
     "karma": "^0.13.22",
     "karma-chrome-launcher": "^0.2.3",
     "karma-cli": "^0.1.2",
@@ -56,7 +56,7 @@
     "karma-sauce-launcher": "^0.3.1",
     "karma-verbose-reporter": "0.0.3",
     "mocha": "^2.4.5",
-    "npm-check-updates": "^2.6.1",
+    "npm-check-updates": "^2.6.3",
     "simplifyify": "^2.0.1",
     "sinon": "^1.17.3",
     "version-bump-prompt": "^1.5.2"
@@ -65,7 +65,7 @@
     "call-me-maybe": "^1.0.1",
     "debug": "^2.2.0",
     "es6-promise": "^3.1.2",
-    "js-yaml": "^3.5.5",
+    "js-yaml": "^3.6.0",
     "ono": "^2.2.1",
     "z-schema": "^3.17.0"
   }
