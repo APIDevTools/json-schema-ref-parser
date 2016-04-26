@@ -1,10 +1,11 @@
-helper.parsed.objectSource =
+helper.parsed.objectSourceWithPath =
 {
   schema: {
     "definitions": {
-      // Because we're not specifying a path, the current directory (the "test" directory)
-      // will be assumed. So this path must be relative to the "test" directory.
-      "$ref": path.rel("specs/object-source/definitions/definitions.json")
+      // Because we've specified the full path to this directory,
+      // this path can simply be relative to the current directory,
+      // rather than having to be relative to the "test" directory
+      "$ref": "definitions/definitions.json"
     },
     "required": [
       "name"

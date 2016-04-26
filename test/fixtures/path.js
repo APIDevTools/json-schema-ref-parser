@@ -76,6 +76,19 @@
   };
 
   /**
+   * Returns the path of the current working directory.
+   * In Node, this is the "test" directory. In the browser, it is the directory of the current page.
+   */
+  path.cwd = function() {
+    if (userAgent.isNode) {
+      return process.cwd() + '/';
+    }
+    else {
+      return location.href;
+    }
+  };
+
+  /**
    * Returns the path of the "tests" directory
    */
   function getTestsDir() {
