@@ -438,6 +438,19 @@ $RefParser.prototype.parse = function(schema, options, callback) {
   this.schema = null;
   this.$refs = new $Refs();
 
+  // If the path is a filesystem path, then convert it to a URL.
+  // NOTE: According to the JSON Reference spec, these should already be URLs,
+  // but, in practice, many people use local filesystem paths instead.
+  // So we're being generous here and doing the conversion automatically.
+  // This is not intended to be a 100% bulletproof solution.
+  // If it doesn't work for your use-case, then use a URL instead.
+  if (url.isFileSystemPath(args.path)) {
+    args.path = url.fromFileSystemPath(args.path);
+  }
+
+  // Resolve the absolute path of the schema
+  args.path = url.resolve(url.cwd(), args.path);
+
   if (args.schema && typeof args.schema === 'object') {
     // A schema object was passed-in.
     // So immediately add a new $Ref with the schema object as its value
@@ -445,19 +458,6 @@ $RefParser.prototype.parse = function(schema, options, callback) {
     promise = Promise.resolve(args.schema);
   }
   else {
-    // If it's a filesystem path, then convert it to a URL.
-    // NOTE: According to the JSON Reference spec, these should already be URLs,
-    // but, in practice, many people use local filesystem paths instead.
-    // So we're being generous here and doing the conversion automatically.
-    // This is not intended to be a 100% bulletproof solution.
-    // If it doesn't work for your use-case, then use a URL instead.
-    if (url.isFileSystemPath(args.path)) {
-      args.path = url.fromFileSystemPath(args.path);
-    }
-
-    // Resolve the absolute path of the schema
-    args.path = url.resolve(url.cwd(), args.path);
-
     // Parse the schema file/url
     promise = parse(args.path, this.$refs, args.options);
   }
@@ -1969,7 +1969,7 @@ function resolve$Ref($ref, path, $refs, options) {
   var withoutHash = url.stripHash(resolvedPath);
 
   // Do we already have this $ref?
-  $ref = $refs._get$Ref(withoutHash);
+  $ref = $refs._$refs[withoutHash];
   if ($ref) {
     // We've already parsed this $ref, so use the existing value
     return Promise.resolve($ref.value);
