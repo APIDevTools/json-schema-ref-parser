@@ -3,21 +3,22 @@
   // http://eslint.org/docs/rules/
 
   "env": {
-    "mocha":                    true,         // Mocha
+    "mocha":                    true            // Mocha
   },
 
   "globals": {
-    "$RefParser":               true,         // JSON Schema $Ref Parser
-    "helper":                   true,         // Test fixtures
-    "userAgent":                true,         // Test fixtrues
-    "expect":                   true,         // Chai
-    "path":                     true,         // Node
+    "$RefParser":               true,           // JSON Schema $Ref Parser
+    "helper":                   true,           // Test fixtures
+    "userAgent":                true,           // Test fixtrues
+    "expect":                   true,           // Chai
+    "path":                     true            // Node
   },
 
   "rules": {
-    "require-jsdoc":            0,            // Don't require doc comments for tests
-    "no-unused-expressions":    0,            // Chai property syntax triggers this rule
-    "max-nested-callbacks":     0,            // Mocha BDD syntax leads to deeply-nested callbacks
-    "no-invalid-this":          0,            // Mocha BDD syntax triggers this rule
+    "require-jsdoc":            0,              // Don't require doc comments for tests
+    "no-unused-expressions":    0,              // Chai property syntax triggers this rule
+    "max-nested-callbacks":     0,              // Mocha BDD syntax leads to deeply-nested callbacks
+    "no-invalid-this":          0,              // Mocha BDD syntax triggers this rule
+    "strict":                  [2, "function"]  // Require "use strict" in a function wrapper
   }
 }
