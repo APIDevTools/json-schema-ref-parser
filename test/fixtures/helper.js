@@ -49,16 +49,20 @@
     expect(schema).to.have.property('files').that.is.an('array');
     expect(schema).to.have.property('circular').that.is.a('boolean');
     expect(schema).to.have.property('root');
+    expect(schema).to.have.property('rootUrl');
     expect(schema).to.have.property('rootFile');
 
     if (schema.files.length === 0) {
       expect(schema.root).to.be.null;
+      expect(schema.rootUrl).to.be.null;
       expect(schema.rootFile).to.be.null;
     }
     else {
-      expect(schema.root).not.to.be.null;
+      expect(schema.root).to.be.an('object').and.not.null;
       expect(schema.root).to.equal(schema.files[0].data);
-      expect(schema.rootFile).not.to.be.null;
+      expect(schema.rootUrl).to.be.a('string').and.not.null;
+      expect(schema.rootUrl).to.equal(schema.files[0].url);
+      expect(schema.rootFile).to.be.an('object').and.not.null;
       expect(schema.rootFile).to.equal(schema.files[0]);
     }
   };
