@@ -12,11 +12,12 @@ describe('options.resolve', function() {
   it('should throw an error for unrecognized protocols', function() {
     return $RefParser
       .dereference(path.abs('specs/resolvers/resolvers.yaml'))
-      .then(helper.shouldNotGetCalled)
-      .catch(function(err) {
-        expect(err).to.be.an.instanceOf(SyntaxError);
-        expect(err.message).to.equal('Unable to resolve $ref pointer "foo://bar.baz"');
-      });
+      .then(
+        helper.shouldNotGetCalled,
+        function(err) {
+          expect(err).to.be.an.instanceOf(SyntaxError);
+          expect(err.message).to.equal('Unable to resolve $ref pointer "foo://bar.baz"');
+        });
   });
 
   it('should use a custom resolver with static values', function() {

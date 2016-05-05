@@ -1,49 +1,86 @@
-'use strict';
-
 describe('Schema with $refs to parts of external files', function() {
+  'use strict';
+
   it('should parse successfully', function() {
-    var parser = new $RefParser();
-    return parser
-      .parse(path.rel('specs/external-partial/external-partial.yaml'))
+    return $RefParser.parse(path.rel('specs/external-partial/external-partial.yaml'))
       .then(function(schema) {
-        expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.externalPartial.schema);
-        expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/external-partial/external-partial.yaml')]);
+        helper.validateSchema(schema);
+
+        // Only the main schema file should be resolved
+        helper.validateFiles(schema.files, [
+          path.abs('specs/external-partial/external-partial.yaml'),
+        ]);
+
+        // The schema should be parsed, but not dereferenced
+        helper.expectAll(schema.files, {parsed: true, dereferenced: false});
+        expect(schema.root).to.deep.equal(helper.parsed.externalPartial.schema);
       });
   });
 
-  it('should resolve successfully', helper.testResolve(
-    path.rel('specs/external-partial/external-partial.yaml'),
-    path.abs('specs/external-partial/external-partial.yaml'), helper.parsed.externalPartial.schema,
-    path.abs('specs/external-partial/definitions/definitions.json'), helper.parsed.externalPartial.definitions,
-    path.abs('specs/external-partial/definitions/name.yaml'), helper.parsed.externalPartial.name,
-    path.abs('specs/external-partial/definitions/required-string.yaml'), helper.parsed.externalPartial.requiredString
-  ));
+  it('should resolve successfully', function() {
+    return $RefParser.resolve(path.rel('specs/external-partial/external-partial.yaml'))
+      .then(function(schema) {
+        helper.validateSchema(schema);
+
+        // Make sure all of the schema's files were found
+        helper.validateFiles(schema.files, [
+          path.abs('specs/external-partial/external-partial.yaml'),
+          path.abs('specs/external-partial/definitions/definitions.json'),
+          path.abs('specs/external-partial/definitions/required-string.yaml'),
+          path.abs('specs/external-partial/definitions/name.yaml'),
+        ]);
+
+        // The schema should be parsed, but not dereferenced
+        helper.expectAll(schema.files, {parsed: true, dereferenced: false});
+        expect(schema.files.get('external-partial.yaml').data).to.deep.equal(helper.parsed.externalPartial.schema);
+      });
+  });
 
   it('should dereference successfully', function() {
-    var parser = new $RefParser();
-    return parser
-      .dereference(path.rel('specs/external-partial/external-partial.yaml'))
+    return $RefParser.dereference(path.rel('specs/external-partial/external-partial.yaml'))
       .then(function(schema) {
-        expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.dereferenced.externalPartial);
+        helper.validateSchema(schema);
+
+        // Make sure all of the schema's files were found
+        helper.validateFiles(schema.files, [
+          path.abs('specs/external-partial/external-partial.yaml'),
+          path.abs('specs/external-partial/definitions/definitions.json'),
+          path.abs('specs/external-partial/definitions/required-string.yaml'),
+          path.abs('specs/external-partial/definitions/name.yaml'),
+        ]);
+
+        // This schema is not circular
+        expect(schema.circular).to.equal(false);
+
+        // The schema should be fully dereferenced
+        helper.expectAll(schema.files, {parsed: true, dereferenced: true});
+        expect(schema.files.get('external-partial.yaml').data).to.deep.equal(helper.dereferenced.externalPartial);
 
         // Reference equality
-        expect(schema.properties.name.properties.first)
-          .to.equal(schema.properties.name.properties.last);
-
-        // The "circular" flag should NOT be set
-        expect(parser.$refs.circular).to.equal(false);
+        expect(schema.root.properties.name.properties.first)
+          .to.equal(schema.root.properties.name.properties.last);
       });
   });
 
   it('should bundle successfully', function() {
-    var parser = new $RefParser();
-    return parser
-      .bundle(path.rel('specs/external-partial/external-partial.yaml'))
+    return $RefParser.bundle(path.rel('specs/external-partial/external-partial.yaml'))
       .then(function(schema) {
-        expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.bundled.externalPartial);
+        helper.validateSchema(schema);
+
+        // Make sure all of the schema's files were found
+        helper.validateFiles(schema.files, [
+          path.abs('specs/external-partial/external-partial.yaml'),
+          path.abs('specs/external-partial/definitions/definitions.json'),
+          path.abs('specs/external-partial/definitions/required-string.yaml'),
+          path.abs('specs/external-partial/definitions/name.yaml'),
+        ]);
+
+        // This schema is not circular
+        expect(schema.circular).to.equal(false);
+
+        // The schema should be bundled, but not fully dereferenced
+        helper.expectAll(schema.files, {parsed: true, dereferenced: false});
+        expect(schema.files.get('external-partial.yaml').data).to.deep.equal(helper.bundled.externalPartial);
       });
   });
 });

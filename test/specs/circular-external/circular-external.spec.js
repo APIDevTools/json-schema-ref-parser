@@ -47,16 +47,17 @@ describe('Schema with circular (recursive) external $refs', function() {
     var parser = new $RefParser();
     return parser
       .dereference(path.rel('specs/circular-external/circular-external.yaml'), {dereference: {circular: false}})
-      .then(helper.shouldNotGetCalled)
-      .catch(function(err) {
-        // A ReferenceError should have been thrown
-        expect(err).to.be.an.instanceOf(ReferenceError);
-        expect(err.message).to.contain('Circular $ref pointer found at ');
-        expect(err.message).to.contain('specs/circular-external/circular-external.yaml#/definitions/thing');
+      .then(
+        helper.shouldNotGetCalled,
+        function(err) {
+          // A ReferenceError should have been thrown
+          expect(err).to.be.an.instanceOf(ReferenceError);
+          expect(err.message).to.contain('Circular $ref pointer found at ');
+          expect(err.message).to.contain('specs/circular-external/circular-external.yaml#/definitions/thing');
 
-        // $Refs.circular should be true
-        expect(parser.$refs.circular).to.equal(true);
-      });
+          // $Refs.circular should be true
+          expect(parser.$refs.circular).to.equal(true);
+        });
   });
 
   it('should bundle successfully', function() {

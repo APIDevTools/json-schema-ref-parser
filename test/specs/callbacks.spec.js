@@ -68,10 +68,11 @@ describe('Callback & Promise syntax', function() {
   function testPromiseError(method) {
     return function() {
       return $RefParser[method](path.rel('specs/invalid/invalid.yaml'))
-        .then(helper.shouldNotGetCalled)
-        .catch(function(err) {
-          expect(err).to.be.an.instanceOf(SyntaxError);
-        });
+        .then(
+          helper.shouldNotGetCalled,
+          function(err) {
+            expect(err).to.be.an.instanceOf(SyntaxError);
+          });
     }
   }
 });

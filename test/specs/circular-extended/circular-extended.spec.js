@@ -53,16 +53,17 @@ describe('Schema with circular $refs that extend each other', function() {
       var parser = new $RefParser();
       return parser
         .dereference(path.rel('specs/circular-extended/circular-extended-self.yaml'), {dereference: {circular: false}})
-        .then(helper.shouldNotGetCalled)
-        .catch(function(err) {
-          // A ReferenceError should have been thrown
-          expect(err).to.be.an.instanceOf(ReferenceError);
-          expect(err.message).to.contain('Circular $ref pointer found at ');
-          expect(err.message).to.contain('specs/circular-extended/circular-extended-self.yaml#/definitions/thing');
+        .then(
+          helper.shouldNotGetCalled,
+          function(err) {
+            // A ReferenceError should have been thrown
+            expect(err).to.be.an.instanceOf(ReferenceError);
+            expect(err.message).to.contain('Circular $ref pointer found at ');
+            expect(err.message).to.contain('specs/circular-extended/circular-extended-self.yaml#/definitions/thing');
 
-          // $Refs.circular should be true
-          expect(parser.$refs.circular).to.equal(true);
-        });
+            // $Refs.circular should be true
+            expect(parser.$refs.circular).to.equal(true);
+          });
     });
 
     it('should bundle successfully', function() {
@@ -140,16 +141,17 @@ describe('Schema with circular $refs that extend each other', function() {
       var parser = new $RefParser();
       return parser
         .dereference(path.rel('specs/circular-extended/circular-extended-ancestor.yaml'), {dereference: {circular: false}})
-        .then(helper.shouldNotGetCalled)
-        .catch(function(err) {
-          // A ReferenceError should have been thrown
-          expect(err).to.be.an.instanceOf(ReferenceError);
-          expect(err.message).to.contain('Circular $ref pointer found at ');
-          expect(err.message).to.contain('specs/circular-extended/definitions/person-with-spouse.yaml#/properties/spouse');
+        .then(
+          helper.shouldNotGetCalled,
+          function(err) {
+            // A ReferenceError should have been thrown
+            expect(err).to.be.an.instanceOf(ReferenceError);
+            expect(err.message).to.contain('Circular $ref pointer found at ');
+            expect(err.message).to.contain('specs/circular-extended/definitions/person-with-spouse.yaml#/properties/spouse');
 
-          // $Refs.circular should be true
-          expect(parser.$refs.circular).to.equal(true);
-        });
+            // $Refs.circular should be true
+            expect(parser.$refs.circular).to.equal(true);
+          });
     });
 
     it('should bundle successfully', function() {
@@ -230,16 +232,17 @@ describe('Schema with circular $refs that extend each other', function() {
       var parser = new $RefParser();
       return parser
         .dereference(path.rel('specs/circular-extended/circular-extended-indirect.yaml'), {dereference: {circular: false}})
-        .then(helper.shouldNotGetCalled)
-        .catch(function(err) {
-          // A ReferenceError should have been thrown
-          expect(err).to.be.an.instanceOf(ReferenceError);
-          expect(err.message).to.contain('Circular $ref pointer found at ');
-          expect(err.message).to.contain('specs/circular-extended/definitions/child-with-parents.yaml#/properties/parents/items');
+        .then(
+          helper.shouldNotGetCalled,
+          function(err) {
+            // A ReferenceError should have been thrown
+            expect(err).to.be.an.instanceOf(ReferenceError);
+            expect(err.message).to.contain('Circular $ref pointer found at ');
+            expect(err.message).to.contain('specs/circular-extended/definitions/child-with-parents.yaml#/properties/parents/items');
 
-          // $Refs.circular should be true
-          expect(parser.$refs.circular).to.equal(true);
-        });
+            // $Refs.circular should be true
+            expect(parser.$refs.circular).to.equal(true);
+          });
     });
 
     it('should bundle successfully', function() {
@@ -320,16 +323,17 @@ describe('Schema with circular $refs that extend each other', function() {
       var parser = new $RefParser();
       return parser
         .dereference(path.rel('specs/circular-extended/circular-extended-indirect-ancestor.yaml'), {dereference: {circular: false}})
-        .then(helper.shouldNotGetCalled)
-        .catch(function(err) {
-          // A ReferenceError should have been thrown
-          expect(err).to.be.an.instanceOf(ReferenceError);
-          expect(err.message).to.contain('Circular $ref pointer found at ');
-          expect(err.message).to.contain('specs/circular-extended/definitions/child-with-children.yaml#/properties');
+        .then(
+          helper.shouldNotGetCalled,
+          function(err) {
+            // A ReferenceError should have been thrown
+            expect(err).to.be.an.instanceOf(ReferenceError);
+            expect(err.message).to.contain('Circular $ref pointer found at ');
+            expect(err.message).to.contain('specs/circular-extended/definitions/child-with-children.yaml#/properties');
 
-          // $Refs.circular should be true
-          expect(parser.$refs.circular).to.equal(true);
-        });
+            // $Refs.circular should be true
+            expect(parser.$refs.circular).to.equal(true);
+          });
     });
 
     it('should bundle successfully', function() {

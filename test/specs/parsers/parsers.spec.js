@@ -73,11 +73,12 @@ describe('References to non-JSON files', function() {
   it('should throw an error if "parse.text" and "parse.binary" are disabled', function() {
     return $RefParser
       .dereference(path.rel('specs/parsers/parsers.yaml'), {parse: {text: false, binary: false}})
-      .then(helper.shouldNotGetCalled)
-      .catch(function(err) {
-        expect(err).to.be.an.instanceOf(SyntaxError);
-        expect(err.message).to.contain('Error parsing ');
-      });
+      .then(
+        helper.shouldNotGetCalled,
+        function(err) {
+          expect(err).to.be.an.instanceOf(SyntaxError);
+          expect(err.message).to.contain('Error parsing ');
+        });
   });
 
   it('should use a custom parser with static values', function() {

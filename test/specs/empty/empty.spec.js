@@ -48,12 +48,13 @@ describe('Empty schema', function() {
   it('should throw an error if "parse.json.allowEmpty" is disabled', function() {
     return $RefParser
       .parse(path.rel('specs/empty/empty.json'), {parse: {json: {allowEmpty: false}}})
-      .then(helper.shouldNotGetCalled)
-      .catch(function(err) {
-        expect(err).to.be.an.instanceOf(SyntaxError);
-        expect(err.message).to.contain('Error parsing ');
-        expect(err.message).to.contain('empty/empty.json"');
-        expect(err.message).to.contain('Parsed value is empty');
-      });
+      .then(
+        helper.shouldNotGetCalled,
+        function(err) {
+          expect(err).to.be.an.instanceOf(SyntaxError);
+          expect(err.message).to.contain('Error parsing ');
+          expect(err.message).to.contain('empty/empty.json"');
+          expect(err.message).to.contain('Parsed value is empty');
+        });
   });
 });
