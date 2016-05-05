@@ -39,6 +39,30 @@
   };
 
   /**
+   * Asserts that all members of an array have all the specified properties and values.
+   *
+   * @param {array} array - The array to inspect
+   * @param {object} props - The properties and values to assert
+   */
+  helper.expectAll = function expectAll(array, props) {
+    var keys = Object.keys(props);
+    array.forEach(function(item, index) {
+      try {
+        var actual = keys.reduce(function(actual, prop) {
+          actual[prop] = item[prop];
+          return actual;
+        }, {});
+
+        expect(actual).to.deep.equal(props);
+      }
+      catch (e) {
+        console.error('\nAssertion failed for item at array index %d\n%s\n', index, item);
+        throw e;
+      }
+    });
+  };
+
+  /**
    * Asserts that the given {@link Schema} object is well-formed and complies
    * with all the expectations for a schema object.
    *
@@ -74,21 +98,20 @@
    * Also asserts that the array ONLY contains the expected file URLs.
    *
    * @param {FileArray} files
-   * @param {string[]}  expectedUrls - An array of relative file paths
+   * @param {string[]}  expectedUrls - An array of file paths
    */
   helper.validateFiles = function validateFiles(files, expectedUrls) {
     expect(files).to.be.an('array');
     files.forEach(helper.validateFile);
 
-    expectedUrls = expectedUrls.map(function(url) { return path.abs(url); });
     var actualUrls = files.map(function(file) { return file.url; });
     try {
       expect(files).to.have.lengthOf(expectedUrls.length);
       expect(actualUrls).to.have.same.members(expectedUrls);
     }
     catch (e) {
-      console.log('EXPECTED FILES:\n', expectedUrls.join('\n'));
-      console.log('ACTUAL FILES:\n', actualUrls.join('\n'));
+      console.error('\nEXPECTED FILES:\n' + expectedUrls.join('\n'));
+      console.error('\nACTUAL FILES:\n' + actualUrls.join('\n') + '\n');
       throw e;
     }
   };
