@@ -19,6 +19,7 @@
     "no-unused-expressions":    0,              // Chai property syntax triggers this rule
     "max-nested-callbacks":     0,              // Mocha BDD syntax leads to deeply-nested callbacks
     "no-invalid-this":          0,              // Mocha BDD syntax triggers this rule
+    "no-loop-func":             1,              // We need to be able to create tests in loops
     "strict":                  [2, "function"]  // Require "use strict" in a function wrapper
   }
 }

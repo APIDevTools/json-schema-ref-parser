@@ -46,7 +46,8 @@
    */
   helper.expectAll = function expectAll(array, props) {
     var keys = Object.keys(props);
-    array.forEach(function(item, index) {
+    for (var i = 0; i < array.length; i++) {
+      var item = array[i];
       try {
         var actual = keys.reduce(function(actual, prop) {
           actual[prop] = item[prop];
@@ -56,10 +57,10 @@
         expect(actual).to.deep.equal(props);
       }
       catch (e) {
-        console.error('\nAssertion failed for item at array index %d\n%s\n', index, item);
+        console.error('\nAssertion failed for item at array index %d\n%s\n', i, item);
         throw e;
       }
-    });
+    }
   };
 
   /**
