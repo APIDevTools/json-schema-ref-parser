@@ -56,7 +56,7 @@ describe('Schema with circular (recursive) $refs', function() {
           // The "circular" flag should be set
           expect(schema.circular).to.equal(true);
 
-          // The schema should be fully dereferenced
+          // The schema should be as dereferenced as possible
           helper.expectAll(schema.files, {parsed: true, dereferenced: true});
           expect(schema.files.get('circular-self.yaml').data)
             .to.deep.equal(helper.dereferenced.circular.self);
@@ -80,12 +80,13 @@ describe('Schema with circular (recursive) $refs', function() {
           // The "circular" flag should be set
           expect(schema.circular).to.equal(true);
 
-          // The schema should be fully dereferenced
+          // The schema should be as dereferenced as possible
           helper.expectAll(schema.files, {parsed: true, dereferenced: true});
           expect(schema.files.get('circular-self.yaml').data)
             .to.deep.equal(helper.dereferenced.circular.self);
 
-          // Reference equality
+          // Reference equality for other $refs
+          // (not the self-referencing one)
           expect(schema.root.definitions.child.properties.pet)
             .to.equal(schema.root.definitions.pet);
         });
@@ -208,6 +209,7 @@ describe('Schema with circular (recursive) $refs', function() {
           expect(schema.circular).to.equal(true);
 
           // The schema should be fully dereferenced
+          // (except for circular references)
           helper.expectAll(schema.files, {parsed: true, dereferenced: true});
           expect(schema.files.get('circular-ancestor.yaml').data)
             .to.deep.equal(helper.dereferenced.circular.ancestor.ignoreCircular$Refs);
@@ -335,6 +337,7 @@ describe('Schema with circular (recursive) $refs', function() {
           expect(schema.circular).to.equal(true);
 
           // The schema should be fully dereferenced
+          // (except for circular references)
           helper.expectAll(schema.files, {parsed: true, dereferenced: true});
           expect(schema.files.get('circular-indirect.yaml').data)
             .to.deep.equal(helper.dereferenced.circular.indirect.ignoreCircular$Refs);
@@ -461,6 +464,7 @@ describe('Schema with circular (recursive) $refs', function() {
           expect(schema.circular).to.equal(true);
 
           // The schema should be fully dereferenced
+          // (except for circular references)
           helper.expectAll(schema.files, {parsed: true, dereferenced: true});
           expect(schema.files.get('circular-indirect-ancestor.yaml').data)
             .to.deep.equal(helper.dereferenced.circular.indirectAncestor.ignoreCircular$Refs);
