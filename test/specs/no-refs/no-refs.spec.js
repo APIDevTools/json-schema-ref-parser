@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Schema without any $refs', function() {
+describe.skip('Schema without any $refs', function() {
   it('should parse successfully', function() {
     var parser = new $RefParser();
     return parser

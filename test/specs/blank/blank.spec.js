@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Blank files', function() {
+describe.skip('Blank files', function() {
   var windowOnError, testDone;
 
   beforeEach(function() {

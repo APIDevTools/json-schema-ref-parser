@@ -64,7 +64,14 @@ describe('Schema with external $refs', function() {
 
         // The schema should be parsed, but not dereferenced
         helper.expectAll(schema.files, {parsed: true, dereferenced: false});
-        expect(schema.files.get('external.yaml').data).to.deep.equal(helper.parsed.external.schema);
+        expect(schema.files.get('external.yaml').data)
+          .to.deep.equal(helper.parsed.external.schema);
+        expect(schema.files.get('definitions/definitions.json').data)
+          .to.deep.equal(helper.parsed.external.definitions);
+        expect(schema.files.get('definitions/required-string.yaml').data)
+          .to.deep.equal(helper.parsed.external.requiredString);
+        expect(schema.files.get('definitions/name.yaml').data)
+          .to.deep.equal(helper.parsed.external.name);
       });
   });
 
@@ -83,7 +90,14 @@ describe('Schema with external $refs', function() {
 
         // The schema should be parsed, but not dereferenced
         helper.expectAll(schema.files, {parsed: true, dereferenced: false});
-        expect(schema.files.get('external.yaml').data).to.deep.equal(helper.parsed.external.schema);
+        expect(schema.files.get('external.yaml').data)
+          .to.deep.equal(helper.parsed.external.schema);
+        expect(schema.files.get('definitions/definitions.json').data)
+          .to.deep.equal(helper.parsed.external.definitions);
+        expect(schema.files.get('definitions/required-string.yaml').data)
+          .to.deep.equal(helper.parsed.external.requiredString);
+        expect(schema.files.get('definitions/name.yaml').data)
+          .to.deep.equal(helper.parsed.external.name);
       });
   });
 
@@ -104,7 +118,14 @@ describe('Schema with external $refs', function() {
 
           // The schema should be parsed, but not dereferenced
           helper.expectAll(schema.files, {parsed: true, dereferenced: false});
-          expect(schema.files.get('external.yaml').data).to.deep.equal(helper.parsed.external.schema);
+          expect(schema.files.get('external.yaml').data)
+            .to.deep.equal(helper.parsed.external.schema);
+          expect(schema.files.get('definitions/definitions.json').data)
+            .to.deep.equal(helper.parsed.external.definitions);
+          expect(schema.files.get('definitions/required-string.yaml').data)
+            .to.deep.equal(helper.parsed.external.requiredString);
+          expect(schema.files.get('definitions/name.yaml').data)
+            .to.deep.equal(helper.parsed.external.name);
         });
     });
   }

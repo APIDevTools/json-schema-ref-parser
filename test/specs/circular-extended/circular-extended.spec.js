@@ -41,6 +41,8 @@ describe('Schema with circular $refs that extend each other', function() {
           helper.expectAll(schema.files, {parsed: true, dereferenced: false});
           expect(schema.files.get('circular-extended-self.yaml').data)
             .to.deep.equal(helper.parsed.circularExtended.self);
+          expect(schema.files.get('definitions/thing.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.thing);
         });
     });
 
@@ -163,6 +165,12 @@ describe('Schema with circular $refs that extend each other', function() {
           helper.expectAll(schema.files, {parsed: true, dereferenced: false});
           expect(schema.files.get('circular-extended-ancestor.yaml').data)
             .to.deep.equal(helper.parsed.circularExtended.ancestor);
+          expect(schema.files.get('definitions/person-with-spouse.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.personWithSpouse);
+          expect(schema.files.get('definitions/pet.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.pet);
+          expect(schema.files.get('definitions/animals.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.animals);
         });
     });
 
@@ -300,6 +308,14 @@ describe('Schema with circular $refs that extend each other', function() {
           helper.expectAll(schema.files, {parsed: true, dereferenced: false});
           expect(schema.files.get('circular-extended-indirect.yaml').data)
             .to.deep.equal(helper.parsed.circularExtended.indirect);
+          expect(schema.files.get('definitions/parent-with-children.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.parentWithChildren);
+          expect(schema.files.get('definitions/child-with-parents.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.childWithParents);
+          expect(schema.files.get('definitions/pet.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.pet);
+          expect(schema.files.get('definitions/animals.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.animals);
         });
     });
 
@@ -442,6 +458,14 @@ describe('Schema with circular $refs that extend each other', function() {
           helper.expectAll(schema.files, {parsed: true, dereferenced: false});
           expect(schema.files.get('circular-extended-indirect-ancestor.yaml').data)
             .to.deep.equal(helper.parsed.circularExtended.indirectAncestor);
+          expect(schema.files.get('definitions/parent-with-child.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.parentWithChild);
+          expect(schema.files.get('definitions/child-with-children.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.childWithChildren);
+          expect(schema.files.get('definitions/pet.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.pet);
+          expect(schema.files.get('definitions/animals.yaml').data)
+            .to.deep.equal(helper.parsed.circularExtended.animals);
         });
     });
 

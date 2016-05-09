@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Invalid syntax', function() {
+describe.skip('Invalid syntax', function() {
   describe('in main file', function() {
     it('should throw an error for an invalid YAML file', function() {
       return $RefParser

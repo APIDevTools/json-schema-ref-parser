@@ -1,6 +1,6 @@
 'use strict';
 
-describe('References to non-JSON files', function() {
+describe.skip('References to non-JSON files', function() {
   it('should parse successfully', function() {
     return $RefParser
       .parse(path.rel('specs/parsers/parsers.yaml'))

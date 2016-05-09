@@ -1,6 +1,6 @@
 'use strict';
 
-describe('options.resolve', function() {
+describe.skip('options.resolve', function() {
   it('should not resolve external links if "resolve.external" is disabled', function() {
     return $RefParser
       .dereference(path.abs('specs/resolvers/resolvers.yaml'), {resolve: {external: false}})

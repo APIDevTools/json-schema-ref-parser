@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Schema with a top-level (root) $ref', function() {
+describe.skip('Schema with a top-level (root) $ref', function() {
   it('should parse successfully', function() {
     var parser = new $RefParser();
     return parser

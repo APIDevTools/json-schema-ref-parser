@@ -43,6 +43,14 @@ describe('Schema with circular (recursive) external $refs', function() {
         helper.expectAll(schema.files, {parsed: true, dereferenced: false});
         expect(schema.files.get('circular-external.yaml').data)
           .to.deep.equal(helper.parsed.circularExternal.schema);
+        expect(schema.files.get('definitions/pet.yaml').data)
+          .to.deep.equal(helper.parsed.circularExternal.pet);
+        expect(schema.files.get('definitions/person.yaml').data)
+          .to.deep.equal(helper.parsed.circularExternal.person);
+        expect(schema.files.get('definitions/parent.yaml').data)
+          .to.deep.equal(helper.parsed.circularExternal.parent);
+        expect(schema.files.get('definitions/child.yaml').data)
+          .to.deep.equal(helper.parsed.circularExternal.child);
       });
   });
 

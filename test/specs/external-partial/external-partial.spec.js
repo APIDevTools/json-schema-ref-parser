@@ -32,7 +32,14 @@ describe('Schema with $refs to parts of external files', function() {
 
         // The schema should be parsed, but not dereferenced
         helper.expectAll(schema.files, {parsed: true, dereferenced: false});
-        expect(schema.files.get('external-partial.yaml').data).to.deep.equal(helper.parsed.externalPartial.schema);
+        expect(schema.files.get('external-partial.yaml').data)
+          .to.deep.equal(helper.parsed.externalPartial.schema);
+        expect(schema.files.get('definitions/definitions.json').data)
+          .to.deep.equal(helper.parsed.externalPartial.definitions);
+        expect(schema.files.get('definitions/required-string.yaml').data)
+          .to.deep.equal(helper.parsed.externalPartial.requiredString);
+        expect(schema.files.get('definitions/name.yaml').data)
+          .to.deep.equal(helper.parsed.externalPartial.name);
       });
   });
 

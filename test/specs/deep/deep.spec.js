@@ -32,6 +32,10 @@ describe('Schema with deeply-nested $refs', function() {
         // The schema should be parsed, but not dereferenced
         helper.expectAll(schema.files, {parsed: true, dereferenced: false});
         expect(schema.files.get('deep.yaml').data).to.deep.equal(helper.parsed.deep.schema);
+        expect(schema.files.get('definitions/required-string.yaml').data)
+          .to.deep.equal(helper.parsed.deep.requiredString);
+        expect(schema.files.get('definitions/name.yaml').data)
+          .to.deep.equal(helper.parsed.deep.name);
       });
   });
 

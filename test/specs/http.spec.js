@@ -1,6 +1,6 @@
 'use strict';
 
-describe('HTTP options', function() {
+describe.skip('HTTP options', function() {
   var windowOnError, testDone;
 
   beforeEach(function() {

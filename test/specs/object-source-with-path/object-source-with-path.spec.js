@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Object sources with file paths', function() {
+describe.skip('Object sources with file paths', function() {
   it('should dereference a single object', function() {
     var parser = new $RefParser();
     return parser

@@ -1,6 +1,6 @@
 'use strict';
 
-describe('$refs that are substrings of each other', function() {
+describe.skip('$refs that are substrings of each other', function() {
   it('should parse successfully', function() {
     var parser = new $RefParser();
     return parser

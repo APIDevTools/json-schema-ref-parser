@@ -1,6 +1,6 @@
 'use strict';
 
-describe('$Refs object', function() {
+describe.skip('$Refs object', function() {
   describe('paths', function() {
     it('should only contain the main file when calling `parse()`', function() {
       var parser = new $RefParser();

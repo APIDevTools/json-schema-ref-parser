@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Callback & Promise syntax', function() {
+describe.skip('Callback & Promise syntax', function() {
   ['parse', 'resolve', 'dereference', 'bundle'].forEach(function(method) {
     describe(method + ' method', function() {
       it('should call the callback function upon success', testCallbackSuccess(method));
