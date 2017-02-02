@@ -29,6 +29,7 @@ $RefParser.dereference("my-schema.yaml", {
   },
   dereference: {
     circular: false                 // Don't allow circular $refs
+    ignoreNodes: ['anyOf']          // Don't dereference nodes that appear in this array
   }
 });
 ```
@@ -74,3 +75,4 @@ The `dereference` options control how JSON Schema $Ref Parser will dereference `
 |Option(s)             |Type                |Description
 |:---------------------|:-------------------|:------------
 |`circular`|`boolean` or `"ignore"`|Determines whether [circular `$ref` pointers](README.md#circular-refs) are handled.<br><br>If set to `false`, then a `ReferenceError` will be thrown if the schema contains any circular references.<br><br> If set to `"ignore"`, then circular references will simply be ignored.  No error will be thrown, but the [`$Refs.circular`](refs.md#circular) property will still be set to `true`.
+|`ignoreNodes`|`array`|An array of node names that should not be dereferenced.<br><br>There may be certain nodes that we wish to not dereference. For example, in the case of `anyOf` nodes, we may want to dereference the references later, as this will allow us to use the reference name, such as when we write a resolve function for GraphQL and we then use the reference name for the type name.

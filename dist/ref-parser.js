@@ -275,7 +275,7 @@ function crawl(obj, path, pathFromRoot, parents, $refs, options) {
           // such as when we write a resolve function for GraphQL.
           // If we dereference the references now, we lose the reference names.
           var ignoreNode = false;
-          ignoreNode = options.ignoreNodes && options.ignoreNodes.reduce(function(previous, current) {
+          ignoreNode = options.dereference && options.dereference.ignoreNodes && options.dereference.ignoreNodes.reduce(function(previous, current) {
             return previous || obj[current];
           }, false);
 
