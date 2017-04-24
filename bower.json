@@ -8,13 +8,13 @@
       "homepage": "https://github.com/BigstickCarpet"
     }
   ],
-  "license": "MIT",
   "homepage": "https://github.com/BigstickCarpet/json-schema-ref-parser",
-  "main": "dist/ref-parser.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/BigstickCarpet/json-schema-ref-parser.git"
   },
+  "license": "MIT",
+  "main": "dist/ref-parser.js",
   "ignore": [
     "/bower_components",
     "/docs",

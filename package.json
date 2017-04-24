@@ -16,8 +16,12 @@
     "name": "James Messinger",
     "url": "http://jamesmessinger.com"
   },
-  "license": "MIT",
   "homepage": "https://github.com/BigstickCarpet/json-schema-ref-parser",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BigstickCarpet/json-schema-ref-parser.git"
+  },
+  "license": "MIT",
   "main": "lib/index.js",
   "scripts": {
     "lint": "eslint lib --fix && jscs lib --verbose",
@@ -32,10 +36,6 @@
     "bump": "bump --prerelease --grep lib/bundle.js dist/* --tag --push --all",
     "release": "npm run upgrade && npm test && npm run bump && npm publish --tag beta",
     "start": "npm run watch & http-server -o -c-1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/BigstickCarpet/json-schema-ref-parser.git"
   },
   "devDependencies": {
     "bower": "^1.7.7",
