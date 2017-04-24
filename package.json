@@ -16,9 +16,16 @@
     "name": "James Messinger",
     "url": "http://jamesmessinger.com"
   },
+  "contributors": [
+    {
+      "name": "Boris Cherny",
+      "email": "boris@performancejs.com"
+    }
+  ],
   "license": "MIT",
   "homepage": "https://github.com/BigstickCarpet/json-schema-ref-parser",
   "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "lint": "eslint lib --fix && jscs lib --verbose",
     "build": "npm run lint && npm run browserify",
@@ -41,6 +48,7 @@
     "url": "https://github.com/BigstickCarpet/json-schema-ref-parser.git"
   },
   "devDependencies": {
+    "@types/json-schema": "^4.0.0",
     "bower": "^1.7.9",
     "chai": "^3.5.0",
     "coveralls": "^2.11.9",
