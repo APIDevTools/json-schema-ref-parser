@@ -2,7 +2,7 @@ JSON Schema $Ref Parser
 ============================
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
 
-[![Build Status](https://api.travis-ci.org/BigstickCarpet/json-schema-ref-parser.svg)](https://travis-ci.org/BigstickCarpet/json-schema-ref-parser)
+[![Build Status](https://api.travis-ci.org/BigstickCarpet/json-schema-ref-parser.svg?branch=master)](https://travis-ci.org/BigstickCarpet/json-schema-ref-parser)
 [![Dependencies](https://david-dm.org/BigstickCarpet/json-schema-ref-parser.svg)](https://david-dm.org/BigstickCarpet/json-schema-ref-parser)
 [![Coverage Status](https://coveralls.io/repos/BigstickCarpet/json-schema-ref-parser/badge.svg?branch=master&service=github)](https://coveralls.io/r/BigstickCarpet/json-schema-ref-parser)
 [![Code Climate Score](https://codeclimate.com/github/BigstickCarpet/json-schema-ref-parser/badges/gpa.svg)](https://codeclimate.com/github/BigstickCarpet/json-schema-ref-parser)
