@@ -315,23 +315,29 @@ function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
   // Dereference the JSON reference
   var dereferencedValue = $Ref.dereference($ref, pointer.value);
 
-  // Crawl the dereferenced value (unless it's circular)
-  if (!circular) {
-    // Determine if the dereferenced value is circular
-    var dereferenced = crawl(dereferencedValue, pointer.path, pathFromRoot, parents, $refs, options);
-    circular = dereferenced.circular;
-    dereferencedValue = dereferenced.value;
-  }
+  if (!pointer.unresolved)
+  {
+    // Crawl the dereferenced value (unless it's circular)
+    if (!circular)
+    {
+      // Determine if the dereferenced value is circular
+      var dereferenced = crawl(dereferencedValue, pointer.path, pathFromRoot, parents, $refs, options);
+      circular = dereferenced.circular;
+      dereferencedValue = dereferenced.value;
+    }
 
-  if (circular && !directCircular && options.dereference.circular === 'ignore') {
-    // The user has chosen to "ignore" circular references, so don't change the value
-    dereferencedValue = $ref;
-  }
+    if (circular && !directCircular && options.dereference.circular === 'ignore')
+    {
+      // The user has chosen to "ignore" circular references, so don't change the value
+      dereferencedValue = $ref;
+    }
 
-  if (directCircular) {
-    // The pointer is a DIRECT circular reference (i.e. it references itself).
-    // So replace the $ref path with the absolute path from the JSON Schema root
-    dereferencedValue.$ref = pathFromRoot;
+    if (directCircular)
+    {
+      // The pointer is a DIRECT circular reference (i.e. it references itself).
+      // So replace the $ref path with the absolute path from the JSON Schema root
+      dereferencedValue.$ref = pathFromRoot;
+    }
   }
 
   return {
@@ -722,7 +728,14 @@ $RefParserOptions.defaults = {
      *
      * @type {boolean|string}
      */
-    circular: true
+    circular: true,
+    /**
+     * The default behavior is to throw an error if a reference is not found.
+     * If false, then leave the $ref: value object in the json schema
+     *
+     * @type {boolean}
+     */
+    onErrorThrow: true
   },
 
   /**
@@ -823,6 +836,16 @@ function parse(path, $refs, options) {
       .then(function(parser) {
         $ref.value = parser.result;
         return parser.result;
+      })
+      .catch(function(err) {
+        if (options.dereference.onErrorThrow) {
+          throw err;
+        }
+        else {
+          $ref.unresolved = true;
+          $ref.value = {'$ref': file.url};
+          return $ref.value;
+        }
       });
   }
   catch (e) {
@@ -1259,7 +1282,14 @@ Pointer.prototype.resolve = function(obj, options) {
 
     var token = tokens[i];
     if (this.value[token] === undefined) {
-      throw ono.syntax('Error resolving $ref pointer "%s". \nToken "%s" does not exist.', this.path, token);
+      if (options.dereference.onErrorThrow) {
+        throw ono.syntax('Error resolving $ref pointer "%s". \nToken "%s" does not exist.', this.path, token);
+      }
+      else {
+        this.unresolved = true;
+        this.value = {'$ref': '#/' + tokens.join('/')};
+        return this;
+      }
     }
     else {
       this.value = this.value[token];
@@ -1388,6 +1418,9 @@ Pointer.join = function(base, tokens) {
  */
 function resolveIf$Ref(pointer, options) {
   // Is the value a JSON reference? (and allowed?)
+  if (pointer.$ref.unresolved) {
+    return true;
+  }
 
   if ($Ref.isAllowed$Ref(pointer.value, options)) {
     var $refPath = url.resolve(pointer.path, pointer.value.$ref);
@@ -1825,6 +1858,10 @@ $Refs.prototype._resolve = function(path, options) {
 
   if (!$ref) {
     throw ono('Error resolving $ref pointer "%s". \n"%s" not found.', path, withoutHash);
+  }
+
+  if ($ref.unresolved) {
+    return $ref.resolve('', options);
   }
 
   return $ref.resolve(path, options);

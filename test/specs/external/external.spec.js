@@ -91,4 +91,28 @@ describe('Schema with external $refs', function() {
         expect(schema).to.deep.equal(helper.bundled.external);
       });
   });
+
+  it('allow unresolved reference ', function() {
+    var parser = new $RefParser();
+    return parser
+      .dereference(path.rel('specs/external/externalWithError.yaml'), {dereference: {onErrorThrow: false}})
+      .then(function(schema) {
+        // Reference equality
+        expect(schema.properties.name).to.be.an('object');
+        expect(schema.properties.name).to.have.all.keys('$ref');
+        expect(schema.definitions).to.be.an('object');
+        expect(schema.definitions).to.have.all.keys('$ref');
+      });
+  });
+
+  it('allow unresolved reference at root', function() {
+    var parser = new $RefParser();
+    return parser
+      .dereference(path.rel('specs/external/externalWithError??.yaml'), {dereference: {onErrorThrow: false}})
+      .then(function(schema) {
+        // Reference equality
+        expect(schema).to.be.an('object');
+        expect(schema).to.have.all.keys('$ref');
+      });
+  });
 });
