@@ -6,30 +6,28 @@ language: node_js
 matrix:
   include:
     # Node
-    - node_js: 0.10
-      env: KARMA=false
-    - node_js: 0.11
-      env: KARMA=false
-    - node_js: 0.12
-      env: KARMA=false
-    - node_js: iojs
-      env: KARMA=false
     - node_js: 4
       env: KARMA=false
     - node_js: 5
       env: KARMA=false
+    - node_js: 6
+      env: KARMA=false
+    - node_js: 7
+      env: KARMA=false
+    - node_js: 8
+      env: KARMA=false
 
     # Local Browsers
-    - node_js: 0.12
+    - node_js: 8
       env: KARMA_COVERAGE=true KARMA_SAUCE=false
 
     # Sauce Labs
-    - node_js: 0.12
+    - node_js: 8
       env: KARMA_SAUCE=true KARMA_COVERAGE=false
 
   fast_finish: true
   allow_failures:
-    - node_js: 0.12
+    - node_js: 8
       env: KARMA_SAUCE=true KARMA_COVERAGE=false
 
 before_script:
