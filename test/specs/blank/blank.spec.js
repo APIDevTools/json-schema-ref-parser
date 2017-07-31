@@ -19,7 +19,7 @@ describe('Blank files', function() {
   describe('main file', function() {
     it('should throw an error for a blank YAML file', function(done) {
       testDone = done;
-      return $RefParser
+      $RefParser
         .parse(path.rel('specs/blank/files/blank.yaml'))
         .then(helper.shouldNotGetCalled(done))
         .catch(function(err) {
@@ -32,7 +32,7 @@ describe('Blank files', function() {
 
     it('should throw a different error if "parse.yaml.allowEmpty" is disabled', function(done) {
       testDone = done;
-      return $RefParser
+      $RefParser
         .parse(path.rel('specs/blank/files/blank.yaml'), {parse: {yaml: {allowEmpty: false}}})
         .then(helper.shouldNotGetCalled(done))
         .catch(function(err) {
@@ -47,7 +47,7 @@ describe('Blank files', function() {
 
     it('should throw an error for a blank JSON file', function(done) {
       testDone = done;
-      return $RefParser
+      $RefParser
         .parse(path.rel('specs/blank/files/blank.json'), {parse: {json: { allowEmpty: false }}})
         .then(helper.shouldNotGetCalled(done))
         .catch(function(err) {
@@ -63,7 +63,7 @@ describe('Blank files', function() {
   describe('referenced files', function() {
     it('should parse successfully', function(done) {
       testDone = done;
-      return $RefParser
+      $RefParser
         .parse(path.rel('specs/blank/blank.yaml'))
         .then(function(schema) {
           expect(schema).to.deep.equal(helper.parsed.blank.schema);
@@ -84,7 +84,7 @@ describe('Blank files', function() {
 
     it('should dereference successfully', function(done) {
       testDone = done;
-      return $RefParser
+      $RefParser
         .dereference(path.rel('specs/blank/blank.yaml'))
         .then(function(schema) {
           schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
@@ -96,7 +96,7 @@ describe('Blank files', function() {
 
     it('should bundle successfully', function(done) {
       testDone = done;
-      return $RefParser
+      $RefParser
         .bundle(path.rel('specs/blank/blank.yaml'))
         .then(function(schema) {
           schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
@@ -108,7 +108,7 @@ describe('Blank files', function() {
 
     it('should throw an error if "allowEmpty" is disabled', function(done) {
       testDone = done;
-      return $RefParser
+      $RefParser
         .dereference(path.rel('specs/blank/blank.yaml'), {
           parse: {binary: {allowEmpty: false}}
         })
