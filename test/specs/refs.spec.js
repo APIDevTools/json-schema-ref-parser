@@ -251,7 +251,7 @@ describe('$Refs object', function() {
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.equal(
-            'Error resolving $ref pointer "' + path.abs('specs/external/definitions/name.yaml') + '#/". ' +
+            'Error resolving $ref pointer "' + encodeURI(path.abs('specs/external/definitions/name.yaml')) + '#/". ' +
             '\nToken "" does not exist.'
           );
         });
@@ -279,8 +279,8 @@ describe('$Refs object', function() {
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.equal(
-            'Error resolving $ref pointer "' + path.abs('specs/external/foo-bar.yaml') + '#/some/value". ' +
-            '\n"' + path.abs('specs/external/foo-bar.yaml') + '" not found.'
+            'Error resolving $ref pointer "' + encodeURI(path.abs('specs/external/foo-bar.yaml')) + '#/some/value". ' +
+            '\n"' + encodeURI(path.abs('specs/external/foo-bar.yaml')) + '" not found.'
           );
         });
     });
@@ -294,7 +294,7 @@ describe('$Refs object', function() {
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.equal(
-            'Error resolving $ref pointer "' + path.abs('specs/external/external.yaml') + '#/foo/bar". ' +
+            'Error resolving $ref pointer "' + encodeURI(path.abs('specs/external/external.yaml')) + '#/foo/bar". ' +
             '\nToken "foo" does not exist.'
           );
         });
@@ -339,8 +339,8 @@ describe('$Refs object', function() {
         .catch(function(err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.equal(
-            'Error resolving $ref pointer "' + path.abs('specs/external/foo-bar.yaml') + '#/some/path". ' +
-            '\n"' + path.abs('specs/external/foo-bar.yaml') + '" not found.'
+            'Error resolving $ref pointer "' + encodeURI(path.abs('specs/external/foo-bar.yaml')) + '#/some/path". ' +
+            '\n"' + encodeURI(path.abs('specs/external/foo-bar.yaml')) + '" not found.'
           );
         });
     });
