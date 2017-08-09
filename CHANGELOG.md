@@ -3,6 +3,17 @@ All notable changes will be documented in this file.
 JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [v3.3.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v3.3.0) (2017-08-09)
+
+- Updated dependencies
+
+- [PR #30](https://github.com/BigstickCarpet/json-schema-ref-parser/pull/30) - Added a `browser` field to the `package.json` file to support bundlers such as Browserify, Rollup, and Webpack
+
+- [PR #45](https://github.com/BigstickCarpet/json-schema-ref-parser/pull/45) - Implemented a temporary workaround for [issue #42](https://github.com/BigstickCarpet/json-schema-ref-parser/issues/42). JSON Schema $Ref Parser does _not_ currently support [named internal references](http://json-schema.org/latest/json-schema-core.html#id-keyword), but support will be added in the next major release.
+
+[Full Changelog](https://github.com/BigstickCarpet/json-schema-ref-parser/compare/v3.0.0...v3.3.0)
+
+
 ## [v3.0.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v3.0.0) (2016-04-03)
 
 #### Plug-ins !!!
