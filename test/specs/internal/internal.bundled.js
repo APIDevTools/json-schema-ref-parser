@@ -1,6 +1,9 @@
 helper.bundled.internal =
 {
   "definitions": {
+    "fragment": {
+      "$id": "#fragment"
+    },
     "requiredString": {
       "title": "requiredString",
       "minLength": 1,
@@ -44,6 +47,9 @@ helper.bundled.internal =
   ],
   "type": "object",
   "properties": {
+    "fragment": {
+      "$ref": "#fragment"
+    },
     "gender": {
       "enum": [
         "male",

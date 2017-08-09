@@ -1,6 +1,9 @@
 helper.dereferenced.internal =
 {
   "definitions": {
+    "fragment": {
+      "$id": "#fragment"
+    },
     "requiredString": {
       "title": "requiredString",
       "minLength": 1,
@@ -46,6 +49,9 @@ helper.dereferenced.internal =
   ],
   "type": "object",
   "properties": {
+    "fragment": {
+      "$ref": "#fragment"
+    },
     "gender": {
       "enum": [
         "male",
