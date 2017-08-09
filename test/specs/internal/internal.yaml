@@ -27,6 +27,8 @@ definitions:
     title: requiredString
     type: string
     minLength: 1
+  fragment:
+    $id: "#fragment"
 required:
   - name
 properties:
@@ -40,3 +42,5 @@ properties:
     enum:
       - male
       - female
+  fragment:
+    $ref: "#fragment"
