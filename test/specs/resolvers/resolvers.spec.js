@@ -74,24 +74,26 @@ describe('options.resolve', function() {
       });
   });
 
-  it('should use a custom resolver that returns a promise', function() {
-    return $RefParser
-    .dereference(path.abs('specs/resolvers/resolvers.yaml'), {
-      resolve: {
-        // A custom resolver for "foo://" URLs
-        foo: {
-          canRead: /^foo\:\/\//i,
+  if (typeof Promise === 'function') {
+    it('should use a custom resolver that returns a promise', function() {
+      return $RefParser
+      .dereference(path.abs('specs/resolvers/resolvers.yaml'), {
+        resolve: {
+          // A custom resolver for "foo://" URLs
+          foo: {
+            canRead: /^foo\:\/\//i,
 
-          read: function(file) {
-            return Promise.resolve({bar: {baz: 'hello world'}});
+            read: function(file) {
+              return Promise.resolve({bar: {baz: 'hello world'}});
+            }
           }
         }
-      }
-    })
-      .then(function(schema) {
-        expect(schema).to.deep.equal(helper.dereferenced.resolvers);
-      });
-  });
+      })
+        .then(function(schema) {
+          expect(schema).to.deep.equal(helper.dereferenced.resolvers);
+        });
+    });
+  }
 
   it('should continue resolving if a custom resolver fails', function() {
     return $RefParser
