@@ -138,11 +138,6 @@ function configureSauceLabs(config) {
       platform: 'Windows 7',
       browserName: 'firefox'
     },
-    'Opera-Latest': {
-      base: 'SauceLabs',
-      platform: 'Windows 7',
-      browserName: 'opera'
-    },
     'Safari-Latest': {
       base: 'SauceLabs',
       platform: 'OS X 10.10',
