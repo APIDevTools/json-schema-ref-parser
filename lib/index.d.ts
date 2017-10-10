@@ -121,7 +121,7 @@ declare namespace $RefParser {
        * Determines whether external $ref pointers will be resolved. If this option is disabled, then external `$ref` pointers will simply be ignored.
        */
       external?: boolean
-      file?: ResolverOptions | boolean
+      file?: Partial<ResolverOptions> | boolean
       http?: HTTPResolverOptions | boolean
     }
 
@@ -141,7 +141,7 @@ declare namespace $RefParser {
     }
   }
 
-  export interface HTTPResolverOptions extends ResolverOptions {
+  export interface HTTPResolverOptions extends Partial<ResolverOptions> {
 
     /**
      * You can specify any HTTP headers that should be sent when downloading files. For example, some servers may require you to set the `Accept` or `Referrer` header.
