@@ -14,7 +14,7 @@
     "tag": "v1.15.4",
     "commit": "9be412813a28eb0134217b16dfc495ef3a132358"
   },
-  "_source": "git://github.com/kamui/sinon-js.git",
-  "_target": "*",
+  "_source": "https://github.com/kamui/sinon-js.git",
+  "_target": "^1.15.4",
   "_originalSource": "sinon-js"
 }
