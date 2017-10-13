@@ -8,7 +8,6 @@ var baseConfig = {
   files: [
     // Third-Party Libraries
     'www/bower_components/chai/chai.js',
-    'www/bower_components/sinon-js/sinon.js',
 
     // Polyfills for older browsers
     'www/polyfills/promise.js',

@@ -24,7 +24,6 @@
     // Expose Node globals
     global.$RefParser = require('../../');
     global.expect = require('chai').expect;
-    global.sinon = require('sinon');
 
     global.userAgent = {
       isNode: true,
