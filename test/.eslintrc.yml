@@ -1,0 +1,7 @@
+# ESLint config
+# http://eslint.org/docs/user-guide/configuring
+# https://github.com/BigstickCarpet/eslint-config-modular
+
+extends:
+  - modular/test
+  - modular/browser

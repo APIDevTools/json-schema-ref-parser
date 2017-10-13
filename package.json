@@ -75,6 +75,7 @@
     "call-me-maybe": "^1.0.1",
     "debug": "^3.0.0",
     "es6-promise": "^4.1.1",
+    "eslint-config-modular": "^4.1.0",
     "js-yaml": "^3.9.1",
     "ono": "^4.0.2",
     "z-schema": "^3.18.2"
