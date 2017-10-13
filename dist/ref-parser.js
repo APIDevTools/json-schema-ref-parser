@@ -1,16 +1,18 @@
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.$RefParser = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/** !
- * JSON Schema $Ref Parser v3.3.1
- *
- * @link https://github.com/BigstickCarpet/json-schema-ref-parser
+/*!
+ * JSON Schema $Ref Parser v3.3.1 (October 13th 2017)
+ * 
+ * https://github.com/BigstickCarpet/json-schema-ref-parser
+ * 
+ * @author  James Messinger (http://jamesmessinger.com)
  * @license MIT
  */
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.$RefParser = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-var $Ref    = require('./ref'),
+var $Ref = require('./ref'),
     Pointer = require('./pointer'),
-    debug   = require('./util/debug'),
-    url     = require('./util/url');
+    debug = require('./util/debug'),
+    url = require('./util/url');
 
 module.exports = bundle;
 
@@ -22,7 +24,7 @@ module.exports = bundle;
  * @param {$RefParser} parser
  * @param {$RefParserOptions} options
  */
-function bundle(parser, options) {
+function bundle (parser, options) {
   debug('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
 
   // Build an inventory of all $ref pointers in the JSON Schema
@@ -44,7 +46,7 @@ function bundle(parser, options) {
  * @param {$Refs} $refs
  * @param {$RefParserOptions} options
  */
-function crawl(parent, key, path, pathFromRoot, inventory, $refs, options) {
+function crawl (parent, key, path, pathFromRoot, inventory, $refs, options) {
   var obj = key === null ? parent : parent[key];
 
   if (obj && typeof obj === 'object') {
@@ -61,7 +63,7 @@ function crawl(parent, key, path, pathFromRoot, inventory, $refs, options) {
         keys.splice(0, 0, keys.splice(defs, 1)[0]);
       }
 
-      keys.forEach(function(key) {
+      keys.forEach(function (key) {
         var keyPath = Pointer.join(path, key);
         var keyPathFromRoot = Pointer.join(pathFromRoot, key);
         var value = obj[key];
@@ -89,8 +91,8 @@ function crawl(parent, key, path, pathFromRoot, inventory, $refs, options) {
  * @param {$Refs} $refs
  * @param {$RefParserOptions} options
  */
-function inventory$Ref($refParent, $refKey, path, pathFromRoot, inventory, $refs, options) {
-  if (inventory.some(function(i) { return i.parent === $refParent && i.key === $refKey; })) {
+function inventory$Ref ($refParent, $refKey, path, pathFromRoot, inventory, $refs, options) {
+  if (inventory.some(function (i) { return i.parent === $refParent && i.key === $refKey; })) {
     // This $Ref has already been inventoried, so we don't need to process it again
     return;
   }
@@ -145,9 +147,9 @@ function inventory$Ref($refParent, $refKey, path, pathFromRoot, inventory, $refs
  *
  * @param {object[]} inventory
  */
-function remap(inventory) {
+function remap (inventory) {
   // Group & sort all the $ref pointers, so they're in the order that we need to dereference/remap them
-  inventory.sort(function(a, b) {
+  inventory.sort(function (a, b) {
     if (a.file !== b.file) {
       return a.file < b.file ? -1 : +1;   // Group all the $refs that point to the same file
     }
@@ -170,7 +172,7 @@ function remap(inventory) {
   });
 
   var file, hash, pathFromRoot;
-  inventory.forEach(function(i) {
+  inventory.forEach(function (i) {
     debug('Re-mapping $ref pointer "%s" at %s', i.$ref.$ref, i.pathFromRoot);
 
     if (!i.external) {
@@ -208,11 +210,11 @@ function remap(inventory) {
 },{"./pointer":10,"./ref":11,"./util/debug":16,"./util/url":19}],2:[function(require,module,exports){
 'use strict';
 
-var $Ref    = require('./ref'),
+var $Ref = require('./ref'),
     Pointer = require('./pointer'),
-    ono     = require('ono'),
-    debug   = require('./util/debug'),
-    url     = require('./util/url');
+    ono = require('ono'),
+    debug = require('./util/debug'),
+    url = require('./util/url');
 
 module.exports = dereference;
 
@@ -223,7 +225,7 @@ module.exports = dereference;
  * @param {$RefParser} parser
  * @param {$RefParserOptions} options
  */
-function dereference(parser, options) {
+function dereference (parser, options) {
   debug('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
   var dereferenced = crawl(parser.schema, parser.$refs._root$Ref.path, '#', [], parser.$refs, options);
   parser.$refs.circular = dereferenced.circular;
@@ -241,7 +243,7 @@ function dereference(parser, options) {
  * @param {$RefParserOptions} options
  * @returns {{value: object, circular: boolean}}
  */
-function crawl(obj, path, pathFromRoot, parents, $refs, options) {
+function crawl (obj, path, pathFromRoot, parents, $refs, options) {
   var dereferenced;
   var result = {
     value: obj,
@@ -257,7 +259,7 @@ function crawl(obj, path, pathFromRoot, parents, $refs, options) {
       result.value = dereferenced.value;
     }
     else {
-      Object.keys(obj).forEach(function(key) {
+      Object.keys(obj).forEach(function (key) {
         var keyPath = Pointer.join(path, key);
         var keyPathFromRoot = Pointer.join(pathFromRoot, key);
         var value = obj[key];
@@ -301,7 +303,7 @@ function crawl(obj, path, pathFromRoot, parents, $refs, options) {
  * @param {$RefParserOptions} options
  * @returns {{value: object, circular: boolean}}
  */
-function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
+function dereference$Ref ($ref, path, pathFromRoot, parents, $refs, options) {
   debug('Dereferencing $ref pointer "%s" at %s', $ref.$ref, path);
 
   var $refPath = url.resolve(path, $ref.$ref);
@@ -349,7 +351,7 @@ function dereference$Ref($ref, path, pathFromRoot, parents, $refs, options) {
  * @param {$RefParserOptions} options
  * @returns {boolean} - always returns true, to indicate that a circular reference was found
  */
-function foundCircularReference(keyPath, $refs, options) {
+function foundCircularReference (keyPath, $refs, options) {
   $refs.circular = true;
   if (!options.dereference.circular) {
     throw ono.reference('Circular $ref pointer found at %s', keyPath);
@@ -361,16 +363,16 @@ function foundCircularReference(keyPath, $refs, options) {
 (function (Buffer){
 'use strict';
 
-var Promise         = require('./util/promise'),
-    Options         = require('./options'),
-    $Refs           = require('./refs'),
-    parse           = require('./parse'),
+var Promise = require('./util/promise'),
+    Options = require('./options'),
+    $Refs = require('./refs'),
+    parse = require('./parse'),
     resolveExternal = require('./resolve-external'),
-    bundle          = require('./bundle'),
-    dereference     = require('./dereference'),
-    url             = require('./util/url'),
-    maybe           = require('call-me-maybe'),
-    ono             = require('ono');
+    bundle = require('./bundle'),
+    dereference = require('./dereference'),
+    url = require('./util/url'),
+    maybe = require('call-me-maybe'),
+    ono = require('ono');
 
 module.exports = $RefParser;
 module.exports.YAML = require('./util/yaml');
@@ -381,7 +383,7 @@ module.exports.YAML = require('./util/yaml');
  *
  * @constructor
  */
-function $RefParser() {
+function $RefParser () {
   /**
    * The parsed (and possibly dereferenced) JSON schema object
    *
@@ -409,7 +411,7 @@ function $RefParser() {
  * @param {function} [callback] - An error-first callback. The second parameter is the parsed JSON schema object.
  * @returns {Promise} - The returned promise resolves with the parsed JSON schema object.
  */
-$RefParser.parse = function(schema, options, callback) {
+$RefParser.parse = function (schema, options, callback) {
   var Class = this; // eslint-disable-line consistent-this
   var instance = new Class();
   return instance.parse.apply(instance, arguments);
@@ -425,7 +427,7 @@ $RefParser.parse = function(schema, options, callback) {
  * @param {function} [callback] - An error-first callback. The second parameter is the parsed JSON schema object.
  * @returns {Promise} - The returned promise resolves with the parsed JSON schema object.
  */
-$RefParser.prototype.parse = function(schema, options, callback) {
+$RefParser.prototype.parse = function (schema, options, callback) {
   var args = normalizeArgs(arguments);
   var promise;
 
@@ -464,7 +466,7 @@ $RefParser.prototype.parse = function(schema, options, callback) {
 
   var me = this;
   return promise
-    .then(function(result) {
+    .then(function (result) {
       if (!result || typeof result !== 'object' || Buffer.isBuffer(result)) {
         throw ono.syntax('"%s" is not a valid JSON Schema', me.$refs._root$Ref.path || result);
       }
@@ -473,7 +475,7 @@ $RefParser.prototype.parse = function(schema, options, callback) {
         return maybe(args.callback, Promise.resolve(me.schema));
       }
     })
-    .catch(function(e) {
+    .catch(function (e) {
       return maybe(args.callback, Promise.reject(e));
     });
 };
@@ -490,7 +492,7 @@ $RefParser.prototype.parse = function(schema, options, callback) {
  * @returns {Promise}
  * The returned promise resolves with a {@link $Refs} object containing the resolved JSON references
  */
-$RefParser.resolve = function(schema, options, callback) {
+$RefParser.resolve = function (schema, options, callback) {
   var Class = this; // eslint-disable-line consistent-this
   var instance = new Class();
   return instance.resolve.apply(instance, arguments);
@@ -508,18 +510,18 @@ $RefParser.resolve = function(schema, options, callback) {
  * @returns {Promise}
  * The returned promise resolves with a {@link $Refs} object containing the resolved JSON references
  */
-$RefParser.prototype.resolve = function(schema, options, callback) {
+$RefParser.prototype.resolve = function (schema, options, callback) {
   var me = this;
   var args = normalizeArgs(arguments);
 
   return this.parse(args.path, args.schema, args.options)
-    .then(function() {
+    .then(function () {
       return resolveExternal(me, args.options);
     })
-    .then(function() {
+    .then(function () {
       return maybe(args.callback, Promise.resolve(me.$refs));
     })
-    .catch(function(err) {
+    .catch(function (err) {
       return maybe(args.callback, Promise.reject(err));
     });
 };
@@ -534,7 +536,7 @@ $RefParser.prototype.resolve = function(schema, options, callback) {
  * @param {function} [callback] - An error-first callback. The second parameter is the bundled JSON schema object
  * @returns {Promise} - The returned promise resolves with the bundled JSON schema object.
  */
-$RefParser.bundle = function(schema, options, callback) {
+$RefParser.bundle = function (schema, options, callback) {
   var Class = this; // eslint-disable-line consistent-this
   var instance = new Class();
   return instance.bundle.apply(instance, arguments);
@@ -550,16 +552,16 @@ $RefParser.bundle = function(schema, options, callback) {
  * @param {function} [callback] - An error-first callback. The second parameter is the bundled JSON schema object
  * @returns {Promise} - The returned promise resolves with the bundled JSON schema object.
  */
-$RefParser.prototype.bundle = function(schema, options, callback) {
+$RefParser.prototype.bundle = function (schema, options, callback) {
   var me = this;
   var args = normalizeArgs(arguments);
 
   return this.resolve(args.path, args.schema, args.options)
-    .then(function() {
+    .then(function () {
       bundle(me, args.options);
       return maybe(args.callback, Promise.resolve(me.schema));
     })
-    .catch(function(err) {
+    .catch(function (err) {
       return maybe(args.callback, Promise.reject(err));
     });
 };
@@ -573,7 +575,7 @@ $RefParser.prototype.bundle = function(schema, options, callback) {
  * @param {function} [callback] - An error-first callback. The second parameter is the dereferenced JSON schema object
  * @returns {Promise} - The returned promise resolves with the dereferenced JSON schema object.
  */
-$RefParser.dereference = function(schema, options, callback) {
+$RefParser.dereference = function (schema, options, callback) {
   var Class = this; // eslint-disable-line consistent-this
   var instance = new Class();
   return instance.dereference.apply(instance, arguments);
@@ -588,16 +590,16 @@ $RefParser.dereference = function(schema, options, callback) {
  * @param {function} [callback] - An error-first callback. The second parameter is the dereferenced JSON schema object
  * @returns {Promise} - The returned promise resolves with the dereferenced JSON schema object.
  */
-$RefParser.prototype.dereference = function(schema, options, callback) {
+$RefParser.prototype.dereference = function (schema, options, callback) {
   var me = this;
   var args = normalizeArgs(arguments);
 
   return this.resolve(args.path, args.schema, args.options)
-    .then(function() {
+    .then(function () {
       dereference(me, args.options);
       return maybe(args.callback, Promise.resolve(me.schema));
     })
-    .catch(function(err) {
+    .catch(function (err) {
       return maybe(args.callback, Promise.reject(err));
     });
 };
@@ -608,7 +610,7 @@ $RefParser.prototype.dereference = function(schema, options, callback) {
  * @param {Arguments} args
  * @returns {object}
  */
-function normalizeArgs(args) {
+function normalizeArgs (args) {
   var path, schema, options, callback;
   args = Array.prototype.slice.call(args);
 
@@ -656,12 +658,12 @@ function normalizeArgs(args) {
 /* eslint lines-around-comment: [2, {beforeBlockComment: false}] */
 'use strict';
 
-var jsonParser       = require('./parsers/json'),
-    yamlParser       = require('./parsers/yaml'),
-    textParser       = require('./parsers/text'),
-    binaryParser     = require('./parsers/binary'),
-    fileResolver     = require('./resolvers/file'),
-    httpResolver     = require('./resolvers/http'),
+var jsonParser = require('./parsers/json'),
+    yamlParser = require('./parsers/yaml'),
+    textParser = require('./parsers/text'),
+    binaryParser = require('./parsers/binary'),
+    fileResolver = require('./resolvers/file'),
+    httpResolver = require('./resolvers/http'),
     zschemaValidator = require('./validators/z-schema');
 
 module.exports = $RefParserOptions;
@@ -672,7 +674,7 @@ module.exports = $RefParserOptions;
  * @param {object|$RefParserOptions} [options] - Overridden options
  * @constructor
  */
-function $RefParserOptions(options) {
+function $RefParserOptions (options) {
   merge(this, $RefParserOptions.defaults);
   merge(this, options);
 }
@@ -740,7 +742,7 @@ $RefParserOptions.defaults = {
  * @param {?object} source - The options that are being merged
  * @returns {object}
  */
-function merge(target, source) {
+function merge (target, source) {
   if (isMergeable(source)) {
     var keys = Object.keys(source);
     for (var i = 0; i < keys.length; i++) {
@@ -768,7 +770,7 @@ function merge(target, source) {
  * @param   {*}  val
  * @returns {Boolean}
  */
-function isMergeable(val) {
+function isMergeable (val) {
   return val &&
     (typeof val === 'object') &&
     !Array.isArray(val) &&
@@ -780,11 +782,11 @@ function isMergeable(val) {
 (function (Buffer){
 'use strict';
 
-var ono      = require('ono'),
-    debug    = require('./util/debug'),
-    url      = require('./util/url'),
-    plugins  = require('./util/plugins'),
-    Promise  = require('./util/promise');
+var ono = require('ono'),
+    debug = require('./util/debug'),
+    url = require('./util/url'),
+    plugins = require('./util/plugins'),
+    Promise = require('./util/promise');
 
 module.exports = parse;
 
@@ -798,7 +800,7 @@ module.exports = parse;
  * @returns {Promise}
  * The promise resolves with the parsed file contents, NOT the raw (Buffer) contents.
  */
-function parse(path, $refs, options) {
+function parse (path, $refs, options) {
   try {
     // Remove the URL fragment, if any
     path = url.stripHash(path);
@@ -815,12 +817,12 @@ function parse(path, $refs, options) {
 
     // Read the file and then parse the data
     return readFile(file, options)
-      .then(function(resolver) {
+      .then(function (resolver) {
         $ref.pathType = resolver.plugin.name;
         file.data = resolver.result;
         return parseFile(file, options);
       })
-      .then(function(parser) {
+      .then(function (parser) {
         $ref.value = parser.result;
         return parser.result;
       });
@@ -841,8 +843,8 @@ function parse(path, $refs, options) {
  * @returns {Promise}
  * The promise resolves with the raw file contents and the resolver that was used.
  */
-function readFile(file, options) {
-  return new Promise(function(resolve, reject) {
+function readFile (file, options) {
+  return new Promise(function (resolve, reject) {
     debug('Reading %s', file.url);
 
     // Find the resolvers that can read this file
@@ -854,7 +856,7 @@ function readFile(file, options) {
     plugins.run(resolvers, 'read', file)
       .then(resolve, onError);
 
-    function onError(err) {
+    function onError (err) {
       // Throw the original error, if it's one of our own (user-friendly) errors.
       // Otherwise, throw a generic, friendly error.
       if (err && !(err instanceof SyntaxError)) {
@@ -879,8 +881,8 @@ function readFile(file, options) {
  * @returns {Promise}
  * The promise resolves with the parsed file contents and the parser that was used.
  */
-function parseFile(file, options) {
-  return new Promise(function(resolve, reject) {
+function parseFile (file, options) {
+  return new Promise(function (resolve, reject) {
     debug('Parsing %s', file.url);
 
     // Find the parsers that can read this file type.
@@ -895,7 +897,7 @@ function parseFile(file, options) {
     plugins.run(parsers, 'parse', file)
       .then(onParsed, onError);
 
-    function onParsed(parser) {
+    function onParsed (parser) {
       if (!parser.plugin.allowEmpty && isEmpty(parser.result)) {
         reject(ono.syntax('Error parsing "%s" as %s. \nParsed value is empty', file.url, parser.plugin.name));
       }
@@ -904,7 +906,7 @@ function parseFile(file, options) {
       }
     }
 
-    function onError(err) {
+    function onError (err) {
       if (err) {
         err = err instanceof Error ? err : new Error(err);
         reject(ono.syntax(err, 'Error parsing %s', file.url));
@@ -922,7 +924,7 @@ function parseFile(file, options) {
  * @param {*} value
  * @returns {boolean}
  */
-function isEmpty(value) {
+function isEmpty (value) {
   return value === undefined ||
     (typeof value === 'object' && Object.keys(value).length === 0) ||
     (typeof value === 'string' && value.trim().length === 0) ||
@@ -964,7 +966,7 @@ module.exports = {
    * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
    * @returns {boolean}
    */
-  canParse: function isBinary(file) {
+  canParse: function isBinary (file) {
     // Use this parser if the file is a Buffer, and has a known binary extension
     return Buffer.isBuffer(file.data) && BINARY_REGEXP.test(file.url);
   },
@@ -978,7 +980,7 @@ module.exports = {
    * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
    * @returns {Promise<Buffer>}
    */
-  parse: function parseBinary(file) {
+  parse: function parseBinary (file) {
     if (Buffer.isBuffer(file.data)) {
       return file.data;
     }
@@ -1031,8 +1033,8 @@ module.exports = {
    * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
    * @returns {Promise}
    */
-  parse: function parseJSON(file) {
-    return new Promise(function(resolve, reject) {
+  parse: function parseJSON (file) {
+    return new Promise(function (resolve, reject) {
       var data = file.data;
       if (Buffer.isBuffer(data)) {
         data = data.toString();
@@ -1096,7 +1098,7 @@ module.exports = {
    * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
    * @returns {boolean}
    */
-  canParse: function isText(file) {
+  canParse: function isText (file) {
     // Use this parser if the file is a string or Buffer, and has a known text-based extension
     return (typeof file.data === 'string' || Buffer.isBuffer(file.data)) && TEXT_REGEXP.test(file.url);
   },
@@ -1110,7 +1112,7 @@ module.exports = {
    * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
    * @returns {Promise<string>}
    */
-  parse: function parseText(file) {
+  parse: function parseText (file) {
     if (typeof file.data === 'string') {
       return file.data;
     }
@@ -1130,7 +1132,7 @@ module.exports = {
 'use strict';
 
 var Promise = require('../util/promise'),
-    YAML    = require('../util/yaml');
+    YAML = require('../util/yaml');
 
 module.exports = {
   /**
@@ -1166,8 +1168,8 @@ module.exports = {
    * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
    * @returns {Promise}
    */
-  parse: function parseYAML(file) {
-    return new Promise(function(resolve, reject) {
+  parse: function parseYAML (file) {
+    return new Promise(function (resolve, reject) {
       var data = file.data;
       if (Buffer.isBuffer(data)) {
         data = data.toString();
@@ -1191,11 +1193,11 @@ module.exports = {
 
 module.exports = Pointer;
 
-var $Ref         = require('./ref'),
-    url          = require('./util/url'),
-    ono          = require('ono'),
-    slashes      = /\//g,
-    tildes       = /~/g,
+var $Ref = require('./ref'),
+    url = require('./util/url'),
+    ono = require('ono'),
+    slashes = /\//g,
+    tildes = /~/g,
     escapedSlash = /~1/g,
     escapedTilde = /~0/g;
 
@@ -1206,7 +1208,7 @@ var $Ref         = require('./ref'),
  * @param {string} path
  * @constructor
  */
-function Pointer($ref, path) {
+function Pointer ($ref, path) {
   /**
    * The {@link $Ref} object that contains this {@link Pointer} object.
    * @type {$Ref}
@@ -1246,7 +1248,7 @@ function Pointer($ref, path) {
  * the {@link Pointer#$ref} and {@link Pointer#path} will reflect the resolution path
  * of the resolved value.
  */
-Pointer.prototype.resolve = function(obj, options) {
+Pointer.prototype.resolve = function (obj, options) {
   var tokens = Pointer.parse(this.path);
 
   // Crawl the object, one token at a time
@@ -1281,7 +1283,7 @@ Pointer.prototype.resolve = function(obj, options) {
  * @returns {*}
  * Returns the modified object, or an entirely new object if the entire object is overwritten.
  */
-Pointer.prototype.set = function(obj, value, options) {
+Pointer.prototype.set = function (obj, value, options) {
   var tokens = Pointer.parse(this.path);
   var token;
 
@@ -1327,7 +1329,7 @@ Pointer.prototype.set = function(obj, value, options) {
  * @param {string} path
  * @returns {string[]}
  */
-Pointer.parse = function(path) {
+Pointer.parse = function (path) {
   // Get the JSON pointer from the path's hash
   var pointer = url.getHash(path).substr(1);
 
@@ -1359,7 +1361,7 @@ Pointer.parse = function(path) {
  * @param {string|string[]} tokens - The token(s) to append (e.g. ["name", "first"])
  * @returns {string}
  */
-Pointer.join = function(base, tokens) {
+Pointer.join = function (base, tokens) {
   // Ensure that the base path contains a hash
   if (base.indexOf('#') === -1) {
     base += '#';
@@ -1386,7 +1388,7 @@ Pointer.join = function(base, tokens) {
  * @param {$RefParserOptions} options
  * @returns {boolean} - Returns `true` if the resolution path changed
  */
-function resolveIf$Ref(pointer, options) {
+function resolveIf$Ref (pointer, options) {
   // Is the value a JSON reference? (and allowed?)
 
   if ($Ref.isAllowed$Ref(pointer.value, options)) {
@@ -1403,6 +1405,7 @@ function resolveIf$Ref(pointer, options) {
         // This JSON reference "extends" the resolved value, rather than simply pointing to it.
         // So the resolved path does NOT change.  Just the value does.
         pointer.value = $Ref.dereference(pointer.value, resolved.value);
+        return false;
       }
       else {
         // Resolve the reference
@@ -1427,7 +1430,7 @@ function resolveIf$Ref(pointer, options) {
  * @param {*} value - The value to assign
  * @returns {*} - Returns the assigned value
  */
-function setValue(pointer, token, value) {
+function setValue (pointer, token, value) {
   if (pointer.value && typeof pointer.value === 'object') {
     if (token === '-' && Array.isArray(pointer.value)) {
       pointer.value.push(value);
@@ -1454,7 +1457,7 @@ var Pointer = require('./pointer');
  *
  * @constructor
  */
-function $Ref() {
+function $Ref () {
   /**
    * The file path or URL of the referenced file.
    * This path is relative to the path of the main JSON schema file.
@@ -1494,7 +1497,7 @@ function $Ref() {
  * @param {$RefParserOptions} options
  * @returns {boolean}
  */
-$Ref.prototype.exists = function(path, options) {
+$Ref.prototype.exists = function (path, options) {
   try {
     this.resolve(path, options);
     return true;
@@ -1511,7 +1514,7 @@ $Ref.prototype.exists = function(path, options) {
  * @param {$RefParserOptions} options
  * @returns {*} - Returns the resolved value
  */
-$Ref.prototype.get = function(path, options) {
+$Ref.prototype.get = function (path, options) {
   return this.resolve(path, options).value;
 };
 
@@ -1522,7 +1525,7 @@ $Ref.prototype.get = function(path, options) {
  * @param {$RefParserOptions} options
  * @returns {Pointer}
  */
-$Ref.prototype.resolve = function(path, options) {
+$Ref.prototype.resolve = function (path, options) {
   var pointer = new Pointer(this, path);
   return pointer.resolve(this.value, options);
 };
@@ -1534,7 +1537,7 @@ $Ref.prototype.resolve = function(path, options) {
  * @param {string} path - The full path of the property to set, optionally with a JSON pointer in the hash
  * @param {*} value - The value to assign
  */
-$Ref.prototype.set = function(path, value) {
+$Ref.prototype.set = function (path, value) {
   var pointer = new Pointer(this, path);
   this.value = pointer.set(this.value, value);
 };
@@ -1545,7 +1548,7 @@ $Ref.prototype.set = function(path, value) {
  * @param {*} value - The value to inspect
  * @returns {boolean}
  */
-$Ref.is$Ref = function(value) {
+$Ref.is$Ref = function (value) {
   return value && typeof value === 'object' && typeof value.$ref === 'string' && value.$ref.length > 0;
 };
 
@@ -1555,7 +1558,7 @@ $Ref.is$Ref = function(value) {
  * @param {*} value - The value to inspect
  * @returns {boolean}
  */
-$Ref.isExternal$Ref = function(value) {
+$Ref.isExternal$Ref = function (value) {
   return $Ref.is$Ref(value) && value.$ref[0] !== '#';
 };
 
@@ -1567,7 +1570,7 @@ $Ref.isExternal$Ref = function(value) {
  * @param {$RefParserOptions} options
  * @returns {boolean}
  */
-$Ref.isAllowed$Ref = function(value, options) {
+$Ref.isAllowed$Ref = function (value, options) {
   if ($Ref.is$Ref(value)) {
     if (value.$ref.substr(0, 2) === '#/' || value.$ref === '#') {
       // It's a JSON Pointer reference, which is always allowed
@@ -1616,7 +1619,7 @@ $Ref.isAllowed$Ref = function(value, options) {
  * @param {*} value - The value to inspect
  * @returns {boolean}
  */
-$Ref.isExtended$Ref = function(value) {
+$Ref.isExtended$Ref = function (value) {
   return $Ref.is$Ref(value) && Object.keys(value).length > 1;
 };
 
@@ -1654,15 +1657,15 @@ $Ref.isExtended$Ref = function(value) {
  * @param {*} resolvedValue - The resolved value, which can be any type
  * @returns {*} - Returns the dereferenced value
  */
-$Ref.dereference = function($ref, resolvedValue) {
+$Ref.dereference = function ($ref, resolvedValue) {
   if (resolvedValue && typeof resolvedValue === 'object' && $Ref.isExtended$Ref($ref)) {
     var merged = {};
-    Object.keys($ref).forEach(function(key) {
+    Object.keys($ref).forEach(function (key) {
       if (key !== '$ref') {
         merged[key] = $ref[key];
       }
     });
-    Object.keys(resolvedValue).forEach(function(key) {
+    Object.keys(resolvedValue).forEach(function (key) {
       if (!(key in merged)) {
         merged[key] = resolvedValue[key];
       }
@@ -1678,16 +1681,16 @@ $Ref.dereference = function($ref, resolvedValue) {
 },{"./pointer":10}],12:[function(require,module,exports){
 'use strict';
 
-var ono  = require('ono'),
+var ono = require('ono'),
     $Ref = require('./ref'),
-    url  = require('./util/url');
+    url = require('./util/url');
 
 module.exports = $Refs;
 
 /**
  * This class is a map of JSON references and their resolved values.
  */
-function $Refs() {
+function $Refs () {
   /**
    * Indicates whether the schema contains any circular references.
    *
@@ -1719,9 +1722,9 @@ function $Refs() {
  * @param {...string|string[]} [types] - Only return paths of the given types ("file", "http", etc.)
  * @returns {string[]}
  */
-$Refs.prototype.paths = function(types) {
+$Refs.prototype.paths = function (types) {
   var paths = getPaths(this._$refs, arguments);
-  return paths.map(function(path) {
+  return paths.map(function (path) {
     return path.decoded;
   });
 };
@@ -1732,10 +1735,10 @@ $Refs.prototype.paths = function(types) {
  * @param {...string|string[]} [types] - Only return references of the given types ("file", "http", etc.)
  * @returns {object}
  */
-$Refs.prototype.values = function(types) {
+$Refs.prototype.values = function (types) {
   var $refs = this._$refs;
   var paths = getPaths($refs, arguments);
-  return paths.reduce(function(obj, path) {
+  return paths.reduce(function (obj, path) {
     obj[path.decoded] = $refs[path.encoded].value;
     return obj;
   }, {});
@@ -1755,7 +1758,7 @@ $Refs.prototype.toJSON = $Refs.prototype.values;
  * @param {$RefParserOptions} [options]
  * @returns {boolean}
  */
-$Refs.prototype.exists = function(path, options) {
+$Refs.prototype.exists = function (path, options) {
   try {
     this._resolve(path, options);
     return true;
@@ -1772,7 +1775,7 @@ $Refs.prototype.exists = function(path, options) {
  * @param {$RefParserOptions} [options]
  * @returns {*} - Returns the resolved value
  */
-$Refs.prototype.get = function(path, options) {
+$Refs.prototype.get = function (path, options) {
   return this._resolve(path, options).value;
 };
 
@@ -1783,7 +1786,7 @@ $Refs.prototype.get = function(path, options) {
  * @param {string} path - The path of the property to set, optionally with a JSON pointer in the hash
  * @param {*} value - The value to assign
  */
-$Refs.prototype.set = function(path, value) {
+$Refs.prototype.set = function (path, value) {
   path = url.resolve(this._root$Ref.path, path);
   var withoutHash = url.stripHash(path);
   var $ref = this._$refs[withoutHash];
@@ -1801,7 +1804,7 @@ $Refs.prototype.set = function(path, value) {
  * @param {string} path  - The file path or URL of the referenced file
  * @param {*} [value] - Optional. The value of the $ref.
  */
-$Refs.prototype._add = function(path, value) {
+$Refs.prototype._add = function (path, value) {
   var withoutHash = url.stripHash(path);
 
   var $ref = new $Ref();
@@ -1823,7 +1826,7 @@ $Refs.prototype._add = function(path, value) {
  * @returns {Pointer}
  * @protected
  */
-$Refs.prototype._resolve = function(path, options) {
+$Refs.prototype._resolve = function (path, options) {
   path = url.resolve(this._root$Ref.path, path);
   var withoutHash = url.stripHash(path);
   var $ref = this._$refs[withoutHash];
@@ -1842,7 +1845,7 @@ $Refs.prototype._resolve = function(path, options) {
  * @returns {$Ref|undefined}
  * @protected
  */
-$Refs.prototype._get$Ref = function(path) {
+$Refs.prototype._get$Ref = function (path) {
   path = url.resolve(this._root$Ref.path, path);
   var withoutHash = url.stripHash(path);
   return this._$refs[withoutHash];
@@ -1855,19 +1858,19 @@ $Refs.prototype._get$Ref = function(path) {
  * @param {...string|string[]} [types] - Only return paths of the given types ("file", "http", etc.)
  * @returns {object[]}
  */
-function getPaths($refs, types) {
+function getPaths ($refs, types) {
   var paths = Object.keys($refs);
 
   // Filter the paths by type
   types = Array.isArray(types[0]) ? types[0] : Array.prototype.slice.call(types);
   if (types.length > 0 && types[0]) {
-    paths = paths.filter(function(key) {
+    paths = paths.filter(function (key) {
       return types.indexOf($refs[key].pathType) !== -1;
     });
   }
 
   // Decode local filesystem paths
-  return paths.map(function(path) {
+  return paths.map(function (path) {
     return {
       encoded: path,
       decoded: $refs[path].pathType === 'file' ? url.toFileSystemPath(path, true) : path
@@ -1879,11 +1882,11 @@ function getPaths($refs, types) {
 'use strict';
 
 var Promise = require('./util/promise'),
-    $Ref    = require('./ref'),
+    $Ref = require('./ref'),
     Pointer = require('./pointer'),
-    parse   = require('./parse'),
-    debug   = require('./util/debug'),
-    url     = require('./util/url');
+    parse = require('./parse'),
+    debug = require('./util/debug'),
+    url = require('./util/url');
 
 module.exports = resolveExternal;
 
@@ -1900,7 +1903,7 @@ module.exports = resolveExternal;
  * The promise resolves once all JSON references in the schema have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-function resolveExternal(parser, options) {
+function resolveExternal (parser, options) {
   if (!options.resolve.external) {
     // Nothing to resolve, so exit early
     return Promise.resolve();
@@ -1930,7 +1933,7 @@ function resolveExternal(parser, options) {
  * If any of the JSON references point to files that contain additional JSON references,
  * then the corresponding promise will internally reference an array of promises.
  */
-function crawl(obj, path, $refs, options) {
+function crawl (obj, path, $refs, options) {
   var promises = [];
 
   if (obj && typeof obj === 'object') {
@@ -1938,7 +1941,7 @@ function crawl(obj, path, $refs, options) {
       promises.push(resolve$Ref(obj, path, $refs, options));
     }
     else {
-      Object.keys(obj).forEach(function(key) {
+      Object.keys(obj).forEach(function (key) {
         var keyPath = Pointer.join(path, key);
         var value = obj[key];
 
@@ -1967,7 +1970,7 @@ function crawl(obj, path, $refs, options) {
  * The promise resolves once all JSON references in the object have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-function resolve$Ref($ref, path, $refs, options) {
+function resolve$Ref ($ref, path, $refs, options) {
   debug('Resolving $ref pointer "%s" at %s', $ref.$ref, path);
 
   var resolvedPath = url.resolve(path, $ref.$ref);
@@ -1982,7 +1985,7 @@ function resolve$Ref($ref, path, $refs, options) {
 
   // Parse the $referenced file/url
   return parse(resolvedPath, $refs, options)
-    .then(function(result) {
+    .then(function (result) {
       // Crawl the parsed value
       debug('Resolving $ref pointers in %s', withoutHash);
       var promises = crawl(result, withoutHash + '#', $refs, options);
@@ -1992,11 +1995,11 @@ function resolve$Ref($ref, path, $refs, options) {
 
 },{"./parse":5,"./pointer":10,"./ref":11,"./util/debug":16,"./util/promise":18,"./util/url":19}],14:[function(require,module,exports){
 'use strict';
-var fs      = require('fs'),
-    ono     = require('ono'),
+var fs = require('fs'),
+    ono = require('ono'),
     Promise = require('../util/promise'),
-    url     = require('../util/url'),
-    debug   = require('../util/debug');
+    url = require('../util/url'),
+    debug = require('../util/debug');
 
 module.exports = {
   /**
@@ -2016,7 +2019,7 @@ module.exports = {
    * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
    * @returns {boolean}
    */
-  canRead: function isFile(file) {
+  canRead: function isFile (file) {
     return url.isFileSystemPath(file.url);
   },
 
@@ -2028,8 +2031,8 @@ module.exports = {
    * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
    * @returns {Promise<Buffer>}
    */
-  read: function readFile(file) {
-    return new Promise(function(resolve, reject) {
+  read: function readFile (file) {
+    return new Promise(function (resolve, reject) {
       var path;
       try {
         path = url.toFileSystemPath(file.url);
@@ -2041,7 +2044,7 @@ module.exports = {
       debug('Opening file: %s', path);
 
       try {
-        fs.readFile(path, function(err, data) {
+        fs.readFile(path, function (err, data) {
           if (err) {
             reject(ono(err, 'Error opening file "%s"', path));
           }
@@ -2061,11 +2064,11 @@ module.exports = {
 (function (process,Buffer){
 'use strict';
 
-var http    = require('http'),
-    https   = require('https'),
-    ono     = require('ono'),
-    url     = require('../util/url'),
-    debug   = require('../util/debug'),
+var http = require('http'),
+    https = require('https'),
+    ono = require('ono'),
+    url = require('../util/url'),
+    debug = require('../util/debug'),
     Promise = require('../util/promise');
 
 module.exports = {
@@ -2122,7 +2125,7 @@ module.exports = {
    * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
    * @returns {boolean}
    */
-  canRead: function isHttp(file) {
+  canRead: function isHttp (file) {
     return url.isHttp(file.url);
   },
 
@@ -2134,7 +2137,7 @@ module.exports = {
    * @param {string} file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
    * @returns {Promise<Buffer>}
    */
-  read: function readHttp(file) {
+  read: function readHttp (file) {
     var u = url.parse(file.url);
 
     if (process.browser && !u.protocol) {
@@ -2156,24 +2159,24 @@ module.exports = {
  * @returns {Promise<Buffer>}
  * The promise resolves with the raw downloaded data, or rejects if there is an HTTP error.
  */
-function download(u, httpOptions, redirects) {
-  return new Promise(function(resolve, reject) {
+function download (u, httpOptions, redirects) {
+  return new Promise(function (resolve, reject) {
     u = url.parse(u);
     redirects = redirects || [];
     redirects.push(u.href);
 
     get(u, httpOptions)
-      .then(function(res) {
+      .then(function (res) {
         if (res.statusCode >= 400) {
-          throw ono({status: res.statusCode}, 'HTTP ERROR %d', res.statusCode);
+          throw ono({ status: res.statusCode }, 'HTTP ERROR %d', res.statusCode);
         }
         else if (res.statusCode >= 300) {
           if (redirects.length > httpOptions.redirects) {
-            reject(ono({status: res.statusCode}, 'Error downloading %s. \nToo many redirects: \n  %s',
+            reject(ono({ status: res.statusCode }, 'Error downloading %s. \nToo many redirects: \n  %s',
               redirects[0], redirects.join(' \n  ')));
           }
           else if (!res.headers.location) {
-            throw ono({status: res.statusCode}, 'HTTP %d redirect with no location header', res.statusCode);
+            throw ono({ status: res.statusCode }, 'HTTP %d redirect with no location header', res.statusCode);
           }
           else {
             debug('HTTP %d redirect %s -> %s', res.statusCode, u.href, res.headers.location);
@@ -2185,7 +2188,7 @@ function download(u, httpOptions, redirects) {
           resolve(res.body || new Buffer(0));
         }
       })
-      .catch(function(err) {
+      .catch(function (err) {
         reject(ono(err, 'Error downloading', u.href));
       });
   });
@@ -2200,8 +2203,8 @@ function download(u, httpOptions, redirects) {
  * @returns {Promise<Response>}
  * The promise resolves with the HTTP Response object.
  */
-function get(u, httpOptions) {
-  return new Promise(function(resolve, reject) {
+function get (u, httpOptions) {
+  return new Promise(function (resolve, reject) {
     debug('GET', u.href);
 
     var protocol = u.protocol === 'https:' ? https : http;
@@ -2218,22 +2221,22 @@ function get(u, httpOptions) {
       req.setTimeout(httpOptions.timeout);
     }
 
-    req.on('timeout', function() {
+    req.on('timeout', function () {
       req.abort();
     });
 
     req.on('error', reject);
 
-    req.once('response', function(res) {
+    req.once('response', function (res) {
       res.body = new Buffer(0);
 
-      res.on('data', function(data) {
+      res.on('data', function (data) {
         res.body = Buffer.concat([res.body, new Buffer(data)]);
       });
 
       res.on('error', reject);
 
-      res.on('end', function() {
+      res.on('end', function () {
         resolve(res);
       });
     });
@@ -2258,7 +2261,7 @@ module.exports = debug('json-schema-ref-parser');
 'use strict';
 
 var Promise = require('./promise'),
-    debug   = require('./debug');
+    debug = require('./debug');
 
 /**
  * Returns the given plugins as an array, rather than an object map.
@@ -2267,12 +2270,12 @@ var Promise = require('./promise'),
  * @param  {object} plugins - A map of plugin objects
  * @return {object[]}
  */
-exports.all = function(plugins) {
+exports.all = function (plugins) {
   return Object.keys(plugins)
-    .filter(function(key) {
+    .filter(function (key) {
       return typeof plugins[key] === 'object';
     })
-    .map(function(key) {
+    .map(function (key) {
       plugins[key].name = key;
       return plugins[key];
     });
@@ -2286,9 +2289,9 @@ exports.all = function(plugins) {
  * @param  {object}   file    - A file info object, which will be passed to each method
  * @return {object[]}
  */
-exports.filter = function(plugins, method, file) {
+exports.filter = function (plugins, method, file) {
   return plugins
-    .filter(function(plugin) {
+    .filter(function (plugin) {
       return !!getResult(plugin, method, file);
     });
 };
@@ -2299,12 +2302,12 @@ exports.filter = function(plugins, method, file) {
  * @param {object[]} plugins - An array of plugin objects
  * @returns {object[]}
  */
-exports.sort = function(plugins) {
-  plugins.forEach(function(plugin) {
+exports.sort = function (plugins) {
+  plugins.forEach(function (plugin) {
     plugin.order = plugin.order || Number.MAX_SAFE_INTEGER;
   });
 
-  return plugins.sort(function(a, b) { return a.order - b.order; });
+  return plugins.sort(function (a, b) { return a.order - b.order; });
 };
 
 /**
@@ -2320,13 +2323,13 @@ exports.sort = function(plugins) {
  * @param {object}    file    - A file info object, which will be passed to each method
  * @returns {Promise}
  */
-exports.run = function(plugins, method, file) {
+exports.run = function (plugins, method, file) {
   var plugin, lastError, index = 0;
 
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve, reject) {
     runNextPlugin();
 
-    function runNextPlugin() {
+    function runNextPlugin () {
       plugin = plugins[index++];
       if (!plugin) {
         // There are no more functions, so re-throw the last error
@@ -2351,7 +2354,7 @@ exports.run = function(plugins, method, file) {
       }
     }
 
-    function callback(err, result) {
+    function callback (err, result) {
       if (err) {
         onError(err);
       }
@@ -2360,7 +2363,7 @@ exports.run = function(plugins, method, file) {
       }
     }
 
-    function onSuccess(result) {
+    function onSuccess (result) {
       debug('    success');
       resolve({
         plugin: plugin,
@@ -2368,7 +2371,7 @@ exports.run = function(plugins, method, file) {
       });
     }
 
-    function onError(err) {
+    function onError (err) {
       debug('    %s', err.message || err);
       lastError = err;
       runNextPlugin();
@@ -2388,7 +2391,7 @@ exports.run = function(plugins, method, file) {
  * @param   {function} [callback] - A callback function, which will be passed to the method
  * @returns {*}
  */
-function getResult(obj, prop, file, callback) {
+function getResult (obj, prop, file, callback) {
   var value = obj[prop];
 
   if (typeof value === 'function') {
@@ -2423,10 +2426,10 @@ module.exports = typeof Promise === 'function' ? Promise : require('es6-promise'
 (function (process){
 'use strict';
 
-var isWindows           = /^win/.test(process.platform),
+var isWindows = /^win/.test(process.platform),
     forwardSlashPattern = /\//g,
-    protocolPattern     = /^([a-z0-9.+-]+):\/\//i,
-    url                 = module.exports;
+    protocolPattern = /^([a-z0-9.+-]+):\/\//i,
+    url = module.exports;
 
 // RegExp patterns to URL-encode special characters in local filesystem paths
 var urlEncodePatterns = [
@@ -2452,7 +2455,7 @@ exports.resolve = require('url').resolve;
  *
  * @returns {string}
  */
-exports.cwd = function cwd() {
+exports.cwd = function cwd () {
   return process.browser ? location.href : process.cwd() + '/';
 };
 
@@ -2462,7 +2465,7 @@ exports.cwd = function cwd() {
  * @param   {string} path
  * @returns {?string}
  */
-exports.getProtocol = function getProtocol(path) {
+exports.getProtocol = function getProtocol (path) {
   var match = protocolPattern.exec(path);
   if (match) {
     return match[1].toLowerCase();
@@ -2476,7 +2479,7 @@ exports.getProtocol = function getProtocol(path) {
  * @param   {string} path
  * @returns {string}
  */
-exports.getExtension = function getExtension(path) {
+exports.getExtension = function getExtension (path) {
   var lastDot = path.lastIndexOf('.');
   if (lastDot >= 0) {
     return path.substr(lastDot).toLowerCase();
@@ -2491,7 +2494,7 @@ exports.getExtension = function getExtension(path) {
  * @param   {string} path
  * @returns {string}
  */
-exports.getHash = function getHash(path) {
+exports.getHash = function getHash (path) {
   var hashIndex = path.indexOf('#');
   if (hashIndex >= 0) {
     return path.substr(hashIndex);
@@ -2505,7 +2508,7 @@ exports.getHash = function getHash(path) {
  * @param   {string} path
  * @returns {string}
  */
-exports.stripHash = function stripHash(path) {
+exports.stripHash = function stripHash (path) {
   var hashIndex = path.indexOf('#');
   if (hashIndex >= 0) {
     path = path.substr(0, hashIndex);
@@ -2519,7 +2522,7 @@ exports.stripHash = function stripHash(path) {
  * @param   {string} path
  * @returns {boolean}
  */
-exports.isHttp = function isHttp(path) {
+exports.isHttp = function isHttp (path) {
   var protocol = url.getProtocol(path);
   if (protocol === 'http' || protocol === 'https') {
     return true;
@@ -2541,7 +2544,7 @@ exports.isHttp = function isHttp(path) {
  * @param   {string} path
  * @returns {boolean}
  */
-exports.isFileSystemPath = function isFileSystemPath(path) {
+exports.isFileSystemPath = function isFileSystemPath (path) {
   if (process.browser) {
     // We're running in a browser, so assume that all paths are URLs.
     // This way, even relative paths will be treated as URLs rather than as filesystem paths
@@ -2568,7 +2571,7 @@ exports.isFileSystemPath = function isFileSystemPath(path) {
  * @param {string} path
  * @returns {string}
  */
-exports.fromFileSystemPath = function fromFileSystemPath(path) {
+exports.fromFileSystemPath = function fromFileSystemPath (path) {
   // Step 1: Manually encode characters that are not encoded by `encodeURI`.
   // This includes characters such as "#" and "?", which have special meaning in URLs,
   // but are just normal characters in a filesystem path.
@@ -2589,7 +2592,7 @@ exports.fromFileSystemPath = function fromFileSystemPath(path) {
  * @param {boolean} [keepFileProtocol] - If true, then "file://" will NOT be stripped
  * @returns {string}
  */
-exports.toFileSystemPath = function toFileSystemPath(path, keepFileProtocol) {
+exports.toFileSystemPath = function toFileSystemPath (path, keepFileProtocol) {
   // Step 1: `decodeURI` will decode characters such as Cyrillic characters, spaces, etc.
   path = decodeURI(path);
 
@@ -2641,7 +2644,7 @@ exports.toFileSystemPath = function toFileSystemPath(path, keepFileProtocol) {
 'use strict';
 
 var yaml = require('js-yaml'),
-    ono  = require('ono');
+    ono = require('ono');
 
 /**
  * Simple YAML parsing functions, similar to {@link JSON.parse} and {@link JSON.stringify}
@@ -2654,7 +2657,7 @@ module.exports = {
    * @param {function} [reviver] - Not currently supported. Provided for consistency with {@link JSON.parse}
    * @returns {*}
    */
-  parse: function yamlParse(text, reviver) {
+  parse: function yamlParse (text, reviver) {
     try {
       return yaml.safeLoad(text);
     }
@@ -2677,10 +2680,10 @@ module.exports = {
    * @param   {string|number} space - The number of spaces to use for indentation, or a string containing the number of spaces.
    * @returns {string}
    */
-  stringify: function yamlStringify(value, replacer, space) {
+  stringify: function yamlStringify (value, replacer, space) {
     try {
       var indent = (typeof space === 'string' ? space.length : space) || 2;
-      return yaml.safeDump(value, {indent: indent});
+      return yaml.safeDump(value, { indent: indent });
     }
     catch (e) {
       if (e instanceof Error) {
@@ -2734,7 +2737,7 @@ module.exports = {
    * @param {object} file.dereferenced  - The dereferenced JSON Schema (only available in step 3)
    * @returns {boolean}
    */
-  canValidate: function canValidate(file) {
+  canValidate: function canValidate (file) {
     // Z-Schema requires JSON References to already be resolved (but not dereferenced)
     return !!file.resolved;
   },
@@ -2748,7 +2751,7 @@ module.exports = {
    * @param {*}      file.data      - The file contents. This will be whatever data type was returned by the resolver
    * @returns {Promise<Buffer>}
    */
-  validate: function validate(file) {
+  validate: function validate (file) {
     // TODO
   }
 };
@@ -2872,11 +2875,10 @@ function fromByteArray (uint8) {
 },{}],23:[function(require,module,exports){
 
 },{}],24:[function(require,module,exports){
-(function (global){
 /*!
  * The buffer module from node.js, for the browser.
  *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @author   Feross Aboukhadijeh <https://feross.org>
  * @license  MIT
  */
 /* eslint-disable no-proto */
@@ -2885,80 +2887,57 @@ function fromByteArray (uint8) {
 
 var base64 = require('base64-js')
 var ieee754 = require('ieee754')
-var isArray = require('isarray')
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
 exports.INSPECT_MAX_BYTES = 50
 
+var K_MAX_LENGTH = 0x7fffffff
+exports.kMaxLength = K_MAX_LENGTH
+
 /**
  * If `Buffer.TYPED_ARRAY_SUPPORT`:
  *   === true    Use Uint8Array implementation (fastest)
- *   === false   Use Object implementation (most compatible, even IE6)
+ *   === false   Print warning and recommend using `buffer` v4.x which has an Object
+ *               implementation (most compatible, even IE6)
  *
  * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
  * Opera 11.6+, iOS 4.2+.
  *
- * Due to various browser bugs, sometimes the Object implementation will be used even
- * when the browser supports typed arrays.
- *
- * Note:
- *
- *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
- *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
- *
- *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
- *
- *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
- *     incorrect length in some situations.
-
- * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
- * get the Object implementation, which is slower but behaves correctly.
+ * We report that the browser does not support typed arrays if the are not subclassable
+ * using __proto__. Firefox 4-29 lacks support for adding new properties to `Uint8Array`
+ * (See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438). IE 10 lacks support
+ * for __proto__ and has a buggy typed array implementation.
  */
-Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
-  ? global.TYPED_ARRAY_SUPPORT
-  : typedArraySupport()
+Buffer.TYPED_ARRAY_SUPPORT = typedArraySupport()
 
-/*
- * Export kMaxLength after typed array support is determined.
- */
-exports.kMaxLength = kMaxLength()
+if (!Buffer.TYPED_ARRAY_SUPPORT && typeof console !== 'undefined' &&
+    typeof console.error === 'function') {
+  console.error(
+    'This browser lacks typed array (Uint8Array) support which is required by ' +
+    '`buffer` v5.x. Use `buffer` v4.x if you require old browser support.'
+  )
+}
 
 function typedArraySupport () {
+  // Can typed array instances can be augmented?
   try {
     var arr = new Uint8Array(1)
     arr.__proto__ = {__proto__: Uint8Array.prototype, foo: function () { return 42 }}
-    return arr.foo() === 42 && // typed array instances can be augmented
-        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
-        arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
+    return arr.foo() === 42
   } catch (e) {
     return false
   }
 }
 
-function kMaxLength () {
-  return Buffer.TYPED_ARRAY_SUPPORT
-    ? 0x7fffffff
-    : 0x3fffffff
-}
-
-function createBuffer (that, length) {
-  if (kMaxLength() < length) {
+function createBuffer (length) {
+  if (length > K_MAX_LENGTH) {
     throw new RangeError('Invalid typed array length')
   }
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = new Uint8Array(length)
-    that.__proto__ = Buffer.prototype
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    if (that === null) {
-      that = new Buffer(length)
-    }
-    that.length = length
-  }
-
-  return that
+  // Return an augmented `Uint8Array` instance
+  var buf = new Uint8Array(length)
+  buf.__proto__ = Buffer.prototype
+  return buf
 }
 
 /**
@@ -2972,10 +2951,6 @@ function createBuffer (that, length) {
  */
 
 function Buffer (arg, encodingOrOffset, length) {
-  if (!Buffer.TYPED_ARRAY_SUPPORT && !(this instanceof Buffer)) {
-    return new Buffer(arg, encodingOrOffset, length)
-  }
-
   // Common case.
   if (typeof arg === 'number') {
     if (typeof encodingOrOffset === 'string') {
@@ -2983,33 +2958,38 @@ function Buffer (arg, encodingOrOffset, length) {
         'If encoding is specified then the first argument must be a string'
       )
     }
-    return allocUnsafe(this, arg)
+    return allocUnsafe(arg)
   }
-  return from(this, arg, encodingOrOffset, length)
+  return from(arg, encodingOrOffset, length)
+}
+
+// Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
+if (typeof Symbol !== 'undefined' && Symbol.species &&
+    Buffer[Symbol.species] === Buffer) {
+  Object.defineProperty(Buffer, Symbol.species, {
+    value: null,
+    configurable: true,
+    enumerable: false,
+    writable: false
+  })
 }
 
 Buffer.poolSize = 8192 // not used by this implementation
 
-// TODO: Legacy, not needed anymore. Remove in next major version.
-Buffer._augment = function (arr) {
-  arr.__proto__ = Buffer.prototype
-  return arr
-}
-
-function from (that, value, encodingOrOffset, length) {
+function from (value, encodingOrOffset, length) {
   if (typeof value === 'number') {
     throw new TypeError('"value" argument must not be a number')
   }
 
-  if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer) {
-    return fromArrayBuffer(that, value, encodingOrOffset, length)
+  if (isArrayBuffer(value)) {
+    return fromArrayBuffer(value, encodingOrOffset, length)
   }
 
   if (typeof value === 'string') {
-    return fromString(that, value, encodingOrOffset)
+    return fromString(value, encodingOrOffset)
   }
 
-  return fromObject(that, value)
+  return fromObject(value)
 }
 
 /**
@@ -3021,21 +3001,13 @@ function from (that, value, encodingOrOffset, length) {
  * Buffer.from(arrayBuffer[, byteOffset[, length]])
  **/
 Buffer.from = function (value, encodingOrOffset, length) {
-  return from(null, value, encodingOrOffset, length)
+  return from(value, encodingOrOffset, length)
 }
 
-if (Buffer.TYPED_ARRAY_SUPPORT) {
-  Buffer.prototype.__proto__ = Uint8Array.prototype
-  Buffer.__proto__ = Uint8Array
-  if (typeof Symbol !== 'undefined' && Symbol.species &&
-      Buffer[Symbol.species] === Buffer) {
-    // Fix subarray() in ES2016. See: https://github.com/feross/buffer/pull/97
-    Object.defineProperty(Buffer, Symbol.species, {
-      value: null,
-      configurable: true
-    })
-  }
-}
+// Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
+// https://github.com/feross/buffer/pull/148
+Buffer.prototype.__proto__ = Uint8Array.prototype
+Buffer.__proto__ = Uint8Array
 
 function assertSize (size) {
   if (typeof size !== 'number') {
@@ -3045,20 +3017,20 @@ function assertSize (size) {
   }
 }
 
-function alloc (that, size, fill, encoding) {
+function alloc (size, fill, encoding) {
   assertSize(size)
   if (size <= 0) {
-    return createBuffer(that, size)
+    return createBuffer(size)
   }
   if (fill !== undefined) {
     // Only pay attention to encoding if it's a string. This
     // prevents accidentally sending in a number that would
     // be interpretted as a start offset.
     return typeof encoding === 'string'
-      ? createBuffer(that, size).fill(fill, encoding)
-      : createBuffer(that, size).fill(fill)
+      ? createBuffer(size).fill(fill, encoding)
+      : createBuffer(size).fill(fill)
   }
-  return createBuffer(that, size)
+  return createBuffer(size)
 }
 
 /**
@@ -3066,34 +3038,28 @@ function alloc (that, size, fill, encoding) {
  * alloc(size[, fill[, encoding]])
  **/
 Buffer.alloc = function (size, fill, encoding) {
-  return alloc(null, size, fill, encoding)
+  return alloc(size, fill, encoding)
 }
 
-function allocUnsafe (that, size) {
+function allocUnsafe (size) {
   assertSize(size)
-  that = createBuffer(that, size < 0 ? 0 : checked(size) | 0)
-  if (!Buffer.TYPED_ARRAY_SUPPORT) {
-    for (var i = 0; i < size; ++i) {
-      that[i] = 0
-    }
-  }
-  return that
+  return createBuffer(size < 0 ? 0 : checked(size) | 0)
 }
 
 /**
  * Equivalent to Buffer(num), by default creates a non-zero-filled Buffer instance.
  * */
 Buffer.allocUnsafe = function (size) {
-  return allocUnsafe(null, size)
+  return allocUnsafe(size)
 }
 /**
  * Equivalent to SlowBuffer(num), by default creates a non-zero-filled Buffer instance.
  */
 Buffer.allocUnsafeSlow = function (size) {
-  return allocUnsafe(null, size)
+  return allocUnsafe(size)
 }
 
-function fromString (that, string, encoding) {
+function fromString (string, encoding) {
   if (typeof encoding !== 'string' || encoding === '') {
     encoding = 'utf8'
   }
@@ -3103,32 +3069,30 @@ function fromString (that, string, encoding) {
   }
 
   var length = byteLength(string, encoding) | 0
-  that = createBuffer(that, length)
+  var buf = createBuffer(length)
 
-  var actual = that.write(string, encoding)
+  var actual = buf.write(string, encoding)
 
   if (actual !== length) {
     // Writing a hex string, for example, that contains invalid characters will
     // cause everything after the first invalid character to be ignored. (e.g.
     // 'abxxcd' will be treated as 'ab')
-    that = that.slice(0, actual)
+    buf = buf.slice(0, actual)
   }
 
-  return that
+  return buf
 }
 
-function fromArrayLike (that, array) {
+function fromArrayLike (array) {
   var length = array.length < 0 ? 0 : checked(array.length) | 0
-  that = createBuffer(that, length)
+  var buf = createBuffer(length)
   for (var i = 0; i < length; i += 1) {
-    that[i] = array[i] & 255
+    buf[i] = array[i] & 255
   }
-  return that
+  return buf
 }
 
-function fromArrayBuffer (that, array, byteOffset, length) {
-  array.byteLength // this throws if `array` is not a valid ArrayBuffer
-
+function fromArrayBuffer (array, byteOffset, length) {
   if (byteOffset < 0 || array.byteLength < byteOffset) {
     throw new RangeError('\'offset\' is out of bounds')
   }
@@ -3137,49 +3101,43 @@ function fromArrayBuffer (that, array, byteOffset, length) {
     throw new RangeError('\'length\' is out of bounds')
   }
 
+  var buf
   if (byteOffset === undefined && length === undefined) {
-    array = new Uint8Array(array)
+    buf = new Uint8Array(array)
   } else if (length === undefined) {
-    array = new Uint8Array(array, byteOffset)
+    buf = new Uint8Array(array, byteOffset)
   } else {
-    array = new Uint8Array(array, byteOffset, length)
+    buf = new Uint8Array(array, byteOffset, length)
   }
 
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = array
-    that.__proto__ = Buffer.prototype
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    that = fromArrayLike(that, array)
-  }
-  return that
+  // Return an augmented `Uint8Array` instance
+  buf.__proto__ = Buffer.prototype
+  return buf
 }
 
-function fromObject (that, obj) {
+function fromObject (obj) {
   if (Buffer.isBuffer(obj)) {
     var len = checked(obj.length) | 0
-    that = createBuffer(that, len)
+    var buf = createBuffer(len)
 
-    if (that.length === 0) {
-      return that
+    if (buf.length === 0) {
+      return buf
     }
 
-    obj.copy(that, 0, 0, len)
-    return that
+    obj.copy(buf, 0, 0, len)
+    return buf
   }
 
   if (obj) {
-    if ((typeof ArrayBuffer !== 'undefined' &&
-        obj.buffer instanceof ArrayBuffer) || 'length' in obj) {
-      if (typeof obj.length !== 'number' || isnan(obj.length)) {
-        return createBuffer(that, 0)
+    if (isArrayBufferView(obj) || 'length' in obj) {
+      if (typeof obj.length !== 'number' || numberIsNaN(obj.length)) {
+        return createBuffer(0)
       }
-      return fromArrayLike(that, obj)
+      return fromArrayLike(obj)
     }
 
-    if (obj.type === 'Buffer' && isArray(obj.data)) {
-      return fromArrayLike(that, obj.data)
+    if (obj.type === 'Buffer' && Array.isArray(obj.data)) {
+      return fromArrayLike(obj.data)
     }
   }
 
@@ -3187,11 +3145,11 @@ function fromObject (that, obj) {
 }
 
 function checked (length) {
-  // Note: cannot use `length < kMaxLength()` here because that fails when
+  // Note: cannot use `length < K_MAX_LENGTH` here because that fails when
   // length is NaN (which is otherwise coerced to zero.)
-  if (length >= kMaxLength()) {
+  if (length >= K_MAX_LENGTH) {
     throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
-                         'size: 0x' + kMaxLength().toString(16) + ' bytes')
+                         'size: 0x' + K_MAX_LENGTH.toString(16) + ' bytes')
   }
   return length | 0
 }
@@ -3204,7 +3162,7 @@ function SlowBuffer (length) {
 }
 
 Buffer.isBuffer = function isBuffer (b) {
-  return !!(b != null && b._isBuffer)
+  return b != null && b._isBuffer === true
 }
 
 Buffer.compare = function compare (a, b) {
@@ -3250,7 +3208,7 @@ Buffer.isEncoding = function isEncoding (encoding) {
 }
 
 Buffer.concat = function concat (list, length) {
-  if (!isArray(list)) {
+  if (!Array.isArray(list)) {
     throw new TypeError('"list" argument must be an Array of Buffers')
   }
 
@@ -3283,8 +3241,7 @@ function byteLength (string, encoding) {
   if (Buffer.isBuffer(string)) {
     return string.length
   }
-  if (typeof ArrayBuffer !== 'undefined' && typeof ArrayBuffer.isView === 'function' &&
-      (ArrayBuffer.isView(string) || string instanceof ArrayBuffer)) {
+  if (isArrayBufferView(string) || isArrayBuffer(string)) {
     return string.byteLength
   }
   if (typeof string !== 'string') {
@@ -3394,8 +3351,12 @@ function slowToString (encoding, start, end) {
   }
 }
 
-// The property is used by `Buffer.isBuffer` and `is-buffer` (in Safari 5-7) to detect
-// Buffer instances.
+// This property is used by `Buffer.isBuffer` (and the `is-buffer` npm package)
+// to detect a Buffer instance. It's not possible to use `instanceof Buffer`
+// reliably in a browserify context because there could be multiple different
+// copies of the 'buffer' package in use. This method works even for Buffer
+// instances that were created from another copy of the `buffer` package.
+// See: https://github.com/feross/buffer/issues/154
 Buffer.prototype._isBuffer = true
 
 function swap (b, n, m) {
@@ -3442,7 +3403,7 @@ Buffer.prototype.swap64 = function swap64 () {
 }
 
 Buffer.prototype.toString = function toString () {
-  var length = this.length | 0
+  var length = this.length
   if (length === 0) return ''
   if (arguments.length === 0) return utf8Slice(this, 0, length)
   return slowToString.apply(this, arguments)
@@ -3546,7 +3507,7 @@ function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
     byteOffset = -0x80000000
   }
   byteOffset = +byteOffset  // Coerce to Number.
-  if (isNaN(byteOffset)) {
+  if (numberIsNaN(byteOffset)) {
     // byteOffset: it it's undefined, null, NaN, "foo", etc, search whole buffer
     byteOffset = dir ? 0 : (buffer.length - 1)
   }
@@ -3575,8 +3536,7 @@ function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
     return arrayIndexOf(buffer, val, byteOffset, encoding, dir)
   } else if (typeof val === 'number') {
     val = val & 0xFF // Search for a byte value [0-255]
-    if (Buffer.TYPED_ARRAY_SUPPORT &&
-        typeof Uint8Array.prototype.indexOf === 'function') {
+    if (typeof Uint8Array.prototype.indexOf === 'function') {
       if (dir) {
         return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset)
       } else {
@@ -3678,7 +3638,7 @@ function hexWrite (buf, string, offset, length) {
   }
   for (var i = 0; i < length; ++i) {
     var parsed = parseInt(string.substr(i * 2, 2), 16)
-    if (isNaN(parsed)) return i
+    if (numberIsNaN(parsed)) return i
     buf[offset + i] = parsed
   }
   return i
@@ -3717,15 +3677,14 @@ Buffer.prototype.write = function write (string, offset, length, encoding) {
     offset = 0
   // Buffer#write(string, offset[, length][, encoding])
   } else if (isFinite(offset)) {
-    offset = offset | 0
+    offset = offset >>> 0
     if (isFinite(length)) {
-      length = length | 0
+      length = length >>> 0
       if (encoding === undefined) encoding = 'utf8'
     } else {
       encoding = length
       length = undefined
     }
-  // legacy write(string, encoding, offset, length) - remove in v0.13
   } else {
     throw new Error(
       'Buffer.write(string, encoding, offset[, length]) is no longer supported'
@@ -3924,7 +3883,7 @@ function utf16leSlice (buf, start, end) {
   var bytes = buf.slice(start, end)
   var res = ''
   for (var i = 0; i < bytes.length; i += 2) {
-    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256)
+    res += String.fromCharCode(bytes[i] + (bytes[i + 1] * 256))
   }
   return res
 }
@@ -3950,18 +3909,9 @@ Buffer.prototype.slice = function slice (start, end) {
 
   if (end < start) end = start
 
-  var newBuf
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    newBuf = this.subarray(start, end)
-    newBuf.__proto__ = Buffer.prototype
-  } else {
-    var sliceLen = end - start
-    newBuf = new Buffer(sliceLen, undefined)
-    for (var i = 0; i < sliceLen; ++i) {
-      newBuf[i] = this[i + start]
-    }
-  }
-
+  var newBuf = this.subarray(start, end)
+  // Return an augmented `Uint8Array` instance
+  newBuf.__proto__ = Buffer.prototype
   return newBuf
 }
 
@@ -3974,8 +3924,8 @@ function checkOffset (offset, ext, length) {
 }
 
 Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
-  offset = offset | 0
-  byteLength = byteLength | 0
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
   if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var val = this[offset]
@@ -3989,8 +3939,8 @@ Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert)
 }
 
 Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
-  offset = offset | 0
-  byteLength = byteLength | 0
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
   if (!noAssert) {
     checkOffset(offset, byteLength, this.length)
   }
@@ -4005,21 +3955,25 @@ Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert)
 }
 
 Buffer.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 1, this.length)
   return this[offset]
 }
 
 Buffer.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 2, this.length)
   return this[offset] | (this[offset + 1] << 8)
 }
 
 Buffer.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 2, this.length)
   return (this[offset] << 8) | this[offset + 1]
 }
 
 Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 4, this.length)
 
   return ((this[offset]) |
@@ -4029,6 +3983,7 @@ Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
 }
 
 Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 4, this.length)
 
   return (this[offset] * 0x1000000) +
@@ -4038,8 +3993,8 @@ Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
 }
 
 Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
-  offset = offset | 0
-  byteLength = byteLength | 0
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
   if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var val = this[offset]
@@ -4056,8 +4011,8 @@ Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
 }
 
 Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
-  offset = offset | 0
-  byteLength = byteLength | 0
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
   if (!noAssert) checkOffset(offset, byteLength, this.length)
 
   var i = byteLength
@@ -4074,24 +4029,28 @@ Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
 }
 
 Buffer.prototype.readInt8 = function readInt8 (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 1, this.length)
   if (!(this[offset] & 0x80)) return (this[offset])
   return ((0xff - this[offset] + 1) * -1)
 }
 
 Buffer.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 2, this.length)
   var val = this[offset] | (this[offset + 1] << 8)
   return (val & 0x8000) ? val | 0xFFFF0000 : val
 }
 
 Buffer.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 2, this.length)
   var val = this[offset + 1] | (this[offset] << 8)
   return (val & 0x8000) ? val | 0xFFFF0000 : val
 }
 
 Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 4, this.length)
 
   return (this[offset]) |
@@ -4101,6 +4060,7 @@ Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
 }
 
 Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 4, this.length)
 
   return (this[offset] << 24) |
@@ -4110,21 +4070,25 @@ Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
 }
 
 Buffer.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 4, this.length)
   return ieee754.read(this, offset, true, 23, 4)
 }
 
 Buffer.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 4, this.length)
   return ieee754.read(this, offset, false, 23, 4)
 }
 
 Buffer.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 8, this.length)
   return ieee754.read(this, offset, true, 52, 8)
 }
 
 Buffer.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
+  offset = offset >>> 0
   if (!noAssert) checkOffset(offset, 8, this.length)
   return ieee754.read(this, offset, false, 52, 8)
 }
@@ -4137,8 +4101,8 @@ function checkInt (buf, value, offset, ext, max, min) {
 
 Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
   value = +value
-  offset = offset | 0
-  byteLength = byteLength | 0
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
   if (!noAssert) {
     var maxBytes = Math.pow(2, 8 * byteLength) - 1
     checkInt(this, value, offset, byteLength, maxBytes, 0)
@@ -4156,8 +4120,8 @@ Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, 
 
 Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
   value = +value
-  offset = offset | 0
-  byteLength = byteLength | 0
+  offset = offset >>> 0
+  byteLength = byteLength >>> 0
   if (!noAssert) {
     var maxBytes = Math.pow(2, 8 * byteLength) - 1
     checkInt(this, value, offset, byteLength, maxBytes, 0)
@@ -4175,89 +4139,57 @@ Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, 
 
 Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
-  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   this[offset] = (value & 0xff)
   return offset + 1
 }
 
-function objectWriteUInt16 (buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffff + value + 1
-  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; ++i) {
-    buf[offset + i] = (value & (0xff << (8 * (littleEndian ? i : 1 - i)))) >>>
-      (littleEndian ? i : 1 - i) * 8
-  }
-}
-
 Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff)
-    this[offset + 1] = (value >>> 8)
-  } else {
-    objectWriteUInt16(this, value, offset, true)
-  }
+  this[offset] = (value & 0xff)
+  this[offset + 1] = (value >>> 8)
   return offset + 2
 }
 
 Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 8)
-    this[offset + 1] = (value & 0xff)
-  } else {
-    objectWriteUInt16(this, value, offset, false)
-  }
+  this[offset] = (value >>> 8)
+  this[offset + 1] = (value & 0xff)
   return offset + 2
-}
-
-function objectWriteUInt32 (buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffffffff + value + 1
-  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; ++i) {
-    buf[offset + i] = (value >>> (littleEndian ? i : 3 - i) * 8) & 0xff
-  }
 }
 
 Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset + 3] = (value >>> 24)
-    this[offset + 2] = (value >>> 16)
-    this[offset + 1] = (value >>> 8)
-    this[offset] = (value & 0xff)
-  } else {
-    objectWriteUInt32(this, value, offset, true)
-  }
+  this[offset + 3] = (value >>> 24)
+  this[offset + 2] = (value >>> 16)
+  this[offset + 1] = (value >>> 8)
+  this[offset] = (value & 0xff)
   return offset + 4
 }
 
 Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 24)
-    this[offset + 1] = (value >>> 16)
-    this[offset + 2] = (value >>> 8)
-    this[offset + 3] = (value & 0xff)
-  } else {
-    objectWriteUInt32(this, value, offset, false)
-  }
+  this[offset] = (value >>> 24)
+  this[offset + 1] = (value >>> 16)
+  this[offset + 2] = (value >>> 8)
+  this[offset + 3] = (value & 0xff)
   return offset + 4
 }
 
 Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1)
+    var limit = Math.pow(2, (8 * byteLength) - 1)
 
     checkInt(this, value, offset, byteLength, limit - 1, -limit)
   }
@@ -4278,9 +4210,9 @@ Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, no
 
 Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1)
+    var limit = Math.pow(2, (8 * byteLength) - 1)
 
     checkInt(this, value, offset, byteLength, limit - 1, -limit)
   }
@@ -4301,9 +4233,8 @@ Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, no
 
 Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
-  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
   if (value < 0) value = 0xff + value + 1
   this[offset] = (value & 0xff)
   return offset + 1
@@ -4311,58 +4242,42 @@ Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
 
 Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff)
-    this[offset + 1] = (value >>> 8)
-  } else {
-    objectWriteUInt16(this, value, offset, true)
-  }
+  this[offset] = (value & 0xff)
+  this[offset + 1] = (value >>> 8)
   return offset + 2
 }
 
 Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 8)
-    this[offset + 1] = (value & 0xff)
-  } else {
-    objectWriteUInt16(this, value, offset, false)
-  }
+  this[offset] = (value >>> 8)
+  this[offset + 1] = (value & 0xff)
   return offset + 2
 }
 
 Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff)
-    this[offset + 1] = (value >>> 8)
-    this[offset + 2] = (value >>> 16)
-    this[offset + 3] = (value >>> 24)
-  } else {
-    objectWriteUInt32(this, value, offset, true)
-  }
+  this[offset] = (value & 0xff)
+  this[offset + 1] = (value >>> 8)
+  this[offset + 2] = (value >>> 16)
+  this[offset + 3] = (value >>> 24)
   return offset + 4
 }
 
 Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
   value = +value
-  offset = offset | 0
+  offset = offset >>> 0
   if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
   if (value < 0) value = 0xffffffff + value + 1
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 24)
-    this[offset + 1] = (value >>> 16)
-    this[offset + 2] = (value >>> 8)
-    this[offset + 3] = (value & 0xff)
-  } else {
-    objectWriteUInt32(this, value, offset, false)
-  }
+  this[offset] = (value >>> 24)
+  this[offset + 1] = (value >>> 16)
+  this[offset + 2] = (value >>> 8)
+  this[offset + 3] = (value & 0xff)
   return offset + 4
 }
 
@@ -4372,6 +4287,8 @@ function checkIEEE754 (buf, value, offset, ext, max, min) {
 }
 
 function writeFloat (buf, value, offset, littleEndian, noAssert) {
+  value = +value
+  offset = offset >>> 0
   if (!noAssert) {
     checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38)
   }
@@ -4388,6 +4305,8 @@ Buffer.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) 
 }
 
 function writeDouble (buf, value, offset, littleEndian, noAssert) {
+  value = +value
+  offset = offset >>> 0
   if (!noAssert) {
     checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308)
   }
@@ -4436,7 +4355,7 @@ Buffer.prototype.copy = function copy (target, targetStart, start, end) {
     for (i = len - 1; i >= 0; --i) {
       target[i + targetStart] = this[i + start]
     }
-  } else if (len < 1000 || !Buffer.TYPED_ARRAY_SUPPORT) {
+  } else if (len < 1000) {
     // ascending copy from start
     for (i = 0; i < len; ++i) {
       target[i + targetStart] = this[i + start]
@@ -4505,7 +4424,7 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
   } else {
     var bytes = Buffer.isBuffer(val)
       ? val
-      : utf8ToBytes(new Buffer(val, encoding).toString())
+      : new Buffer(val, encoding)
     var len = bytes.length
     for (i = 0; i < end - start; ++i) {
       this[i + start] = bytes[i % len]
@@ -4518,11 +4437,11 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
 // HELPER FUNCTIONS
 // ================
 
-var INVALID_BASE64_RE = /[^+\/0-9A-Za-z-_]/g
+var INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g
 
 function base64clean (str) {
   // Node strips out invalid characters like \n and \t from the string, base64-js does not
-  str = stringtrim(str).replace(INVALID_BASE64_RE, '')
+  str = str.trim().replace(INVALID_BASE64_RE, '')
   // Node converts strings with length < 2 to ''
   if (str.length < 2) return ''
   // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
@@ -4530,11 +4449,6 @@ function base64clean (str) {
     str = str + '='
   }
   return str
-}
-
-function stringtrim (str) {
-  if (str.trim) return str.trim()
-  return str.replace(/^\s+|\s+$/g, '')
 }
 
 function toHex (n) {
@@ -4659,13 +4573,24 @@ function blitBuffer (src, dst, offset, length) {
   return i
 }
 
-function isnan (val) {
-  return val !== val // eslint-disable-line no-self-compare
+// ArrayBuffers from another context (i.e. an iframe) do not pass the `instanceof` check
+// but they should be treated as valid. See: https://github.com/feross/buffer/issues/166
+function isArrayBuffer (obj) {
+  return obj instanceof ArrayBuffer ||
+    (obj != null && obj.constructor != null && obj.constructor.name === 'ArrayBuffer' &&
+      typeof obj.byteLength === 'number')
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+// Node 0.10 supports `ArrayBuffer` but lacks `ArrayBuffer.isView`
+function isArrayBufferView (obj) {
+  return (typeof ArrayBuffer.isView === 'function') && ArrayBuffer.isView(obj)
+}
 
-},{"base64-js":22,"ieee754":34,"isarray":37}],25:[function(require,module,exports){
+function numberIsNaN (obj) {
+  return obj !== obj // eslint-disable-line no-self-compare
+}
+
+},{"base64-js":22,"ieee754":34}],25:[function(require,module,exports){
 module.exports = {
   "100": "Continue",
   "101": "Switching Protocols",
@@ -4919,6 +4844,11 @@ function useColors() {
   // explicitly
   if (typeof window !== 'undefined' && window.process && window.process.type === 'renderer') {
     return true;
+  }
+
+  // Internet Explorer and Edge do not support colors.
+  if (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
+    return false;
   }
 
   // is webkit? http://stackoverflow.com/a/16459606/376773
@@ -6796,22 +6726,39 @@ function format(fmt) {
 module.exports = format;
 
 },{}],33:[function(require,module,exports){
-var http = require('http');
+var http = require('http')
+var url = require('url')
 
-var https = module.exports;
+var https = module.exports
 
 for (var key in http) {
-    if (http.hasOwnProperty(key)) https[key] = http[key];
-};
-
-https.request = function (params, cb) {
-    if (!params) params = {};
-    params.scheme = 'https';
-    params.protocol = 'https:';
-    return http.request.call(this, params, cb);
+  if (http.hasOwnProperty(key)) https[key] = http[key]
 }
 
-},{"http":86}],34:[function(require,module,exports){
+https.request = function (params, cb) {
+  params = validateParams(params)
+  return http.request.call(this, params, cb)
+}
+
+https.get = function (params, cb) {
+  params = validateParams(params)
+  return http.get.call(this, params, cb)
+}
+
+function validateParams (params) {
+  if (typeof params === 'string') {
+    params = url.parse(params)
+  }
+  if (!params.protocol) {
+    params.protocol = 'https:'
+  }
+  if (params.protocol !== 'https:') {
+    throw new Error('Protocol "' + params.protocol + '" not supported. Expected "https:"')
+  }
+  return params
+}
+
+},{"http":86,"url":92}],34:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -7527,11 +7474,21 @@ function foldLine(line, width) {
 // Escapes a double-quoted string.
 function escapeString(string) {
   var result = '';
-  var char;
+  var char, nextChar;
   var escapeSeq;
 
   for (var i = 0; i < string.length; i++) {
     char = string.charCodeAt(i);
+    // Check for surrogate pairs (reference Unicode 3.0 section "3.7 Surrogates").
+    if (char >= 0xD800 && char <= 0xDBFF/* high surrogate */) {
+      nextChar = string.charCodeAt(i + 1);
+      if (nextChar >= 0xDC00 && nextChar <= 0xDFFF/* low surrogate */) {
+        // Combine the surrogate pair and store it escaped.
+        result += encodeHex((char - 0xD800) * 0x400 + nextChar - 0xDC00 + 0x10000);
+        // Advance index one extra since we already used that char here.
+        i++; continue;
+      }
+    }
     escapeSeq = ESCAPE_SEQUENCES[char];
     result += !escapeSeq && isPrintable(char)
       ? string[i]
@@ -7597,7 +7554,7 @@ function writeFlowMapping(state, level, object) {
       pairBuffer;
 
   for (index = 0, length = objectKeyList.length; index < length; index += 1) {
-    pairBuffer = '';
+    pairBuffer = state.condenseFlow ? '"' : '';
 
     if (index !== 0) pairBuffer += ', ';
 
@@ -7610,7 +7567,7 @@ function writeFlowMapping(state, level, object) {
 
     if (state.dump.length > 1024) pairBuffer += '? ';
 
-    pairBuffer += state.dump + ':' + (state.condenseFlow ? '' : ' ');
+    pairBuffer += state.dump + (state.condenseFlow ? '"' : '') + ':' + (state.condenseFlow ? '' : ' ');
 
     if (!writeNode(state, level, objectValue, false, false)) {
       continue; // Skip this pair because of invalid value.
@@ -8919,7 +8876,7 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
         allowCompact = true;
 
       } else {
-        throwError(state, 'incomplete explicit mapping pair; a key node is missed');
+        throwError(state, 'incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line');
       }
 
       state.position += 1;
