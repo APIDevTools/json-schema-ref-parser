@@ -21,7 +21,7 @@ describe('HTTP options', function () {
       testDone = done;
       var parser = new $RefParser();
 
-      parser.parse('http://httpbin.org/headers', {
+      parser.parse('https://httpbin.org/headers', {
         resolve: { http: { headers: {
           accept: 'application/json'
         }}}
@@ -39,7 +39,7 @@ describe('HTTP options', function () {
         testDone = done;
         var parser = new $RefParser();
 
-        parser.parse('http://httpbin.org/headers', {
+        parser.parse('https://httpbin.org/headers', {
           resolve: { http: { headers: {
             'my-custom-header': 'hello, world'
           }}}
@@ -71,9 +71,9 @@ describe('HTTP options', function () {
       testDone = done;
       var parser = new $RefParser();
 
-      parser.parse('http://httpbin.org/redirect/5')
+      parser.parse('https://httpbin.org/redirect/5')
         .then(function (schema) {
-          expect(schema.url).to.equal('http://httpbin.org/get');
+          expect(schema.url).to.equal('https://httpbin.org/get');
           done();
         })
         .catch(done);
@@ -91,7 +91,7 @@ describe('HTTP options', function () {
           else {
             // Some web browsers will automatically follow redirects.
             // Nothing we can do about that.
-            expect(schema.url).to.equal('http://httpbin.org/get');
+            expect(schema.url).to.equal('https://httpbin.org/get');
             done();
           }
         })
@@ -119,11 +119,11 @@ describe('HTTP options', function () {
       testDone = done;
       var parser = new $RefParser();
 
-      parser.parse('http://httpbin.org/redirect/10', {
+      parser.parse('https://httpbin.org/redirect/10', {
         resolve: { http: { redirects: 10 }}
       })
         .then(function (schema) {
-          expect(schema.url).to.equal('http://httpbin.org/get');
+          expect(schema.url).to.equal('https://httpbin.org/get');
           done();
         })
         .catch(done);
@@ -133,7 +133,7 @@ describe('HTTP options', function () {
       testDone = done;
       var parser = new $RefParser();
 
-      parser.parse('http://httpbin.org/redirect/1', {
+      parser.parse('https://httpbin.org/redirect/1', {
         resolve: { http: { redirects: 0 }}
       })
         .then(function (schema) {
@@ -143,18 +143,18 @@ describe('HTTP options', function () {
           else {
           // Some web browsers will automatically follow redirects.
           // Nothing we can do about that.
-            expect(schema.url).to.equal('http://httpbin.org/get');
+            expect(schema.url).to.equal('https://httpbin.org/get');
             done();
           }
         })
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
-          expect(err.message).to.contain('Error downloading http://httpbin.org/redirect/1');
+          expect(err.message).to.contain('Error downloading https://httpbin.org/redirect/1');
           if (userAgent.isNode) {
             expect(err.message).to.equal(
-              'Error downloading http://httpbin.org/redirect/1. \n' +
+              'Error downloading https://httpbin.org/redirect/1. \n' +
             'Too many redirects: \n' +
-            '  http://httpbin.org/redirect/1'
+            '  https://httpbin.org/redirect/1'
             );
           }
           done();
