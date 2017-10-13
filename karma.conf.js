@@ -10,8 +10,9 @@ var baseConfig = {
     'www/bower_components/chai/chai.js',
     'www/bower_components/sinon-js/sinon.js',
 
-    // TypedArray polyfill for IE 9
-    'node_modules/typedarray/index.js',
+    // Polyfills for older browsers
+    'www/polyfills/promise.js',
+    'www/polyfills/typedarray.js',
 
     // Json Schema $Ref Parser
     'dist/ref-parser.min.js',
