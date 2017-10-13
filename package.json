@@ -27,7 +27,7 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "lint": "eslint lib --fix && jscs lib --verbose",
+    "lint": "eslint lib test --fix",
     "build": "npm run lint && npm run browserify",
     "browserify": "simplifyify lib/index.js --outfile dist/ref-parser.js --standalone \\$RefParser --bundle --debug --minify",
     "watch": "npm run browserify -- --watch",
@@ -55,7 +55,6 @@
     "eslint": "^4.4.1",
     "http-server": "^0.10.0",
     "istanbul": "^0.4.5",
-    "jscs": "^3.0.7",
     "karma": "^1.7.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-cli": "^1.0.1",
