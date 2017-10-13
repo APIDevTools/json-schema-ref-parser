@@ -3,6 +3,21 @@ All notable changes will be documented in this file.
 JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [v4.0.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v4.0.0) (2017-10-13)
+
+#### Breaking Changes
+
+- To reduce the size of this library, it no longer includes polyfills for [Promises](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) and [TypedArrays](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray), which are natively supported in the latest versions of Node and web browsers.  If you need to support older browsers (such as IE9), then just use [this `Promise` polyfill](https://github.com/stefanpenner/es6-promise) and [this `TypedArray` polyfill](https://github.com/inexorabletash/polyfill/blob/master/typedarray.js).
+
+#### Minor Changes
+
+- Updated dependencies
+
+- [PR #53](https://github.com/BigstickCarpet/json-schema-ref-parser/pull/53) - Fixes [an edge-case bug](https://github.com/BigstickCarpet/json-schema-ref-parser/issues/52) with the `bundle()` method
+
+[Full Changelog](https://github.com/BigstickCarpet/json-schema-ref-parser/compare/v3.3.0...v4.0.0)
+
+
 ## [v3.3.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v3.3.0) (2017-08-09)
 
 - Updated dependencies
