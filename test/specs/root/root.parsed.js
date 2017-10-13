@@ -1,31 +1,31 @@
 helper.parsed.root =
 {
   schema: {
-    "$ref": "definitions/root.json"
+    $ref: 'definitions/root.json'
   },
 
   root: {
-    "$ref": "../definitions/extended.yaml"
+    $ref: '../definitions/extended.yaml'
   },
 
   extended: {
-    "title": "Extending a root $ref",
-    "$ref": "name.yaml"
+    title: 'Extending a root $ref',
+    $ref: 'name.yaml'
   },
 
   name: {
-    "title": "name",
-    "required": [
-      "first",
-      "last"
+    title: 'name',
+    required: [
+      'first',
+      'last'
     ],
-    "type": "object",
-    "properties": {
-      "last": {
-        "$ref": "./name.yaml#/properties/first"
+    type: 'object',
+    properties: {
+      last: {
+        $ref: './name.yaml#/properties/first'
       },
-      "first": {
-        "type": "string"
+      first: {
+        type: 'string'
       }
     },
   }

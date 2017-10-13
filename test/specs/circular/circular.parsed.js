@@ -1,195 +1,195 @@
 helper.parsed.circular =
 {
-  "self": {
-    "definitions": {
-      "pet": {
-        "type": "object",
-        "properties": {
-          "age": {
-            "type": "number"
+  self: {
+    definitions: {
+      pet: {
+        type: 'object',
+        properties: {
+          age: {
+            type: 'number'
           },
-          "name": {
-            "type": "string"
+          name: {
+            type: 'string'
           },
-          "species": {
-            "enum": [
-              "cat",
-              "dog",
-              "bird",
-              "fish"
+          species: {
+            enum: [
+              'cat',
+              'dog',
+              'bird',
+              'fish'
             ],
-            "type": "string"
+            type: 'string'
           }
         },
-        "title": "pet"
+        title: 'pet'
       },
-      "thing": {
-        "$ref": "#/definitions/thing"
+      thing: {
+        $ref: '#/definitions/thing'
       },
-      "child": {
-        "type": "object",
-        "properties": {
-          "pet": {
-            "$ref": "#/definitions/pet"
+      child: {
+        type: 'object',
+        properties: {
+          pet: {
+            $ref: '#/definitions/pet'
           },
-          "name": {
-            "type": "string"
+          name: {
+            type: 'string'
           }
         },
-        "title": "child"
+        title: 'child'
       }
     }
   },
 
   ancestor: {
-    "definitions": {
-      "person": {
-        "title": "person",
-        "properties": {
-          "spouse": {
-            "$ref": "#/definitions/person"
+    definitions: {
+      person: {
+        title: 'person',
+        properties: {
+          spouse: {
+            $ref: '#/definitions/person'
           },
-          "pet": {
-            "$ref": "#/definitions/pet"
+          pet: {
+            $ref: '#/definitions/pet'
           },
-          "name": {
-            "type": "string"
+          name: {
+            type: 'string'
           },
-          "age": {
-            "type": "number"
+          age: {
+            type: 'number'
           }
         }
       },
-      "pet": {
-        "type": "object",
-        "properties": {
-          "age": {
-            "type": "number"
+      pet: {
+        type: 'object',
+        properties: {
+          age: {
+            type: 'number'
           },
-          "name": {
-            "type": "string"
+          name: {
+            type: 'string'
           },
-          "species": {
-            "enum": [
-              "cat",
-              "dog",
-              "bird",
-              "fish"
+          species: {
+            enum: [
+              'cat',
+              'dog',
+              'bird',
+              'fish'
             ],
-            "type": "string"
+            type: 'string'
           }
         },
-        "title": "pet"
+        title: 'pet'
       }
     }
   },
 
   indirect: {
-    "definitions": {
-      "parent": {
-        "title": "parent",
-        "properties": {
-          "name": {
-            "type": "string"
+    definitions: {
+      parent: {
+        title: 'parent',
+        properties: {
+          name: {
+            type: 'string'
           },
-          "children": {
-            "items": {
-              "$ref": "#/definitions/child"
+          children: {
+            items: {
+              $ref: '#/definitions/child'
             },
-            "type": "array"
+            type: 'array'
           }
         }
       },
-      "child": {
-        "title": "child",
-        "properties": {
-          "parents": {
-            "items": {
-              "$ref": "#/definitions/parent"
+      child: {
+        title: 'child',
+        properties: {
+          parents: {
+            items: {
+              $ref: '#/definitions/parent'
             },
-            "type": "array"
+            type: 'array'
           },
-          "pet": {
-            "$ref": "#/definitions/pet"
+          pet: {
+            $ref: '#/definitions/pet'
           },
-          "name": {
-            "type": "string"
+          name: {
+            type: 'string'
           }
         }
       },
-      "pet": {
-        "type": "object",
-        "properties": {
-          "age": {
-            "type": "number"
+      pet: {
+        type: 'object',
+        properties: {
+          age: {
+            type: 'number'
           },
-          "name": {
-            "type": "string"
+          name: {
+            type: 'string'
           },
-          "species": {
-            "enum": [
-              "cat",
-              "dog",
-              "bird",
-              "fish"
+          species: {
+            enum: [
+              'cat',
+              'dog',
+              'bird',
+              'fish'
             ],
-            "type": "string"
+            type: 'string'
           }
         },
-        "title": "pet"
+        title: 'pet'
       }
     }
   },
 
   indirectAncestor: {
-    "definitions": {
-      "parent": {
-        "title": "parent",
-        "properties": {
-          "name": {
-            "type": "string"
+    definitions: {
+      parent: {
+        title: 'parent',
+        properties: {
+          name: {
+            type: 'string'
           },
-          "child": {
-            "$ref": "#/definitions/child"
+          child: {
+            $ref: '#/definitions/child'
           }
         },
       },
-      "child": {
-        "title": "child",
-        "properties": {
-          "name": {
-            "type": "string"
+      child: {
+        title: 'child',
+        properties: {
+          name: {
+            type: 'string'
           },
-          "pet": {
-            "$ref": "#/definitions/pet"
+          pet: {
+            $ref: '#/definitions/pet'
           },
-          "children": {
-            "items": {
-              "$ref": "#/definitions/child"
+          children: {
+            items: {
+              $ref: '#/definitions/child'
             },
-            "type": "array",
-            "description": "children"
+            type: 'array',
+            description: 'children'
           }
         },
       },
-      "pet": {
-        "title": "pet",
-        "type": "object",
-        "properties": {
-          "age": {
-            "type": "number"
+      pet: {
+        title: 'pet',
+        type: 'object',
+        properties: {
+          age: {
+            type: 'number'
           },
-          "name": {
-            "type": "string"
+          name: {
+            type: 'string'
           },
-          "species": {
-            "enum": [
-              "cat",
-              "dog",
-              "bird",
-              "fish"
+          species: {
+            enum: [
+              'cat',
+              'dog',
+              'bird',
+              'fish'
             ],
-            "type": "string"
+            type: 'string'
           }
         },
       }

@@ -1,131 +1,131 @@
 helper.bundled.circularExtended =
 {
-  "self": {
-    "definitions": {
-      "thing": {
-        "title": "thing",
-        "$ref": "#/definitions/thing",
-        "description": "This JSON Reference has additional properties (other than $ref). Normally, this creates a new type that extends the referenced type, but since this reference points to ITSELF, it doesn't do that.\n",
+  self: {
+    definitions: {
+      thing: {
+        title: 'thing',
+        $ref: '#/definitions/thing',
+        description: "This JSON Reference has additional properties (other than $ref). Normally, this creates a new type that extends the referenced type, but since this reference points to ITSELF, it doesn't do that.\n",
       }
     }
   },
 
   pet: {
-    "title": "pet",
-    "type": "object",
-    "properties": {
-      "age": {
-        type: "number"
+    title: 'pet',
+    type: 'object',
+    properties: {
+      age: {
+        type: 'number'
       },
-      "name": {
-        type: "string"
+      name: {
+        type: 'string'
       },
-      "species": {
-        "type": "string",
-        "enum": [
-          "cat",
-          "dog",
-          "bird",
-          "fish"
+      species: {
+        type: 'string',
+        enum: [
+          'cat',
+          'dog',
+          'bird',
+          'fish'
         ],
       },
     },
   },
 
   ancestor: {
-    "definitions": {
-      "person": {
-        "title": "person",
-        "properties": {
-          "spouse": {
-            "$ref": "#/definitions/person",
-            "description": "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"person\".\n",
+    definitions: {
+      person: {
+        title: 'person',
+        properties: {
+          spouse: {
+            $ref: '#/definitions/person',
+            description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "person".\n',
           },
-          "pet": {
-            $ref: "#/definitions/pet",
-            "description": "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"pet\".\n"
+          pet: {
+            $ref: '#/definitions/pet',
+            description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "pet".\n'
           },
-          "name": {
-            "type": "string"
+          name: {
+            type: 'string'
           }
         }
       },
-      "pet": null
+      pet: null
     }
   },
 
   indirect: {
-    "definitions": {
-      "parent": {
-        "title": "parent",
-        "properties": {
-          "name": {
-            "type": "string"
+    definitions: {
+      parent: {
+        title: 'parent',
+        properties: {
+          name: {
+            type: 'string'
           },
-          "children": {
-            "items": {
-              "$ref": "#/definitions/child",
-              "description": "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"child\".\n",
+          children: {
+            items: {
+              $ref: '#/definitions/child',
+              description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "child".\n',
             },
-            "type": "array"
+            type: 'array'
           }
         }
       },
-      "child": {
-        "title": "child",
-        "properties": {
-          "parents": {
-            "items": {
-              "$ref": "#/definitions/parent",
-              "description": "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"parent\".\n",
+      child: {
+        title: 'child',
+        properties: {
+          parents: {
+            items: {
+              $ref: '#/definitions/parent',
+              description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "parent".\n',
             },
-            "type": "array"
+            type: 'array'
           },
-          "pet": {
-            "$ref": "#/definitions/pet",
-            "description": "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"pet\".\n",
+          pet: {
+            $ref: '#/definitions/pet',
+            description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "pet".\n',
           },
-          "name": {
-            "type": "string"
+          name: {
+            type: 'string'
           }
         }
       },
-      "pet": null
+      pet: null
     }
   },
 
   indirectAncestor: {
-    "definitions": {
-      "pet": null,
-      "parent": {
-        "title": "parent",
-        "properties": {
-          "name": {
-            "type": "string"
+    definitions: {
+      pet: null,
+      parent: {
+        title: 'parent',
+        properties: {
+          name: {
+            type: 'string'
           },
-          "child": {
-            "$ref": "#/definitions/child",
-            "description": "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"child\".\n",
+          child: {
+            $ref: '#/definitions/child',
+            description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "child".\n',
           }
         },
       },
-      "child": {
-        "title": "child",
-        "properties": {
-          "pet": {
-            "$ref": "#/definitions/pet",
-            "description": "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"pet\".\n",
+      child: {
+        title: 'child',
+        properties: {
+          pet: {
+            $ref: '#/definitions/pet',
+            description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "pet".\n',
           },
-          "name": {
-            "type": "string"
+          name: {
+            type: 'string'
           },
-          "children": {
-            "items": {
-              "$ref": "#/definitions/child",
-              "description": "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"child\".\n",
+          children: {
+            items: {
+              $ref: '#/definitions/child',
+              description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "child".\n',
             },
-            "type": "array",
-            "description": "children"
+            type: 'array',
+            description: 'children'
           }
         },
       }

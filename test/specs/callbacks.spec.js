@@ -1,8 +1,8 @@
-'use strict';
+describe('Callback & Promise syntax', function () {
+  'use strict';
 
-describe('Callback & Promise syntax', function() {
-  ['parse', 'resolve', 'dereference', 'bundle'].forEach(function(method) {
-    describe(method + ' method', function() {
+  ['parse', 'resolve', 'dereference', 'bundle'].forEach(function (method) {
+    describe(method + ' method', function () {
       it('should call the callback function upon success', testCallbackSuccess(method));
       it('should call the callback function upon failure', testCallbackError(method));
       it('should resolve the Promise upon success', testPromiseSuccess(method));
@@ -10,10 +10,10 @@ describe('Callback & Promise syntax', function() {
     });
   });
 
-  function testCallbackSuccess(method) {
-    return function(done) {
+  function testCallbackSuccess (method) {
+    return function (done) {
       var parser = new $RefParser();
-      parser[method](path.rel('specs/internal/internal.yaml'), function(err, result) {
+      parser[method](path.rel('specs/internal/internal.yaml'), function (err, result) {
         try {
           expect(err).to.be.null;
           expect(result).to.be.an('object').and.ok;
@@ -30,12 +30,12 @@ describe('Callback & Promise syntax', function() {
           done(e);
         }
       });
-    }
+    };
   }
 
-  function testCallbackError(method) {
-    return function(done) {
-      $RefParser[method](path.rel('specs/invalid/invalid.yaml'), function(err, result) {
+  function testCallbackError (method) {
+    return function (done) {
+      $RefParser[method](path.rel('specs/invalid/invalid.yaml'), function (err, result) {
         try {
           expect(err).to.be.an.instanceOf(SyntaxError);
           expect(result).to.be.undefined;
@@ -45,14 +45,14 @@ describe('Callback & Promise syntax', function() {
           done(e);
         }
       });
-    }
+    };
   }
 
-  function testPromiseSuccess(method) {
-    return function() {
+  function testPromiseSuccess (method) {
+    return function () {
       var parser = new $RefParser();
       return parser[method](path.rel('specs/internal/internal.yaml'))
-        .then(function(result) {
+        .then(function (result) {
           expect(result).to.be.an('object').and.ok;
 
           if (method === 'resolve') {
@@ -62,16 +62,17 @@ describe('Callback & Promise syntax', function() {
             expect(result).to.equal(parser.schema);
           }
         });
-    }
+    };
   }
 
-  function testPromiseError(method) {
-    return function() {
+  function testPromiseError (method) {
+    return function () {
       return $RefParser[method](path.rel('specs/invalid/invalid.yaml'))
         .then(helper.shouldNotGetCalled)
-        .catch(function(err) {
+        .catch(function (err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
         });
-    }
+    };
   }
 });
+

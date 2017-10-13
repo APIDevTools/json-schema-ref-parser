@@ -1,52 +1,52 @@
 helper.parsed.substrings =
 {
   schema: {
-    "definitions": {
-      "$ref": "definitions/definitions.json"
+    definitions: {
+      $ref: 'definitions/definitions.json'
     },
-    "required": [
-      "name"
+    required: [
+      'name'
     ],
-    "type": "object",
-    "properties": {
-      "middleName": {
-        "$ref": "#/definitions/name-with-min-length"
+    type: 'object',
+    properties: {
+      middleName: {
+        $ref: '#/definitions/name-with-min-length'
       },
-      "lastName": {
-        "$ref": "#/definitions/name-with-min-length-max-length"
+      lastName: {
+        $ref: '#/definitions/name-with-min-length-max-length'
       },
-      "firstName": {
-        "$ref": "#/definitions/name"
+      firstName: {
+        $ref: '#/definitions/name'
       }
     },
-    "title": "Person"
+    title: 'Person'
   },
 
   definitions: {
-    "name": {
-      "$ref": "strings.yaml#/definitions/string"
+    name: {
+      $ref: 'strings.yaml#/definitions/string'
     },
-    "name-with-min-length": {
-      "$ref": "../definitions/strings.yaml#/definitions/string-with-min-length"
+    'name-with-min-length': {
+      $ref: '../definitions/strings.yaml#/definitions/string-with-min-length'
     },
-    "name-with-min-length-max-length": {
-      "$ref": "./strings.yaml#/definitions/string-with-min-length-max-length"
+    'name-with-min-length-max-length': {
+      $ref: './strings.yaml#/definitions/string-with-min-length-max-length'
     }
   },
 
   strings: {
-    "definitions": {
-      "string-with-min-length": {
-        "type": "string",
-        "min-length": 1,
+    definitions: {
+      'string-with-min-length': {
+        type: 'string',
+        'min-length': 1,
       },
-      "string-with-min-length-max-length": {
-        "type": "string",
-        "min-length": 1,
-        "max-length": 20,
+      'string-with-min-length-max-length': {
+        type: 'string',
+        'min-length': 1,
+        'max-length': 20,
       },
-      "string": {
-        "type": "string"
+      string: {
+        type: 'string'
       }
     }
   }

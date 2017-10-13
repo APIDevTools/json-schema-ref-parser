@@ -5,3 +5,9 @@
 extends:
   - modular/test
   - modular/browser
+
+globals:
+  $RefParser: true
+  helper: true
+  userAgent: true
+  path: true

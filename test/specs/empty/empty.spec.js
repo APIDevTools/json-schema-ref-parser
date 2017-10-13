@@ -1,11 +1,11 @@
-'use strict';
+describe('Empty schema', function () {
+  'use strict';
 
-describe('Empty schema', function() {
-  it('should parse successfully', function() {
+  it('should parse successfully', function () {
     var parser = new $RefParser();
     return parser
       .parse(path.rel('specs/empty/empty.json'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.be.an('object');
         expect(schema).to.be.empty;
         expect(parser.schema).to.equal(schema);
@@ -18,11 +18,11 @@ describe('Empty schema', function() {
     path.abs('specs/empty/empty.json'), {}
   ));
 
-  it('should dereference successfully', function() {
+  it('should dereference successfully', function () {
     var parser = new $RefParser();
     return parser
       .dereference(path.rel('specs/empty/empty.json'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.be.an('object');
         expect(schema).to.be.empty;
         expect(parser.schema).to.equal(schema);
@@ -33,11 +33,11 @@ describe('Empty schema', function() {
       });
   });
 
-  it('should bundle successfully', function() {
+  it('should bundle successfully', function () {
     var parser = new $RefParser();
     return parser
       .bundle(path.rel('specs/empty/empty.json'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.be.an('object');
         expect(schema).to.be.empty;
         expect(parser.schema).to.equal(schema);
@@ -45,11 +45,11 @@ describe('Empty schema', function() {
       });
   });
 
-  it('should throw an error if "parse.json.allowEmpty" is disabled', function() {
+  it('should throw an error if "parse.json.allowEmpty" is disabled', function () {
     return $RefParser
-      .parse(path.rel('specs/empty/empty.json'), {parse: {json: {allowEmpty: false}}})
+      .parse(path.rel('specs/empty/empty.json'), { parse: { json: { allowEmpty: false }}})
       .then(helper.shouldNotGetCalled)
-      .catch(function(err) {
+      .catch(function (err) {
         expect(err).to.be.an.instanceOf(SyntaxError);
         expect(err.message).to.contain('Error parsing ');
         expect(err.message).to.contain('empty/empty.json"');

@@ -1,9 +1,9 @@
-'use strict';
+describe('YAML object', function () {
+  'use strict';
 
-describe('YAML object', function() {
-  describe('parse', function() {
+  describe('parse', function () {
     it('should parse an object',
-      function(done) {
+      function (done) {
         var obj = $RefParser.YAML.parse(
           'title: person\n' +
           'required:\n' +
@@ -33,7 +33,7 @@ describe('YAML object', function() {
     );
 
     it('should parse a string',
-      function(done) {
+      function (done) {
         var str = $RefParser.YAML.parse('hello, world');
         expect(str).to.equal('hello, world');
         done();
@@ -41,7 +41,7 @@ describe('YAML object', function() {
     );
 
     it('should parse a number',
-      function(done) {
+      function (done) {
         var str = $RefParser.YAML.parse('42');
         expect(str).to.be.a('number').equal(42);
         done();
@@ -49,9 +49,9 @@ describe('YAML object', function() {
     );
   });
 
-  describe('stringify', function() {
+  describe('stringify', function () {
     it('should stringify an object',
-      function(done) {
+      function (done) {
         var yaml = $RefParser.YAML.stringify({
           title: 'person',
           required: ['name', 'age'],
@@ -81,7 +81,7 @@ describe('YAML object', function() {
     );
 
     it('should support a custom indent (as a string)',
-      function(done) {
+      function (done) {
         var yaml = $RefParser.YAML.stringify({
           title: 'person',
           required: ['name', 'age'],
@@ -111,7 +111,7 @@ describe('YAML object', function() {
     );
 
     it('should support a custom indent (as a number)',
-      function(done) {
+      function (done) {
         var yaml = $RefParser.YAML.stringify({
           title: 'person',
           required: ['name', 'age'],
@@ -141,7 +141,7 @@ describe('YAML object', function() {
     );
 
     it('should stringify a string',
-      function(done) {
+      function (done) {
         var yaml = $RefParser.YAML.stringify('hello, world');
         expect(yaml).to.equal('\'hello, world\'\n');
         done();
@@ -149,7 +149,7 @@ describe('YAML object', function() {
     );
 
     it('should stringify a number',
-      function(done) {
+      function (done) {
         var yaml = $RefParser.YAML.stringify(42);
         expect(yaml).to.equal('42\n');
         done();

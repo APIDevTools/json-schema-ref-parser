@@ -1,69 +1,69 @@
 helper.bundled.internal =
 {
-  "definitions": {
-    "fragment": {
-      "$id": "#fragment"
+  definitions: {
+    fragment: {
+      $id: '#fragment'
     },
-    "requiredString": {
-      "title": "requiredString",
-      "minLength": 1,
-      "type": "string"
+    requiredString: {
+      title: 'requiredString',
+      minLength: 1,
+      type: 'string'
     },
-    "name": {
-      "required": [
-        "first",
-        "last"
+    name: {
+      required: [
+        'first',
+        'last'
       ],
-      "type": "object",
-      "properties": {
-        "first": {
-          "$ref": "#/definitions/requiredString"
+      type: 'object',
+      properties: {
+        first: {
+          $ref: '#/definitions/requiredString'
         },
-        "last": {
-          "$ref": "#/definitions/requiredString"
+        last: {
+          $ref: '#/definitions/requiredString'
         },
-        "middle": {
-          "type": {
-            "$ref": "#/definitions/requiredString/type"
+        middle: {
+          type: {
+            $ref: '#/definitions/requiredString/type'
           },
-          "minLength": {
-            "$ref": "#/definitions/requiredString/minLength"
+          minLength: {
+            $ref: '#/definitions/requiredString/minLength'
           }
         },
-        "prefix": {
-          "$ref": "#/definitions/requiredString",
-          "minLength": 3
+        prefix: {
+          $ref: '#/definitions/requiredString',
+          minLength: 3
         },
-        "suffix": {
-          "type": "string",
-          "$ref": "#/definitions/name/properties/prefix",
-          "maxLength": 3
+        suffix: {
+          type: 'string',
+          $ref: '#/definitions/name/properties/prefix',
+          maxLength: 3
         }
       }
     }
   },
-  "required": [
-    "name"
+  required: [
+    'name'
   ],
-  "type": "object",
-  "properties": {
-    "fragment": {
-      "$ref": "#fragment"
+  type: 'object',
+  properties: {
+    fragment: {
+      $ref: '#fragment'
     },
-    "gender": {
-      "enum": [
-        "male",
-        "female"
+    gender: {
+      enum: [
+        'male',
+        'female'
       ],
-      "type": "string"
+      type: 'string'
     },
-    "age": {
-      "minimum": 0,
-      "type": "integer"
+    age: {
+      minimum: 0,
+      type: 'integer'
     },
-    "name": {
-      "$ref": "#/definitions/name"
+    name: {
+      $ref: '#/definitions/name'
     }
   },
-  "title": "Person"
+  title: 'Person'
 };

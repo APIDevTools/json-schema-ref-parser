@@ -1,4 +1,4 @@
-(function() {
+(function () {
   'use strict';
 
   var path = global.path = {};
@@ -16,7 +16,7 @@
    *
    * NOTE: When running in a test-runner (such as Karma) the absolute path is returned instead
    */
-  path.rel = function(file) {
+  path.rel = function (file) {
     if (userAgent.isNode) {
       // Return the relative path from the project root
       return _path.normalize(file);
@@ -38,7 +38,7 @@
   /**
    * Returns the absolute path of a file in the "tests" directory
    */
-  path.abs = function(file) {
+  path.abs = function (file) {
     if (userAgent.isNode) {
       file = _path.join(_testsDir, file || '/');
     }
@@ -55,7 +55,7 @@
   /**
    * Returns the path of a file in the "test" directory as a URL.
    */
-  path.url = function(file) {
+  path.url = function (file) {
     if (userAgent.isBrowser) {
       // In browsers, just return the absolute URL (e.g. "http://localhost/test/files/...")
       return path.abs(file);
@@ -79,7 +79,7 @@
    * Returns the path of the current working directory.
    * In Node, this is the "test" directory. In the browser, it is the directory of the current page.
    */
-  path.cwd = function() {
+  path.cwd = function () {
     if (userAgent.isNode) {
       return process.cwd() + '/';
     }
@@ -91,7 +91,7 @@
   /**
    * Returns the path of the "tests" directory
    */
-  function getTestsDir() {
+  function getTestsDir () {
     if (userAgent.isNode) {
       return _path.resolve(__dirname, '..');
     }
@@ -104,8 +104,8 @@
   /**
    * URI-encodes the given file name
    */
-  function encodeFile(file) {
+  function encodeFile (file) {
     return encodeURIComponent(file).split('%2F').join('/');
   }
 
-})();
+}());

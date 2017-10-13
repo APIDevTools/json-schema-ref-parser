@@ -1,11 +1,11 @@
-'use strict';
+describe('$refs that are substrings of each other', function () {
+  'use strict';
 
-describe('$refs that are substrings of each other', function() {
-  it('should parse successfully', function() {
+  it('should parse successfully', function () {
     var parser = new $RefParser();
     return parser
       .parse(path.rel('specs/substrings/substrings.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.substrings.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/substrings/substrings.yaml')]);
@@ -19,11 +19,11 @@ describe('$refs that are substrings of each other', function() {
     path.abs('specs/substrings/definitions/strings.yaml'), helper.parsed.substrings.strings
   ));
 
-  it('should dereference successfully', function() {
+  it('should dereference successfully', function () {
     var parser = new $RefParser();
     return parser
       .dereference(path.rel('specs/substrings/substrings.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.substrings);
 
@@ -37,11 +37,11 @@ describe('$refs that are substrings of each other', function() {
       });
   });
 
-  it('should bundle successfully', function() {
+  it('should bundle successfully', function () {
     var parser = new $RefParser();
     return parser
       .bundle(path.rel('specs/substrings/substrings.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.substrings);
       });

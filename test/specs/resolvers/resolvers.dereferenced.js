@@ -1,83 +1,83 @@
 helper.dereferenced.resolvers =
 {
-  "definitions": {
-    "foo": {
-      "bar": {
-        "baz": "hello world"
+  definitions: {
+    foo: {
+      bar: {
+        baz: 'hello world'
       }
     },
-    "name": {
-      "required": [
-        "first",
-        "last"
+    name: {
+      required: [
+        'first',
+        'last'
       ],
-      "type": "object",
-      "properties": {
-        "last": {
-          "minLength": 1,
-          "type": "string"
+      type: 'object',
+      properties: {
+        last: {
+          minLength: 1,
+          type: 'string'
         },
-        "first": {
-          "minLength": 1,
-          "type": "string"
+        first: {
+          minLength: 1,
+          type: 'string'
         }
       }
     },
-    "pet": {
-      "type": "object",
-      "properties": {
-        "age": {
-          "type": "number"
+    pet: {
+      type: 'object',
+      properties: {
+        age: {
+          type: 'number'
         },
-        "name": {
-          "type": "string"
+        name: {
+          type: 'string'
         },
-        "species": {
-          "enum": [
-            "cat",
-            "dog",
-            "bird",
-            "fish"
+        species: {
+          enum: [
+            'cat',
+            'dog',
+            'bird',
+            'fish'
           ],
-          "type": "string"
+          type: 'string'
         }
       },
-      "title": "pet"
+      title: 'pet'
     }
   },
-  "required": [
-    "name"
+  required: [
+    'name'
   ],
-  "type": "object",
-  "properties": {
-    "gender": {
-      "enum": [
-        "male",
-        "female"
+  type: 'object',
+  properties: {
+    gender: {
+      enum: [
+        'male',
+        'female'
       ],
-      "type": "string"
+      type: 'string'
     },
-    "age": {
-      "minimum": 0,
-      "type": "integer"
+    age: {
+      minimum: 0,
+      type: 'integer'
     },
-    "name": {
-      "required": [
-        "first",
-        "last"
+    name: {
+      required: [
+        'first',
+        'last'
       ],
-      "type": "object",
-      "properties": {
-        "last": {
-          "minLength": 1,
-          "type": "string"
+      type: 'object',
+      properties: {
+        last: {
+          minLength: 1,
+          type: 'string'
         },
-        "first": {
-          "minLength": 1,
-          "type": "string"
+        first: {
+          minLength: 1,
+          type: 'string'
         }
       }
     }
   },
-  "title": "Person"
+  title: 'Person'
 };

@@ -1,11 +1,11 @@
-'use strict';
+describe('Schema with a top-level (root) $ref', function () {
+  'use strict';
 
-describe('Schema with a top-level (root) $ref', function() {
-  it('should parse successfully', function() {
+  it('should parse successfully', function () {
     var parser = new $RefParser();
     return parser
       .parse(path.rel('specs/root/root.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.root.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/root/root.yaml')]);
@@ -20,11 +20,11 @@ describe('Schema with a top-level (root) $ref', function() {
     path.abs('specs/root/definitions/name.yaml'), helper.parsed.root.name
   ));
 
-  it('should dereference successfully', function() {
+  it('should dereference successfully', function () {
     var parser = new $RefParser();
     return parser
       .dereference(path.rel('specs/root/root.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.root);
 
@@ -36,11 +36,11 @@ describe('Schema with a top-level (root) $ref', function() {
       });
   });
 
-  it('should bundle successfully', function() {
+  it('should bundle successfully', function () {
     var parser = new $RefParser();
     return parser
       .bundle(path.rel('specs/root/root.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.root);
       });

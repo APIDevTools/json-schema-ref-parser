@@ -1,11 +1,11 @@
-'use strict';
+describe('Schema with deeply-nested $refs', function () {
+  'use strict';
 
-describe('Schema with deeply-nested $refs', function() {
-  it('should parse successfully', function() {
+  it('should parse successfully', function () {
     var parser = new $RefParser();
     return parser
       .parse(path.rel('specs/deep/deep.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.deep.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/deep/deep.yaml')]);
@@ -19,11 +19,11 @@ describe('Schema with deeply-nested $refs', function() {
     path.abs('specs/deep/definitions/required-string.yaml'), helper.parsed.deep.requiredString
   ));
 
-  it('should dereference successfully', function() {
+  it('should dereference successfully', function () {
     var parser = new $RefParser();
     return parser
       .dereference(path.rel('specs/deep/deep.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.deep);
 
@@ -39,13 +39,14 @@ describe('Schema with deeply-nested $refs', function() {
       });
   });
 
-  it('should bundle successfully', function() {
+  it('should bundle successfully', function () {
     var parser = new $RefParser();
     return parser
       .bundle(path.rel('specs/deep/deep.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.deep);
       });
   });
 });
+

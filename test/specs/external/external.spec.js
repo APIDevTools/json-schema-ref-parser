@@ -1,33 +1,33 @@
-'use strict';
+describe('Schema with external $refs', function () {
+  'use strict';
 
-describe('Schema with external $refs', function() {
-  it('should parse successfully from an absolute path', function() {
+  it('should parse successfully from an absolute path', function () {
     var parser = new $RefParser();
     return parser
       .parse(path.abs('specs/external/external.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.external.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/external/external.yaml')]);
       });
   });
 
-  it('should parse successfully from a relative path', function() {
+  it('should parse successfully from a relative path', function () {
     var parser = new $RefParser();
     return parser
       .parse(path.rel('specs/external/external.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.external.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/external/external.yaml')]);
       });
   });
 
-  it('should parse successfully from a url', function() {
+  it('should parse successfully from a url', function () {
     var parser = new $RefParser();
     return parser
       .parse(path.url('specs/external/external.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.external.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.url('specs/external/external.yaml')]);
@@ -61,11 +61,11 @@ describe('Schema with external $refs', function() {
     ));
   }
 
-  it('should dereference successfully', function() {
+  it('should dereference successfully', function () {
     var parser = new $RefParser();
     return parser
       .dereference(path.rel('specs/external/external.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.external);
 
@@ -82,11 +82,11 @@ describe('Schema with external $refs', function() {
       });
   });
 
-  it('should bundle successfully', function() {
+  it('should bundle successfully', function () {
     var parser = new $RefParser();
     return parser
       .bundle(path.rel('specs/external/external.yaml'))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.external);
       });

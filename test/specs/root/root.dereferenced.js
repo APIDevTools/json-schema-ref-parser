@@ -1,17 +1,17 @@
 helper.dereferenced.root =
 {
-  "title": "Extending a root $ref",
-  "required": [
-    "first",
-    "last"
+  title: 'Extending a root $ref',
+  required: [
+    'first',
+    'last'
   ],
-  "type": "object",
-  "properties": {
-    "last": {
-      "type": "string"
+  type: 'object',
+  properties: {
+    last: {
+      type: 'string'
     },
-    "first": {
-      "type": "string"
+    first: {
+      type: 'string'
     }
   },
 };

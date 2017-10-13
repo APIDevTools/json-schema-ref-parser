@@ -1,5 +1,5 @@
 // Mocha configuration
-(function() {
+(function () {
   'use strict';
 
   if (userAgent.isBrowser) {
@@ -10,15 +10,15 @@
     mocha.globals(['$0', '$1', '$2', '$3', '$4', '$5']);
 
     // Output each test's name, for debugging purposes
-    beforeEach(function() {
+    beforeEach(function () {
       console.log('START ' + this.currentTest.parent.title + ' - ' + this.currentTest.title);
     });
-    afterEach(function() {
+    afterEach(function () {
       console.log('DONE  ' + this.currentTest.parent.title + ' - ' + this.currentTest.title);
     });
   }
 
-  beforeEach(function() {
+  beforeEach(function () {
     // Flag TravisCI and SauceLabs as being very slow environments
     var isSlowEnvironment = userAgent.isTravisCI || userAgent.isKarma;
 
@@ -28,4 +28,4 @@
     this.currentTest.slow(1000);
   });
 
-})();
+}());

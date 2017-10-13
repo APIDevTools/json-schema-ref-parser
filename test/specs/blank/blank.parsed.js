@@ -1,20 +1,20 @@
 helper.parsed.blank =
 {
   schema: {
-    "yaml": {
-      "$ref": "files/blank.yaml"
+    yaml: {
+      $ref: 'files/blank.yaml'
     },
-    "json": {
-      "$ref": "files/blank.json"
+    json: {
+      $ref: 'files/blank.json'
     },
-    "text": {
-      "$ref": "files/blank.txt"
+    text: {
+      $ref: 'files/blank.txt'
     },
-    "binary": {
-      "$ref": "files/blank.png"
+    binary: {
+      $ref: 'files/blank.png'
     },
-    "unknown": {
-      "$ref": "files/blank.foo"
+    unknown: {
+      $ref: 'files/blank.foo'
     },
   },
 
@@ -22,9 +22,9 @@ helper.parsed.blank =
 
   json: undefined,
 
-  text: "",
+  text: '',
 
-  binary: {type: "Buffer", data: []},
+  binary: { type: 'Buffer', data: []},
 
   unknown: undefined
 };

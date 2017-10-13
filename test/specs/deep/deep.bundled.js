@@ -1,250 +1,250 @@
 helper.bundled.deep =
 {
-  "type": "object",
-  "properties": {
-    "level 1": {
-      "required": [
-        "name"
+  type: 'object',
+  properties: {
+    'level 1': {
+      required: [
+        'name'
       ],
-      "type": "object",
-      "properties": {
-        "level 2": {
-          "required": [
-            "name"
+      type: 'object',
+      properties: {
+        'level 2': {
+          required: [
+            'name'
           ],
-          "type": "object",
-          "properties": {
-            "level 3": {
-              "required": [
-                "name"
+          type: 'object',
+          properties: {
+            'level 3': {
+              required: [
+                'name'
               ],
-              "type": "object",
-              "properties": {
-                "level 4": {
-                  "required": [
-                    "name"
+              type: 'object',
+              properties: {
+                'level 4': {
+                  required: [
+                    'name'
                   ],
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": {
-                        "$ref": "#/properties/name/type"
+                  type: 'object',
+                  properties: {
+                    name: {
+                      type: {
+                        $ref: '#/properties/name/type'
                       }
                     },
-                    "level 5": {
-                      "required": [
-                        "name"
+                    'level 5': {
+                      required: [
+                        'name'
                       ],
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": {
-                            "$ref": "#/properties/name/type"
+                      type: 'object',
+                      properties: {
+                        name: {
+                          type: {
+                            $ref: '#/properties/name/type'
                           }
                         },
-                        "level 6": {
-                          "required": [
-                            "name"
+                        'level 6': {
+                          required: [
+                            'name'
                           ],
-                          "type": "object",
-                          "properties": {
-                            "name": {
-                              "type": {
-                                "$ref": "#/properties/name/type"
+                          type: 'object',
+                          properties: {
+                            name: {
+                              type: {
+                                $ref: '#/properties/name/type'
                               }
                             },
-                            "level 7": {
-                              "required": [
-                                "name"
+                            'level 7': {
+                              required: [
+                                'name'
                               ],
-                              "type": "object",
-                              "properties": {
-                                "level 8": {
-                                  "required": [
-                                    "name"
+                              type: 'object',
+                              properties: {
+                                'level 8': {
+                                  required: [
+                                    'name'
                                   ],
-                                  "type": "object",
-                                  "properties": {
-                                    "level 9": {
-                                      "required": [
-                                        "name"
+                                  type: 'object',
+                                  properties: {
+                                    'level 9': {
+                                      required: [
+                                        'name'
                                       ],
-                                      "type": "object",
-                                      "properties": {
-                                        "level 10": {
-                                          "required": [
-                                            "name"
+                                      type: 'object',
+                                      properties: {
+                                        'level 10': {
+                                          required: [
+                                            'name'
                                           ],
-                                          "type": "object",
-                                          "properties": {
-                                            "level 11": {
-                                              "required": [
-                                                "name"
+                                          type: 'object',
+                                          properties: {
+                                            'level 11': {
+                                              required: [
+                                                'name'
                                               ],
-                                              "type": "object",
-                                              "properties": {
-                                                "level 12": {
-                                                  "required": [
-                                                    "name"
+                                              type: 'object',
+                                              properties: {
+                                                'level 12': {
+                                                  required: [
+                                                    'name'
                                                   ],
-                                                  "type": "object",
-                                                  "properties": {
-                                                    "level 13": {
-                                                      "required": [
-                                                        "name"
+                                                  type: 'object',
+                                                  properties: {
+                                                    'level 13': {
+                                                      required: [
+                                                        'name'
                                                       ],
-                                                      "type": "object",
-                                                      "properties": {
-                                                        "name": {
-                                                          "type": {
-                                                            "$ref": "#/properties/name/type"
+                                                      type: 'object',
+                                                      properties: {
+                                                        name: {
+                                                          type: {
+                                                            $ref: '#/properties/name/type'
                                                           }
                                                         },
-                                                        "level 14": {
-                                                          "required": [
-                                                            "name"
+                                                        'level 14': {
+                                                          required: [
+                                                            'name'
                                                           ],
-                                                          "type": "object",
-                                                          "properties": {
-                                                            "name": {
-                                                              "type": {
-                                                                "$ref": "#/properties/name/type"
+                                                          type: 'object',
+                                                          properties: {
+                                                            name: {
+                                                              type: {
+                                                                $ref: '#/properties/name/type'
                                                               }
                                                             },
-                                                            "level 15": {
-                                                              "required": [
-                                                                "name"
+                                                            'level 15': {
+                                                              required: [
+                                                                'name'
                                                               ],
-                                                              "type": "object",
-                                                              "properties": {
-                                                                "level 16": {
-                                                                  "required": [
-                                                                    "name"
+                                                              type: 'object',
+                                                              properties: {
+                                                                'level 16': {
+                                                                  required: [
+                                                                    'name'
                                                                   ],
-                                                                  "type": "object",
-                                                                  "properties": {
-                                                                    "name": {
-                                                                      "type": {
-                                                                        "$ref": "#/properties/name/type"
+                                                                  type: 'object',
+                                                                  properties: {
+                                                                    name: {
+                                                                      type: {
+                                                                        $ref: '#/properties/name/type'
                                                                       }
                                                                     },
-                                                                    "level 17": {
-                                                                      "required": [
-                                                                        "name"
+                                                                    'level 17': {
+                                                                      required: [
+                                                                        'name'
                                                                       ],
-                                                                      "type": "object",
-                                                                      "properties": {
-                                                                        "level 18": {
-                                                                          "required": [
-                                                                            "name"
+                                                                      type: 'object',
+                                                                      properties: {
+                                                                        'level 18': {
+                                                                          required: [
+                                                                            'name'
                                                                           ],
-                                                                          "type": "object",
-                                                                          "properties": {
-                                                                            "level 19": {
-                                                                              "required": [
-                                                                                "name"
+                                                                          type: 'object',
+                                                                          properties: {
+                                                                            'level 19': {
+                                                                              required: [
+                                                                                'name'
                                                                               ],
-                                                                              "type": "object",
-                                                                              "properties": {
-                                                                                "level 20": {
-                                                                                  "required": [
-                                                                                    "name"
+                                                                              type: 'object',
+                                                                              properties: {
+                                                                                'level 20': {
+                                                                                  required: [
+                                                                                    'name'
                                                                                   ],
-                                                                                  "type": "object",
-                                                                                  "properties": {
-                                                                                    "level 21": {
-                                                                                      "required": [
-                                                                                        "name"
+                                                                                  type: 'object',
+                                                                                  properties: {
+                                                                                    'level 21': {
+                                                                                      required: [
+                                                                                        'name'
                                                                                       ],
-                                                                                      "type": "object",
-                                                                                      "properties": {
-                                                                                        "level 22": {
-                                                                                          "required": [
-                                                                                            "name"
+                                                                                      type: 'object',
+                                                                                      properties: {
+                                                                                        'level 22': {
+                                                                                          required: [
+                                                                                            'name'
                                                                                           ],
-                                                                                          "type": "object",
-                                                                                          "properties": {
-                                                                                            "level 23": {
-                                                                                              "required": [
-                                                                                                "name"
+                                                                                          type: 'object',
+                                                                                          properties: {
+                                                                                            'level 23': {
+                                                                                              required: [
+                                                                                                'name'
                                                                                               ],
-                                                                                              "type": "object",
-                                                                                              "properties": {
-                                                                                                "name": {
-                                                                                                  "type": {
-                                                                                                    "$ref": "#/properties/name/type"
+                                                                                              type: 'object',
+                                                                                              properties: {
+                                                                                                name: {
+                                                                                                  type: {
+                                                                                                    $ref: '#/properties/name/type'
                                                                                                   }
                                                                                                 },
-                                                                                                "level 24": {
-                                                                                                  "required": [
-                                                                                                    "name"
+                                                                                                'level 24': {
+                                                                                                  required: [
+                                                                                                    'name'
                                                                                                   ],
-                                                                                                  "type": "object",
-                                                                                                  "properties": {
-                                                                                                    "name": {
-                                                                                                      "type": {
-                                                                                                        "$ref": "#/properties/name/type"
+                                                                                                  type: 'object',
+                                                                                                  properties: {
+                                                                                                    name: {
+                                                                                                      type: {
+                                                                                                        $ref: '#/properties/name/type'
                                                                                                       }
                                                                                                     },
-                                                                                                    "level 25": {
-                                                                                                      "required": [
-                                                                                                        "name"
+                                                                                                    'level 25': {
+                                                                                                      required: [
+                                                                                                        'name'
                                                                                                       ],
-                                                                                                      "type": "object",
-                                                                                                      "properties": {
-                                                                                                        "name": {
-                                                                                                          "type": {
-                                                                                                            "$ref": "#/properties/name/type"
+                                                                                                      type: 'object',
+                                                                                                      properties: {
+                                                                                                        name: {
+                                                                                                          type: {
+                                                                                                            $ref: '#/properties/name/type'
                                                                                                           }
                                                                                                         },
-                                                                                                        "level 26": {
-                                                                                                          "required": [
-                                                                                                            "name"
+                                                                                                        'level 26': {
+                                                                                                          required: [
+                                                                                                            'name'
                                                                                                           ],
-                                                                                                          "type": "object",
-                                                                                                          "properties": {
-                                                                                                            "level 27": {
-                                                                                                              "required": [
-                                                                                                                "name"
+                                                                                                          type: 'object',
+                                                                                                          properties: {
+                                                                                                            'level 27': {
+                                                                                                              required: [
+                                                                                                                'name'
                                                                                                               ],
-                                                                                                              "type": "object",
-                                                                                                              "properties": {
-                                                                                                                "level 28": {
-                                                                                                                  "required": [
-                                                                                                                    "name"
+                                                                                                              type: 'object',
+                                                                                                              properties: {
+                                                                                                                'level 28': {
+                                                                                                                  required: [
+                                                                                                                    'name'
                                                                                                                   ],
-                                                                                                                  "type": "object",
-                                                                                                                  "properties": {
-                                                                                                                    "level 29": {
-                                                                                                                      "required": [
-                                                                                                                        "name"
+                                                                                                                  type: 'object',
+                                                                                                                  properties: {
+                                                                                                                    'level 29': {
+                                                                                                                      required: [
+                                                                                                                        'name'
                                                                                                                       ],
-                                                                                                                      "type": "object",
-                                                                                                                      "properties": {
-                                                                                                                        "name": {
-                                                                                                                          "type": {
-                                                                                                                            "$ref": "#/properties/name/type"
+                                                                                                                      type: 'object',
+                                                                                                                      properties: {
+                                                                                                                        name: {
+                                                                                                                          type: {
+                                                                                                                            $ref: '#/properties/name/type'
                                                                                                                           }
                                                                                                                         }
                                                                                                                       }
                                                                                                                     },
-                                                                                                                    "name": {
-                                                                                                                      "type": {
-                                                                                                                        "$ref": "#/properties/name/type"
+                                                                                                                    name: {
+                                                                                                                      type: {
+                                                                                                                        $ref: '#/properties/name/type'
                                                                                                                       }
                                                                                                                     }
                                                                                                                   }
                                                                                                                 },
-                                                                                                                "name": {
-                                                                                                                  "type": {
-                                                                                                                    "$ref": "#/properties/name/type"
+                                                                                                                name: {
+                                                                                                                  type: {
+                                                                                                                    $ref: '#/properties/name/type'
                                                                                                                   }
                                                                                                                 }
                                                                                                               }
                                                                                                             },
-                                                                                                            "name": {
-                                                                                                              "type": {
-                                                                                                                "$ref": "#/properties/name/type"
+                                                                                                            name: {
+                                                                                                              type: {
+                                                                                                                $ref: '#/properties/name/type'
                                                                                                               }
                                                                                                             }
                                                                                                           }
@@ -255,53 +255,53 @@ helper.bundled.deep =
                                                                                                 }
                                                                                               }
                                                                                             },
-                                                                                            "name": {
-                                                                                              "type": {
-                                                                                                "$ref": "#/properties/name/type"
+                                                                                            name: {
+                                                                                              type: {
+                                                                                                $ref: '#/properties/name/type'
                                                                                               }
                                                                                             }
                                                                                           }
                                                                                         },
-                                                                                        "name": {
-                                                                                          "type": {
-                                                                                            "$ref": "#/properties/name/type"
+                                                                                        name: {
+                                                                                          type: {
+                                                                                            $ref: '#/properties/name/type'
                                                                                           }
                                                                                         }
                                                                                       }
                                                                                     },
-                                                                                    "name": {
-                                                                                      "type": {
-                                                                                        "$ref": "#/properties/name/type"
+                                                                                    name: {
+                                                                                      type: {
+                                                                                        $ref: '#/properties/name/type'
                                                                                       }
                                                                                     }
                                                                                   }
                                                                                 },
-                                                                                "name": {
-                                                                                  "type": {
-                                                                                    "$ref": "#/properties/name/type"
+                                                                                name: {
+                                                                                  type: {
+                                                                                    $ref: '#/properties/name/type'
                                                                                   }
                                                                                 }
                                                                               }
                                                                             },
-                                                                            "name": {
-                                                                              "type": {
-                                                                                "$ref": "#/properties/name/type"
+                                                                            name: {
+                                                                              type: {
+                                                                                $ref: '#/properties/name/type'
                                                                               }
                                                                             }
                                                                           }
                                                                         },
-                                                                        "name": {
-                                                                          "type": {
-                                                                            "$ref": "#/properties/name/type"
+                                                                        name: {
+                                                                          type: {
+                                                                            $ref: '#/properties/name/type'
                                                                           }
                                                                         }
                                                                       }
                                                                     }
                                                                   }
                                                                 },
-                                                                "name": {
-                                                                  "type": {
-                                                                    "$ref": "#/properties/name/type"
+                                                                name: {
+                                                                  type: {
+                                                                    $ref: '#/properties/name/type'
                                                                   }
                                                                 }
                                                               }
@@ -310,44 +310,44 @@ helper.bundled.deep =
                                                         }
                                                       }
                                                     },
-                                                    "name": {
-                                                      "type": {
-                                                        "$ref": "#/properties/name/type"
+                                                    name: {
+                                                      type: {
+                                                        $ref: '#/properties/name/type'
                                                       }
                                                     }
                                                   }
                                                 },
-                                                "name": {
-                                                  "type": {
-                                                    "$ref": "#/properties/name/type"
+                                                name: {
+                                                  type: {
+                                                    $ref: '#/properties/name/type'
                                                   }
                                                 }
                                               }
                                             },
-                                            "name": {
-                                              "type": {
-                                                "$ref": "#/properties/name/type"
+                                            name: {
+                                              type: {
+                                                $ref: '#/properties/name/type'
                                               }
                                             }
                                           }
                                         },
-                                        "name": {
-                                          "type": {
-                                            "$ref": "#/properties/name/type"
+                                        name: {
+                                          type: {
+                                            $ref: '#/properties/name/type'
                                           }
                                         }
                                       }
                                     },
-                                    "name": {
-                                      "type": {
-                                        "$ref": "#/properties/name/type"
+                                    name: {
+                                      type: {
+                                        $ref: '#/properties/name/type'
                                       }
                                     }
                                   }
                                 },
-                                "name": {
-                                  "type": {
-                                    "$ref": "#/properties/name/type"
+                                name: {
+                                  type: {
+                                    $ref: '#/properties/name/type'
                                   }
                                 }
                               }
@@ -358,64 +358,64 @@ helper.bundled.deep =
                     }
                   }
                 },
-                "name": {
-                  "type": {
-                    "$ref": "#/properties/name/type"
+                name: {
+                  type: {
+                    $ref: '#/properties/name/type'
                   }
                 }
               }
             },
-            "name": {
-              "type": {
-                "$ref": "#/properties/name/type"
+            name: {
+              type: {
+                $ref: '#/properties/name/type'
               }
             }
           }
         },
-        "name": {
-          "type": {
-            "$ref": "#/properties/name/type"
+        name: {
+          type: {
+            $ref: '#/properties/name/type'
           }
         }
       }
     },
-    "name": {
-      "type": {
-        "required": [
-          "first",
-          "last"
+    name: {
+      type: {
+        required: [
+          'first',
+          'last'
         ],
-        "type": "object",
-        "properties": {
-          "middle": {
-            "minLength": {
-              "$ref": "#/properties/name/type/properties/first/minLength"
+        type: 'object',
+        properties: {
+          middle: {
+            minLength: {
+              $ref: '#/properties/name/type/properties/first/minLength'
             },
-            "type": {
-              "$ref": "#/properties/name/type/properties/first/type"
+            type: {
+              $ref: '#/properties/name/type/properties/first/type'
             }
           },
-          "prefix": {
-            "minLength": 3,
-            "$ref": "#/properties/name/type/properties/first"
+          prefix: {
+            minLength: 3,
+            $ref: '#/properties/name/type/properties/first'
           },
-          "last": {
-            "$ref": "#/properties/name/type/properties/first"
+          last: {
+            $ref: '#/properties/name/type/properties/first'
           },
-          "suffix": {
-            "$ref": "#/properties/name/type/properties/prefix",
-            "type": "string",
-            "maxLength": 3
+          suffix: {
+            $ref: '#/properties/name/type/properties/prefix',
+            type: 'string',
+            maxLength: 3
           },
-          "first": {
-            "minLength": 1,
-            "type": "string",
-            "title": "requiredString"
+          first: {
+            minLength: 1,
+            type: 'string',
+            title: 'requiredString'
           }
         },
-        "title": "name"
+        title: 'name'
       }
     }
   },
-  "title": "Deep Schema"
+  title: 'Deep Schema'
 };

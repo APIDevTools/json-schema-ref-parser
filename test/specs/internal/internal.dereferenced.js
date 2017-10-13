@@ -1,102 +1,102 @@
 helper.dereferenced.internal =
 {
-  "definitions": {
-    "fragment": {
-      "$id": "#fragment"
+  definitions: {
+    fragment: {
+      $id: '#fragment'
     },
-    "requiredString": {
-      "title": "requiredString",
-      "minLength": 1,
-      "type": "string"
+    requiredString: {
+      title: 'requiredString',
+      minLength: 1,
+      type: 'string'
     },
-    "name": {
-      "required": [
-        "first",
-        "last"
+    name: {
+      required: [
+        'first',
+        'last'
       ],
-      "type": "object",
-      "properties": {
-        "first": {
-          "title": "requiredString",
-          "type": "string",
-          "minLength": 1
+      type: 'object',
+      properties: {
+        first: {
+          title: 'requiredString',
+          type: 'string',
+          minLength: 1
         },
-        "last": {
-          "title": "requiredString",
-          "type": "string",
-          "minLength": 1
+        last: {
+          title: 'requiredString',
+          type: 'string',
+          minLength: 1
         },
-        "middle": {
-          "type": "string",
-          "minLength": 1
+        middle: {
+          type: 'string',
+          minLength: 1
         },
-        "prefix": {
-          "title": "requiredString",
-          "type": "string",
-          "minLength": 3
+        prefix: {
+          title: 'requiredString',
+          type: 'string',
+          minLength: 3
         },
-        "suffix": {
-          "title": "requiredString",
-          "type": "string",
-          "minLength": 3,
-          "maxLength": 3
+        suffix: {
+          title: 'requiredString',
+          type: 'string',
+          minLength: 3,
+          maxLength: 3
         }
       }
     }
   },
-  "required": [
-    "name"
+  required: [
+    'name'
   ],
-  "type": "object",
-  "properties": {
-    "fragment": {
-      "$ref": "#fragment"
+  type: 'object',
+  properties: {
+    fragment: {
+      $ref: '#fragment'
     },
-    "gender": {
-      "enum": [
-        "male",
-        "female"
+    gender: {
+      enum: [
+        'male',
+        'female'
       ],
-      "type": "string"
+      type: 'string'
     },
-    "age": {
-      "minimum": 0,
-      "type": "integer"
+    age: {
+      minimum: 0,
+      type: 'integer'
     },
-    "name": {
-      "required": [
-        "first",
-        "last"
+    name: {
+      required: [
+        'first',
+        'last'
       ],
-      "type": "object",
-      "properties": {
-        "first": {
-          "title": "requiredString",
-          "type": "string",
-          "minLength": 1
+      type: 'object',
+      properties: {
+        first: {
+          title: 'requiredString',
+          type: 'string',
+          minLength: 1
         },
-        "last": {
-          "title": "requiredString",
-          "type": "string",
-          "minLength": 1
+        last: {
+          title: 'requiredString',
+          type: 'string',
+          minLength: 1
         },
-        "middle": {
-          "type": "string",
-          "minLength": 1
+        middle: {
+          type: 'string',
+          minLength: 1
         },
-        "prefix": {
-          "title": "requiredString",
-          "type": "string",
-          "minLength": 3
+        prefix: {
+          title: 'requiredString',
+          type: 'string',
+          minLength: 3
         },
-        "suffix": {
-          "title": "requiredString",
-          "type": "string",
-          "minLength": 3,
-          "maxLength": 3
+        suffix: {
+          title: 'requiredString',
+          type: 'string',
+          minLength: 3,
+          maxLength: 3
         }
       }
     }
   },
-  "title": "Person"
+  title: 'Person'
 };

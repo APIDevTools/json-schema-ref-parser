@@ -1,89 +1,89 @@
 helper.parsed.circularExternal =
 {
   schema: {
-    "definitions": {
-      "pet": {
-        "$ref": "definitions/pet.yaml"
+    definitions: {
+      pet: {
+        $ref: 'definitions/pet.yaml'
       },
-      "thing": {
-        "$ref": "circular-external.yaml#/definitions/thing"
+      thing: {
+        $ref: 'circular-external.yaml#/definitions/thing'
       },
-      "person": {
-        "$ref": "definitions/person.yaml"
+      person: {
+        $ref: 'definitions/person.yaml'
       },
-      "parent": {
-        "$ref": "definitions/parent.yaml"
+      parent: {
+        $ref: 'definitions/parent.yaml'
       },
-      "child": {
-        "$ref": "definitions/child.yaml"
+      child: {
+        $ref: 'definitions/child.yaml'
       }
     }
   },
 
-  "pet": {
-    "title": "pet",
-    "type": "object",
-    "properties": {
-      "age": {
-        "type": "number"
+  pet: {
+    title: 'pet',
+    type: 'object',
+    properties: {
+      age: {
+        type: 'number'
       },
-      "name": {
-        "type": "string"
+      name: {
+        type: 'string'
       },
-      "species": {
-        "enum": [
-          "cat",
-          "dog",
-          "bird",
-          "fish"
+      species: {
+        enum: [
+          'cat',
+          'dog',
+          'bird',
+          'fish'
         ],
-        "type": "string"
+        type: 'string'
       }
     },
   },
 
   child: {
-    "type": "object",
-    "properties": {
-      "parents": {
-        "items": {
-          "$ref": "parent.yaml"
+    type: 'object',
+    properties: {
+      parents: {
+        items: {
+          $ref: 'parent.yaml'
         },
-        "type": "array"
+        type: 'array'
       },
-      "name": {
-        "type": "string"
+      name: {
+        type: 'string'
       }
     },
-    "title": "child"
+    title: 'child'
   },
 
   parent: {
-    "type": "object",
-    "properties": {
-      "name": {
-        "type": "string"
+    type: 'object',
+    properties: {
+      name: {
+        type: 'string'
       },
-      "children": {
-        "items": {
-          "$ref": "child.yaml"
+      children: {
+        items: {
+          $ref: 'child.yaml'
         },
-        "type": "array"
+        type: 'array'
       }
     },
-    "title": "parent"
+    title: 'parent'
   },
 
   person: {
-    "type": "object",
-    "properties": {
-      "spouse": {
-        "$ref": "person.yaml"
+    type: 'object',
+    properties: {
+      spouse: {
+        $ref: 'person.yaml'
       },
-      "name": {
-        "type": "string"
+      name: {
+        type: 'string'
       }
     },
-    "title": "person"
+    title: 'person'
   }
 };

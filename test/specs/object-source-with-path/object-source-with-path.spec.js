@@ -1,7 +1,7 @@
-'use strict';
+describe('Object sources with file paths', function () {
+  'use strict';
 
-describe('Object sources with file paths', function() {
-  it('should dereference a single object', function() {
+  it('should dereference a single object', function () {
     var parser = new $RefParser();
     return parser
       .dereference(
@@ -14,7 +14,7 @@ describe('Object sources with file paths', function() {
         // An options object MUST be passed (even if it's empty)
         {}
       )
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.internal);
 
@@ -35,7 +35,7 @@ describe('Object sources with file paths', function() {
       });
   });
 
-  it('should dereference an object that references external files', function() {
+  it('should dereference an object that references external files', function () {
     var parser = new $RefParser();
     return parser
       .dereference(
@@ -48,7 +48,7 @@ describe('Object sources with file paths', function() {
         // An options object MUST be passed (even if it's empty)
         {}
       )
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.objectSourceWithPath);
 
@@ -75,7 +75,7 @@ describe('Object sources with file paths', function() {
       });
   });
 
-  it('should bundle an object that references external files', function() {
+  it('should bundle an object that references external files', function () {
     var parser = new $RefParser();
     return parser
       .bundle(
@@ -88,7 +88,7 @@ describe('Object sources with file paths', function() {
         // An options object MUST be passed (even if it's empty)
         {}
       )
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.objectSourceWithPath);
 

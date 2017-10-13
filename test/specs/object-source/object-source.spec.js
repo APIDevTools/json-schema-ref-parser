@@ -1,11 +1,11 @@
-'use strict';
+describe('Object sources (instead of file paths)', function () {
+  'use strict';
 
-describe('Object sources (instead of file paths)', function() {
-  it('should dereference a single object', function() {
+  it('should dereference a single object', function () {
     var parser = new $RefParser();
     return parser
       .dereference(helper.cloneDeep(helper.parsed.internal))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.internal);
 
@@ -26,11 +26,11 @@ describe('Object sources (instead of file paths)', function() {
       });
   });
 
-  it('should dereference an object that references external files', function() {
+  it('should dereference an object that references external files', function () {
     var parser = new $RefParser();
     return parser
       .dereference(helper.cloneDeep(helper.parsed.objectSource.schema))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.objectSource);
 
@@ -57,11 +57,11 @@ describe('Object sources (instead of file paths)', function() {
       });
   });
 
-  it('should bundle an object that references external files', function() {
+  it('should bundle an object that references external files', function () {
     var parser = new $RefParser();
     return parser
       .bundle(helper.cloneDeep(helper.parsed.objectSource.schema))
-      .then(function(schema) {
+      .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.objectSource);
 

@@ -1,24 +1,24 @@
 helper.parsed.parsers =
 {
   schema: {
-    "definitions": {
+    definitions: {
       markdown: {
-        $ref: "files/README.md"
+        $ref: 'files/README.md'
       },
       html: {
-        $ref: "files/page.html"
+        $ref: 'files/page.html'
       },
       css: {
-        $ref: "files/style.css"
+        $ref: 'files/style.css'
       },
       binary: {
-        $ref: "files/binary.png"
+        $ref: 'files/binary.png'
       },
       unknown: {
-        $ref: "files/unknown.foo"
+        $ref: 'files/unknown.foo'
       },
       empty: {
-        $ref: "files/empty"
+        $ref: 'files/empty'
       }
     }
   },

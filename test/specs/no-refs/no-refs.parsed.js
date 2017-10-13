@@ -1,41 +1,41 @@
 helper.parsed.noRefs =
 {
-  'required': [
+  required: [
     'name'
   ],
-  'type': 'object',
-  'properties': {
-    'gender': {
-      'enum': [
+  type: 'object',
+  properties: {
+    gender: {
+      enum: [
         'male',
         'female'
       ],
-      'type': 'string'
+      type: 'string'
     },
-    'age': {
-      'minimum': 0,
-      'type': 'integer'
+    age: {
+      minimum: 0,
+      type: 'integer'
     },
-    'name': {
-      'required': [
+    name: {
+      required: [
         'first',
         'last'
       ],
-      'type': 'object',
-      'properties': {
-        'middle': {
-          'type': 'string'
+      type: 'object',
+      properties: {
+        middle: {
+          type: 'string'
         },
-        'last': {
-          'minLength': 1,
-          'type': 'string'
+        last: {
+          minLength: 1,
+          type: 'string'
         },
-        'first': {
-          'minLength': 1,
-          'type': 'string'
+        first: {
+          minLength: 1,
+          type: 'string'
         }
       }
     }
   },
-  'title': 'Person'
+  title: 'Person'
 };

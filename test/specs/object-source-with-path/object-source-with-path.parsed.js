@@ -1,84 +1,84 @@
 helper.parsed.objectSourceWithPath =
 {
   schema: {
-    "definitions": {
+    definitions: {
       // Because we've specified the full path to this directory,
       // this path can simply be relative to the current directory,
       // rather than having to be relative to the "test" directory
-      "$ref": "definitions/definitions.json"
+      $ref: 'definitions/definitions.json'
     },
-    "required": [
-      "name"
+    required: [
+      'name'
     ],
-    "type": "object",
-    "properties": {
-      "gender": {
-        "enum": [
-          "male",
-          "female"
+    type: 'object',
+    properties: {
+      gender: {
+        enum: [
+          'male',
+          'female'
         ],
-        "type": "string"
+        type: 'string'
       },
-      "age": {
-        "minimum": 0,
-        "type": "integer"
+      age: {
+        minimum: 0,
+        type: 'integer'
       },
-      "name": {
-        "$ref": "#/definitions/name"
+      name: {
+        $ref: '#/definitions/name'
       }
     },
-    "title": "Person"
+    title: 'Person'
   },
 
   definitions: {
-    "requiredString": {
-      "$ref": "required-string.yaml"
+    requiredString: {
+      $ref: 'required-string.yaml'
     },
-    "string": {
-      "$ref": "#/requiredString/type"
+    string: {
+      $ref: '#/requiredString/type'
     },
-    "name": {
-      "$ref": "../definitions/name.yaml"
+    name: {
+      $ref: '../definitions/name.yaml'
     }
   },
 
   name: {
-    "required": [
-      "first",
-      "last"
+    required: [
+      'first',
+      'last'
     ],
-    "type": "object",
-    "properties": {
-      "middle": {
-        "minLength": {
-          "$ref": "#/properties/first/minLength"
+    type: 'object',
+    properties: {
+      middle: {
+        minLength: {
+          $ref: '#/properties/first/minLength'
         },
-        "type": {
-          "$ref": "#/properties/first/type"
+        type: {
+          $ref: '#/properties/first/type'
         }
       },
-      "prefix": {
-        "minLength": 3,
-        "$ref": "#/properties/last"
+      prefix: {
+        minLength: 3,
+        $ref: '#/properties/last'
       },
-      "last": {
-        "$ref": "./required-string.yaml"
+      last: {
+        $ref: './required-string.yaml'
       },
-      "suffix": {
-        "$ref": "#/properties/prefix",
-        "type": "string",
-        "maxLength": 3
+      suffix: {
+        $ref: '#/properties/prefix',
+        type: 'string',
+        maxLength: 3
       },
-      "first": {
-        "$ref": "../definitions/definitions.json#/requiredString"
+      first: {
+        $ref: '../definitions/definitions.json#/requiredString'
       }
     },
-    "title": "name"
+    title: 'name'
   },
 
   requiredString: {
-    "minLength": 1,
-    "type": "string",
-    "title": "requiredString"
+    minLength: 1,
+    type: 'string',
+    title: 'requiredString'
   }
 };
