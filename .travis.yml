@@ -5,6 +5,14 @@ sudo: false
 language: node_js
 matrix:
   include:
+    # Sauce Labs
+    - node_js: 8
+      env: KARMA_SAUCE=true KARMA_COVERAGE=false
+
+    # Local Browsers
+    - node_js: 8
+      env: KARMA_COVERAGE=true KARMA_SAUCE=false
+
     # Node
     - node_js: 4
       env: KARMA=false
@@ -16,14 +24,6 @@ matrix:
       env: KARMA=false
     - node_js: 8
       env: KARMA=false
-
-    # Local Browsers
-    - node_js: 8
-      env: KARMA_COVERAGE=true KARMA_SAUCE=false
-
-    # Sauce Labs
-    - node_js: 8
-      env: KARMA_SAUCE=true KARMA_COVERAGE=false
 
   fast_finish: true
   allow_failures:
