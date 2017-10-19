@@ -1,5 +1,5 @@
 /*!
- * JSON Schema $Ref Parser v4.0.2 (October 19th 2017)
+ * JSON Schema $Ref Parser v4.0.3 (October 19th 2017)
  * 
  * https://github.com/BigstickCarpet/json-schema-ref-parser
  * 
