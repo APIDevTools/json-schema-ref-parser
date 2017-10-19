@@ -53,6 +53,7 @@
     "chai": "^4.1.2",
     "coveralls": "^3.0.0",
     "eslint": "^4.9.0",
+    "eslint-config-modular": "^4.1.0",
     "http-server": "^0.10.0",
     "istanbul": "^0.4.5",
     "karma": "^1.7.1",
@@ -73,7 +74,6 @@
   "dependencies": {
     "call-me-maybe": "^1.0.1",
     "debug": "^3.1.0",
-    "eslint-config-modular": "^4.1.0",
     "js-yaml": "^3.10.0",
     "ono": "^4.0.2"
   }
