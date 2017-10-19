@@ -7,12 +7,12 @@
   var _testsDir = getTestsDir();
 
   if (userAgent.isNode) {
-    // Run all tests from the "tests" directory
+    // Run all tests from the "test" directory
     process.chdir(_path.join(__dirname, '..'));
   }
 
   /**
-   * Returns the relative path of a file in the "tests" directory
+   * Returns the relative path of a file in the "test" directory
    *
    * NOTE: When running in a test-runner (such as Karma) the absolute path is returned instead
    */
@@ -36,7 +36,7 @@
   };
 
   /**
-   * Returns the absolute path of a file in the "tests" directory
+   * Returns the absolute path of a file in the "test" directory
    */
   path.abs = function (file) {
     if (userAgent.isNode) {
@@ -61,7 +61,7 @@
       return path.abs(file);
     }
 
-    // In Node, return the absolute path as a URL (e.g. "file://path/to/json-schema-ref-parser/tests/files...")
+    // In Node, return the absolute path as a URL (e.g. "file://path/to/json-schema-ref-parser/test/files...")
     var pathname = path.abs(file);
     if (/^win/.test(process.platform)) {
       pathname = pathname.replace(/\\/g, '/');  // Convert Windows separators to URL separators
@@ -89,7 +89,7 @@
   };
 
   /**
-   * Returns the path of the "tests" directory
+   * Returns the path of the "test" directory
    */
   function getTestsDir () {
     if (userAgent.isNode) {
