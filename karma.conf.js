@@ -28,9 +28,9 @@ var baseConfig = {
 
 module.exports = function (config) {
   var debug = process.env.DEBUG ? process.env.DEBUG === 'true' : false;
-  var karma = process.env.KARMA ? process.env.KARMA === 'true' : true;
-  var coverage = process.env.KARMA_COVERAGE ? process.env.KARMA_COVERAGE === 'true' : true;
-  var sauce = process.env.KARMA_SAUCE ? process.env.KARMA_SAUCE === 'true' : true;
+  var karma = process.env.KARMA ? process.env.KARMA === 'true' : false;
+  var coverage = process.env.KARMA_COVERAGE ? process.env.KARMA_COVERAGE === 'true' : false;
+  var sauce = process.env.KARMA_SAUCE ? process.env.KARMA_SAUCE === 'true' : false;
   var sauceUsername = process.env.SAUCE_USERNAME;
   var sauceAccessKey = process.env.SAUCE_ACCESS_KEY;
 
