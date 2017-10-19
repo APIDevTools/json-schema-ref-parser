@@ -34,7 +34,7 @@ describe('Object sources (instead of file paths)', function () {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.objectSource);
 
-        // The schema path should be blank, and all other paths should be relative (not absolute)
+        // The schema path should be the current directory, and all other paths should be absolute
         var expectedPaths = [
           encodeURI(path.cwd()),
           path.abs('specs/object-source/definitions/definitions.json'),
@@ -65,7 +65,7 @@ describe('Object sources (instead of file paths)', function () {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.objectSource);
 
-        // The schema path should be blank, and all other paths should be relative (not absolute)
+        // The schema path should be the current directory, and all other paths should be absolute
         var expectedPaths = [
           encodeURI(path.cwd()),
           path.abs('specs/object-source/definitions/definitions.json'),
