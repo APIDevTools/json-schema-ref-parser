@@ -1,5 +1,5 @@
 /*!
- * JSON Schema $Ref Parser v4.0.3 (October 19th 2017)
+ * JSON Schema $Ref Parser v4.0.4 (November 6th 2017)
  * 
  * https://github.com/BigstickCarpet/json-schema-ref-parser
  * 
@@ -2213,6 +2213,7 @@ function get (u, httpOptions) {
       port: u.port,
       path: u.path,
       auth: u.auth,
+      protocol: u.protocol,
       headers: httpOptions.headers || {},
       withCredentials: httpOptions.withCredentials
     });
