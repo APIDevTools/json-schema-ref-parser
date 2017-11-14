@@ -10,48 +10,50 @@ software:
     type: web app
     aliases:
     short_description: Parse, Resolve, and Dereference JSON Schema $ref pointers in
-        Node and browsers
+      Node and browsers
     assignment_group: gro:AD-Miscellaneous Information Applications
     notes:
     maintained_by:
       - martingarn
     developed_by_byu: true
     ddd:
-        business_domain:
-        ubiquitous_language_url:
-        context_map_url:
+      business_domain:
+      ubiquitous_language_url:
+      context_map_url:
     links:
-        system_documentation_url: https://github.com/byu-oit/json-schema-ref-parser
-        swagger_urls:
+      system_documentation_url: https://github.com/byu-oit/json-schema-ref-parser
+      swagger_urls:
     microservice: true
     technologies_used:
       - JavaScript
       - HTML
       - CSS
+      - NodeJS
+      - Travis-ci.com
     standard_change_template_id:
     stages:
-        development:
-            urls:
-                product_page:
-                physical_url:
-                virtual_url:
-            hosting_location: Other
-            aws_account:
-            relationships:
-                depends_on:
-                    db_read_write:
-                    db_read_only:
-                    software:
-                supports:
-                    software:
-                    service:
-                reverse_proxy:
-                runs_on:
-                    server_cluster:
-                    virtual_server:
-                    rack_server:
-                    blade_server:
+      development:
+        urls:
+          product_page:
+          physical_url:
+          virtual_url:
+        hosting_location: Other
+        aws_account:
+        relationships:
+          depends_on:
+            db_read_write:
+            db_read_only:
+            software:
+          supports:
+            software:
+            service:
+          reverse_proxy:
+          runs_on:
+            server_cluster:
+            virtual_server:
+            rack_server:
+            blade_server:
     tags:
-        data-sensitivity: confidential
-        team: gro:AD-Miscellaneous Information Applications
-        app: json-schema-ref-parser
+      data-sensitivity: confidential
+      team: gro:AD-Miscellaneous Information Applications
+      app: json-schema-ref-parser
