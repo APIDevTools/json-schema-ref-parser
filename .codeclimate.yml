@@ -1,9 +1,0 @@
-languages:
-  JavaScript: true
-exclude_paths:
-- "dist/*"
-- "node_modules/*"
-- "test/*"
-- "coverage/*"
-- "karma.conf.js"
-- "www/*"
