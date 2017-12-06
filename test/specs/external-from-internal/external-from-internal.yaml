@@ -1,0 +1,9 @@
+paths:
+  $ref: '#/components'
+external:
+  go:
+    deeper:
+      $ref: 'definitions/definitions.json#/thing'
+components:
+  test:
+    $ref: 'definitions/definitions.json#/thing'
