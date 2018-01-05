@@ -1,22 +1,22 @@
 Options
 ==========================
 
-All [`$RefParser`](ref-parser.md) methods accept an optional `options` parameter, which you can use to customize how the JSON Schema is parsed, resolved, dereferenced, etc.
+All [`$RefParser`](ref-parser.md) methods accept an optional `options` parameter, which you could use for customizing the JSON Schema with parsed, resolved, dereferenced, etc.
 
 If you pass an options parameter, you _don't_ need to specify _every_ option.  Any options you don't specify will use their default values.
 
-Example
+The example
 -------------------
 
 ```javascript
-$RefParser.dereference("my-schema.yaml", {
+$RefParser.dereference('my-schema.yaml', {
   parse: {
     json: false,                    // Disable the JSON parser
     yaml: {
       allowEmpty: false             // Don't allow empty YAML files
     },
     text: {
-      canParse: [".txt", ".html"],  // Parse .txt and .html files as plain text (strings)
+      canParse: ['.txt', '.html'],  // Parse .txt and .html files as plain text (strings)
       encoding: 'utf16'             // Use UTF-16 encoding
     }
   },
@@ -24,7 +24,7 @@ $RefParser.dereference("my-schema.yaml", {
     file: false,                    // Don't resolve local file references
     http: {
       timeout: 2000,                // 2 second timeout
-      withCredentials: true,        // Include auth credentials when resolving HTTP references
+      withCredentials: true         // Include auth credentials when resolving HTTP references
     }
   },
   dereference: {
@@ -33,14 +33,13 @@ $RefParser.dereference("my-schema.yaml", {
 });
 ```
 
-
-`parse` Options
+The `parse` option.
 -------------------
-The `parse` options determine how different types of files will be parsed.
+The `parse` option determines the way of parsing for a different file types.
 
-JSON Schema $Ref Parser comes with built-in JSON, YAML, plain-text, and binary parsers, any of which you can configure or disable.  You can also add [your own custom parsers](plugins/parsers.md) if you want.
+**The JSON Schema $Ref Parser** comes with built-in parsers for JSON, YAML, plain-text and binary files. You may configure and/or disable each of them. Also, you may add your own custom parsers following this [custom-parsers-manual](plugins/parsers.md).
 
-|Option(s)                    |Type       |Description
+| Option                      | Type      | Description 
 |:----------------------------|:----------|:------------
 |`json`<br>`yaml`<br>`text`<br>`binary`|`object` `boolean`|These are the built-in parsers. In addition, you can add [your own custom parsers](plugins/parsers.md)<br><br>To disable a parser, just set it to `false`.
 |`json.order` `yaml.order` `text.order` `binary.order`|`number`|Parsers run in a specific order, relative to other parsers. For example, a parser with `order: 5` will run _before_ a parser with `order: 10`.  If a parser is unable to successfully parse a file, then the next parser is tried, until one succeeds or they all fail.<br><br>You can change the order in which parsers run, which is useful if you know that most of your referenced files will be a certain type, or if you add [your own custom parser](plugins/parsers.md) that you want to run _first_.
