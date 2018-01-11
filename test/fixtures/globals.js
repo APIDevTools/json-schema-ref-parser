@@ -27,7 +27,6 @@
 
     global.userAgent = {
       isNode: true,
-      isOldNode: /^v0\./.test(process.version),
       isBrowser: false,
       isTravisCI: !!process.env.TRAVIS
     };

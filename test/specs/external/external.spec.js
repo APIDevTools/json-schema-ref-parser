@@ -50,16 +50,13 @@ describe('Schema with external $refs', function () {
     path.abs('specs/external/definitions/required-string.yaml'), helper.parsed.external.requiredString
   ));
 
-  // Skip this test on Node v0.x, due to bugs in `url.resolve()`
-  if (!userAgent.isOldNode) {
-    it('should resolve successfully from a url', helper.testResolve(
-      path.url('specs/external/external.yaml'),
-      path.url('specs/external/external.yaml'), helper.parsed.external.schema,
-      path.url('specs/external/definitions/definitions.json'), helper.parsed.external.definitions,
-      path.url('specs/external/definitions/name.yaml'), helper.parsed.external.name,
-      path.url('specs/external/definitions/required-string.yaml'), helper.parsed.external.requiredString
-    ));
-  }
+  it('should resolve successfully from a url', helper.testResolve(
+    path.url('specs/external/external.yaml'),
+    path.url('specs/external/external.yaml'), helper.parsed.external.schema,
+    path.url('specs/external/definitions/definitions.json'), helper.parsed.external.definitions,
+    path.url('specs/external/definitions/name.yaml'), helper.parsed.external.name,
+    path.url('specs/external/definitions/required-string.yaml'), helper.parsed.external.requiredString
+  ));
 
   it('should dereference successfully', function () {
     var parser = new $RefParser();
