@@ -1,6 +1,85 @@
+/**
+ * This test is from PR #62
+ * https://github.com/BigstickCarpet/json-schema-ref-parser/pull/62
+ */
 describe('Schema with two external refs to the same value and internal ref before', function () {
   'use strict';
-  /* details here: https://github.com/BigstickCarpet/json-schema-ref-parser/pull/62 */
+
+  it('should parse successfully from an absolute path', function () {
+    var parser = new $RefParser();
+    return parser
+      .parse(path.abs('specs/external-from-internal/external-from-internal.yaml'))
+      .then(function (schema) {
+        expect(schema).to.equal(parser.schema);
+        expect(schema).to.deep.equal(helper.parsed.externalFromInternal.schema);
+        expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/external-from-internal/external-from-internal.yaml')]);
+      });
+  });
+
+  it('should parse successfully from a relative path', function () {
+    var parser = new $RefParser();
+    return parser
+      .parse(path.rel('specs/external-from-internal/external-from-internal.yaml'))
+      .then(function (schema) {
+        expect(schema).to.equal(parser.schema);
+        expect(schema).to.deep.equal(helper.parsed.externalFromInternal.schema);
+        expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/external-from-internal/external-from-internal.yaml')]);
+      });
+  });
+
+  it('should parse successfully from a url', function () {
+    var parser = new $RefParser();
+    return parser
+      .parse(path.url('specs/external-from-internal/external-from-internal.yaml'))
+      .then(function (schema) {
+        expect(schema).to.equal(parser.schema);
+        expect(schema).to.deep.equal(helper.parsed.externalFromInternal.schema);
+        expect(parser.$refs.paths()).to.deep.equal([path.url('specs/external-from-internal/external-from-internal.yaml')]);
+      });
+  });
+
+  it('should resolve successfully from an absolute path', helper.testResolve(
+    path.abs('specs/external-from-internal/external-from-internal.yaml'),
+    path.abs('specs/external-from-internal/external-from-internal.yaml'), helper.parsed.externalFromInternal.schema,
+    path.abs('specs/external-from-internal/definitions.yaml'), helper.parsed.externalFromInternal.definitions
+  ));
+
+  it('should resolve successfully from a relative path', helper.testResolve(
+    path.rel('specs/external-from-internal/external-from-internal.yaml'),
+    path.abs('specs/external-from-internal/external-from-internal.yaml'), helper.parsed.externalFromInternal.schema,
+    path.abs('specs/external-from-internal/definitions.yaml'), helper.parsed.externalFromInternal.definitions
+  ));
+
+  it('should resolve successfully from a url', helper.testResolve(
+    path.url('specs/external-from-internal/external-from-internal.yaml'),
+    path.url('specs/external-from-internal/external-from-internal.yaml'), helper.parsed.externalFromInternal.schema,
+    path.url('specs/external-from-internal/definitions.yaml'), helper.parsed.externalFromInternal.definitions
+  ));
+
+  it('should dereference successfully', function () {
+    var parser = new $RefParser();
+    return parser
+      .dereference(path.rel('specs/external-from-internal/external-from-internal.yaml'))
+      .then(function (schema) {
+        expect(schema).to.equal(parser.schema);
+        expect(schema).to.deep.equal(helper.dereferenced.externalFromInternal);
+
+        // Reference equality
+        expect(schema.internal1).to.equal(schema.internal2);
+        expect(schema.internal2).to.equal(schema.external1);
+        expect(schema.internal3).to.equal(schema.internal4);
+        expect(schema.internal4).to.equal(schema.external2);
+        expect(schema.internal1.test)
+          .to.equal(schema.internal2.test)
+          .to.equal(schema.internal3.test)
+          .to.equal(schema.internal4.test)
+          .to.equal(schema.external1.test)
+          .to.equal(schema.external2.test);
+
+        // The "circular" flag should NOT be set
+        expect(parser.$refs.circular).to.equal(false);
+      });
+  });
 
   it('should bundle successfully', function () {
     var parser = new $RefParser();
@@ -12,4 +91,3 @@ describe('Schema with two external refs to the same value and internal ref befor
       });
   });
 });
-
