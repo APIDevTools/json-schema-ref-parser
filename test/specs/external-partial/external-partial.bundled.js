@@ -15,23 +15,23 @@ helper.bundled.externalPartial =
       ],
       properties: {
         first: {
+          $ref: '#/properties/name/properties/last'
+        },
+        last: {
           title: 'required string',
           type: 'string',
           minLength: 1
         },
-        last: {
-          $ref: '#/properties/name/properties/first'
-        },
         middle: {
           type: {
-            $ref: '#/properties/name/properties/first/type'
+            $ref: '#/properties/name/properties/last/type'
           },
           minLength: {
-            $ref: '#/properties/name/properties/first/minLength'
+            $ref: '#/properties/name/properties/last/minLength'
           }
         },
         prefix: {
-          $ref: '#/properties/name/properties/first',
+          $ref: '#/properties/name/properties/last',
           minLength: 3
         },
         suffix: {
