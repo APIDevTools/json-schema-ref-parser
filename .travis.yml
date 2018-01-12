@@ -2,7 +2,7 @@
 # http://docs.travis-ci.com/user/languages/javascript-with-nodejs/
 
 dist: trusty
-sudo: false
+sudo: required
 language: node_js
 
 addons:
