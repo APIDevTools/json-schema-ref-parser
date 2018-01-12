@@ -1,8 +1,8 @@
 /*!
- * JSON Schema $Ref Parser v4.0.4 (November 6th 2017)
- *
+ * JSON Schema $Ref Parser v4.1.0-beta.1 (January 11th 2018)
+ * 
  * https://github.com/BigstickCarpet/json-schema-ref-parser
- *
+ * 
  * @author  James Messinger (http://bigstickcarpet.com)
  * @license MIT
  */
@@ -29,7 +29,7 @@ function bundle (parser, options) {
 
   // Build an inventory of all $ref pointers in the JSON Schema
   var inventory = [];
-  crawl(parser, 'schema', parser.$refs._root$Ref.path + '#', '#', inventory, parser.$refs, options);
+  crawl(parser, 'schema', parser.$refs._root$Ref.path + '#', '#', 0, inventory, parser.$refs, options);
 
   // Remap all $ref pointers
   remap(inventory);
@@ -46,12 +46,12 @@ function bundle (parser, options) {
  * @param {$Refs} $refs
  * @param {$RefParserOptions} options
  */
-function crawl (parent, key, path, pathFromRoot, inventory, $refs, options) {
+function crawl (parent, key, path, pathFromRoot, indirections, inventory, $refs, options) {
   var obj = key === null ? parent : parent[key];
 
   if (obj && typeof obj === 'object') {
     if ($Ref.isAllowed$Ref(obj)) {
-      inventory$Ref(parent, key, path, pathFromRoot, inventory, $refs, options);
+      inventory$Ref(parent, key, path, pathFromRoot, indirections, inventory, $refs, options);
     }
     else {
       var keys = Object.keys(obj);
@@ -69,10 +69,10 @@ function crawl (parent, key, path, pathFromRoot, inventory, $refs, options) {
         var value = obj[key];
 
         if ($Ref.isAllowed$Ref(value)) {
-          inventory$Ref(obj, key, path, keyPathFromRoot, inventory, $refs, options);
+          inventory$Ref(obj, key, path, keyPathFromRoot, indirections, inventory, $refs, options);
         }
         else {
-          crawl(obj, key, keyPath, keyPathFromRoot, inventory, $refs, options);
+          crawl(obj, key, keyPath, keyPathFromRoot, indirections, inventory, $refs, options);
         }
       });
     }
@@ -91,12 +91,7 @@ function crawl (parent, key, path, pathFromRoot, inventory, $refs, options) {
  * @param {$Refs} $refs
  * @param {$RefParserOptions} options
  */
-function inventory$Ref ($refParent, $refKey, path, pathFromRoot, inventory, $refs, options) {
-  if (inventory.some(function (i) { return i.parent === $refParent && i.key === $refKey; })) {
-    // This $Ref has already been inventoried, so we don't need to process it again
-    return;
-  }
-
+function inventory$Ref ($refParent, $refKey, path, pathFromRoot, indirections, inventory, $refs, options) {
   var $ref = $refKey === null ? $refParent : $refParent[$refKey];
   var $refPath = url.resolve(path, $ref.$ref);
   var pointer = $refs._resolve($refPath, options);
@@ -105,6 +100,18 @@ function inventory$Ref ($refParent, $refKey, path, pathFromRoot, inventory, $ref
   var hash = url.getHash(pointer.path);
   var external = file !== $refs._root$Ref.path;
   var extended = $Ref.isExtended$Ref($ref);
+  indirections += pointer.indirections;
+
+  var existingEntry = findInInventory(inventory, $refParent, $refKey);
+  if (existingEntry) {
+    // This $Ref has already been inventoried, so we don't need to process it again
+    if (depth < existingEntry.depth || indirections < existingEntry.indirections) {
+      removeFromInventory(inventory, existingEntry);
+    }
+    else {
+      return;
+    }
+  }
 
   inventory.push({
     $ref: $ref,                   // The JSON Reference (e.g. {$ref: string})
@@ -117,11 +124,12 @@ function inventory$Ref ($refParent, $refKey, path, pathFromRoot, inventory, $ref
     value: pointer.value,         // The resolved value of the $ref pointer
     circular: pointer.circular,   // Is this $ref pointer DIRECTLY circular? (i.e. it references itself)
     extended: extended,           // Does this $ref extend its resolved value? (i.e. it has extra properties, in addition to "$ref")
-    external: external            // Does this $ref pointer point to a file other than the main JSON Schema file?
+    external: external,           // Does this $ref pointer point to a file other than the main JSON Schema file?
+    indirections: indirections,   // The number of indirect references that were traversed to resolve the value
   });
 
   // Recursively crawl the resolved value
-  crawl(pointer.value, null, pointer.path, pathFromRoot, inventory, $refs, options);
+  crawl(pointer.value, null, pointer.path, pathFromRoot, indirections + 1, inventory, $refs, options);
 }
 
 /**
@@ -151,19 +159,22 @@ function remap (inventory) {
   // Group & sort all the $ref pointers, so they're in the order that we need to dereference/remap them
   inventory.sort(function (a, b) {
     if (a.file !== b.file) {
-      return a.file < b.file ? -1 : +1;   // Group all the $refs that point to the same file
+      return a.file < b.file ? -1 : +1;       // Group all the $refs that point to the same file
     }
     else if (a.hash !== b.hash) {
-      return a.hash < b.hash ? -1 : +1;   // Group all the $refs that point to the same part of the file
+      return a.hash < b.hash ? -1 : +1;       // Group all the $refs that point to the same part of the file
     }
     else if (a.circular !== b.circular) {
-      return a.circular ? -1 : +1;        // If the $ref points to itself, then sort it higher than other $refs that point to this $ref
+      return a.circular ? -1 : +1;            // If the $ref points to itself, then sort it higher than other $refs that point to this $ref
     }
     else if (a.extended !== b.extended) {
-      return a.extended ? +1 : -1;        // If the $ref extends the resolved value, then sort it lower than other $refs that don't extend the value
+      return a.extended ? +1 : -1;            // If the $ref extends the resolved value, then sort it lower than other $refs that don't extend the value
+    }
+    else if (a.indirections !== b.indirections) {
+      return a.indirections - b.indirections; // Sort direct references higher than indirect references
     }
     else if (a.depth !== b.depth) {
-      return a.depth - b.depth;           // Sort $refs by how close they are to the JSON Schema root
+      return a.depth - b.depth;               // Sort $refs by how close they are to the JSON Schema root
     }
     else {
       // If all else is equal, use the $ref that's in the "definitions" property
@@ -172,39 +183,56 @@ function remap (inventory) {
   });
 
   var file, hash, pathFromRoot;
-  inventory.forEach(function (i) {
-    debug('Re-mapping $ref pointer "%s" at %s', i.$ref.$ref, i.pathFromRoot);
+  inventory.forEach(function (entry) {
+    debug('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
 
-    if (!i.external) {
+    if (!entry.external) {
       // This $ref already resolves to the main JSON Schema file
-      i.$ref.$ref = i.hash;
+      entry.$ref.$ref = entry.hash;
     }
-    else if (i.file === file && i.hash === hash) {
+    else if (entry.file === file && entry.hash === hash) {
       // This $ref points to the same value as the prevous $ref, so remap it to the same path
-      i.$ref.$ref = pathFromRoot;
+      entry.$ref.$ref = pathFromRoot;
     }
-    else if (i.file === file && i.hash.indexOf(hash + '/') === 0) {
+    else if (entry.file === file && entry.hash.indexOf(hash + '/') === 0) {
       // This $ref points to the a sub-value as the prevous $ref, so remap it beneath that path
-      i.$ref.$ref = Pointer.join(pathFromRoot, Pointer.parse(i.hash));
+      entry.$ref.$ref = Pointer.join(pathFromRoot, Pointer.parse(entry.hash));
     }
     else {
       // We've moved to a new file or new hash
-      file = i.file;
-      hash = i.hash;
-      pathFromRoot = i.pathFromRoot;
+      file = entry.file;
+      hash = entry.hash;
+      pathFromRoot = entry.pathFromRoot;
 
       // This is the first $ref to point to this value, so dereference the value.
       // Any other $refs that point to the same value will point to this $ref instead
-      i.$ref = i.parent[i.key] = $Ref.dereference(i.$ref, i.value);
+      entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value);
 
-      if (i.circular) {
+      if (entry.circular) {
         // This $ref points to itself
-        i.$ref.$ref = i.pathFromRoot;
+        entry.$ref.$ref = entry.pathFromRoot;
       }
     }
 
-    debug('    new value: %s', (i.$ref && i.$ref.$ref) ? i.$ref.$ref : '[object Object]');
+    debug('    new value: %s', (entry.$ref && entry.$ref.$ref) ? entry.$ref.$ref : '[object Object]');
   });
+}
+
+/**
+ * TODO
+ */
+function findInInventory (inventory, $refParent, $refKey) {
+  for (var i = 0; i < inventory.length; i++) {
+    var existingEntry = inventory[i];
+    if (existingEntry.parent === $refParent && existingEntry.key === $refKey) {
+      return existingEntry;
+    }
+  }
+}
+
+function removeFromInventory (inventory, entry) {
+  var index = inventory.indexOf(entry);
+  inventory.splice(index, 1);
 }
 
 },{"./pointer":11,"./ref":12,"./util/debug":17,"./util/url":19}],2:[function(require,module,exports){
@@ -1237,6 +1265,13 @@ function Pointer ($ref, path) {
    * @type {boolean}
    */
   this.circular = false;
+
+  /**
+   * The number of indirect references that were traversed to resolve the value.
+   * Resolving a single pointer may require resolving multiple $Refs.
+   * @type {number}
+   */
+  this.indirections = 0;
 }
 
 /**
@@ -1403,6 +1438,7 @@ function resolveIf$Ref (pointer, options) {
     }
     else {
       var resolved = pointer.$ref.$refs._resolve($refPath, options);
+      pointer.indirections += resolved.indirections + 1;
 
       if ($Ref.isExtended$Ref(pointer.value)) {
         // This JSON reference "extends" the resolved value, rather than simply pointing to it.
@@ -5478,7 +5514,7 @@ function format(fmt) {
           break;
       }
       if(!escaped) {
-        return arg;
+        return arg; 
       }
       args.unshift(arg);
       return match;
@@ -5646,7 +5682,7 @@ if (typeof Object.create === 'function') {
 /*!
  * Determine if an object is a Buffer
  *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @author   Feross Aboukhadijeh <https://feross.org>
  * @license  MIT
  */
 
@@ -13777,7 +13813,7 @@ var IncomingMessage = exports.IncomingMessage = function (xhr, response, mode) {
 		self.url = response.url
 		self.statusCode = response.status
 		self.statusMessage = response.statusText
-
+		
 		response.headers.forEach(function(header, key){
 			self.headers[key.toLowerCase()] = header
 			self.rawHeaders.push(key, header)
@@ -13865,7 +13901,7 @@ IncomingMessage.prototype._onXHRProgress = function () {
 				self.push(new Buffer(response))
 				break
 			}
-			// Falls through in IE8
+			// Falls through in IE8	
 		case 'text':
 			try { // This will fail when readyState = 3 in IE9. Switch mode and wait for readyState = 4
 				response = xhr.responseText
