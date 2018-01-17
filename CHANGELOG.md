@@ -3,6 +3,15 @@ All notable changes will be documented in this file.
 JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [v4.1.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v4.1.0) (2018-01-17)
+
+- Updated dependencies
+
+- Improved the `bundle()` algorithm to favor direct references rather than indirect references (see [PR #62](https://github.com/BigstickCarpet/json-schema-ref-parser/pull/62) for details).  This will produce different bundled output than previous versions for some schemas. Both the old output and the new output are valid, but the new output is arguably better.
+
+[Full Changelog](https://github.com/BigstickCarpet/json-schema-ref-parser/compare/v4.0.0...v4.1.0)
+
+
 ## [v4.0.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v4.0.0) (2017-10-13)
 
 #### Breaking Changes
