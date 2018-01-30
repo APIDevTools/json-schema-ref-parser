@@ -1,0 +1,26 @@
+{
+    "$id": "text_assets",
+    "oneOf": [
+      {
+        "$ref": "#/definitions/asset"
+      },
+      {
+        "$ref": "#/definitions/asset"
+      }
+    ],
+    "definitions": {
+      "switchWrapper": {
+        "type": "object",
+        "$ref": "#/definitions/switch"
+      },
+      "asset": {
+        "type": "object",
+        "$ref": "action.json"
+      },
+      "switch": {
+        "type": "array",
+        "$ref": "#/definitions/asset"
+      }
+    }
+  }
+  
