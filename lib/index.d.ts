@@ -1,4 +1,4 @@
-import { JSONSchema4, JSONSchema4Type } from 'json-schema'
+import { JSONSchema4, JSONSchema4Type, JSONSchema6, JSONSchema6Type } from 'json-schema'
 
 export = $RefParser
 
@@ -14,7 +14,7 @@ declare class $RefParser {
    *
    * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/ref-parser.md#schema
    */
-  schema: JSONSchema4
+  schema: JSONSchema4 | JSONSchema6
 
   /**
    * The $refs property is a `$Refs` object, which lets you access all of the externally-referenced files in the schema, as well as easily get and set specific values in the schema using JSON pointers.
@@ -36,9 +36,9 @@ declare class $RefParser {
    * @param options (optional)
    * @param callback (optional) A callback that will receive the dereferenced schema object
    */
-  dereference(path: string, schema: string | JSONSchema4, options?: $RefParser.Options, callback?: (err: Error | null, schema: JSONSchema4 | null) => any): Promise<JSONSchema4>
-  dereference(path: string, options?: $RefParser.Options, callback?: (err: Error | null, schema: JSONSchema4 | null) => any): Promise<JSONSchema4>
-  dereference(schema: JSONSchema4, options?: $RefParser.Options, callback?: (err: Error | null, schema: JSONSchema4 | null) => any): Promise<JSONSchema4>
+  dereference(path: string, schema: string | JSONSchema4 | JSONSchema6, options?: $RefParser.Options, callback?: (err: Error | null, schema: JSONSchema4 | JSONSchema6 | null) => any): Promise<JSONSchema4 | JSONSchema6>
+  dereference(path: string, options?: $RefParser.Options, callback?: (err: Error | null, schema: JSONSchema4 | JSONSchema6 | null) => any): Promise<JSONSchema4 | JSONSchema6>
+  dereference(schema: JSONSchema4 | JSONSchema6, options?: $RefParser.Options, callback?: (err: Error | null, schema: JSONSchema4 | JSONSchema6 | null) => any): Promise<JSONSchema4 | JSONSchema6>
 
   /**
    * Bundles all referenced files/URLs into a single schema that only has internal `$ref` pointers. This lets you split-up your schema however you want while you're building it, but easily combine all those files together when it's time to package or distribute the schema to other people. The resulting schema size will be small, since it will still contain internal JSON references rather than being fully-dereferenced.
@@ -52,10 +52,10 @@ declare class $RefParser {
    * @param callback (optional) A callback that will receive the bundled schema object
    */
   bundle(
-    schema: string | JSONSchema4,
+    schema: string | JSONSchema4 | JSONSchema6,
     options?: $RefParser.Options,
-    callback?: (err: Error | null, schema: JSONSchema4 | null) => any
-  ): Promise<JSONSchema4>
+    callback?: (err: Error | null, schema: JSONSchema4 | JSONSchema6 | null) => any
+  ): Promise<JSONSchema4 | JSONSchema6>
 
   /**
    * *This method is used internally by other methods, such as `bundle` and `dereference`. You probably won't need to call this method yourself.*
@@ -69,10 +69,10 @@ declare class $RefParser {
    * @param callback (optional) A callback that will receive the parsed schema object, or an error
    */
   parse(
-    schema: string | JSONSchema4,
+    schema: string | JSONSchema4 | JSONSchema6,
     options?: $RefParser.Options,
-    callback?: (err: Error | null, schema: JSONSchema4 | null) => any
-  ): Promise<JSONSchema4>
+    callback?: (err: Error | null, schema: JSONSchema4 | JSONSchema6 | null) => any
+  ): Promise<JSONSchema4 | JSONSchema6>
 
   /**
    * *This method is used internally by other methods, such as `bundle` and `dereference`. You probably won't need to call this method yourself.*
@@ -86,7 +86,7 @@ declare class $RefParser {
    * @param callback (optional) A callback that will receive a `$Refs` object
    */
   resolve(
-    schema: string | JSONSchema4,
+    schema: string | JSONSchema4 | JSONSchema6,
     options?: $RefParser.Options,
     callback?: (err: Error | null, $refs: $RefParser.$Refs | null) => any
   ): Promise<$RefParser.$Refs>
@@ -274,7 +274,7 @@ declare namespace $RefParser {
      *
      * @param types (optional) Optionally only return values from certain locations ("file", "http", etc.)
      */
-    values(...types: string[]): { [url: string]: JSONSchema4 }
+    values(...types: string[]): { [url: string]: JSONSchema4 | JSONSchema6 }
 
     /**
      * Returns `true` if the given path exists in the schema; otherwise, returns `false`
@@ -292,7 +292,7 @@ declare namespace $RefParser {
      *
      * @param $ref The JSON Reference path, optionally with a JSON Pointer in the hash
      */
-    get($ref: string): JSONSchema4Type
+    get($ref: string): JSONSchema4Type | JSONSchema6Type
 
     /**
      * Sets the value at the given path in the schema. If the property, or any of its parents, don't exist, they will be created.
@@ -300,7 +300,7 @@ declare namespace $RefParser {
      * @param $ref The JSON Reference path, optionally with a JSON Pointer in the hash
      * @param value The value to assign. Can be anything (object, string, number, etc.)
      */
-    set($ref: string, value: JSONSchema4Type): void
+    set($ref: string, value: JSONSchema4Type | JSONSchema6Type): void
   }
 
 }

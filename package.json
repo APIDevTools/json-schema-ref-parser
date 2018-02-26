@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@types/json-schema": "^6.0.0",
+    "@types/node": "^9.4.0",
     "bower": "^1.8.2",
     "chai": "^4.1.2",
     "codacy-coverage": "^2.0.3",
