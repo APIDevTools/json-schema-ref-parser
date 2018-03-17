@@ -11,7 +11,7 @@ describe('Object sources (instead of file paths)', function () {
 
         // The schema path should be the current directory
         var expectedPaths = [
-          encodeURI(path.cwd())
+          path.cwd()
         ];
         expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
         expect(parser.$refs.values()).to.have.keys(expectedPaths);
@@ -36,7 +36,7 @@ describe('Object sources (instead of file paths)', function () {
 
         // The schema path should be the current directory, and all other paths should be absolute
         var expectedPaths = [
-          encodeURI(path.cwd()),
+          path.cwd(),
           path.abs('specs/object-source/definitions/definitions.json'),
           path.abs('specs/object-source/definitions/name.yaml'),
           path.abs('specs/object-source/definitions/required-string.yaml')
@@ -67,7 +67,7 @@ describe('Object sources (instead of file paths)', function () {
 
         // The schema path should be the current directory, and all other paths should be absolute
         var expectedPaths = [
-          encodeURI(path.cwd()),
+          path.cwd(),
           path.abs('specs/object-source/definitions/definitions.json'),
           path.abs('specs/object-source/definitions/name.yaml'),
           path.abs('specs/object-source/definitions/required-string.yaml')

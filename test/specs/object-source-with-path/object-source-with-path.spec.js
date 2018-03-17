@@ -20,7 +20,7 @@ describe('Object sources with file paths', function () {
 
         // The schema path should match the one we pass-in
         var expectedPaths = [
-          encodeURI(path.abs('path/that/does/not/exist.yaml'))
+          path.abs('path/that/does/not/exist.yaml')
         ];
         expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
         expect(parser.$refs.values()).to.have.keys(expectedPaths);
@@ -52,9 +52,10 @@ describe('Object sources with file paths', function () {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.objectSourceWithPath);
 
-        // The schema path should be blank, and all other paths should be relative (not absolute)
+        // The schema path should match the one we passed-in.
+        // All other paths should be the actual paths of referenced files.
         var expectedPaths = [
-          encodeURI(path.abs('specs/object-source-with-path/schema-file-that-does-not-exist.yaml')),
+          path.abs('specs/object-source-with-path/schema-file-that-does-not-exist.yaml'),
           path.abs('specs/object-source-with-path/definitions/definitions.json'),
           path.abs('specs/object-source-with-path/definitions/name.yaml'),
           path.abs('specs/object-source-with-path/definitions/required-string.yaml')
@@ -92,9 +93,10 @@ describe('Object sources with file paths', function () {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.objectSourceWithPath);
 
-        // The schema path should be blank, and all other paths should be relative (not absolute)
+        // The schema path should match the one we passed-in.
+        // All other paths should be the actual paths of referenced files.
         var expectedPaths = [
-          encodeURI(path.abs('specs/object-source-with-path/schema-file-that-does-not-exist.yaml')),
+          path.abs('specs/object-source-with-path/schema-file-that-does-not-exist.yaml'),
           path.abs('specs/object-source-with-path/definitions/definitions.json'),
           path.abs('specs/object-source-with-path/definitions/name.yaml'),
           path.abs('specs/object-source-with-path/definitions/required-string.yaml')
