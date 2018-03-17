@@ -63,7 +63,7 @@ describe('HTTP options', function () {
 
     beforeEach(function () {
       // Increase the timeout for these tests, to allow for multiple redirects
-      this.currentTest.timeout(8000);
+      this.currentTest.timeout(30000);
       this.currentTest.slow(3000);
     });
 
