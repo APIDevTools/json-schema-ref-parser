@@ -280,10 +280,8 @@ describe('$Refs object', function () {
         .then(helper.shouldNotGetCalled)
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
-          expect(err.message).to.equal(
-            'Error resolving $ref pointer "foo-bar.yaml#/some/value". ' +
-            '\n"' + encodeURI(path.abs('specs/external/foo-bar.yaml')) + '" not found.'
-          );
+          expect(err.message).to.contain('Error resolving $ref pointer "foo-bar.yaml#/some/value".');
+          expect(err.message).to.contain('foo-bar.yaml" not found.');
         });
     });
 
@@ -342,10 +340,8 @@ describe('$Refs object', function () {
         .then(helper.shouldNotGetCalled)
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
-          expect(err.message).to.equal(
-            'Error resolving $ref pointer "foo-bar.yaml#/some/path". ' +
-            '\n"' + encodeURI(path.abs('specs/external/foo-bar.yaml')) + '" not found.'
-          );
+          expect(err.message).to.contain('Error resolving $ref pointer "foo-bar.yaml#/some/path".');
+          expect(err.message).to.contain('foo-bar.yaml" not found.');
         });
     });
 
