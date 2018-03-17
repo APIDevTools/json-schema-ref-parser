@@ -248,6 +248,7 @@ describe('$Refs object', function () {
         .then(function ($refs) {
           $refs.get('definitions/name.yaml#/');
         })
+        .then(helper.shouldNotGetCalled)
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.equal(
@@ -276,6 +277,7 @@ describe('$Refs object', function () {
         .then(function ($refs) {
           $refs.get('foo-bar.yaml#/some/value');
         })
+        .then(helper.shouldNotGetCalled)
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.equal(
@@ -291,6 +293,7 @@ describe('$Refs object', function () {
         .then(function ($refs) {
           $refs.get('external.yaml#/foo/bar');
         })
+        .then(helper.shouldNotGetCalled)
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.equal(
@@ -336,6 +339,7 @@ describe('$Refs object', function () {
         .then(function ($refs) {
           $refs.set('foo-bar.yaml#/some/path', 'some value');
         })
+        .then(helper.shouldNotGetCalled)
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.equal(
