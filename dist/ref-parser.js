@@ -1,5 +1,5 @@
 /*!
- * JSON Schema $Ref Parser v4.1.1 (February 26th 2018)
+ * JSON Schema $Ref Parser v5.0.0 (March 18th 2018)
  * 
  * https://github.com/BigstickCarpet/json-schema-ref-parser
  * 
@@ -476,8 +476,10 @@ $RefParser.prototype.parse = function (path, schema, options, callback) {
   // So we're being generous here and doing the conversion automatically.
   // This is not intended to be a 100% bulletproof solution.
   // If it doesn't work for your use-case, then use a URL instead.
+  var pathType = 'http';
   if (url.isFileSystemPath(args.path)) {
     args.path = url.fromFileSystemPath(args.path);
+    pathType = 'file';
   }
 
   // Resolve the absolute path of the schema
@@ -486,7 +488,9 @@ $RefParser.prototype.parse = function (path, schema, options, callback) {
   if (args.schema && typeof args.schema === 'object') {
     // A schema object was passed-in.
     // So immediately add a new $Ref with the schema object as its value
-    this.$refs._add(args.path, args.schema);
+    var $ref = this.$refs._add(args.path);
+    $ref.value = args.schema;
+    $ref.pathType = pathType;
     promise = Promise.resolve(args.schema);
   }
   else {
@@ -1237,9 +1241,10 @@ var $Ref = require('./ref'),
  *
  * @param {$Ref} $ref
  * @param {string} path
+ * @param {string} [friendlyPath] - The original user-specified path (used for error messages)
  * @constructor
  */
-function Pointer ($ref, path) {
+function Pointer ($ref, path, friendlyPath) {
   /**
    * The {@link $Ref} object that contains this {@link Pointer} object.
    * @type {$Ref}
@@ -1252,6 +1257,12 @@ function Pointer ($ref, path) {
    * @type {string}
    */
   this.path = path;
+
+  /**
+   * The original path or URL, used for error messages.
+   * @type {string}
+   */
+  this.originalPath = friendlyPath || path;
 
   /**
    * The value of the JSON pointer.
@@ -1299,7 +1310,7 @@ Pointer.prototype.resolve = function (obj, options) {
 
     var token = tokens[i];
     if (this.value[token] === undefined) {
-      throw ono.syntax('Error resolving $ref pointer "%s". \nToken "%s" does not exist.', this.path, token);
+      throw ono.syntax('Error resolving $ref pointer "%s". \nToken "%s" does not exist.', this.originalPath, token);
     }
     else {
       this.value = this.value[token];
@@ -1562,10 +1573,11 @@ $Ref.prototype.get = function (path, options) {
  *
  * @param {string} path - The full path being resolved, optionally with a JSON pointer in the hash
  * @param {$RefParserOptions} options
+ * @param {string} [friendlyPath] - The original user-specified path (used for error messages)
  * @returns {Pointer}
  */
-$Ref.prototype.resolve = function (path, options) {
-  var pointer = new Pointer(this, path);
+$Ref.prototype.resolve = function (path, options, friendlyPath) {
+  var pointer = new Pointer(this, path, friendlyPath);
   return pointer.resolve(this.value, options);
 };
 
@@ -1826,29 +1838,27 @@ $Refs.prototype.get = function (path, options) {
  * @param {*} value - The value to assign
  */
 $Refs.prototype.set = function (path, value) {
-  path = url.resolve(this._root$Ref.path, path);
-  var withoutHash = url.stripHash(path);
+  var absPath = url.resolve(this._root$Ref.path, path);
+  var withoutHash = url.stripHash(absPath);
   var $ref = this._$refs[withoutHash];
 
   if (!$ref) {
     throw ono('Error resolving $ref pointer "%s". \n"%s" not found.', path, withoutHash);
   }
 
-  $ref.set(path, value);
+  $ref.set(absPath, value);
 };
 
 /**
  * Creates a new {@link $Ref} object and adds it to this {@link $Refs} object.
  *
  * @param {string} path  - The file path or URL of the referenced file
- * @param {*} [value] - Optional. The value of the $ref.
  */
-$Refs.prototype._add = function (path, value) {
+$Refs.prototype._add = function (path) {
   var withoutHash = url.stripHash(path);
 
   var $ref = new $Ref();
   $ref.path = withoutHash;
-  $ref.value = value;
   $ref.$refs = this;
 
   this._$refs[withoutHash] = $ref;
@@ -1866,15 +1876,15 @@ $Refs.prototype._add = function (path, value) {
  * @protected
  */
 $Refs.prototype._resolve = function (path, options) {
-  path = url.resolve(this._root$Ref.path, path);
-  var withoutHash = url.stripHash(path);
+  var absPath = url.resolve(this._root$Ref.path, path);
+  var withoutHash = url.stripHash(absPath);
   var $ref = this._$refs[withoutHash];
 
   if (!$ref) {
     throw ono('Error resolving $ref pointer "%s". \n"%s" not found.', path, withoutHash);
   }
 
-  return $ref.resolve(path, options);
+  return $ref.resolve(absPath, options, path);
 };
 
 /**
@@ -2658,10 +2668,15 @@ exports.toFileSystemPath = function toFileSystemPath (path, keepFileProtocol) {
     }
   }
 
-  // Step 4: On Windows, convert backslashes to forward slashes,
-  // unless it's a "file://" URL
+  // Step 4: Normalize Windows paths (unless it's a "file://" URL)
   if (isWindows && !isFileUrl) {
+    // Replace forward slashes with backslashes
     path = path.replace(forwardSlashPattern, '\\');
+
+    // Capitalize the drive letter
+    if (path.substr(1, 2) === ':\\') {
+      path = path[0].toUpperCase() + path.substr(1);
+    }
   }
 
   return path;
@@ -9114,10 +9129,11 @@ module.exports = new Type('tag:yaml.org,2002:int', {
   construct: constructYamlInteger,
   predicate: isInteger,
   represent: {
-    binary:      function (object) { return '0b' + object.toString(2); },
-    octal:       function (object) { return '0'  + object.toString(8); },
-    decimal:     function (object) { return        object.toString(10); },
-    hexadecimal: function (object) { return '0x' + object.toString(16).toUpperCase(); }
+    binary:      function (obj) { return obj >= 0 ? '0b' + obj.toString(2) : '-0b' + obj.toString(2).slice(1); },
+    octal:       function (obj) { return obj >= 0 ? '0'  + obj.toString(8) : '-0'  + obj.toString(8).slice(1); },
+    decimal:     function (obj) { return obj.toString(10); },
+    /* eslint-disable max-len */
+    hexadecimal: function (obj) { return obj >= 0 ? '0x' + obj.toString(16).toUpperCase() :  '-0x' + obj.toString(16).toUpperCase().slice(1); }
   },
   defaultStyle: 'decimal',
   styleAliases: {
@@ -9161,7 +9177,8 @@ function resolveJavascriptFunction(data) {
     if (ast.type                    !== 'Program'             ||
         ast.body.length             !== 1                     ||
         ast.body[0].type            !== 'ExpressionStatement' ||
-        ast.body[0].expression.type !== 'FunctionExpression') {
+        (ast.body[0].expression.type !== 'ArrowFunctionExpression' &&
+          ast.body[0].expression.type !== 'FunctionExpression')) {
       return false;
     }
 
@@ -9182,7 +9199,8 @@ function constructJavascriptFunction(data) {
   if (ast.type                    !== 'Program'             ||
       ast.body.length             !== 1                     ||
       ast.body[0].type            !== 'ExpressionStatement' ||
-      ast.body[0].expression.type !== 'FunctionExpression') {
+      (ast.body[0].expression.type !== 'ArrowFunctionExpression' &&
+        ast.body[0].expression.type !== 'FunctionExpression')) {
     throw new Error('Failed to resolve function');
   }
 
