@@ -3,6 +3,17 @@ All notable changes will be documented in this file.
 JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [v5.0.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v5.0.0) (2018-03-18)
+
+This release contains two bug fixes related to file paths.  They are _technically_ breaking changes &mdash; hence the major version bump &mdash; but they're both edge cases that probably won't affect most users.
+
+- Fixed a bug in the [`$refs.paths()`](docs/refs.md#pathstypes) and [`$refs.values()`](docs/refs.md#valuestypes) methods that caused the path of the root schema file to always be represented as a URL, rather than a filesystem path (see [this commit](https://github.com/BigstickCarpet/json-schema-ref-parser/commit/a95cf50fdf16c864cc1c18d2021d9ce3ec35f5de))
+
+- Merged [PR #75](https://github.com/BigstickCarpet/json-schema-ref-parser/pull/75), which resolves [issue #76](https://github.com/BigstickCarpet/swagger-parser/issues/76).  Error messages no longer include the current working directory path when there is no file path.
+
+[Full Changelog](https://github.com/BigstickCarpet/json-schema-ref-parser/compare/v4.1.1...v5.0.0)
+
+
 ## [v4.1.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v4.1.0) (2018-01-17)
 
 - Updated dependencies
