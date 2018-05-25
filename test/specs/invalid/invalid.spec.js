@@ -8,8 +8,10 @@ describe('Invalid syntax', function () {
         .then(helper.shouldNotGetCalled)
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
-          expect(err.code).to.equal('ENOENT')
-          expect(err.message).to.contain('Error opening file ');
+          if (userAgent.isNode) {
+            expect(err.code).to.equal('ENOENT');
+            expect(err.message).to.contain('Error opening file ');
+          }
         });
     });
 
