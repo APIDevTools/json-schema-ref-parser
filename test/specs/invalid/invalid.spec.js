@@ -2,6 +2,17 @@ describe('Invalid syntax', function () {
   'use strict';
 
   describe('in main file', function () {
+    it('should throw an error for an invalid file path', function () {
+      return $RefParser
+        .dereference('this file does not exist')
+        .then(helper.shouldNotGetCalled)
+        .catch(function (err) {
+          expect(err).to.be.an.instanceOf(Error);
+          expect(err.code).to.equal('ENOENT')
+          expect(err.message).to.contain('Error opening file ');
+        });
+    });
+
     it('should throw an error for an invalid YAML file', function () {
       return $RefParser
         .dereference(path.rel('specs/invalid/invalid.yaml'))
