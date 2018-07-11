@@ -1,6 +1,6 @@
 /*!
  * JSON Schema $Ref Parser v5.0.3 (April 9th 2018)
- * 
+ *
  * https://github.com/BigstickCarpet/json-schema-ref-parser
  * 
  * @author  James Messinger (http://bigstickcarpet.com)
