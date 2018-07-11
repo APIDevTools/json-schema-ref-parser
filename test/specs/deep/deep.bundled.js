@@ -389,18 +389,20 @@ helper.bundled.deep =
         properties: {
           middle: {
             minLength: {
-              $ref: '#/properties/name/type/properties/first/minLength'
+              $ref: '#/properties/name/type/properties/last/minLength'
             },
             type: {
-              $ref: '#/properties/name/type/properties/first/type'
+              $ref: '#/properties/name/type/properties/last/type'
             }
           },
           prefix: {
             minLength: 3,
-            $ref: '#/properties/name/type/properties/first'
+            $ref: '#/properties/name/type/properties/last'
           },
           last: {
-            $ref: '#/properties/name/type/properties/first'
+            minLength: 1,
+            type: 'string',
+            title: 'requiredString'
           },
           suffix: {
             $ref: '#/properties/name/type/properties/prefix',
@@ -408,9 +410,7 @@ helper.bundled.deep =
             maxLength: 3
           },
           first: {
-            minLength: 1,
-            type: 'string',
-            title: 'requiredString'
+            $ref: '#/properties/name/type/properties/last'
           }
         },
         title: 'name'
