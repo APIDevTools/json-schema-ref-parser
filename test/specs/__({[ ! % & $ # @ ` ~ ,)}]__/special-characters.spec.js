@@ -1,4 +1,4 @@
-describe('File names with special characters', function () {
+describe.only('File names with special characters', function () {
   'use strict';
 
   it('should parse successfully', function () {
@@ -41,4 +41,3 @@ describe('File names with special characters', function () {
       });
   });
 });
-
