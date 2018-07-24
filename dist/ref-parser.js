@@ -1,5 +1,5 @@
 /*!
- * JSON Schema $Ref Parser v5.1.0 (July 11th 2018)
+ * JSON Schema $Ref Parser v5.1.1 (July 24th 2018)
  * 
  * https://github.com/BigstickCarpet/json-schema-ref-parser
  * 
@@ -1421,7 +1421,7 @@ Pointer.parse = function (path) {
 
   // Decode each part, according to RFC 6901
   for (var i = 0; i < pointer.length; i++) {
-    pointer[i] = decodeURI(pointer[i].replace(escapedSlash, '/').replace(escapedTilde, '~'));
+    pointer[i] = decodeURIComponent(pointer[i].replace(escapedSlash, '/').replace(escapedTilde, '~'));
   }
 
   if (pointer[0] !== '') {
@@ -1449,7 +1449,7 @@ Pointer.join = function (base, tokens) {
   for (var i = 0; i < tokens.length; i++) {
     var token = tokens[i];
     // Encode the token, according to RFC 6901
-    base += '/' + encodeURI(token.replace(tildes, '~0').replace(slashes, '~1'));
+    base += '/' + encodeURIComponent(token.replace(tildes, '~0').replace(slashes, '~1'));
   }
 
   return base;
