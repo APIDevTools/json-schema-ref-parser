@@ -1,0 +1,8 @@
+{
+    "$id": "asset_action",
+    "properties": {
+        "label": {
+            "$ref": "text_assets.json"
+        }
+    }
+}

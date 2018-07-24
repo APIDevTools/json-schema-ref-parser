@@ -3,6 +3,13 @@ All notable changes will be documented in this file.
 JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [v5.1.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v5.1.0) (2018-07-11)
+
+- Improved the logic of the [`bundle()` method](https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/ref-parser.md#bundleschema-options-callback) to produce shorter reference paths when possible.  This is not a breaking change, since both the old reference paths and the new reference paths are valid.  The new ones are just shorter.  Big thanks to [@hipstersmoothie](https://github.com/hipstersmoothie) for [PR #68](https://github.com/BigstickCarpet/json-schema-ref-parser/pull/68), which helped a lot with this.
+
+[Full Changelog](https://github.com/BigstickCarpet/json-schema-ref-parser/compare/v5.0.0...v5.1.0)
+
+
 ## [v5.0.0](https://github.com/BigstickCarpet/json-schema-ref-parser/tree/v5.0.0) (2018-03-18)
 
 This release contains two bug fixes related to file paths.  They are _technically_ breaking changes &mdash; hence the major version bump &mdash; but they're both edge cases that probably won't affect most users.

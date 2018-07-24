@@ -41,4 +41,3 @@ describe('File names with special characters', function () {
       });
   });
 });
-

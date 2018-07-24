@@ -1,0 +1,29 @@
+{
+    "$id": "def",
+    "definitions": {
+        "container": {
+            "properties": {
+                "actions": {
+                    "type": "object",
+                    "properties": {
+                        "affirmativeAction": {
+                            "$ref": "#/definitions/actions"
+                        },
+                        "negativeAction": {
+                            "$ref": "#/definitions/actions"
+                        },
+                        "prevAction": {
+                            "$ref": "#/definitions/actions"
+                        }
+                    }
+                }
+            }
+        },
+        "actions": {
+            "type": "object",
+            "properties": {
+                "$ref": "text_assets.json"
+            }
+        }
+    }
+}

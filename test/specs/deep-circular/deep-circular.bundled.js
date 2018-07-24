@@ -13,18 +13,20 @@ helper.bundled.deepCircular =
       properties: {
         middle: {
           minLength: {
-            $ref: '#/definitions/name/properties/first/minLength'
+            $ref: '#/definitions/name/properties/last/minLength'
           },
           type: {
-            $ref: '#/definitions/name/properties/first/type'
+            $ref: '#/definitions/name/properties/last/type'
           }
         },
         prefix: {
           minLength: 3,
-          $ref: '#/definitions/name/properties/first'
+          $ref: '#/definitions/name/properties/last'
         },
         last: {
-          $ref: '#/definitions/name/properties/first'
+          minLength: 1,
+          type: 'string',
+          title: 'requiredString'
         },
         suffix: {
           $ref: '#/definitions/name/properties/prefix',
@@ -32,9 +34,7 @@ helper.bundled.deepCircular =
           maxLength: 3
         },
         first: {
-          minLength: 1,
-          type: 'string',
-          title: 'requiredString'
+          $ref: '#/definitions/name/properties/last'
         }
       },
     }

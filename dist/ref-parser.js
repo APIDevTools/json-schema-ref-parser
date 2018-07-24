@@ -1,5 +1,5 @@
 /*!
- * JSON Schema $Ref Parser v5.0.3 (April 9th 2018)
+ * JSON Schema $Ref Parser v5.1.1 (July 24th 2018)
  * 
  * https://github.com/BigstickCarpet/json-schema-ref-parser
  * 
@@ -54,14 +54,25 @@ function crawl (parent, key, path, pathFromRoot, indirections, inventory, $refs,
       inventory$Ref(parent, key, path, pathFromRoot, indirections, inventory, $refs, options);
     }
     else {
-      var keys = Object.keys(obj);
-
-      // Most people will expect references to be bundled into the the "definitions" property,
-      // so we always crawl that property first, if it exists.
-      var defs = keys.indexOf('definitions');
-      if (defs > 0) {
-        keys.splice(0, 0, keys.splice(defs, 1)[0]);
-      }
+      // Crawl the object in a specific order that's optimized for bundling.
+      // This is important because it determines how `pathFromRoot` gets built,
+      // which later determines which keys get dereferenced and which ones get remapped
+      var keys = Object.keys(obj)
+        .sort(function (a, b) {
+          // Most people will expect references to be bundled into the the "definitions" property,
+          // so we always crawl that property first, if it exists.
+          if (a === 'definitions') {
+            return -1;
+          }
+          else if (b === 'definitions') {
+            return 1;
+          }
+          else {
+            // Otherwise, crawl the keys based on their length.
+            // This produces the shortest possible bundled references
+            return a.length - b.length;
+          }
+        });
 
       keys.forEach(function (key) {
         var keyPath = Pointer.join(path, key);
@@ -159,26 +170,43 @@ function remap (inventory) {
   // Group & sort all the $ref pointers, so they're in the order that we need to dereference/remap them
   inventory.sort(function (a, b) {
     if (a.file !== b.file) {
-      return a.file < b.file ? -1 : +1;       // Group all the $refs that point to the same file
+      // Group all the $refs that point to the same file
+      return a.file < b.file ? -1 : +1;
     }
     else if (a.hash !== b.hash) {
-      return a.hash < b.hash ? -1 : +1;       // Group all the $refs that point to the same part of the file
+      // Group all the $refs that point to the same part of the file
+      return a.hash < b.hash ? -1 : +1;
     }
     else if (a.circular !== b.circular) {
-      return a.circular ? -1 : +1;            // If the $ref points to itself, then sort it higher than other $refs that point to this $ref
+      // If the $ref points to itself, then sort it higher than other $refs that point to this $ref
+      return a.circular ? -1 : +1;
     }
     else if (a.extended !== b.extended) {
-      return a.extended ? +1 : -1;            // If the $ref extends the resolved value, then sort it lower than other $refs that don't extend the value
+      // If the $ref extends the resolved value, then sort it lower than other $refs that don't extend the value
+      return a.extended ? +1 : -1;
     }
     else if (a.indirections !== b.indirections) {
-      return a.indirections - b.indirections; // Sort direct references higher than indirect references
+      // Sort direct references higher than indirect references
+      return a.indirections - b.indirections;
     }
     else if (a.depth !== b.depth) {
-      return a.depth - b.depth;               // Sort $refs by how close they are to the JSON Schema root
+      // Sort $refs by how close they are to the JSON Schema root
+      return a.depth - b.depth;
     }
     else {
-      // If all else is equal, use the $ref that's in the "definitions" property
-      return b.pathFromRoot.lastIndexOf('/definitions') - a.pathFromRoot.lastIndexOf('/definitions');
+      // Determine how far each $ref is from the "definitions" property.
+      // Most people will expect references to be bundled into the the "definitions" property if possible.
+      var aDefinitionsIndex = a.pathFromRoot.lastIndexOf('/definitions');
+      var bDefinitionsIndex = b.pathFromRoot.lastIndexOf('/definitions');
+
+      if (aDefinitionsIndex !== bDefinitionsIndex) {
+        // Give higher priority to the $ref that's closer to the "definitions" property
+        return bDefinitionsIndex - aDefinitionsIndex;
+      }
+      else {
+        // All else is equal, so use the shorter path, which will produce the shortest possible reference
+        return a.pathFromRoot.length - b.pathFromRoot.length;
+      }
     }
   });
 
@@ -1393,7 +1421,7 @@ Pointer.parse = function (path) {
 
   // Decode each part, according to RFC 6901
   for (var i = 0; i < pointer.length; i++) {
-    pointer[i] = decodeURI(pointer[i].replace(escapedSlash, '/').replace(escapedTilde, '~'));
+    pointer[i] = decodeURIComponent(pointer[i].replace(escapedSlash, '/').replace(escapedTilde, '~'));
   }
 
   if (pointer[0] !== '') {
@@ -1421,7 +1449,7 @@ Pointer.join = function (base, tokens) {
   for (var i = 0; i < tokens.length; i++) {
     var token = tokens[i];
     // Encode the token, according to RFC 6901
-    base += '/' + encodeURI(token.replace(tildes, '~0').replace(slashes, '~1'));
+    base += '/' + encodeURIComponent(token.replace(tildes, '~0').replace(slashes, '~1'));
   }
 
   return base;
@@ -5767,6 +5795,12 @@ function isPlainSafeFirst(c) {
     && c !== CHAR_GRAVE_ACCENT;
 }
 
+// Determines whether block indentation indicator is required.
+function needIndentIndicator(string) {
+  var leadingSpaceRe = /^\n* /;
+  return leadingSpaceRe.test(string);
+}
+
 var STYLE_PLAIN   = 1,
     STYLE_SINGLE  = 2,
     STYLE_LITERAL = 3,
@@ -5834,7 +5868,7 @@ function chooseScalarStyle(string, singleLineOnly, indentPerLevel, lineWidth, te
       ? STYLE_PLAIN : STYLE_SINGLE;
   }
   // Edge case: block indentation indicator can only have one digit.
-  if (string[0] === ' ' && indentPerLevel > 9) {
+  if (indentPerLevel > 9 && needIndentIndicator(string)) {
     return STYLE_DOUBLE;
   }
   // At this point we know block styles are valid.
@@ -5898,7 +5932,7 @@ function writeScalar(state, string, level, iskey) {
 
 // Pre-conditions: string is valid for a block scalar, 1 <= indentPerLevel <= 9.
 function blockHeader(string, indentPerLevel) {
-  var indentIndicator = (string[0] === ' ') ? String(indentPerLevel) : '';
+  var indentIndicator = needIndentIndicator(string) ? String(indentPerLevel) : '';
 
   // note the special case: the string '\n' counts as a "trailing" empty line.
   var clip =          string[string.length - 1] === '\n';
@@ -8908,8 +8942,14 @@ function constructJavascriptFunction(data) {
 
   // Esprima's ranges include the first '{' and the last '}' characters on
   // function expressions. So cut them out.
+  if (ast.body[0].expression.body.type === 'BlockStatement') {
+    /*eslint-disable no-new-func*/
+    return new Function(params, source.slice(body[0] + 1, body[1] - 1));
+  }
+  // ES6 arrow functions can omit the BlockStatement. In that case, just return
+  // the body.
   /*eslint-disable no-new-func*/
-  return new Function(params, source.slice(body[0] + 1, body[1] - 1));
+  return new Function(params, 'return ' + source.slice(body[0], body[1]));
 }
 
 function representJavascriptFunction(object /*, style*/) {
