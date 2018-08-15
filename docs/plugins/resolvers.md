@@ -83,7 +83,7 @@ read: function(file, callback) {
 
 // Return the value in an ES6 Promise
 read: function(file) {
-  doSomethingAsync(file.url)
+  return doSomethingAsync(file.url)
     .then(function(data) {
       if (data) {
         // Success !
