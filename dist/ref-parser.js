@@ -1,5 +1,5 @@
 /*!
- * JSON Schema $Ref Parser v5.1.2 (July 31st 2018)
+ * JSON Schema $Ref Parser v5.1.3 (August 24th 2018)
  * 
  * https://github.com/BigstickCarpet/json-schema-ref-parser
  * 
@@ -2503,7 +2503,6 @@ var isWindows = /^win/.test(process.platform),
 var urlEncodePatterns = [
   /\?/g, '%3F',
   /\#/g, '%23',
-  isWindows ? /\\/g : /\//, '/'
 ];
 
 // RegExp patterns to URL-decode special characters for local filesystem paths
@@ -2640,17 +2639,23 @@ exports.isFileSystemPath = function isFileSystemPath (path) {
  * @returns {string}
  */
 exports.fromFileSystemPath = function fromFileSystemPath (path) {
-  // Step 1: Manually encode characters that are not encoded by `encodeURI`.
+  // Step 1: On Windows, replace backslashes with forward slashes,
+  // rather than encoding them as "%5C"
+  if (isWindows) {
+    path = path.replace(/\\/g, '/');
+  }
+
+  // Step 2: `encodeURI` will take care of MOST characters
+  path = encodeURI(path);
+
+  // Step 3: Manually encode characters that are not encoded by `encodeURI`.
   // This includes characters such as "#" and "?", which have special meaning in URLs,
   // but are just normal characters in a filesystem path.
-  // On Windows, this will also replace backslashes with forward slashes,
-  // rather than encoding them as special characters.
   for (var i = 0; i < urlEncodePatterns.length; i += 2) {
     path = path.replace(urlEncodePatterns[i], urlEncodePatterns[i + 1]);
   }
 
-  // Step 2: `encodeURI` will take care of all other characters
-  return encodeURI(path);
+  return path;
 };
 
 /**
