@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "lib": ["es2015", "dom"],
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "strict": true,
+    "preserveConstEnums": true,
+    "outDir": "lib",
+    "removeComments": false,
+    "sourceMap": false,
+    "declaration": false
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}

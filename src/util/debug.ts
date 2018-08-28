@@ -1,9 +1,8 @@
-'use strict';
-exports.__esModule = true;
-var debug_1 = require('debug');
+import debug from 'debug'
+
 /**
  * Writes messages to stdout.
  * Log messages are suppressed by default, but can be enabled by setting the DEBUG variable.
  * @type {function}
  */
-exports.default = debug_1.default('json-schema-ref-parser');
+export default debug('json-schema-ref-parser')

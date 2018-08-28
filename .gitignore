@@ -11,3 +11,4 @@ npm-debug.log
 /coverage
 /dist/*.test.js
 /node_modules
+.cache

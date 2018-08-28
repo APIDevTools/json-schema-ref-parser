@@ -1,6 +1,6 @@
-'use strict';
-exports.__esModule = true;
-var debug_1 = require('./debug');
+import debug from './debug'
+import { FileObject } from '../types'
+
 /**
  * Returns the given plugins as an array, rather than an object map.
  * All other methods in this module expect an array of plugins rather than an object map.
@@ -8,16 +8,17 @@ var debug_1 = require('./debug');
  * @param  {object} plugins - A map of plugin objects
  * @return {object[]}
  */
-function all (plugins) {
+export function all<T extends Plugin<any, any, any>>(
+  plugins: Record<string, T | boolean>
+) {
   return Object.keys(plugins)
-    .filter(function (key) { return typeof plugins[key] === 'object'; })
-    .map(function (key) {
-
-      plugins[key].name = key;
-      return plugins[key];
-    });
+    .filter(key => typeof plugins[key] === 'object')
+    .map(function(key) {
+      ;(plugins[key] as Exclude<T, boolean>).name = key
+      return plugins[key] as T & { name: string }
+    })
 }
-exports.all = all;
+
 /**
  * Filters the given plugins, returning only the ones return `true` for the given method.
  *
@@ -26,27 +27,45 @@ exports.all = all;
  * @param  {object}   file    - A file info object, which will be passed to each method
  * @return {object[]}
  */
-function filter (plugins, method, file) {
-  return plugins.filter(function (plugin) {
-    return !!getResult(plugin, method, file);
-  });
+export function filter<
+  M extends string,
+  R,
+  F extends FileObject,
+  P extends Plugin<M, R, F>
+>(plugins: P[], method: M, file: F) {
+  return plugins.filter(function(plugin) {
+    return !!getResult(plugin, method, file)
+  })
 }
-exports.filter = filter;
+
 /**
  * Sorts the given plugins, in place, by their `order` property.
  *
  * @param {object[]} plugins - An array of plugin objects
  * @returns {object[]}
  */
-function sort (plugins) {
-  plugins.forEach(function (plugin) {
-    plugin.order = plugin.order || Number.MAX_SAFE_INTEGER;
-  });
-  return plugins.sort(function (a, b) {
-    return a.order - b.order;
-  });
+export function sort<
+  M extends string,
+  R,
+  F extends FileObject,
+  P extends Plugin<M, R, F>
+>(plugins: P[]) {
+  plugins.forEach(function(plugin) {
+    plugin.order = plugin.order || Number.MAX_SAFE_INTEGER
+  })
+
+  return plugins.sort(function(a, b) {
+    return a.order! - b.order!
+  })
 }
-exports.sort = sort;
+
+export type Plugin<M extends string, R, F> = {
+  [K in M]: string | string[] | RegExp | ((file: F) => R)
+} & {
+  order?: number
+  name?: string
+}
+
 /**
  * Runs the specified method of the given plugins, in order, until one of them returns a successful result.
  * Each method can return a synchronous value, a Promise, or call an error-first callback.
@@ -60,56 +79,73 @@ exports.sort = sort;
  * @param {object}    file    - A file info object, which will be passed to each method
  * @returns {Promise}
  */
-function run (plugins, method, file) {
-  var plugin, lastError, index = 0;
-  return new Promise(function (resolve, reject) {
-    runNextPlugin();
-    function runNextPlugin () {
-      plugin = plugins[index++];
+export function run<
+  M extends string,
+  R extends any | PromiseLike<any>,
+  F extends FileObject,
+  P extends Plugin<M, R, F>
+>(
+  plugins: P[],
+  method: M,
+  file: F
+): Promise<{
+  plugin: P
+  result: R
+}> {
+  let plugin: P | undefined,
+    lastError,
+    index = 0
+
+  return new Promise(function(resolve, reject) {
+    runNextPlugin()
+
+    function runNextPlugin() {
+      plugin = plugins[index++]
       if (!plugin) {
         // There are no more functions, so re-throw the last error
-        return reject(lastError);
+        return reject(lastError)
       }
+
       try {
-        debug_1.default('  %s', plugin.name);
-        var result = getResult(plugin, method, file, callback);
+        debug('  %s', plugin.name)
+        const result = getResult<M, R, F, P>(plugin, method, file, callback)
         if (typeof result === 'object' && typeof result.then === 'function') {
           // A promise was returned
-          result.then(onSuccess, onError);
-        }
-        else if (result !== undefined) {
+          result.then(onSuccess, onError)
+        } else if (result !== undefined) {
           // A synchronous result was returned
-          onSuccess(result);
+          onSuccess(result)
         }
         // else { the callback will be called }
-      }
-      catch (e) {
-        onError(e);
+      } catch (e) {
+        onError(e)
       }
     }
-    function callback (err, result) {
+
+    function callback(err, result) {
       if (err) {
-        onError(err);
-      }
-      else {
-        onSuccess(result);
+        onError(err)
+      } else {
+        onSuccess(result)
       }
     }
-    function onSuccess (result) {
-      debug_1.default('    success');
+
+    function onSuccess(result) {
+      debug('    success')
       resolve({
         plugin: plugin,
         result: result
-      });
+      } as { plugin: P; result: R })
     }
-    function onError (err) {
-      debug_1.default('    %s', err.message || err);
-      lastError = err;
-      runNextPlugin();
+
+    function onError(err) {
+      debug('    %s', err.message || err)
+      lastError = err
+      runNextPlugin()
     }
-  });
+  })
 }
-exports.run = run;
+
 /**
  * Returns the value of the given property.
  * If the property is a function, then the result of the function is returned.
@@ -122,37 +158,59 @@ exports.run = run;
  * @param   {function} [callback] - A callback function, which will be passed to the method
  * @returns {*}
  */
-function getResult (obj, prop, file, callback) {
-  var value = obj[prop];
+function getResult<
+  P extends string,
+  R,
+  F extends FileObject,
+  O extends Record<P, V> | Plugin<P, R, F>,
+  V extends
+    | boolean // undocumented, used in `should use a custom parser with static values` test
+    | string // both for comparing to suffix and passed through in a test
+    | string[]
+    | RegExp
+    | ((file: F, callback?: (err, data) => void) => R) = O extends Plugin<
+    P,
+    R,
+    F
+  >
+    ? () => R
+    : O extends Record<P, V> ? V : never
+>(obj: O, prop: P, file: F, callback?: (err, data) => void): R | boolean | V {
+  var value: V = obj[prop] as any
+
   if (typeof value === 'function') {
-    return obj[prop](file, callback);
+    return ((obj[prop] as any) as Exclude<
+      typeof value,
+      boolean | string | string[] | RegExp
+    >)(file, callback)
   }
+
   if (!callback) {
     // The synchronous plugin functions (canParse and canRead)
     // allow a "shorthand" syntax, where the user can match
     // files by RegExp or by file extension.
     if (value instanceof RegExp) {
-      return value.test(file.url);
-    }
-    else if (typeof value === 'string') {
-      return value === file.extension;
-    }
-    else if (Array.isArray(value)) {
-      return value.indexOf(file.extension) !== -1;
+      return value.test(file.url)
+    } else if (typeof value === 'string') {
+      return value === file.extension
+    } else if (Array.isArray(value)) {
+      return value.indexOf(file.extension) !== -1
     }
   }
+
   // CASE 1:
   // There is no callback, yet the value wasn't a string|string[]|RegExp
   // Must be a boolean.
   // Let's return it verbatim.
   if (!callback && typeof value !== 'boolean') {
-    console.error([obj, prop, file, callback]);
-    throw new Error('How did we get here?');
+    console.error([obj, prop, file, callback])
+    throw new Error('How did we get here?')
   }
   // CASE 2:
   // There was a callback.
   // Yet the value was not a function!
   // So, we return it instead of calling it with the callback.
   // Poor callback, it will never be called.
-  return value;
+
+  return value
 }

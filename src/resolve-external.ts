@@ -1,11 +1,13 @@
-'use strict';
-exports.__esModule = true;
-var ref_1 = require('./ref');
-var pointer_1 = require('./pointer');
-var parse_1 = require('./parse');
-var debug_1 = require('./util/debug');
-var url_1 = require('./util/url');
-exports.default = resolveExternal;
+import $Ref from './ref'
+import Pointer from './pointer'
+import parse from './parse'
+import debug from './util/debug'
+import { resolve, stripHash } from './util/url'
+import $RefParserOptions from './options'
+import $Refs from './refs'
+
+export default resolveExternal
+
 /**
  * Crawls the JSON schema, finds all external JSON references, and resolves their values.
  * This method does not mutate the JSON schema. The resolved values are added to {@link $RefParser#$refs}.
@@ -19,20 +21,26 @@ exports.default = resolveExternal;
  * The promise resolves once all JSON references in the schema have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-function resolveExternal (parser, options) {
+function resolveExternal(parser, options) {
   if (!options.resolve.external) {
     // Nothing to resolve, so exit early
-    return Promise.resolve();
+    return Promise.resolve()
   }
+
   try {
-    debug_1.default('Resolving $ref pointers in %s', parser.$refs._root$Ref.path);
-    var promises = crawl(parser.schema, parser.$refs._root$Ref.path + '#', parser.$refs, options);
-    return Promise.all(promises);
-  }
-  catch (e) {
-    return Promise.reject(e);
+    debug('Resolving $ref pointers in %s', parser.$refs._root$Ref.path)
+    var promises = crawl(
+      parser.schema,
+      parser.$refs._root$Ref.path + '#',
+      parser.$refs,
+      options
+    )
+    return Promise.all(promises)
+  } catch (e) {
+    return Promise.reject(e)
   }
 }
+
 /**
  * Recursively crawls the given value, and resolves any external JSON references.
  *
@@ -47,27 +55,36 @@ function resolveExternal (parser, options) {
  * If any of the JSON references point to files that contain additional JSON references,
  * then the corresponding promise will internally reference an array of promises.
  */
-function crawl (obj, path, $refs, options) {
-  var promises = [];
+function crawl(
+  obj: any,
+  path: string,
+  $refs: $Refs,
+  options: $RefParserOptions
+) {
+  const promises: Promise<any>[] = []
+
   if (obj && typeof obj === 'object') {
-    if (ref_1.default.isExternal$Ref(obj)) {
-      promises.push(resolve$Ref(obj, path, $refs, options));
-    }
-    else {
-      Object.keys(obj).forEach(function (key) {
-        var keyPath = pointer_1.default.join(path, key);
-        var value = obj[key];
-        if (ref_1.default.isExternal$Ref(value)) {
-          promises.push(resolve$Ref(value, keyPath, $refs, options));
+    if ($Ref.isExternal$Ref(obj)) {
+      promises.push(resolve$Ref(obj, path, $refs, options))
+    } else {
+      Object.keys(obj).forEach(function(key) {
+        const keyPath = Pointer.join(path, key)
+        const value = obj[key]
+
+        if ($Ref.isExternal$Ref(value)) {
+          promises.push(resolve$Ref(value, keyPath, $refs, options))
+        } else {
+          promises.push(
+            ...promises.concat(crawl(value, keyPath, $refs, options))
+          )
         }
-        else {
-          promises.push.apply(promises, promises.concat(crawl(value, keyPath, $refs, options)));
-        }
-      });
+      })
     }
   }
-  return promises;
+
+  return promises
 }
+
 /**
  * Resolves the given JSON Reference, and then crawls the resulting value.
  *
@@ -80,23 +97,30 @@ function crawl (obj, path, $refs, options) {
  * The promise resolves once all JSON references in the object have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-function resolve$Ref ($ref, path, $refs, options) {
-  debug_1.default('Resolving $ref pointer "%s" at %s', $ref.$ref, path);
-  var resolvedPath = url_1.resolve(path, $ref.$ref);
-  var withoutHash = url_1.stripHash(resolvedPath);
+function resolve$Ref(
+  $ref: { $ref: string },
+  path: string,
+  $refs: $Refs,
+  options: $RefParserOptions
+) {
+  debug('Resolving $ref pointer "%s" at %s', $ref.$ref, path)
+
+  const resolvedPath = resolve(path, $ref.$ref)
+  const withoutHash = stripHash(resolvedPath)
   {
     // Do we already have this $ref?
-    var $ref_1 = $refs._$refs[withoutHash];
-    if ($ref_1) {
+    const $ref: $Ref = $refs._$refs[withoutHash]
+    if ($ref) {
       // We've already parsed this $ref, so use the existing value
-      return Promise.resolve($ref_1.value);
+      return Promise.resolve($ref.value)
     }
   }
+
   // Parse the $referenced file/url
-  return parse_1.default(resolvedPath, $refs, options).then(function (result) {
+  return parse(resolvedPath, $refs, options).then(function(result) {
     // Crawl the parsed value
-    debug_1.default('Resolving $ref pointers in %s', withoutHash);
-    var promises = crawl(result, withoutHash + '#', $refs, options);
-    return Promise.all(promises);
-  });
+    debug('Resolving $ref pointers in %s', withoutHash)
+    const promises = crawl(result, withoutHash + '#', $refs, options)
+    return Promise.all(promises)
+  })
 }
