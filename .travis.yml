@@ -13,11 +13,11 @@ matrix:
   include:
     # Local Browsers
     - node_js: 10
-      env: KARMA=true KARMA_COVERAGE=true
+      env: KARMA=true
 
     # Sauce Labs
     - node_js: 10
-      env: KARMA=true KARMA_SAUCE=true
+      env: KARMA=true SAUCE=true
 
     # Node
     - node_js: 6

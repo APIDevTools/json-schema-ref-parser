@@ -41,7 +41,7 @@
     "lib"
   ],
   "scripts": {
-    "lint": "eslint lib test --fix",
+    "lint": "eslint lib test/fixtures test/specs --fix",
     "build": "simplifyify lib/index.js --outfile dist/ref-parser.js --standalone \\$RefParser --bundle --debug --minify",
     "watch": "npm run build -- --watch",
     "test": "npm run test:node && npm run test:browser && npm run lint",
