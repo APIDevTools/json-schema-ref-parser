@@ -56,8 +56,15 @@ function exitIfDisabled () {
  * Configures the code-coverage reporter
  */
 function configureCodeCoverage (config) {
-  if (process.argv.indexOf('--coverage') === -1) {
+  var coverage = process.argv.indexOf('--coverage') > 0;
+  var SAUCE = process.env.SAUCE === 'true';
+
+  if (!coverage) {
     console.warn('Code-coverage is not enabled');
+    return;
+  }
+  else if (SAUCE) {
+    console.warn('Code-coverage is disabled for SauceLabs');
     return;
   }
 
