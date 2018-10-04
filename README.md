@@ -2,14 +2,14 @@ JSON Schema $Ref Parser
 ============================
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
 
-[![Build Status](https://api.travis-ci.org/BigstickCarpet/json-schema-ref-parser.svg?branch=master)](https://travis-ci.org/BigstickCarpet/json-schema-ref-parser)
-[![Dependencies](https://david-dm.org/BigstickCarpet/json-schema-ref-parser.svg)](https://david-dm.org/BigstickCarpet/json-schema-ref-parser)
-[![Coverage Status](https://coveralls.io/repos/BigstickCarpet/json-schema-ref-parser/badge.svg?branch=master&service=github)](https://coveralls.io/r/BigstickCarpet/json-schema-ref-parser)
-[![Codacy Score](https://api.codacy.com/project/badge/d8abfe5e9a4044b89bd9f4b999d4a574)](https://www.codacy.com/public/jamesmessinger/json-schema-ref-parser)
-[![Inline docs](http://inch-ci.org/github/BigstickCarpet/json-schema-ref-parser.svg?branch=master&style=shields)](http://inch-ci.org/github/BigstickCarpet/json-schema-ref-parser)
+[![Build Status](https://api.travis-ci.org/APIDevTools/json-schema-ref-parser.svg?branch=master)](https://travis-ci.org/APIDevTools/json-schema-ref-parser)
+[![Dependencies](https://david-dm.org/APIDevTools/json-schema-ref-parser.svg)](https://david-dm.org/APIDevTools/json-schema-ref-parser)
+[![Coverage Status](https://coveralls.io/repos/github/APIDevTools/json-schema-ref-parser/badge.svg?branch=master)](https://coveralls.io/github/APIDevTools/json-schema-ref-parser)
+[![Codacy Score](https://api.codacy.com/project/badge/d8abfe5e9a4044b89bd9f4b999d4a574)](https://www.codacy.com/public/JamesMessinger/json-schema-ref-parser)
+[![Inline docs](https://inch-ci.org/github/APIDevTools/json-schema-ref-parser.svg?branch=master&style=shields)](https://inch-ci.org/github/APIDevTools/json-schema-ref-parser)
 
-[![npm](http://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
-[![Bower](http://img.shields.io/bower/v/json-schema-ref-parser.svg)](http://bower.io/)
+[![npm](https://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
+[![Bower](https://img.shields.io/bower/v/json-schema-ref-parser.svg)](http://bower.io/)
 [![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
 
 [![Browser Compatibility](https://saucelabs.com/browser-matrix/json-schema-parser.svg)](https://saucelabs.com/u/json-schema-parser)
@@ -53,7 +53,7 @@ JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/d
 - Can [dereference](docs/ref-parser.md#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
 - Supports [circular references](docs/README.md#circular-refs), nested references, back-references, and cross-references between files
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object instance
-- [Tested](http://bigstickcarpet.github.io/json-schema-ref-parser/test/index.html) in Node, io.js, and all major web browsers on Windows, Mac, and Linux
+- [Tested](https://apidevtools.org/json-schema-ref-parser/test/index.html) in Node, io.js, and all major web browsers on Windows, Mac, and Linux
 
 
 Example
@@ -129,13 +129,13 @@ Full API documentation is available [right here](docs/README.md)
 
 Contributing
 --------------------------
-I welcome any contributions, enhancements, and bug-fixes.  [File an issue](https://github.com/BigstickCarpet/json-schema-ref-parser/issues) on GitHub and [submit a pull request](https://github.com/BigstickCarpet/json-schema-ref-parser/pulls).
+I welcome any contributions, enhancements, and bug-fixes.  [File an issue](https://github.com/APIDevTools/json-schema-ref-parser/issues) on GitHub and [submit a pull request](https://github.com/APIDevTools/json-schema-ref-parser/pulls).
 
 #### Building/Testing
 To build/test the project locally on your computer:
 
 1. __Clone this repo__<br>
-`git clone https://github.com/bigstickcarpet/json-schema-ref-parser.git`
+`git clone https://github.com/APIDevTools/json-schema-ref-parser.git`
 
 2. __Install dependencies__<br>
 `npm install`
@@ -149,7 +149,7 @@ To build/test the project locally on your computer:
 `npm test` (test in Node and browsers, and report code coverage)
 
 5. __Start the local web server__<br>
-`npm start` (then browse to [http://localhost:8080/test/index.html](http://bigstickcarpet.com/json-schema-ref-parser/test/index.html))
+`npm start` (then browse to [http://localhost:8080/test/index.html](https://apidevtools.org/json-schema-ref-parser/test/index.html))
 
 
 License

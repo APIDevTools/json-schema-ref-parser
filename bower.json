@@ -5,15 +5,15 @@
   "authors": [
     {
       "name": "James Messinger",
-      "homepage": "https://github.com/BigstickCarpet"
+      "homepage": "https://jamesmessinger.com"
     }
   ],
   "license": "MIT",
-  "homepage": "https://github.com/BigstickCarpet/json-schema-ref-parser",
+  "homepage": "https://github.com/APIDevTools/json-schema-ref-parser",
   "main": "dist/ref-parser.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/BigstickCarpet/json-schema-ref-parser.git"
+    "url": "https://github.com/APIDevTools/json-schema-ref-parser.git"
   },
   "ignore": [
     "/bower_components",

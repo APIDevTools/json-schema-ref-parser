@@ -1,18 +1,18 @@
-import { JSONSchema4, JSONSchema4Type, JSONSchema6, JSONSchema6Type } from 'json-schema'
+import { JSONSchema4, JSONSchema4Type, JSONSchema6, JSONSchema6Type } from 'json-schema';
 
 export = $RefParser
 
 /**
  * This is the default export of JSON Schema $Ref Parser. You can creates instances of this class using new $RefParser(), or you can just call its static methods.
  *
- * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/ref-parser.md
+ * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md
  */
 declare class $RefParser {
 
   /**
    * The `schema` property is the parsed/bundled/dereferenced JSON Schema object. This is the same value that is passed to the callback function (or Promise) when calling the parse, bundle, or dereference methods.
    *
-   * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/ref-parser.md#schema
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#schema
    */
   schema: JSONSchema4 | JSONSchema6
 
@@ -21,7 +21,7 @@ declare class $RefParser {
    *
    * This is the same value that is passed to the callback function (or Promise) when calling the `resolve` method.
    *
-   * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/ref-parser.md#refs
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#refs
    */
   $refs: $RefParser.$Refs
 
@@ -30,7 +30,7 @@ declare class $RefParser {
    *
    * The dereference method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object. Again, this is great for programmatic usage, but it does introduce the risk of circular references, so be careful if you intend to serialize the schema using `JSON.stringify()`. Consider using the bundle method instead, which does not create circular references.
    *
-   * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/ref-parser.md#dereferenceschema-options-callback
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#dereferenceschema-options-callback
    *
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
    * @param options (optional)
@@ -45,7 +45,7 @@ declare class $RefParser {
    *
    * This also eliminates the risk of circular references, so the schema can be safely serialized using `JSON.stringify()`.
    *
-   * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/ref-parser.md#bundleschema-options-callback
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#bundleschema-options-callback
    *
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
    * @param options (optional)
@@ -62,7 +62,7 @@ declare class $RefParser {
    *
    * Parses the given JSON Schema file (in JSON or YAML format), and returns it as a JavaScript object. This method `does not` resolve `$ref` pointers or dereference anything. It simply parses one file and returns it.
    *
-   * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/ref-parser.md#parseschema-options-callback
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#parseschema-options-callback
    *
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. The path can be absolute or relative. In Node, the path is relative to `process.cwd()`. In the browser, it's relative to the URL of the page.
    * @param options (optional)
@@ -79,7 +79,7 @@ declare class $RefParser {
    *
    * Resolves all JSON references (`$ref` pointers) in the given JSON Schema file. If it references any other files/URLs, then they will be downloaded and resolved as well. This method **does not** dereference anything. It simply gives you a `$Refs` object, which is a map of all the resolved references and their values.
    *
-   * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/ref-parser.md#resolveschema-options-callback
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#resolveschema-options-callback
    *
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
    * @param options (optional)
@@ -95,7 +95,7 @@ declare class $RefParser {
 declare namespace $RefParser {
 
   /**
-   * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/options.md
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/options.md
    */
   export type Options = object & {
 
@@ -167,7 +167,7 @@ declare namespace $RefParser {
   /**
    * JSON Schema `$Ref` Parser comes with built-in resolvers for HTTP and HTTPS URLs, as well as local filesystem paths (when running in Node.js). You can add your own custom resolvers to support additional protocols, or even replace any of the built-in resolvers with your own custom implementation.
    *
-   * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/plugins/resolvers.md
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/plugins/resolvers.md
    */
   export interface ResolverOptions {
 
@@ -223,7 +223,7 @@ declare namespace $RefParser {
    *
    * The file info object currently only consists of a few properties, but it may grow in the future if plug-ins end up needing more information.
    *
-   * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/plugins/file-info-object.md
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/plugins/file-info-object.md
    */
   export interface FileInfo {
 
@@ -248,20 +248,20 @@ declare namespace $RefParser {
    *
    * This object is a map of JSON References and their resolved values. It also has several convenient helper methods that make it easy for you to navigate and manipulate the JSON References.
    *
-   * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/refs.md
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/refs.md
    */
   export class $Refs {
     /**
      * This property is true if the schema contains any circular references. You may want to check this property before serializing the dereferenced schema as JSON, since JSON.stringify() does not support circular references by default.
      *
-     * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/refs.md#circular
+     * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/refs.md#circular
      */
     circular: boolean
 
     /**
      * Returns the paths/URLs of all the files in your schema (including the main schema file).
      *
-     * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/refs.md#pathstypes
+     * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/refs.md#pathstypes
      *
      * @param types (optional) Optionally only return certain types of paths ("file", "http", etc.)
      */
@@ -270,7 +270,7 @@ declare namespace $RefParser {
     /**
      * Returns a map of paths/URLs and their correspond values.
      *
-     * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/refs.md#valuestypes
+     * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/refs.md#valuestypes
      *
      * @param types (optional) Optionally only return values from certain locations ("file", "http", etc.)
      */
@@ -279,7 +279,7 @@ declare namespace $RefParser {
     /**
      * Returns `true` if the given path exists in the schema; otherwise, returns `false`
      *
-     * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/refs.md#existsref
+     * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/refs.md#existsref
      *
      * @param $ref The JSON Reference path, optionally with a JSON Pointer in the hash
      */
@@ -288,7 +288,7 @@ declare namespace $RefParser {
     /**
      * Gets the value at the given path in the schema. Throws an error if the path does not exist.
      *
-     * See https://github.com/BigstickCarpet/json-schema-ref-parser/blob/master/docs/refs.md#getref
+     * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/refs.md#getref
      *
      * @param $ref The JSON Reference path, optionally with a JSON Pointer in the hash
      */
