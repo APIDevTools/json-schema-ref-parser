@@ -26,6 +26,13 @@
   "homepage": "https://github.com/APIDevTools/json-schema-ref-parser",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
+  "files": [
+    "dist/ref-parser.js",
+    "dist/ref-parser.js.map",
+    "dist/ref-parser.min.js",
+    "dist/ref-parser.min.js.map",
+    "lib"
+  ],
   "scripts": {
     "lint": "eslint lib test --fix",
     "build": "npm run lint && npm run browserify",
