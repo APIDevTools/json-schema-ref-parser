@@ -170,7 +170,7 @@ describe('HTTP options', function () {
 
       // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
       // This should work by-default.
-      parser.parse('https://petstore.swagger.io:80/v2/swagger.json')
+      parser.parse('https://petstore.swagger.io/v2/swagger.json')
         .then(function (schema) {
           expect(schema).to.be.an('object');
           expect(schema).not.to.be.empty;
@@ -186,7 +186,7 @@ describe('HTTP options', function () {
 
       // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
       // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
-      parser.parse('https://petstore.swagger.io:80/v2/swagger.json', {
+      parser.parse('https://petstore.swagger.io/v2/swagger.json', {
         resolve: { http: { withCredentials: false }}
       })
         .then(function (schema) {
@@ -205,7 +205,7 @@ describe('HTTP options', function () {
 
         // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
         // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
-        parser.parse('https://petstore.swagger.io:80/v2/swagger.json', {
+        parser.parse('https://petstore.swagger.io/v2/swagger.json', {
           resolve: { http: { withCredentials: true }}
         })
           .then(function (schema) {
@@ -217,7 +217,7 @@ describe('HTTP options', function () {
           })
           .catch(function (err) {
           // The request failed, which is expected
-            expect(err.message).to.contain('Error downloading https://petstore.swagger.io:80/v2/swagger.json');
+            expect(err.message).to.contain('Error downloading https://petstore.swagger.io/v2/swagger.json');
             done();
           });
       });
