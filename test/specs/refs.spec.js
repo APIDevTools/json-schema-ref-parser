@@ -36,7 +36,7 @@ describe('$Refs object', function () {
         .resolve(path.abs('specs/external/external.yaml'))
         .then(function ($refs) {
           var paths = $refs.paths('file');
-          if (userAgent.isNode) {
+          if (host.node) {
             expect(paths).to.have.same.members([
               path.abs('specs/external/external.yaml'),
               path.abs('specs/external/definitions/definitions.json'),
@@ -55,7 +55,7 @@ describe('$Refs object', function () {
         .resolve(path.abs('specs/external/external.yaml'))
         .then(function ($refs) {
           var paths = $refs.paths(['http']);
-          if (userAgent.isBrowser) {
+          if (host.browser) {
             expect(paths).to.have.same.members([
               path.url('specs/external/external.yaml'),
               path.url('specs/external/definitions/definitions.json'),
@@ -131,7 +131,7 @@ describe('$Refs object', function () {
         .resolve(path.abs('specs/external/external.yaml'))
         .then(function ($refs) {
           var values = $refs.values('file');
-          if (userAgent.isNode) {
+          if (host.node) {
             var expected = {};
             expected[path.abs('specs/external/external.yaml')] = helper.parsed.external.schema;
             expected[path.abs('specs/external/definitions/definitions.json')] = helper.parsed.external.definitions;
@@ -152,7 +152,7 @@ describe('$Refs object', function () {
         .resolve(path.abs('specs/external/external.yaml'))
         .then(function ($refs) {
           var values = $refs.values(['http']);
-          if (userAgent.isBrowser) {
+          if (host.browser) {
             var expected = {};
             expected[path.url('specs/external/external.yaml')] = helper.parsed.external.schema;
             expected[path.url('specs/external/definitions/definitions.json')] = helper.parsed.external.definitions;

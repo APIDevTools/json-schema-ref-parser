@@ -9,27 +9,14 @@
 (function () {
   'use strict';
 
-  if (typeof (window) === 'object') {
+  if (host.browser) {
     // Expose Browser globals
-    window.global = window;
-    window.expect = chai.expect;
-    window.userAgent = {
-      isNode: false,
-      isBrowser: true,
-      isOldIE: navigator.userAgent.indexOf('MSIE') >= 0,
-      isKarma: !!window.__karma__
-    };
+    host.global.expect = chai.expect;
   }
   else {
     // Expose Node globals
-    global.$RefParser = require('../../');
-    global.expect = require('chai').expect;
-
-    global.userAgent = {
-      isNode: true,
-      isBrowser: false,
-      isTravisCI: !!process.env.TRAVIS
-    };
+    host.global.$RefParser = require('../../');
+    host.global.expect = require('chai').expect;
   }
 
 }());

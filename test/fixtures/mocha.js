@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  if (userAgent.isBrowser) {
+  if (host.browser) {
     mocha.setup('bdd');
     mocha.fullTrace();
     mocha.asyncOnly();
@@ -20,7 +20,7 @@
 
   beforeEach(function () {
     // Flag TravisCI and SauceLabs as being very slow environments
-    var isSlowEnvironment = userAgent.isTravisCI || userAgent.isKarma;
+    var isSlowEnvironment = host.env.CI || host.karma;
 
     // Most of our tests perform multiple AJAX requests,
     // so we need to increase the timeouts to allow for that

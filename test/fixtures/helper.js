@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  global.helper = {};
+  host.global.helper = {};
 
   /**
    * Parsed JSON schemas
@@ -66,7 +66,7 @@
           // Resolved file paths
           try {
             expect((actualFiles = $refs.paths())).to.have.same.members(expectedFiles);
-            if (userAgent.isNode) {
+            if (host.node) {
               expect((actualFiles = $refs.paths(['file']))).to.have.same.members(expectedFiles);
               expect($refs.paths('http')).to.be.an('array').with.lengthOf(0);
             }
@@ -104,7 +104,7 @@
       // Convert Buffers to POJOs for comparison
       value = value.toJSON();
 
-      if (userAgent.isNode && /v0\.10/.test(process.version)) {
+      if (host.node && host.node.version === 0.1) {
         // Node v0.10 serializes buffers differently
         value = { type: 'Buffer', data: value };
       }

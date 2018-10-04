@@ -2,23 +2,22 @@
   'use strict';
 
   var path;
-  if (userAgent.isNode) {
+  if (host.node) {
     path = filesystemPathHelpers();
   }
   else {
     path = urlPathHelpers();
   }
 
-  global.path = path;
+  host.global.path = path;
 
   /**
    * Helper functions for getting local filesystem paths in various formats
    */
   function filesystemPathHelpers () {
-    var _path = userAgent.isNode ? require('path') : null;
-    var _url = userAgent.isNode ? require('url') : null;
+    var _path = require('path');
+    var _url = require('url');
     var _testsDir = _path.resolve(__dirname, '..');
-    var _isWindows = /^win/.test(process.platform);
 
     // Run all tests from the "test" directory
     process.chdir(_path.join(__dirname, '..'));
@@ -46,7 +45,7 @@
       url: function (file) {
         var pathname = path.abs(file);
 
-        if (_isWindows) {
+        if (host.os.windows) {
           pathname = pathname.replace(/\\/g, '/');  // Convert Windows separators to URL separators
         }
 

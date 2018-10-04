@@ -8,7 +8,7 @@ describe('Invalid syntax', function () {
         .then(helper.shouldNotGetCalled)
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
-          if (userAgent.isNode) {
+          if (host.node) {
             expect(err.code).to.equal('ENOENT');
             expect(err.message).to.contain('Error opening file ');
           }

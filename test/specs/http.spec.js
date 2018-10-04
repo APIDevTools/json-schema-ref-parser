@@ -5,15 +5,15 @@ describe('HTTP options', function () {
 
   beforeEach(function () {
     // Some browsers throw global errors on XHR errors
-    windowOnError = global.onerror;
-    global.onerror = function () {
+    windowOnError = host.global.onerror;
+    host.global.onerror = function () {
       testDone();
       return true;
     };
   });
 
   afterEach(function () {
-    global.onerror = windowOnError;
+    host.global.onerror = windowOnError;
   });
 
   describe('http.headers', function () {
@@ -34,7 +34,7 @@ describe('HTTP options', function () {
     });
 
     // Old versions of IE don't allow setting custom headers
-    if (!userAgent.isOldIE) {
+    if (!(host.browser && host.browser.IE)) {
       it('should set custom HTTP headers', function (done) {
         testDone = done;
         var parser = new $RefParser();
@@ -54,7 +54,7 @@ describe('HTTP options', function () {
   });
 
   describe('http.redirect', function () {
-    if (userAgent.isKarma) {
+    if (host.karma && host.env.CI) {
       // These tests fail in Safari when running on Sauce Labs (they pass when running on Safari locally).
       // It gets an XHR error when trying to reach httpbin.org.
       // TODO: Only skip these tests on Safari on Sauce Labs
@@ -85,7 +85,7 @@ describe('HTTP options', function () {
 
       parser.parse('https://httpbin.org/redirect/6')
         .then(function (schema) {
-          if (userAgent.isNode) {
+          if (host.node) {
             throw new Error('All 6 redirects were followed. That should NOT have happened!');
           }
           else {
@@ -98,7 +98,7 @@ describe('HTTP options', function () {
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.contain('Error downloading https://httpbin.org/redirect/6');
-          if (userAgent.isNode) {
+          if (host.node) {
             expect(err.message).to.equal(
               'Error downloading https://httpbin.org/redirect/6. \n' +
               'Too many redirects: \n' +
@@ -137,7 +137,7 @@ describe('HTTP options', function () {
         resolve: { http: { redirects: 0 }}
       })
         .then(function (schema) {
-          if (userAgent.isNode) {
+          if (host.node) {
             throw new Error('The redirect was followed. That should NOT have happened!');
           }
           else {
@@ -150,7 +150,7 @@ describe('HTTP options', function () {
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.contain('Error downloading https://httpbin.org/redirect/1');
-          if (userAgent.isNode) {
+          if (host.node) {
             expect(err.message).to.equal(
               'Error downloading https://httpbin.org/redirect/1. \n' +
             'Too many redirects: \n' +
@@ -198,7 +198,7 @@ describe('HTTP options', function () {
         .catch(done);
     });
 
-    if (userAgent.isBrowser) {
+    if (host.browser) {
       it('should throw error in browser if http.withCredentials = true', function (done) {
         testDone = done;
         var parser = new $RefParser();

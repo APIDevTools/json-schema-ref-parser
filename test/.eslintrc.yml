@@ -9,5 +9,8 @@ extends:
 globals:
   $RefParser: true
   helper: true
-  userAgent: true
   path: true
+
+  # karma-host-environment
+  # https://www.npmjs.com/package/karma-host-environment
+  host: false
