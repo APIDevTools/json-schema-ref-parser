@@ -114,22 +114,13 @@ function configureSauceLabs (config) {
   var testName = project.name + ' v' + project.version;
   var build = testName + ' Build #' + process.env.TRAVIS_JOB_NUMBER + ' @ ' + new Date();
 
-  var sauceLaunchers = {
-    SauceLabs_Chrome_Latest: {
-      base: 'SauceLabs',
-      platform: 'Windows 10',
-      browserName: 'chrome'
-    },
-    SauceLabs_Firefox_Latest: {
-      base: 'SauceLabs',
-      platform: 'Windows 10',
-      browserName: 'firefox'
-    },
-    SauceLabs_Safari_Latest: {
-      base: 'SauceLabs',
-      platform: 'macOS 10.12',
-      browserName: 'safari'
-    },
+  config.sauceLabs = {
+    build: build,
+    testName: testName,
+    tags: [project.name],
+  };
+
+  config.customLaunchers = {
     SauceLabs_IE_11: {
       base: 'SauceLabs',
       platform: 'Windows 10',
@@ -140,20 +131,30 @@ function configureSauceLabs (config) {
       platform: 'Windows 10',
       browserName: 'microsoftedge'
     },
+    SauceLabs_Safari_Latest: {
+      base: 'SauceLabs',
+      platform: 'macOS 10.13',
+      browserName: 'safari'
+    },
+    SauceLabs_Chrome_Latest: {
+      base: 'SauceLabs',
+      platform: 'Windows 10',
+      browserName: 'chrome'
+    },
+    SauceLabs_Firefox_Latest: {
+      base: 'SauceLabs',
+      platform: 'Windows 10',
+      browserName: 'firefox'
+    },
   };
 
   config.reporters.push('saucelabs');
-  config.browsers = config.browsers.concat(Object.keys(sauceLaunchers));
-  config.customLaunchers = Object.assign(config.customLaunchers || {}, sauceLaunchers);
+  config.browsers = Object.keys(config.customLaunchers);
+  config.concurrency = 1;
   config.captureTimeout = 60000;
   config.browserDisconnectTimeout = 15000;
   config.browserNoActivityTimeout = 15000;
   // config.logLevel = 'debug';
-  config.sauceLabs = {
-    build: build,
-    testName: testName,
-    tags: [project.name],
-  };
 
   // The following tests tend to fail on SauceLabs,
   // probably due to zero-byte files and special characters in the paths.
