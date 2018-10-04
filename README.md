@@ -9,7 +9,6 @@ JSON Schema $Ref Parser
 [![Inline docs](https://inch-ci.org/github/APIDevTools/json-schema-ref-parser.svg?branch=master&style=shields)](https://inch-ci.org/github/APIDevTools/json-schema-ref-parser)
 
 [![npm](https://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
-[![Bower](https://img.shields.io/bower/v/json-schema-ref-parser.svg)](http://bower.io/)
 [![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
 
 [![Browser Compatibility](https://saucelabs.com/browser-matrix/json-schema-parser.svg)](https://saucelabs.com/u/json-schema-parser)
@@ -103,22 +102,19 @@ var $RefParser = require('json-schema-ref-parser');
 ```
 
 #### Web Browsers
-Install using [bower](http://bower.io/):
-
-```bash
-bower install json-schema-ref-parser
-```
-
-Then reference [`ref-parser.js`](dist/ref-parser.js) or [`ref-parser.min.js`](dist/ref-parser.min.js) in your HTML:
+Reference [`ref-parser.js`](dist/ref-parser.js) or [`ref-parser.min.js`](dist/ref-parser.min.js) in your HTML:
 
 ```html
-<script src="bower_components/json-schema-ref-parser/dist/ref-parser.js"></script>
-```
-
-Or, if you're using AMD (Require.js), then import it into your module:
-
-```javascript
-define(["ref-parser"], function($RefParser) { /* your module's code */ })
+<script src="https://cdn.rawgit.com/JS-DevTools/json-schema-ref-parser/dist/ref-parser.js"></script>
+<script>
+  $RefParser.dereference(mySchema)
+    .then(function(schema) {
+      console.log(schema.definitions.person.properties.firstName);
+    })
+    .catch(function(err) {
+      console.error(err);
+    });
+</script>
 ```
 
 
