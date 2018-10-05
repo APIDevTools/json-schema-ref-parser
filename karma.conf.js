@@ -60,6 +60,12 @@ function configureCodeCoverage (config) {
     console.warn('Code-coverage is not enabled');
     return;
   }
+  else if (process.env.SAUCE === 'true') {
+    // Code coverage causes sporadic failures on SauceLabs
+    // https://github.com/karma-runner/karma-sauce-launcher/issues/95#issuecomment-255020888
+    console.warn('Code-coverage is disabled for SauceLabs');
+    return;
+  }
 
   config.reporters.push('coverage');
   config.coverageReporter = {
