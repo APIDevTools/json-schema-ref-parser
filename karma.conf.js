@@ -161,9 +161,10 @@ function configureSauceLabs (config) {
   // So, exclude these tests when running on SauceLabs.
   config.exclude = [
     'test/specs/__*/**',
-    'test/specs/blank/**',
-    'test/specs/empty/**',
-    'test/specs/invalid/**',
-    'test/specs/parsers/**',
+    'test/specs/blank/**/*.spec.js',
+    'test/specs/circular*/**/*.spec.js',
+    'test/specs/empty/**/*.spec.js',
+    'test/specs/invalid/**/*.spec.js',
+    'test/specs/parsers/**/*.spec.js',
   ];
 }
