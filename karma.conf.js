@@ -152,8 +152,8 @@ function configureSauceLabs (config) {
   config.browsers = Object.keys(config.customLaunchers);
   config.concurrency = 1;
   config.captureTimeout = 60000;
-  config.browserDisconnectTimeout = 15000;
-  config.browserNoActivityTimeout = 15000;
+  config.browserDisconnectTimeout = 60000;
+  config.browserNoActivityTimeout = 60000;
   // config.logLevel = 'debug';
 
   // The following tests tend to fail on SauceLabs,
