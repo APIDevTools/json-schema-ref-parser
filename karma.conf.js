@@ -162,6 +162,8 @@ function configureSauceLabs (config) {
   config.exclude = [
     'test/specs/__*/**',
     'test/specs/blank/**',
-    'test/specs/parsers/**'
+    'test/specs/empty/**',
+    'test/specs/invalid/**',
+    'test/specs/parsers/**',
   ];
 }
