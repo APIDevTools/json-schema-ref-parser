@@ -3,6 +3,15 @@ All notable changes will be documented in this file.
 JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [v6.0.0](https://github.com/APIDevTools/json-schema-ref-parser/tree/v6.0.0) (2018-10-04)
+
+- Dropped support for [Bower](https://www.npmjs.com/package/bower), since it has been deprecated
+
+- Removed the [`debug`](https://npmjs.com/package/debug) dependency
+
+[Full Changelog](https://github.com/APIDevTools/json-schema-ref-parser/compare/v5.1.0...v6.0.0)
+
+
 ## [v5.1.0](https://github.com/APIDevTools/json-schema-ref-parser/tree/v5.1.0) (2018-07-11)
 
 - Improved the logic of the [`bundle()` method](https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#bundleschema-options-callback) to produce shorter reference paths when possible.  This is not a breaking change, since both the old reference paths and the new reference paths are valid.  The new ones are just shorter.  Big thanks to [@hipstersmoothie](https://github.com/hipstersmoothie) for [PR #68](https://github.com/APIDevTools/json-schema-ref-parser/pull/68), which helped a lot with this.
