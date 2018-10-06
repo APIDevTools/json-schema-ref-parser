@@ -95,7 +95,7 @@ function configureLocalBrowsers (config) {
     config.browsers = ['Firefox', 'Chrome', 'Safari'];
   }
   else if (isLinux) {
-    config.browsers = ['Firefox'];
+    config.browsers = ['Firefox', 'ChromeHeadless'];
   }
   else if (isWindows) {
     config.browsers = ['Firefox', 'Chrome', 'IE', 'Edge'];
@@ -158,6 +158,7 @@ function configureSauceLabs (config) {
   config.browsers = Object.keys(config.customLaunchers);
   config.concurrency = 1;
   config.captureTimeout = 60000;
+  config.browserDisconnectTolerance = 5,
   config.browserDisconnectTimeout = 60000;
   config.browserNoActivityTimeout = 60000;
   // config.logLevel = 'debug';

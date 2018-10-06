@@ -1,8 +1,10 @@
 # Travis CI config
 # http://docs.travis-ci.com/user/languages/javascript-with-nodejs/
+# https://docs.travis-ci.com/user/customizing-the-build/
+# https://docs.travis-ci.com/user/migrating-from-legacy/
 
 dist: trusty
-sudo: required  # TEMPORARY HACK (see https://github.com/travis-ci/travis-ci/issues/8836)
+sudo: required  # Required for headless Chrome
 language: node_js
 
 addons:
@@ -11,17 +13,16 @@ addons:
 
 matrix:
   include:
-    # Local Browsers
+    # Node 10 + Browser tests
     - node_js: 10
       env: KARMA=true
 
-    # Sauce Labs
-    - node_js: 10
+    # Node 8 + SauceLabs tests
+    - node_js: 8
       env: KARMA=true SAUCE=true
 
-    # Node
+    # Node 6 tests
     - node_js: 6
-    - node_js: 8
 
 before_script:
   # Setup a virtual display for browser testing
