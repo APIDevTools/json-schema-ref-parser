@@ -1,0 +1,29 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+
+// Override the theme's two-column layout with a one-column layout
+section#main-content {
+  float: none;
+  width: auto;
+}
+
+aside#sidebar {
+  display: block;
+  float: none;
+  clear: both;
+  width: 100%;
+  background: none;
+  border-top: solid 1px #2f74c2;
+  min-height: 0;
+  margin-top: 10em;
+  padding: 2em;
+}
+
+
+// Make the code samples look better
+.highlight {
+  background-color: white;
+}
