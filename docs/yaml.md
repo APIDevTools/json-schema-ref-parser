@@ -1,4 +1,4 @@
-`YAML` object
+The YAML object
 ==========================
 
 This object provides simple YAML parsing functions.  JSON Schema $Ref Parser uses this object internally

@@ -1,4 +1,4 @@
-`$RefParser` class
+The $RefParser class
 ==========================
 
 This is the default export of JSON Schema $Ref Parser.  You can creates instances of this class using `new $RefParser()`, or you can just call its [static methods](README.md#class-methods-vs-instance-methods).

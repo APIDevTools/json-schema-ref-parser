@@ -1,4 +1,4 @@
-`$Refs` class
+The $Refs class
 ==========================
 
 When you call the [`resolve`](ref-parser.md#resolveschema-options-callback) method, the value that gets passed to the callback function (or Promise) is a `$Refs` object.  This same object is accessible via the [`parser.$refs`](ref-parser.md#refs) property of `$RefParser` objects.
@@ -127,5 +127,3 @@ $RefParser.resolve("my-schema.json")
     $refs.set("schemas/people/Bruce-Wayne.json#/properties/favoriteColor/default", "black");
   });
 ```
-
-
