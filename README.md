@@ -47,10 +47,10 @@ The Solution:
 JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03) and [JSON Pointer](https://tools.ietf.org/html/rfc6901) implementation that crawls even the most complex [JSON Schemas](http://json-schema.org/latest/json-schema-core.html) and gives you simple, straightforward JavaScript objects.
 
 - Use **JSON** or **YAML** schemas &mdash; or even a mix of both!
-- Supports `$ref` pointers to external files and URLs, as well as [custom sources](docs/plugins/resolvers.md) such as databases
-- Can [bundle](docs/ref-parser.md#bundlepath-options-callback) multiple files into a single schema that only has _internal_ `$ref` pointers
-- Can [dereference](docs/ref-parser.md#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
-- Supports [circular references](docs/README.md#circular-refs), nested references, back-references, and cross-references between files
+- Supports `$ref` pointers to external files and URLs, as well as [custom sources](https://apidevtools.org/json-schema-ref-parser/docs/plugins/resolvers.html) such as databases
+- Can [bundle](https://apidevtools.org/json-schema-ref-parser/docs/ref-parser.html#bundlepath-options-callback) multiple files into a single schema that only has _internal_ `$ref` pointers
+- Can [dereference](https://apidevtools.org/json-schema-ref-parser/docs/ref-parser.html#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
+- Supports [circular references](https://apidevtools.org/json-schema-ref-parser/docs/README.html#circular-refs), nested references, back-references, and cross-references between files
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object instance
 - [Tested](https://apidevtools.org/json-schema-ref-parser/test/index.html) in Node, io.js, and all major web browsers on Windows, Mac, and Linux
 
@@ -83,7 +83,7 @@ $RefParser.dereference(mySchema)
   });
 ```
 
-For more detailed examples, please see the [API Documentation](docs/README.md)
+For more detailed examples, please see the [API Documentation](https://apidevtools.org/json-schema-ref-parser/docs/)
 
 
 Installation
@@ -120,7 +120,7 @@ Reference [`ref-parser.js`](dist/ref-parser.js) or [`ref-parser.min.js`](dist/re
 
 API Documentation
 --------------------------
-Full API documentation is available [right here](docs/README.md)
+Full API documentation is available [right here](https://apidevtools.org/json-schema-ref-parser/docs/)
 
 
 Contributing
