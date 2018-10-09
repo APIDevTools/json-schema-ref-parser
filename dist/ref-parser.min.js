@@ -1,5 +1,5 @@
 /*!
- * JSON Schema $Ref Parser v6.0.0 (October 4th 2018)
+ * JSON Schema $Ref Parser v6.0.1 (October 4th 2018)
  * 
  * https://github.com/APIDevTools/json-schema-ref-parser
  * 
