@@ -11,27 +11,27 @@ Things to Know
 Classes & Methods
 ---------------------
 
-#### [`$RefParser`](ref-parser.md)
-- [`schema`](ref-parser.md#schema)
-- [`$refs`](ref-parser.md#refs)
-- [`dereference()`](ref-parser.md#dereferenceschema-options-callback)
-- [`bundle()`](ref-parser.md#bundleschema-options-callback)
-- [`parse()`](ref-parser.md#parseschema-options-callback)
-- [`resolve()`](ref-parser.md#resolveschema-options-callback)
+#### [The `$RefParser` class](ref-parser.md)
+- [`schema` property](ref-parser.md#schema)
+- [`$refs` property](ref-parser.md#refs)
+- [`dereference()` method](ref-parser.md#dereferenceschema-options-callback)
+- [`bundle()` method](ref-parser.md#bundleschema-options-callback)
+- [`parse()` method](ref-parser.md#parseschema-options-callback)
+- [`resolve()` method](ref-parser.md#resolveschema-options-callback)
 
-#### [`$Refs`](refs.md)
-- [`circular`](refs.md#circular)
-- [`paths()`](refs.md#pathstypes)
-- [`values()`](refs.md#valuestypes)
-- [`exists()`](refs.md#existsref)
-- [`get()`](refs.md#getref-options)
-- [`set()`](refs.md#setref-value-options)
+#### [The `$Refs` class](refs.md)
+- [`circular` property](refs.md#circular)
+- [`paths()` method](refs.md#pathstypes)
+- [`values()` method](refs.md#valuestypes)
+- [`exists()` method](refs.md#existsref)
+- [`get()` method](refs.md#getref-options)
+- [`set()` method](refs.md#setref-value-options)
 
-#### [`YAML`](yaml.md)
-- [`parse()`](yaml.md#parsetext)
-- [`stringify()`](yaml.md#stringifyvalue)
+#### [The `YAML` object](yaml.md)
+- [`parse()` method](yaml.md#parsetext)
+- [`stringify()` method](yaml.md#stringifyvalue)
 
-#### [`Options`](options.md)
+#### [The `Options` object](options.md)
 
 
 ### Class methods vs. Instance methods
