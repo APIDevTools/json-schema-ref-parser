@@ -50,9 +50,9 @@ JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/d
 - Supports `$ref` pointers to external files and URLs, as well as [custom sources](https://apidevtools.org/json-schema-ref-parser/docs/plugins/resolvers.html) such as databases
 - Can [bundle](https://apidevtools.org/json-schema-ref-parser/docs/ref-parser.html#bundlepath-options-callback) multiple files into a single schema that only has _internal_ `$ref` pointers
 - Can [dereference](https://apidevtools.org/json-schema-ref-parser/docs/ref-parser.html#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
-- Supports [circular references](https://apidevtools.org/json-schema-ref-parser/docs/README.html#circular-refs), nested references, back-references, and cross-references between files
+- Supports [circular references](https://apidevtools.org/json-schema-ref-parser/docs/#circular-refs), nested references, back-references, and cross-references between files
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object instance
-- [Tested](https://apidevtools.org/json-schema-ref-parser/test/index.html) in Node, io.js, and all major web browsers on Windows, Mac, and Linux
+- [Tested](https://apidevtools.org/json-schema-ref-parser/test/) in Node, io.js, and all major web browsers on Windows, Mac, and Linux
 
 
 Example
@@ -143,7 +143,7 @@ To build/test the project locally on your computer:
 `npm test`
 
 5. __Start the local web server__<br>
-`npm start` (then browse to [http://localhost:8080/test/index.html](https://apidevtools.org/json-schema-ref-parser/test/index.html))
+`npm start` (then browse to [http://localhost:8080/test/](http://localhost:8080/test/))
 
 
 License

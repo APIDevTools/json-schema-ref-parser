@@ -53,7 +53,7 @@
     "upgrade": "npm-check -u",
     "bump": "bump --prompt --grep dist/* --tag --push --all",
     "release": "npm run upgrade && npm test && npm run bump && npm publish",
-    "start": "http-server -c-1 -o http://localhost:8080/test/index.html"
+    "start": "http-server -c-1 -o http://localhost:8080/test/"
   },
   "devDependencies": {
     "@types/json-schema": "^7.0.1",
