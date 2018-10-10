@@ -17,6 +17,10 @@ defaults:
       path: ""
     values:
       image: /img/logos/card.png
+ - scope:
+      path: "test/specs/**/*"
+    values:
+      sitemap: false
 
 plugins:
   - jekyll-sitemap
