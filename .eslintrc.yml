@@ -13,6 +13,7 @@ extends:
 
 globals:
   Promise: false
+  Symbol: false
 
 rules:
   # This rule erroneously flags functions that use the `arguments` object
