@@ -10,7 +10,7 @@ describe('Dereference save metadata', function () {
         expect(metadata).to.be.an('object');
         expect(metadata.$ref).to.eq('#/definitions/internal');
         expect(metadata.pathFromRoot).to.eq('#/properties/a');
-        expect(metadata.path.endsWith('spec.yaml#/properties/a')).to.be.true;
+        expect(metadata.path).to.contain('spec.yaml#/properties/a');
       });
   });
 
@@ -23,7 +23,7 @@ describe('Dereference save metadata', function () {
         expect(metadata).to.be.an('object');
         expect(metadata.$ref).to.eq('external.yaml');
         expect(metadata.pathFromRoot).to.eq('#/properties/b');
-        expect(metadata.path.endsWith('spec.yaml#/properties/b')).to.be.true;
+        expect(metadata.path).to.contain('spec.yaml#/properties/b');
       });
   });
 });
