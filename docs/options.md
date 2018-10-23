@@ -74,6 +74,3 @@ The `dereference` options control how JSON Schema $Ref Parser will dereference `
 |Option(s)             |Type                |Description
 |:---------------------|:-------------------|:------------
 |`circular`|`boolean` or `"ignore"`|Determines whether [circular `$ref` pointers](README.md#circular-refs) are handled.<br><br>If set to `false`, then a `ReferenceError` will be thrown if the schema contains any circular references.<br><br> If set to `"ignore"`, then circular references will simply be ignored.  No error will be thrown, but the [`$Refs.circular`](refs.md#circular) property will still be set to `true`.
-|`saveOriginalRefs`    | `boolean`          | If set to true `dereference` will preserve information about original
-`$ref` in the object metadata which can be later retrieved using [`$RefParser.getMetadata`](ref-parser.md#getmetadata)
- 

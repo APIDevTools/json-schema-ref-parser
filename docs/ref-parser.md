@@ -7,9 +7,6 @@ This is the default export of JSON Schema $Ref Parser.  You can creates instance
 - [`schema`](#schema)
 - [`$refs`](#refs)
 
-##### Static Methods
-- [`getMetadata()`](#getmetadata)
-
 ##### Methods
 - [`dereference()`](#dereferenceschema-options-callback)
 - [`bundle()`](#bundleschema-options-callback)
@@ -48,24 +45,6 @@ parser.dereference("my-schema.json")
     parser.$refs.paths();       // => ["my-schema.json"]
   });
 ```
-
-### `getMetadata()`
-
-Extracts metadata saved by [`dereference`](#dereferenceschema-options-callback).
-
-When using [`dereference`](#dereferenceschema-options-callback) information about original `$ref` is lost. To preserve it [`dereference.saveOriginalRefs`](options.md#dereference-options) option can be used.
-
-```js
-// var obj = dereferenced value
-var meta = $RefParser.getMetadata(obj.properties.a)
-```
-
-Metadata object contains the following information:
-
-- `$ref` - original `$ref`
-- `pathFromRoot` - path from the root of the document
-- `path` - absolute path
-
 
 
 ### `dereference(schema, [options], [callback])`
