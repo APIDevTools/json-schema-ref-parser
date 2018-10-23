@@ -7,12 +7,14 @@ This is the default export of JSON Schema $Ref Parser.  You can creates instance
 - [`schema`](#schema)
 - [`$refs`](#refs)
 
+##### Static Methods
+- [`getMetadata()`](#getmetadata)
+
 ##### Methods
 - [`dereference()`](#dereferenceschema-options-callback)
 - [`bundle()`](#bundleschema-options-callback)
 - [`parse()`](#parseschema-options-callback)
 - [`resolve()`](#resolveschema-options-callback)
-
 
 ### `schema`
 The `schema` property is the parsed/bundled/dereferenced JSON Schema object.  This is the same value that is passed to the callback function (or Promise) when calling the [`parse`](#parseschema-options-callback), [`bundle`](#bundleschema-options-callback), or [`dereference`](#dereferenceschema-options-callback) methods.
@@ -46,6 +48,24 @@ parser.dereference("my-schema.json")
     parser.$refs.paths();       // => ["my-schema.json"]
   });
 ```
+
+### `getMetadata()`
+
+Extracts metadata saved by [`dereference`](#dereferenceschema-options-callback).
+
+When using [`dereference`](#dereferenceschema-options-callback) information about original `$ref` is lost. To preserve it [`dereference.saveOriginalRefs`](options.md#dereference-options) option can be used.
+
+```js
+// var obj = dereferenced value
+var meta = $RefParser.getMetadata(obj.properties.a)
+```
+
+Metadata object contains the following information:
+
+- `$ref` - original `$ref`
+- `pathFromRoot` - path from the root of the document
+- `path` - absolute path
+
 
 
 ### `dereference(schema, [options], [callback])`
