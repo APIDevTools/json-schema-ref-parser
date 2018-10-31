@@ -1,95 +1,95 @@
 helper.dereferenced.objectSourceWithPath =
 {
-  title: 'Person',
-  type: 'object',
+  title: "Person",
+  type: "object",
   required: [
-    'name'
+    "name"
   ],
   properties: {
     name: {
-      title: 'name',
-      type: 'object',
+      title: "name",
+      type: "object",
       required: [
-        'first',
-        'last'
+        "first",
+        "last"
       ],
       properties: {
         first: {
-          title: 'requiredString',
-          type: 'string',
+          title: "requiredString",
+          type: "string",
           minLength: 1
         },
         last: {
-          title: 'requiredString',
-          type: 'string',
+          title: "requiredString",
+          type: "string",
           minLength: 1
         },
         middle: {
-          type: 'string',
+          type: "string",
           minLength: 1
         },
         prefix: {
-          title: 'requiredString',
-          type: 'string',
+          title: "requiredString",
+          type: "string",
           minLength: 3
         },
         suffix: {
-          title: 'requiredString',
-          type: 'string',
+          title: "requiredString",
+          type: "string",
           minLength: 3,
           maxLength: 3
         }
       }
     },
     age: {
-      type: 'integer',
+      type: "integer",
       minimum: 0
     },
     gender: {
-      type: 'string',
+      type: "string",
       enum: [
-        'male',
-        'female'
+        "male",
+        "female"
       ]
     }
   },
   definitions: {
     requiredString: {
-      title: 'requiredString',
-      type: 'string',
+      title: "requiredString",
+      type: "string",
       minLength: 1
     },
-    string: 'string',
+    string: "string",
     name: {
-      title: 'name',
-      type: 'object',
+      title: "name",
+      type: "object",
       required: [
-        'first',
-        'last'
+        "first",
+        "last"
       ],
       properties: {
         first: {
-          title: 'requiredString',
-          type: 'string',
+          title: "requiredString",
+          type: "string",
           minLength: 1
         },
         last: {
-          title: 'requiredString',
-          type: 'string',
+          title: "requiredString",
+          type: "string",
           minLength: 1
         },
         middle: {
-          type: 'string',
+          type: "string",
           minLength: 1
         },
         prefix: {
-          title: 'requiredString',
-          type: 'string',
+          title: "requiredString",
+          type: "string",
           minLength: 3
         },
         suffix: {
-          title: 'requiredString',
-          type: 'string',
+          title: "requiredString",
+          type: "string",
           minLength: 3,
           maxLength: 3
         }

@@ -1,17 +1,17 @@
 helper.bundled.root =
 {
-  title: 'Extending a root $ref',
+  title: "Extending a root $ref",
   required: [
-    'first',
-    'last'
+    "first",
+    "last"
   ],
-  type: 'object',
+  type: "object",
   properties: {
     last: {
-      type: 'string'
+      type: "string"
     },
     first: {
-      type: 'string'
+      type: "string"
     }
   },
 };

@@ -1,64 +1,64 @@
 helper.bundled.external =
 {
-  title: 'Person',
-  type: 'object',
+  title: "Person",
+  type: "object",
   required: [
-    'name'
+    "name"
   ],
   properties: {
     name: {
-      $ref: '#/definitions/name'
+      $ref: "#/definitions/name"
     },
     age: {
-      type: 'integer',
+      type: "integer",
       minimum: 0
     },
     gender: {
-      type: 'string',
+      type: "string",
       enum: [
-        'male',
-        'female'
+        "male",
+        "female"
       ]
     }
   },
   definitions: {
-    'required string': {
-      title: 'required string',
-      type: 'string',
+    "required string": {
+      title: "required string",
+      type: "string",
       minLength: 1
     },
     string: {
-      $ref: '#/definitions/required%20string/type'
+      $ref: "#/definitions/required%20string/type"
     },
     name: {
-      title: 'name',
-      type: 'object',
+      title: "name",
+      type: "object",
       required: [
-        'first',
-        'last'
+        "first",
+        "last"
       ],
       properties: {
         first: {
-          $ref: '#/definitions/required%20string'
+          $ref: "#/definitions/required%20string"
         },
         last: {
-          $ref: '#/definitions/required%20string'
+          $ref: "#/definitions/required%20string"
         },
         middle: {
           type: {
-            $ref: '#/definitions/required%20string/type'
+            $ref: "#/definitions/required%20string/type"
           },
           minLength: {
-            $ref: '#/definitions/required%20string/minLength'
+            $ref: "#/definitions/required%20string/minLength"
           }
         },
         prefix: {
-          $ref: '#/definitions/required%20string',
+          $ref: "#/definitions/required%20string",
           minLength: 3
         },
         suffix: {
-          $ref: '#/definitions/name/properties/prefix',
-          type: 'string',
+          $ref: "#/definitions/name/properties/prefix",
+          type: "string",
           maxLength: 3
         }
       }

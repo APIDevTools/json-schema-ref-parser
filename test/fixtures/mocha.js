@@ -1,13 +1,13 @@
 // Mocha configuration
 (function () {
-  'use strict';
+  "use strict";
 
   if (host.browser) {
-    mocha.setup('bdd');
+    mocha.setup("bdd");
     mocha.fullTrace();
     mocha.asyncOnly();
     mocha.checkLeaks();
-    mocha.globals(['$0', '$1', '$2', '$3', '$4', '$5']);
+    mocha.globals(["$0", "$1", "$2", "$3", "$4", "$5"]);
   }
 
   beforeEach(function () {

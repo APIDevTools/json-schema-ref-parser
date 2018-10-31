@@ -1,34 +1,34 @@
 helper.parsed.externalMultiple = {
   schema: {
-    type: 'object',
-    required: ['user', 'token'],
+    type: "object",
+    required: ["user", "token"],
     properties: {
       token: {
-        type: 'string'
+        type: "string"
       },
       user: {
-        $ref: 'definitions.yaml#/User'
+        $ref: "definitions.yaml#/User"
       }
     },
     example: {
-      token: '11111111',
+      token: "11111111",
       user: {
-        $ref: 'definitions.yaml#/User/example'
+        $ref: "definitions.yaml#/User/example"
       }
     }
   },
 
   definitions: {
     User: {
-      type: 'object',
-      required: ['name'],
+      type: "object",
+      required: ["name"],
       properties: {
         name: {
-          type: 'string'
+          type: "string"
         }
       },
       example: {
-        name: 'Homer'
+        name: "Homer"
       }
     }
   }

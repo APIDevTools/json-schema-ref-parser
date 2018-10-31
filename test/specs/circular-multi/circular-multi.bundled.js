@@ -1,44 +1,44 @@
 helper.bundled.circularMulti = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
+  $schema: "http://json-schema.org/draft-07/schema#",
   properties: {
     actions: {
-      type: 'object',
+      type: "object",
       properties: {
         affirmativeAction: {
-          $ref: '#/properties/actions/properties/prevAction'
+          $ref: "#/properties/actions/properties/prevAction"
         },
         negativeAction: {
-          $ref: '#/properties/actions/properties/prevAction'
+          $ref: "#/properties/actions/properties/prevAction"
         },
         prevAction: {
-          type: 'object',
+          type: "object",
           properties: {
-            $id: 'text_assets',
+            $id: "text_assets",
             oneOf: [
               {
-                $ref: '#/properties/actions/properties/prevAction/properties/definitions/asset'
+                $ref: "#/properties/actions/properties/prevAction/properties/definitions/asset"
               },
               {
-                $ref: '#/properties/actions/properties/prevAction/properties/definitions/asset'
+                $ref: "#/properties/actions/properties/prevAction/properties/definitions/asset"
               }
             ],
             definitions: {
               switchWrapper: {
-                type: 'object',
-                $ref: '#/properties/actions/properties/prevAction/properties/definitions/switch'
+                type: "object",
+                $ref: "#/properties/actions/properties/prevAction/properties/definitions/switch"
               },
               asset: {
-                type: 'object',
-                $id: 'asset_action',
+                type: "object",
+                $id: "asset_action",
                 properties: {
                   label: {
-                    $ref: '#/properties/actions/properties/prevAction/properties'
+                    $ref: "#/properties/actions/properties/prevAction/properties"
                   }
                 }
               },
               switch: {
-                type: 'array',
-                $ref: '#/properties/actions/properties/prevAction/properties/definitions/asset'
+                type: "array",
+                $ref: "#/properties/actions/properties/prevAction/properties/definitions/asset"
               }
             }
           }

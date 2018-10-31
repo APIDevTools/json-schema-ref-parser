@@ -2,68 +2,68 @@ helper.bundled.circularExternal =
 {
   definitions: {
     pet: {
-      title: 'pet',
-      type: 'object',
+      title: "pet",
+      type: "object",
       properties: {
         age: {
-          type: 'number'
+          type: "number"
         },
         name: {
-          type: 'string'
+          type: "string"
         },
         species: {
           enum: [
-            'cat',
-            'dog',
-            'bird',
-            'fish'
+            "cat",
+            "dog",
+            "bird",
+            "fish"
           ],
-          type: 'string'
+          type: "string"
         }
       },
     },
     thing: {
-      $ref: '#/definitions/thing'
+      $ref: "#/definitions/thing"
     },
     person: {
-      title: 'person',
-      type: 'object',
+      title: "person",
+      type: "object",
       properties: {
         spouse: {
-          $ref: '#/definitions/person'
+          $ref: "#/definitions/person"
         },
         name: {
-          type: 'string'
+          type: "string"
         }
       }
     },
     parent: {
-      title: 'parent',
-      type: 'object',
+      title: "parent",
+      type: "object",
       properties: {
         name: {
-          type: 'string'
+          type: "string"
         },
         children: {
           items: {
-            $ref: '#/definitions/child'
+            $ref: "#/definitions/child"
           },
-          type: 'array'
+          type: "array"
         }
       }
     },
     child: {
-      title: 'child',
-      type: 'object',
+      title: "child",
+      type: "object",
       properties: {
         parents: {
           items: {
-            $ref: '#/definitions/parent'
+            $ref: "#/definitions/parent"
           },
-          type: 'array'
+          type: "array"
         },
         name: {
-          type: 'string'
+          type: "string"
         }
       }
     }

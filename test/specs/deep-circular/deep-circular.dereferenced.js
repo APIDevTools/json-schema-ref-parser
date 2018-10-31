@@ -1,232 +1,232 @@
 (function () {
-  'use strict';
+  "use strict";
 
   var name = {
     required: [
-      'first',
-      'last'
+      "first",
+      "last"
     ],
-    type: 'object',
+    type: "object",
     properties: {
       middle: {
         minLength: 1,
-        type: 'string'
+        type: "string"
       },
       prefix: {
         minLength: 3,
-        type: 'string',
-        title: 'requiredString'
+        type: "string",
+        title: "requiredString"
       },
       last: {
         minLength: 1,
-        type: 'string',
-        title: 'requiredString'
+        type: "string",
+        title: "requiredString"
       },
       suffix: {
         minLength: 3,
         maxLength: 3,
-        type: 'string',
-        title: 'requiredString'
+        type: "string",
+        title: "requiredString"
       },
       first: {
         minLength: 1,
-        type: 'string',
-        title: 'requiredString'
+        type: "string",
+        title: "requiredString"
       }
     },
-    title: 'name'
+    title: "name"
   };
 
   helper.dereferenced.deepCircular =
   {
-    title: 'Deep Schema',
-    type: 'object',
+    title: "Deep Schema",
+    type: "object",
     definitions: {
       name: name
     },
     properties: {
       level1: {
         required: [
-          'name'
+          "name"
         ],
-        type: 'object',
+        type: "object",
         properties: {
           level2: {
             required: [
-              'name'
+              "name"
             ],
-            type: 'object',
+            type: "object",
             properties: {
               level3: {
                 required: [
-                  'name'
+                  "name"
                 ],
-                type: 'object',
+                type: "object",
                 properties: {
                   level4: {
                     required: [
-                      'name'
+                      "name"
                     ],
-                    type: 'object',
+                    type: "object",
                     properties: {
                       name: name,
                       level5: {
                         required: [
-                          'name'
+                          "name"
                         ],
-                        type: 'object',
+                        type: "object",
                         properties: {
                           name: name,
                           level6: {
                             required: [
-                              'name'
+                              "name"
                             ],
-                            type: 'object',
+                            type: "object",
                             properties: {
                               name: name,
                               level7: {
                                 required: [
-                                  'name'
+                                  "name"
                                 ],
-                                type: 'object',
+                                type: "object",
                                 properties: {
                                   level8: {
                                     required: [
-                                      'name'
+                                      "name"
                                     ],
-                                    type: 'object',
+                                    type: "object",
                                     properties: {
                                       level9: {
                                         required: [
-                                          'name'
+                                          "name"
                                         ],
-                                        type: 'object',
+                                        type: "object",
                                         properties: {
                                           level10: {
                                             required: [
-                                              'name'
+                                              "name"
                                             ],
-                                            type: 'object',
+                                            type: "object",
                                             properties: {
                                               level11: {
                                                 required: [
-                                                  'name'
+                                                  "name"
                                                 ],
-                                                type: 'object',
+                                                type: "object",
                                                 properties: {
                                                   level12: {
                                                     required: [
-                                                      'name'
+                                                      "name"
                                                     ],
-                                                    type: 'object',
+                                                    type: "object",
                                                     properties: {
                                                       level13: {
                                                         required: [
-                                                          'name'
+                                                          "name"
                                                         ],
-                                                        type: 'object',
+                                                        type: "object",
                                                         properties: {
                                                           name: name,
                                                           level14: {
                                                             required: [
-                                                              'name'
+                                                              "name"
                                                             ],
-                                                            type: 'object',
+                                                            type: "object",
                                                             properties: {
                                                               name: name,
                                                               level15: {
                                                                 required: [
-                                                                  'name'
+                                                                  "name"
                                                                 ],
-                                                                type: 'object',
+                                                                type: "object",
                                                                 properties: {
                                                                   level16: {
                                                                     required: [
-                                                                      'name'
+                                                                      "name"
                                                                     ],
-                                                                    type: 'object',
+                                                                    type: "object",
                                                                     properties: {
                                                                       name: name,
                                                                       level17: {
                                                                         required: [
-                                                                          'name'
+                                                                          "name"
                                                                         ],
-                                                                        type: 'object',
+                                                                        type: "object",
                                                                         properties: {
                                                                           level18: {
                                                                             required: [
-                                                                              'name'
+                                                                              "name"
                                                                             ],
-                                                                            type: 'object',
+                                                                            type: "object",
                                                                             properties: {
                                                                               level19: {
                                                                                 required: [
-                                                                                  'name'
+                                                                                  "name"
                                                                                 ],
-                                                                                type: 'object',
+                                                                                type: "object",
                                                                                 properties: {
                                                                                   level20: {
                                                                                     required: [
-                                                                                      'name'
+                                                                                      "name"
                                                                                     ],
-                                                                                    type: 'object',
+                                                                                    type: "object",
                                                                                     properties: {
                                                                                       level21: {
                                                                                         required: [
-                                                                                          'name'
+                                                                                          "name"
                                                                                         ],
-                                                                                        type: 'object',
+                                                                                        type: "object",
                                                                                         properties: {
                                                                                           level22: {
                                                                                             required: [
-                                                                                              'name'
+                                                                                              "name"
                                                                                             ],
-                                                                                            type: 'object',
+                                                                                            type: "object",
                                                                                             properties: {
                                                                                               level23: {
                                                                                                 required: [
-                                                                                                  'name'
+                                                                                                  "name"
                                                                                                 ],
-                                                                                                type: 'object',
+                                                                                                type: "object",
                                                                                                 properties: {
                                                                                                   name: name,
                                                                                                   level24: {
                                                                                                     required: [
-                                                                                                      'name'
+                                                                                                      "name"
                                                                                                     ],
-                                                                                                    type: 'object',
+                                                                                                    type: "object",
                                                                                                     properties: {
                                                                                                       name: name,
                                                                                                       level25: {
                                                                                                         required: [
-                                                                                                          'name'
+                                                                                                          "name"
                                                                                                         ],
-                                                                                                        type: 'object',
+                                                                                                        type: "object",
                                                                                                         properties: {
                                                                                                           name: name,
                                                                                                           level26: {
                                                                                                             required: [
-                                                                                                              'name'
+                                                                                                              "name"
                                                                                                             ],
-                                                                                                            type: 'object',
+                                                                                                            type: "object",
                                                                                                             properties: {
                                                                                                               level27: {
                                                                                                                 required: [
-                                                                                                                  'name'
+                                                                                                                  "name"
                                                                                                                 ],
-                                                                                                                type: 'object',
+                                                                                                                type: "object",
                                                                                                                 properties: {
                                                                                                                   level28: {
                                                                                                                     required: [
-                                                                                                                      'name'
+                                                                                                                      "name"
                                                                                                                     ],
-                                                                                                                    type: 'object',
+                                                                                                                    type: "object",
                                                                                                                     properties: {
                                                                                                                       level29: {
                                                                                                                         required: [
-                                                                                                                          'name'
+                                                                                                                          "name"
                                                                                                                         ],
-                                                                                                                        type: 'object',
+                                                                                                                        type: "object",
                                                                                                                         properties: {
                                                                                                                           name: name
                                                                                                                         }

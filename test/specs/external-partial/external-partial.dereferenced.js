@@ -1,55 +1,55 @@
 helper.dereferenced.externalPartial =
 {
-  title: 'Person',
-  type: 'object',
+  title: "Person",
+  type: "object",
   required: [
-    'name'
+    "name"
   ],
   properties: {
     name: {
-      title: 'name',
-      type: 'object',
+      title: "name",
+      type: "object",
       required: [
-        'first',
-        'last'
+        "first",
+        "last"
       ],
       properties: {
         first: {
-          title: 'required string',
-          type: 'string',
+          title: "required string",
+          type: "string",
           minLength: 1
         },
         last: {
-          title: 'required string',
-          type: 'string',
+          title: "required string",
+          type: "string",
           minLength: 1
         },
         middle: {
-          type: 'string',
+          type: "string",
           minLength: 1
         },
         prefix: {
-          title: 'required string',
-          type: 'string',
+          title: "required string",
+          type: "string",
           minLength: 3
         },
         suffix: {
-          title: 'required string',
-          type: 'string',
+          title: "required string",
+          type: "string",
           minLength: 3,
           maxLength: 3
         }
       }
     },
     age: {
-      type: 'integer',
+      type: "integer",
       minimum: 0
     },
     gender: {
-      type: 'string',
+      type: "string",
       enum: [
-        'male',
-        'female'
+        "male",
+        "female"
       ]
     }
   }

@@ -1,5 +1,5 @@
-describe('Blank files', function () {
-  'use strict';
+describe("Blank files", function () {
+  "use strict";
 
   var windowOnError, testDone;
 
@@ -16,11 +16,11 @@ describe('Blank files', function () {
     host.global.onerror = windowOnError;
   });
 
-  describe('main file', function () {
-    it('should throw an error for a blank YAML file', function (done) {
+  describe("main file", function () {
+    it("should throw an error for a blank YAML file", function (done) {
       testDone = done;
       $RefParser
-        .parse(path.rel('specs/blank/files/blank.yaml'))
+        .parse(path.rel("specs/blank/files/blank.yaml"))
         .then(helper.shouldNotGetCalled(done))
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
@@ -33,38 +33,38 @@ describe('Blank files', function () {
     it('should throw a different error if "parse.yaml.allowEmpty" is disabled', function (done) {
       testDone = done;
       $RefParser
-        .parse(path.rel('specs/blank/files/blank.yaml'), { parse: { yaml: { allowEmpty: false }}})
+        .parse(path.rel("specs/blank/files/blank.yaml"), { parse: { yaml: { allowEmpty: false }}})
         .then(helper.shouldNotGetCalled(done))
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing ');
-          expect(err.message).to.contain('blank/files/blank.yaml');
-          expect(err.message).to.contain('Parsed value is empty');
+          expect(err.message).to.contain("Error parsing ");
+          expect(err.message).to.contain("blank/files/blank.yaml");
+          expect(err.message).to.contain("Parsed value is empty");
           done();
         })
         .catch(done);
     });
 
-    it('should throw an error for a blank JSON file', function (done) {
+    it("should throw an error for a blank JSON file", function (done) {
       testDone = done;
       $RefParser
-        .parse(path.rel('specs/blank/files/blank.json'), { parse: { json: { allowEmpty: false }}})
+        .parse(path.rel("specs/blank/files/blank.json"), { parse: { json: { allowEmpty: false }}})
         .then(helper.shouldNotGetCalled(done))
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing ');
-          expect(err.message).to.contain('blank/files/blank.json');
+          expect(err.message).to.contain("Error parsing ");
+          expect(err.message).to.contain("blank/files/blank.json");
           done();
         })
         .catch(done);
     });
   });
 
-  describe('referenced files', function () {
-    it('should parse successfully', function (done) {
+  describe("referenced files", function () {
+    it("should parse successfully", function (done) {
       testDone = done;
       $RefParser
-        .parse(path.rel('specs/blank/blank.yaml'))
+        .parse(path.rel("specs/blank/blank.yaml"))
         .then(function (schema) {
           expect(schema).to.deep.equal(helper.parsed.blank.schema);
           done();
@@ -72,20 +72,20 @@ describe('Blank files', function () {
         .catch(done);
     });
 
-    it('should resolve successfully', helper.testResolve(
-      path.rel('specs/blank/blank.yaml'),
-      path.abs('specs/blank/blank.yaml'), helper.parsed.blank.schema,
-      path.abs('specs/blank/files/blank.yaml'), helper.parsed.blank.yaml,
-      path.abs('specs/blank/files/blank.json'), helper.parsed.blank.json,
-      path.abs('specs/blank/files/blank.txt'), helper.parsed.blank.text,
-      path.abs('specs/blank/files/blank.png'), helper.parsed.blank.binary,
-      path.abs('specs/blank/files/blank.foo'), helper.parsed.blank.unknown
+    it("should resolve successfully", helper.testResolve(
+      path.rel("specs/blank/blank.yaml"),
+      path.abs("specs/blank/blank.yaml"), helper.parsed.blank.schema,
+      path.abs("specs/blank/files/blank.yaml"), helper.parsed.blank.yaml,
+      path.abs("specs/blank/files/blank.json"), helper.parsed.blank.json,
+      path.abs("specs/blank/files/blank.txt"), helper.parsed.blank.text,
+      path.abs("specs/blank/files/blank.png"), helper.parsed.blank.binary,
+      path.abs("specs/blank/files/blank.foo"), helper.parsed.blank.unknown
     ));
 
-    it('should dereference successfully', function (done) {
+    it("should dereference successfully", function (done) {
       testDone = done;
       $RefParser
-        .dereference(path.rel('specs/blank/blank.yaml'))
+        .dereference(path.rel("specs/blank/blank.yaml"))
         .then(function (schema) {
           schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
           expect(schema).to.deep.equal(helper.dereferenced.blank);
@@ -94,10 +94,10 @@ describe('Blank files', function () {
         .catch(done);
     });
 
-    it('should bundle successfully', function (done) {
+    it("should bundle successfully", function (done) {
       testDone = done;
       $RefParser
-        .bundle(path.rel('specs/blank/blank.yaml'))
+        .bundle(path.rel("specs/blank/blank.yaml"))
         .then(function (schema) {
           schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
           expect(schema).to.deep.equal(helper.dereferenced.blank);
@@ -109,15 +109,15 @@ describe('Blank files', function () {
     it('should throw an error if "allowEmpty" is disabled', function (done) {
       testDone = done;
       $RefParser
-        .dereference(path.rel('specs/blank/blank.yaml'), {
+        .dereference(path.rel("specs/blank/blank.yaml"), {
           parse: { binary: { allowEmpty: false }}
         })
         .then(helper.shouldNotGetCalled(done))
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('Error parsing ');
-          expect(err.message).to.contain('blank/files/blank.png');
-          expect(err.message).to.contain('Parsed value is empty');
+          expect(err.message).to.contain("Error parsing ");
+          expect(err.message).to.contain("blank/files/blank.png");
+          expect(err.message).to.contain("Parsed value is empty");
           done();
         })
         .catch(done);

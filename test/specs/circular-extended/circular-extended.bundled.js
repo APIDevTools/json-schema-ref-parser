@@ -3,30 +3,30 @@ helper.bundled.circularExtended =
   self: {
     definitions: {
       thing: {
-        title: 'thing',
-        $ref: '#/definitions/thing',
+        title: "thing",
+        $ref: "#/definitions/thing",
         description: "This JSON Reference has additional properties (other than $ref). Normally, this creates a new type that extends the referenced type, but since this reference points to ITSELF, it doesn't do that.\n",
       }
     }
   },
 
   pet: {
-    title: 'pet',
-    type: 'object',
+    title: "pet",
+    type: "object",
     properties: {
       age: {
-        type: 'number'
+        type: "number"
       },
       name: {
-        type: 'string'
+        type: "string"
       },
       species: {
-        type: 'string',
+        type: "string",
         enum: [
-          'cat',
-          'dog',
-          'bird',
-          'fish'
+          "cat",
+          "dog",
+          "bird",
+          "fish"
         ],
       },
     },
@@ -35,18 +35,18 @@ helper.bundled.circularExtended =
   ancestor: {
     definitions: {
       person: {
-        title: 'person',
+        title: "person",
         properties: {
           spouse: {
-            $ref: '#/definitions/person',
+            $ref: "#/definitions/person",
             description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "person".\n',
           },
           pet: {
-            $ref: '#/definitions/pet',
+            $ref: "#/definitions/pet",
             description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "pet".\n'
           },
           name: {
-            type: 'string'
+            type: "string"
           }
         }
       },
@@ -57,36 +57,36 @@ helper.bundled.circularExtended =
   indirect: {
     definitions: {
       parent: {
-        title: 'parent',
+        title: "parent",
         properties: {
           name: {
-            type: 'string'
+            type: "string"
           },
           children: {
             items: {
-              $ref: '#/definitions/child',
+              $ref: "#/definitions/child",
               description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "child".\n',
             },
-            type: 'array'
+            type: "array"
           }
         }
       },
       child: {
-        title: 'child',
+        title: "child",
         properties: {
           parents: {
             items: {
-              $ref: '#/definitions/parent',
+              $ref: "#/definitions/parent",
               description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "parent".\n',
             },
-            type: 'array'
+            type: "array"
           },
           pet: {
-            $ref: '#/definitions/pet',
+            $ref: "#/definitions/pet",
             description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "pet".\n',
           },
           name: {
-            type: 'string'
+            type: "string"
           }
         }
       },
@@ -98,34 +98,34 @@ helper.bundled.circularExtended =
     definitions: {
       pet: null,
       parent: {
-        title: 'parent',
+        title: "parent",
         properties: {
           name: {
-            type: 'string'
+            type: "string"
           },
           child: {
-            $ref: '#/definitions/child',
+            $ref: "#/definitions/child",
             description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "child".\n',
           }
         },
       },
       child: {
-        title: 'child',
+        title: "child",
         properties: {
           pet: {
-            $ref: '#/definitions/pet',
+            $ref: "#/definitions/pet",
             description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "pet".\n',
           },
           name: {
-            type: 'string'
+            type: "string"
           },
           children: {
             items: {
-              $ref: '#/definitions/child',
+              $ref: "#/definitions/child",
               description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "child".\n',
             },
-            type: 'array',
-            description: 'children'
+            type: "array",
+            description: "children"
           }
         },
       }

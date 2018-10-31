@@ -2,64 +2,64 @@
  * This test is from PR #62
  * https://github.com/APIDevTools/json-schema-ref-parser/pull/62
  */
-describe('Schema with two external refs to the same value and internal ref before', function () {
-  'use strict';
+describe("Schema with two external refs to the same value and internal ref before", function () {
+  "use strict";
 
-  it('should parse successfully from an absolute path', function () {
+  it("should parse successfully from an absolute path", function () {
     var parser = new $RefParser();
     return parser
-      .parse(path.abs('specs/external-from-internal/external-from-internal.yaml'))
+      .parse(path.abs("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.externalFromInternal.schema);
-        expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/external-from-internal/external-from-internal.yaml')]);
+        expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/external-from-internal/external-from-internal.yaml")]);
       });
   });
 
-  it('should parse successfully from a relative path', function () {
+  it("should parse successfully from a relative path", function () {
     var parser = new $RefParser();
     return parser
-      .parse(path.rel('specs/external-from-internal/external-from-internal.yaml'))
+      .parse(path.rel("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.externalFromInternal.schema);
-        expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/external-from-internal/external-from-internal.yaml')]);
+        expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/external-from-internal/external-from-internal.yaml")]);
       });
   });
 
-  it('should parse successfully from a url', function () {
+  it("should parse successfully from a url", function () {
     var parser = new $RefParser();
     return parser
-      .parse(path.url('specs/external-from-internal/external-from-internal.yaml'))
+      .parse(path.url("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.externalFromInternal.schema);
-        expect(parser.$refs.paths()).to.deep.equal([path.url('specs/external-from-internal/external-from-internal.yaml')]);
+        expect(parser.$refs.paths()).to.deep.equal([path.url("specs/external-from-internal/external-from-internal.yaml")]);
       });
   });
 
-  it('should resolve successfully from an absolute path', helper.testResolve(
-    path.abs('specs/external-from-internal/external-from-internal.yaml'),
-    path.abs('specs/external-from-internal/external-from-internal.yaml'), helper.parsed.externalFromInternal.schema,
-    path.abs('specs/external-from-internal/definitions.yaml'), helper.parsed.externalFromInternal.definitions
+  it("should resolve successfully from an absolute path", helper.testResolve(
+    path.abs("specs/external-from-internal/external-from-internal.yaml"),
+    path.abs("specs/external-from-internal/external-from-internal.yaml"), helper.parsed.externalFromInternal.schema,
+    path.abs("specs/external-from-internal/definitions.yaml"), helper.parsed.externalFromInternal.definitions
   ));
 
-  it('should resolve successfully from a relative path', helper.testResolve(
-    path.rel('specs/external-from-internal/external-from-internal.yaml'),
-    path.abs('specs/external-from-internal/external-from-internal.yaml'), helper.parsed.externalFromInternal.schema,
-    path.abs('specs/external-from-internal/definitions.yaml'), helper.parsed.externalFromInternal.definitions
+  it("should resolve successfully from a relative path", helper.testResolve(
+    path.rel("specs/external-from-internal/external-from-internal.yaml"),
+    path.abs("specs/external-from-internal/external-from-internal.yaml"), helper.parsed.externalFromInternal.schema,
+    path.abs("specs/external-from-internal/definitions.yaml"), helper.parsed.externalFromInternal.definitions
   ));
 
-  it('should resolve successfully from a url', helper.testResolve(
-    path.url('specs/external-from-internal/external-from-internal.yaml'),
-    path.url('specs/external-from-internal/external-from-internal.yaml'), helper.parsed.externalFromInternal.schema,
-    path.url('specs/external-from-internal/definitions.yaml'), helper.parsed.externalFromInternal.definitions
+  it("should resolve successfully from a url", helper.testResolve(
+    path.url("specs/external-from-internal/external-from-internal.yaml"),
+    path.url("specs/external-from-internal/external-from-internal.yaml"), helper.parsed.externalFromInternal.schema,
+    path.url("specs/external-from-internal/definitions.yaml"), helper.parsed.externalFromInternal.definitions
   ));
 
-  it('should dereference successfully', function () {
+  it("should dereference successfully", function () {
     var parser = new $RefParser();
     return parser
-      .dereference(path.rel('specs/external-from-internal/external-from-internal.yaml'))
+      .dereference(path.rel("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.externalFromInternal);
@@ -81,10 +81,10 @@ describe('Schema with two external refs to the same value and internal ref befor
       });
   });
 
-  it('should bundle successfully', function () {
+  it("should bundle successfully", function () {
     var parser = new $RefParser();
     return parser
-      .bundle(path.rel('specs/external-from-internal/external-from-internal.yaml'))
+      .bundle(path.rel("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.externalFromInternal);

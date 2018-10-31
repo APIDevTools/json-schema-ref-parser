@@ -3,30 +3,30 @@ helper.dereferenced.circularExtended =
   self: {
     definitions: {
       thing: {
-        title: 'thing',
-        $ref: '#/definitions/thing',
+        title: "thing",
+        $ref: "#/definitions/thing",
         description: "This JSON Reference has additional properties (other than $ref). Normally, this creates a new type that extends the referenced type, but since this reference points to ITSELF, it doesn't do that.\n",
       }
     }
   },
 
   pet: {
-    title: 'pet',
-    type: 'object',
+    title: "pet",
+    type: "object",
     properties: {
       age: {
-        type: 'number'
+        type: "number"
       },
       name: {
-        type: 'string'
+        type: "string"
       },
       species: {
-        type: 'string',
+        type: "string",
         enum: [
-          'cat',
-          'dog',
-          'bird',
-          'fish'
+          "cat",
+          "dog",
+          "bird",
+          "fish"
         ],
       },
     },
@@ -36,21 +36,21 @@ helper.dereferenced.circularExtended =
     fullyDereferenced: {
       definitions: {
         person: {
-          title: 'person',
+          title: "person",
           properties: {
             spouse: {
-              title: 'person',
+              title: "person",
               description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "person".\n',
               properties: null
             },
             pet: {
               description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "pet".\n',
-              title: 'pet',
-              type: 'object',
+              title: "pet",
+              type: "object",
               properties: null,
             },
             name: {
-              type: 'string'
+              type: "string"
             }
           }
         },
@@ -61,7 +61,7 @@ helper.dereferenced.circularExtended =
     ignoreCircular$Refs: {
       definitions: {
         person: {
-          $ref: 'definitions/person-with-spouse.yaml'
+          $ref: "definitions/person-with-spouse.yaml"
         },
         pet: null
       }
@@ -72,40 +72,40 @@ helper.dereferenced.circularExtended =
     fullyDereferenced: {
       definitions: {
         parent: {
-          title: 'parent',
+          title: "parent",
           properties: {
             name: {
-              type: 'string'
+              type: "string"
             },
             children: {
               items: {
-                title: 'child',
+                title: "child",
                 description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "child".\n',
                 properties: null
               },
-              type: 'array'
+              type: "array"
             }
           }
         },
         child: {
-          title: 'child',
+          title: "child",
           properties: {
             parents: {
               items: {
-                title: 'parent',
+                title: "parent",
                 description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "parent".\n',
                 properties: null
               },
-              type: 'array'
+              type: "array"
             },
             pet: {
               description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "pet".\n',
-              title: 'pet',
-              type: 'object',
+              title: "pet",
+              type: "object",
               properties: null,
             },
             name: {
-              type: 'string'
+              type: "string"
             }
           }
         },
@@ -116,10 +116,10 @@ helper.dereferenced.circularExtended =
     ignoreCircular$Refs: {
       definitions: {
         parent: {
-          $ref: 'definitions/parent-with-children.yaml'
+          $ref: "definitions/parent-with-children.yaml"
         },
         child: {
-          $ref: 'definitions/child-with-parents.yaml'
+          $ref: "definitions/child-with-parents.yaml"
         },
         pet: null
       }
@@ -131,38 +131,38 @@ helper.dereferenced.circularExtended =
       definitions: {
         pet: null,
         parent: {
-          title: 'parent',
+          title: "parent",
           properties: {
             name: {
-              type: 'string'
+              type: "string"
             },
             child: {
               description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "child".\n',
-              title: 'child',
+              title: "child",
               properties: null
             }
           },
         },
         child: {
-          title: 'child',
+          title: "child",
           properties: {
             pet: {
               description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "pet".\n',
-              title: 'pet',
-              type: 'object',
+              title: "pet",
+              type: "object",
               properties: null,
             },
             name: {
-              type: 'string'
+              type: "string"
             },
             children: {
               items: {
                 description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "child".\n',
-                title: 'child',
+                title: "child",
                 properties: null
               },
-              type: 'array',
-              description: 'children'
+              type: "array",
+              description: "children"
             }
           },
         }
@@ -173,10 +173,10 @@ helper.dereferenced.circularExtended =
       definitions: {
         pet: null,
         parent: {
-          $ref: 'definitions/parent-with-child.yaml'
+          $ref: "definitions/parent-with-child.yaml"
         },
         child: {
-          $ref: 'definitions/child-with-children.yaml'
+          $ref: "definitions/child-with-children.yaml"
         }
       }
     }

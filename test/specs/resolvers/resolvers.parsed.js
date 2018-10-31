@@ -2,62 +2,62 @@ helper.parsed.resolvers =
 {
   definitions: {
     foo: {
-      $ref: 'foo://bar.baz'
+      $ref: "foo://bar.baz"
     },
     pet: {
-      $ref: 'definitions/pet.yaml'
+      $ref: "definitions/pet.yaml"
     },
     name: {
       required: [
-        'first',
-        'last'
+        "first",
+        "last"
       ],
-      type: 'object',
+      type: "object",
       properties: {
         last: {
           minLength: 1,
-          type: 'string'
+          type: "string"
         },
         first: {
           minLength: 1,
-          type: 'string'
+          type: "string"
         }
       }
     }
   },
   required: [
-    'name'
+    "name"
   ],
-  type: 'object',
+  type: "object",
   properties: {
     gender: {
       enum: [
-        'male',
-        'female'
+        "male",
+        "female"
       ],
-      type: 'string'
+      type: "string"
     },
     age: {
       minimum: 0,
-      type: 'integer'
+      type: "integer"
     },
     name: {
       required: [
-        'first',
-        'last'
+        "first",
+        "last"
       ],
-      type: 'object',
+      type: "object",
       properties: {
         last: {
           minLength: 1,
-          type: 'string'
+          type: "string"
         },
         first: {
           minLength: 1,
-          type: 'string'
+          type: "string"
         }
       }
     }
   },
-  title: 'Person'
+  title: "Person"
 };

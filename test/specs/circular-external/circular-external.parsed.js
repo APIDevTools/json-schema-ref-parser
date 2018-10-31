@@ -3,87 +3,87 @@ helper.parsed.circularExternal =
   schema: {
     definitions: {
       pet: {
-        $ref: 'definitions/pet.yaml'
+        $ref: "definitions/pet.yaml"
       },
       thing: {
-        $ref: 'circular-external.yaml#/definitions/thing'
+        $ref: "circular-external.yaml#/definitions/thing"
       },
       person: {
-        $ref: 'definitions/person.yaml'
+        $ref: "definitions/person.yaml"
       },
       parent: {
-        $ref: 'definitions/parent.yaml'
+        $ref: "definitions/parent.yaml"
       },
       child: {
-        $ref: 'definitions/child.yaml'
+        $ref: "definitions/child.yaml"
       }
     }
   },
 
   pet: {
-    title: 'pet',
-    type: 'object',
+    title: "pet",
+    type: "object",
     properties: {
       age: {
-        type: 'number'
+        type: "number"
       },
       name: {
-        type: 'string'
+        type: "string"
       },
       species: {
         enum: [
-          'cat',
-          'dog',
-          'bird',
-          'fish'
+          "cat",
+          "dog",
+          "bird",
+          "fish"
         ],
-        type: 'string'
+        type: "string"
       }
     },
   },
 
   child: {
-    type: 'object',
+    type: "object",
     properties: {
       parents: {
         items: {
-          $ref: 'parent.yaml'
+          $ref: "parent.yaml"
         },
-        type: 'array'
+        type: "array"
       },
       name: {
-        type: 'string'
+        type: "string"
       }
     },
-    title: 'child'
+    title: "child"
   },
 
   parent: {
-    type: 'object',
+    type: "object",
     properties: {
       name: {
-        type: 'string'
+        type: "string"
       },
       children: {
         items: {
-          $ref: 'child.yaml'
+          $ref: "child.yaml"
         },
-        type: 'array'
+        type: "array"
       }
     },
-    title: 'parent'
+    title: "parent"
   },
 
   person: {
-    type: 'object',
+    type: "object",
     properties: {
       spouse: {
-        $ref: 'person.yaml'
+        $ref: "person.yaml"
       },
       name: {
-        type: 'string'
+        type: "string"
       }
     },
-    title: 'person'
+    title: "person"
   }
 };

@@ -5,80 +5,80 @@ helper.parsed.objectSourceWithPath =
       // Because we've specified the full path to this directory,
       // this path can simply be relative to the current directory,
       // rather than having to be relative to the "test" directory
-      $ref: 'definitions/definitions.json'
+      $ref: "definitions/definitions.json"
     },
     required: [
-      'name'
+      "name"
     ],
-    type: 'object',
+    type: "object",
     properties: {
       gender: {
         enum: [
-          'male',
-          'female'
+          "male",
+          "female"
         ],
-        type: 'string'
+        type: "string"
       },
       age: {
         minimum: 0,
-        type: 'integer'
+        type: "integer"
       },
       name: {
-        $ref: '#/definitions/name'
+        $ref: "#/definitions/name"
       }
     },
-    title: 'Person'
+    title: "Person"
   },
 
   definitions: {
     requiredString: {
-      $ref: 'required-string.yaml'
+      $ref: "required-string.yaml"
     },
     string: {
-      $ref: '#/requiredString/type'
+      $ref: "#/requiredString/type"
     },
     name: {
-      $ref: '../definitions/name.yaml'
+      $ref: "../definitions/name.yaml"
     }
   },
 
   name: {
     required: [
-      'first',
-      'last'
+      "first",
+      "last"
     ],
-    type: 'object',
+    type: "object",
     properties: {
       middle: {
         minLength: {
-          $ref: '#/properties/first/minLength'
+          $ref: "#/properties/first/minLength"
         },
         type: {
-          $ref: '#/properties/first/type'
+          $ref: "#/properties/first/type"
         }
       },
       prefix: {
         minLength: 3,
-        $ref: '#/properties/last'
+        $ref: "#/properties/last"
       },
       last: {
-        $ref: './required-string.yaml'
+        $ref: "./required-string.yaml"
       },
       suffix: {
-        $ref: '#/properties/prefix',
-        type: 'string',
+        $ref: "#/properties/prefix",
+        type: "string",
         maxLength: 3
       },
       first: {
-        $ref: '../definitions/definitions.json#/requiredString'
+        $ref: "../definitions/definitions.json#/requiredString"
       }
     },
-    title: 'name'
+    title: "name"
   },
 
   requiredString: {
     minLength: 1,
-    type: 'string',
-    title: 'requiredString'
+    type: "string",
+    title: "requiredString"
   }
 };

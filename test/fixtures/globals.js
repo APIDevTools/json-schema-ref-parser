@@ -7,7 +7,7 @@
  *  - This reduces redundant boilerplate code in the .spec files
  */
 (function () {
-  'use strict';
+  "use strict";
 
   if (host.browser) {
     // Expose Browser globals
@@ -15,8 +15,8 @@
   }
   else {
     // Expose Node globals
-    host.global.$RefParser = require('../../');
-    host.global.expect = require('chai').expect;
+    host.global.$RefParser = require("../../");
+    host.global.expect = require("chai").expect;
   }
 
 }());

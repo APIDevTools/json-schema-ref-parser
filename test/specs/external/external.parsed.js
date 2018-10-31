@@ -2,80 +2,80 @@ helper.parsed.external =
 {
   schema: {
     definitions: {
-      $ref: 'definitions/definitions.json'
+      $ref: "definitions/definitions.json"
     },
     required: [
-      'name'
+      "name"
     ],
-    type: 'object',
+    type: "object",
     properties: {
       gender: {
         enum: [
-          'male',
-          'female'
+          "male",
+          "female"
         ],
-        type: 'string'
+        type: "string"
       },
       age: {
         minimum: 0,
-        type: 'integer'
+        type: "integer"
       },
       name: {
-        $ref: '#/definitions/name'
+        $ref: "#/definitions/name"
       }
     },
-    title: 'Person'
+    title: "Person"
   },
 
   definitions: {
-    'required string': {
-      $ref: 'required-string.yaml'
+    "required string": {
+      $ref: "required-string.yaml"
     },
     string: {
-      $ref: '#/required%20string/type'
+      $ref: "#/required%20string/type"
     },
     name: {
-      $ref: '../definitions/name.yaml'
+      $ref: "../definitions/name.yaml"
     }
   },
 
   name: {
     required: [
-      'first',
-      'last'
+      "first",
+      "last"
     ],
-    type: 'object',
+    type: "object",
     properties: {
       middle: {
         minLength: {
-          $ref: '#/properties/first/minLength'
+          $ref: "#/properties/first/minLength"
         },
         type: {
-          $ref: '#/properties/first/type'
+          $ref: "#/properties/first/type"
         }
       },
       prefix: {
         minLength: 3,
-        $ref: '#/properties/last'
+        $ref: "#/properties/last"
       },
       last: {
-        $ref: './required-string.yaml'
+        $ref: "./required-string.yaml"
       },
       suffix: {
-        $ref: '#/properties/prefix',
-        type: 'string',
+        $ref: "#/properties/prefix",
+        type: "string",
         maxLength: 3
       },
       first: {
-        $ref: '../definitions/definitions.json#/required string'
+        $ref: "../definitions/definitions.json#/required string"
       }
     },
-    title: 'name'
+    title: "name"
   },
 
   requiredString: {
     minLength: 1,
-    type: 'string',
-    title: 'required string'
+    type: "string",
+    title: "required string"
   }
 };

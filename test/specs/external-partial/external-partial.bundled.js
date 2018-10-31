@@ -1,55 +1,55 @@
 helper.bundled.externalPartial =
 {
-  title: 'Person',
-  type: 'object',
+  title: "Person",
+  type: "object",
   required: [
-    'name'
+    "name"
   ],
   properties: {
     name: {
-      title: 'name',
-      type: 'object',
+      title: "name",
+      type: "object",
       required: [
-        'first',
-        'last'
+        "first",
+        "last"
       ],
       properties: {
         first: {
-          $ref: '#/properties/name/properties/last'
+          $ref: "#/properties/name/properties/last"
         },
         last: {
-          title: 'required string',
-          type: 'string',
+          title: "required string",
+          type: "string",
           minLength: 1
         },
         middle: {
           type: {
-            $ref: '#/properties/name/properties/last/type'
+            $ref: "#/properties/name/properties/last/type"
           },
           minLength: {
-            $ref: '#/properties/name/properties/last/minLength'
+            $ref: "#/properties/name/properties/last/minLength"
           }
         },
         prefix: {
-          $ref: '#/properties/name/properties/last',
+          $ref: "#/properties/name/properties/last",
           minLength: 3
         },
         suffix: {
-          $ref: '#/properties/name/properties/prefix',
-          type: 'string',
+          $ref: "#/properties/name/properties/prefix",
+          type: "string",
           maxLength: 3
         }
       }
     },
     age: {
-      type: 'integer',
+      type: "integer",
       minimum: 0
     },
     gender: {
-      type: 'string',
+      type: "string",
       enum: [
-        'male',
-        'female'
+        "male",
+        "female"
       ]
     }
   }

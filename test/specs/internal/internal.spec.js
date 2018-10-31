@@ -1,26 +1,26 @@
-describe('Schema with internal $refs', function () {
-  'use strict';
+describe("Schema with internal $refs", function () {
+  "use strict";
 
-  it('should parse successfully', function () {
+  it("should parse successfully", function () {
     var parser = new $RefParser();
     return parser
-      .parse(path.rel('specs/internal/internal.yaml'))
+      .parse(path.rel("specs/internal/internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.internal);
-        expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/internal/internal.yaml')]);
+        expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/internal/internal.yaml")]);
       });
   });
 
-  it('should resolve successfully', helper.testResolve(
-    path.rel('specs/internal/internal.yaml'),
-    path.abs('specs/internal/internal.yaml'), helper.parsed.internal
+  it("should resolve successfully", helper.testResolve(
+    path.rel("specs/internal/internal.yaml"),
+    path.abs("specs/internal/internal.yaml"), helper.parsed.internal
   ));
 
-  it('should dereference successfully', function () {
+  it("should dereference successfully", function () {
     var parser = new $RefParser();
     return parser
-      .dereference(path.rel('specs/internal/internal.yaml'))
+      .dereference(path.rel("specs/internal/internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.internal);
@@ -38,10 +38,10 @@ describe('Schema with internal $refs', function () {
       });
   });
 
-  it('should bundle successfully', function () {
+  it("should bundle successfully", function () {
     var parser = new $RefParser();
     return parser
-      .bundle(path.rel('specs/internal/internal.yaml'))
+      .bundle(path.rel("specs/internal/internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.internal);

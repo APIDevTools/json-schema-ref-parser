@@ -1,27 +1,27 @@
 helper.bundled.externalMultiple = {
-  type: 'object',
-  required: ['user', 'token'],
+  type: "object",
+  required: ["user", "token"],
   properties: {
     token: {
-      type: 'string'
+      type: "string"
     },
     user: {
-      type: 'object',
-      required: ['name'],
+      type: "object",
+      required: ["name"],
       properties: {
         name: {
-          type: 'string'
+          type: "string"
         }
       },
       example: {
-        name: 'Homer'
+        name: "Homer"
       }
     }
   },
   example: {
-    token: '11111111',
+    token: "11111111",
     user: {
-      $ref: '#/properties/user/example'
+      $ref: "#/properties/user/example"
     }
   }
 };

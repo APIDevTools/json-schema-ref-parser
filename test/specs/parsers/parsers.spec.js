@@ -1,29 +1,29 @@
-describe('References to non-JSON files', function () {
-  'use strict';
+describe("References to non-JSON files", function () {
+  "use strict";
 
-  it('should parse successfully', function () {
+  it("should parse successfully", function () {
     return $RefParser
-      .parse(path.rel('specs/parsers/parsers.yaml'))
+      .parse(path.rel("specs/parsers/parsers.yaml"))
       .then(function (schema) {
         expect(schema).to.deep.equal(helper.parsed.parsers.schema);
       });
   });
 
-  it('should resolve successfully', helper.testResolve(
-    path.rel('specs/parsers/parsers.yaml'),
-    path.abs('specs/parsers/parsers.yaml'), helper.parsed.parsers.schema,
-    path.abs('specs/parsers/files/README.md'), helper.dereferenced.parsers.defaultParsers.definitions.markdown,
-    path.abs('specs/parsers/files/page.html'), helper.dereferenced.parsers.defaultParsers.definitions.html,
-    path.abs('specs/parsers/files/style.css'), helper.dereferenced.parsers.defaultParsers.definitions.css,
-    path.abs('specs/parsers/files/binary.png'), helper.dereferenced.parsers.defaultParsers.definitions.binary,
-    path.abs('specs/parsers/files/unknown.foo'), helper.dereferenced.parsers.defaultParsers.definitions.unknown,
-    path.abs('specs/parsers/files/empty'), helper.dereferenced.parsers.defaultParsers.definitions.empty
+  it("should resolve successfully", helper.testResolve(
+    path.rel("specs/parsers/parsers.yaml"),
+    path.abs("specs/parsers/parsers.yaml"), helper.parsed.parsers.schema,
+    path.abs("specs/parsers/files/README.md"), helper.dereferenced.parsers.defaultParsers.definitions.markdown,
+    path.abs("specs/parsers/files/page.html"), helper.dereferenced.parsers.defaultParsers.definitions.html,
+    path.abs("specs/parsers/files/style.css"), helper.dereferenced.parsers.defaultParsers.definitions.css,
+    path.abs("specs/parsers/files/binary.png"), helper.dereferenced.parsers.defaultParsers.definitions.binary,
+    path.abs("specs/parsers/files/unknown.foo"), helper.dereferenced.parsers.defaultParsers.definitions.unknown,
+    path.abs("specs/parsers/files/empty"), helper.dereferenced.parsers.defaultParsers.definitions.empty
   ));
 
-  it('should dereference successfully', function () {
+  it("should dereference successfully", function () {
     var parser = new $RefParser();
     return parser
-      .dereference(path.rel('specs/parsers/parsers.yaml'))
+      .dereference(path.rel("specs/parsers/parsers.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
 
@@ -35,9 +35,9 @@ describe('References to non-JSON files', function () {
       });
   });
 
-  it('should bundle successfully', function () {
+  it("should bundle successfully", function () {
     return $RefParser
-      .bundle(path.rel('specs/parsers/parsers.yaml'))
+      .bundle(path.rel("specs/parsers/parsers.yaml"))
       .then(function (schema) {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         expect(schema).to.deep.equal(helper.dereferenced.parsers.defaultParsers);
@@ -46,7 +46,7 @@ describe('References to non-JSON files', function () {
 
   it('should parse text as binary if "parse.text" is disabled', function () {
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+      .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
           // Disable the text parser
           text: false,
@@ -54,7 +54,7 @@ describe('References to non-JSON files', function () {
           // Parse all non-YAML files as binary
           binary: {
             canParse: function (file) {
-              return file.url.substr(-5) !== '.yaml';
+              return file.url.substr(-5) !== ".yaml";
             }
           }
         }
@@ -72,23 +72,23 @@ describe('References to non-JSON files', function () {
 
   it('should throw an error if "parse.text" and "parse.binary" are disabled', function () {
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), { parse: { text: false, binary: false }})
+      .dereference(path.rel("specs/parsers/parsers.yaml"), { parse: { text: false, binary: false }})
       .then(helper.shouldNotGetCalled)
       .catch(function (err) {
         expect(err).to.be.an.instanceOf(SyntaxError);
-        expect(err.message).to.contain('Error parsing ');
+        expect(err.message).to.contain("Error parsing ");
       });
   });
 
-  it('should use a custom parser with static values', function () {
+  it("should use a custom parser with static values", function () {
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+      .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
           // A custom parser that always returns the same value
           staticParser: {
             order: 201,
             canParse: true,
-            parse: 'The quick brown fox jumped over the lazy dog'
+            parse: "The quick brown fox jumped over the lazy dog"
           }
         }
       })
@@ -97,18 +97,18 @@ describe('References to non-JSON files', function () {
       });
   });
 
-  it('should use a custom parser that returns a value', function () {
+  it("should use a custom parser that returns a value", function () {
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+      .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
           // A custom parser that returns the contents of ".foo" files, in reverse
           reverseFooParser: {
             canParse: function (file) {
-              return file.url.substr(-4) === '.foo';
+              return file.url.substr(-4) === ".foo";
             },
 
             parse: function (file) {
-              return file.data.toString().split('').reverse().join('');
+              return file.data.toString().split("").reverse().join("");
             }
           }
         }
@@ -119,16 +119,16 @@ describe('References to non-JSON files', function () {
       });
   });
 
-  it('should use a custom parser that calls a callback', function () {
+  it("should use a custom parser that calls a callback", function () {
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+      .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
           // A custom parser that returns the contents of ".foo" files, in reverse
           reverseFooParser: {
             canParse: /\.FOO$/i,
 
             parse: function (file, callback) {
-              var reversed = file.data.toString().split('').reverse().join('');
+              var reversed = file.data.toString().split("").reverse().join("");
               callback(null, reversed);
             }
           }
@@ -140,17 +140,17 @@ describe('References to non-JSON files', function () {
       });
   });
 
-  it('should use a custom parser that returns a promise', function () {
+  it("should use a custom parser that returns a promise", function () {
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+      .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
           // A custom parser that returns the contents of ".foo" files, in reverse
           reverseFooParser: {
-            canParse: ['.foo'],
+            canParse: [".foo"],
 
             parse: function (file) {
               return new Promise(function (resolve, reject) {
-                var reversed = file.data.toString().split('').reverse().join('');
+                var reversed = file.data.toString().split("").reverse().join("");
                 resolve(reversed);
               });
             }
@@ -163,9 +163,9 @@ describe('References to non-JSON files', function () {
       });
   });
 
-  it('should continue parsing if a custom parser fails', function () {
+  it("should continue parsing if a custom parser fails", function () {
     return $RefParser
-      .dereference(path.rel('specs/parsers/parsers.yaml'), {
+      .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
           // A custom parser that always fails,
           // so the built-in parsers will be used as a fallback
@@ -175,7 +175,7 @@ describe('References to non-JSON files', function () {
             canParse: /\.(md|html|css|png)$/i,
 
             parse: function (file, callback) {
-              callback('BOMB!!!');
+              callback("BOMB!!!");
             }
           }
         }

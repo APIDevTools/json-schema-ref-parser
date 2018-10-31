@@ -1,7 +1,7 @@
-describe('Object sources (instead of file paths)', function () {
-  'use strict';
+describe("Object sources (instead of file paths)", function () {
+  "use strict";
 
-  it('should dereference a single object', function () {
+  it("should dereference a single object", function () {
     var parser = new $RefParser();
     return parser
       .dereference(helper.cloneDeep(helper.parsed.internal))
@@ -26,7 +26,7 @@ describe('Object sources (instead of file paths)', function () {
       });
   });
 
-  it('should dereference an object that references external files', function () {
+  it("should dereference an object that references external files", function () {
     var parser = new $RefParser();
     return parser
       .dereference(helper.cloneDeep(helper.parsed.objectSource.schema))
@@ -37,9 +37,9 @@ describe('Object sources (instead of file paths)', function () {
         // The schema path should be the current directory, and all other paths should be absolute
         var expectedPaths = [
           path.cwd(),
-          path.abs('specs/object-source/definitions/definitions.json'),
-          path.abs('specs/object-source/definitions/name.yaml'),
-          path.abs('specs/object-source/definitions/required-string.yaml')
+          path.abs("specs/object-source/definitions/definitions.json"),
+          path.abs("specs/object-source/definitions/name.yaml"),
+          path.abs("specs/object-source/definitions/required-string.yaml")
         ];
         expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
         expect(parser.$refs.values()).to.have.keys(expectedPaths);
@@ -57,7 +57,7 @@ describe('Object sources (instead of file paths)', function () {
       });
   });
 
-  it('should bundle an object that references external files', function () {
+  it("should bundle an object that references external files", function () {
     var parser = new $RefParser();
     return parser
       .bundle(helper.cloneDeep(helper.parsed.objectSource.schema))
@@ -68,9 +68,9 @@ describe('Object sources (instead of file paths)', function () {
         // The schema path should be the current directory, and all other paths should be absolute
         var expectedPaths = [
           path.cwd(),
-          path.abs('specs/object-source/definitions/definitions.json'),
-          path.abs('specs/object-source/definitions/name.yaml'),
-          path.abs('specs/object-source/definitions/required-string.yaml')
+          path.abs("specs/object-source/definitions/definitions.json"),
+          path.abs("specs/object-source/definitions/name.yaml"),
+          path.abs("specs/object-source/definitions/required-string.yaml")
         ];
         expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
         expect(parser.$refs.values()).to.have.keys(expectedPaths);

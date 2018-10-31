@@ -1,27 +1,27 @@
-describe('Schema with multiple external $refs to different parts of a file', function () {
-  'use strict';
+describe("Schema with multiple external $refs to different parts of a file", function () {
+  "use strict";
 
-  it('should parse successfully', function () {
+  it("should parse successfully", function () {
     var parser = new $RefParser();
     return parser
-      .parse(path.abs('specs/external-multiple/external-multiple.yaml'))
+      .parse(path.abs("specs/external-multiple/external-multiple.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.externalMultiple.schema);
-        expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/external-multiple/external-multiple.yaml')]);
+        expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/external-multiple/external-multiple.yaml")]);
       });
   });
 
-  it('should resolve successfully', helper.testResolve(
-    path.rel('specs/external-multiple/external-multiple.yaml'),
-    path.abs('specs/external-multiple/external-multiple.yaml'), helper.parsed.externalMultiple.schema,
-    path.abs('specs/external-multiple/definitions.yaml'), helper.parsed.externalMultiple.definitions
+  it("should resolve successfully", helper.testResolve(
+    path.rel("specs/external-multiple/external-multiple.yaml"),
+    path.abs("specs/external-multiple/external-multiple.yaml"), helper.parsed.externalMultiple.schema,
+    path.abs("specs/external-multiple/definitions.yaml"), helper.parsed.externalMultiple.definitions
   ));
 
-  it('should dereference successfully', function () {
+  it("should dereference successfully", function () {
     var parser = new $RefParser();
     return parser
-      .dereference(path.rel('specs/external-multiple/external-multiple.yaml'))
+      .dereference(path.rel("specs/external-multiple/external-multiple.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.dereferenced.externalMultiple);
@@ -34,10 +34,10 @@ describe('Schema with multiple external $refs to different parts of a file', fun
       });
   });
 
-  it('should bundle successfully', function () {
+  it("should bundle successfully", function () {
     var parser = new $RefParser();
     return parser
-      .bundle(path.rel('specs/external-multiple/external-multiple.yaml'))
+      .bundle(path.rel("specs/external-multiple/external-multiple.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.bundled.externalMultiple);

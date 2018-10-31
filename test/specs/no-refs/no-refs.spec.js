@@ -1,26 +1,26 @@
-describe('Schema without any $refs', function () {
-  'use strict';
+describe("Schema without any $refs", function () {
+  "use strict";
 
-  it('should parse successfully', function () {
+  it("should parse successfully", function () {
     var parser = new $RefParser();
     return parser
-      .parse(path.rel('specs/no-refs/no-refs.yaml'))
+      .parse(path.rel("specs/no-refs/no-refs.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.noRefs);
-        expect(parser.$refs.paths()).to.deep.equal([path.abs('specs/no-refs/no-refs.yaml')]);
+        expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/no-refs/no-refs.yaml")]);
       });
   });
 
-  it('should resolve successfully', helper.testResolve(
-    path.rel('specs/no-refs/no-refs.yaml'),
-    path.abs('specs/no-refs/no-refs.yaml'), helper.parsed.noRefs
+  it("should resolve successfully", helper.testResolve(
+    path.rel("specs/no-refs/no-refs.yaml"),
+    path.abs("specs/no-refs/no-refs.yaml"), helper.parsed.noRefs
   ));
 
-  it('should dereference successfully', function () {
+  it("should dereference successfully", function () {
     var parser = new $RefParser();
     return parser
-      .dereference(path.rel('specs/no-refs/no-refs.yaml'))
+      .dereference(path.rel("specs/no-refs/no-refs.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.noRefs);
@@ -30,10 +30,10 @@ describe('Schema without any $refs', function () {
       });
   });
 
-  it('should bundle successfully', function () {
+  it("should bundle successfully", function () {
     var parser = new $RefParser();
     return parser
-      .bundle(path.rel('specs/no-refs/no-refs.yaml'))
+      .bundle(path.rel("specs/no-refs/no-refs.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
         expect(schema).to.deep.equal(helper.parsed.noRefs);

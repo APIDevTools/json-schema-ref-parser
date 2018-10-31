@@ -3,81 +3,81 @@ helper.dereferenced.resolvers =
   definitions: {
     foo: {
       bar: {
-        baz: 'hello world'
+        baz: "hello world"
       }
     },
     name: {
       required: [
-        'first',
-        'last'
+        "first",
+        "last"
       ],
-      type: 'object',
+      type: "object",
       properties: {
         last: {
           minLength: 1,
-          type: 'string'
+          type: "string"
         },
         first: {
           minLength: 1,
-          type: 'string'
+          type: "string"
         }
       }
     },
     pet: {
-      type: 'object',
+      type: "object",
       properties: {
         age: {
-          type: 'number'
+          type: "number"
         },
         name: {
-          type: 'string'
+          type: "string"
         },
         species: {
           enum: [
-            'cat',
-            'dog',
-            'bird',
-            'fish'
+            "cat",
+            "dog",
+            "bird",
+            "fish"
           ],
-          type: 'string'
+          type: "string"
         }
       },
-      title: 'pet'
+      title: "pet"
     }
   },
   required: [
-    'name'
+    "name"
   ],
-  type: 'object',
+  type: "object",
   properties: {
     gender: {
       enum: [
-        'male',
-        'female'
+        "male",
+        "female"
       ],
-      type: 'string'
+      type: "string"
     },
     age: {
       minimum: 0,
-      type: 'integer'
+      type: "integer"
     },
     name: {
       required: [
-        'first',
-        'last'
+        "first",
+        "last"
       ],
-      type: 'object',
+      type: "object",
       properties: {
         last: {
           minLength: 1,
-          type: 'string'
+          type: "string"
         },
         first: {
           minLength: 1,
-          type: 'string'
+          type: "string"
         }
       }
     }
   },
-  title: 'Person'
+  title: "Person"
 };

@@ -2,68 +2,68 @@ helper.parsed.internal =
 {
   definitions: {
     fragment: {
-      $id: '#fragment'
+      $id: "#fragment"
     },
     requiredString: {
-      title: 'requiredString',
+      title: "requiredString",
       minLength: 1,
-      type: 'string'
+      type: "string"
     },
     name: {
       required: [
-        'first',
-        'last'
+        "first",
+        "last"
       ],
-      type: 'object',
+      type: "object",
       properties: {
         first: {
-          $ref: '#/definitions/requiredString'
+          $ref: "#/definitions/requiredString"
         },
         last: {
-          $ref: '#/definitions/name/properties/first'
+          $ref: "#/definitions/name/properties/first"
         },
         middle: {
           type: {
-            $ref: '#/definitions/name/properties/first/type'
+            $ref: "#/definitions/name/properties/first/type"
           },
           minLength: {
-            $ref: '#/definitions/name/properties/last/minLength'
+            $ref: "#/definitions/name/properties/last/minLength"
           }
         },
         prefix: {
-          $ref: '#/definitions/name/properties/last',
+          $ref: "#/definitions/name/properties/last",
           minLength: 3
         },
         suffix: {
-          type: 'string',
-          $ref: '#/definitions/name/properties/prefix',
+          type: "string",
+          $ref: "#/definitions/name/properties/prefix",
           maxLength: 3
         }
       }
     }
   },
   required: [
-    'name'
+    "name"
   ],
-  type: 'object',
+  type: "object",
   properties: {
     fragment: {
-      $ref: '#fragment'
+      $ref: "#fragment"
     },
     gender: {
       enum: [
-        'male',
-        'female'
+        "male",
+        "female"
       ],
-      type: 'string'
+      type: "string"
     },
     age: {
       minimum: 0,
-      type: 'integer'
+      type: "integer"
     },
     name: {
-      $ref: '#/definitions/name'
+      $ref: "#/definitions/name"
     }
   },
-  title: 'Person'
+  title: "Person"
 };
