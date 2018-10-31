@@ -1,0 +1,12 @@
+
+type: object
+required: [user, token]
+properties:
+  token:
+    type: string
+  user:
+    $ref: './inner.yaml#/User'
+example:
+  token: '11111111'
+  user:
+    $ref: './inner.yaml#/User/example'
