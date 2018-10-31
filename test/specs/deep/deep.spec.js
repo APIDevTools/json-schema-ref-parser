@@ -49,4 +49,3 @@ describe('Schema with deeply-nested $refs', function () {
       });
   });
 });
-

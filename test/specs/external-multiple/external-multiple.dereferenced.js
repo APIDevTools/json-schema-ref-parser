@@ -1,4 +1,4 @@
-helper.dereferenced.bundled = {
+helper.dereferenced.externalMultiple = {
   type: 'object',
   required: ['user', 'token'],
   properties: {

@@ -1,4 +1,3 @@
-
 User:
   type: object
   required: [name]
