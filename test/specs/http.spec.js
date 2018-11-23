@@ -98,18 +98,6 @@ describe("HTTP options", function () {
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.contain("Error downloading https://httpbin.org/redirect/6");
-          if (host.node) {
-            expect(err.message).to.equal(
-              "Error downloading https://httpbin.org/redirect/6. \n" +
-              "Too many redirects: \n" +
-              "  https://httpbin.org/redirect/6 \n" +
-              "  https://httpbin.org/relative-redirect/5 \n" +
-              "  https://httpbin.org/relative-redirect/4 \n" +
-              "  https://httpbin.org/relative-redirect/3 \n" +
-              "  https://httpbin.org/relative-redirect/2 \n" +
-              "  https://httpbin.org/relative-redirect/1"
-            );
-          }
           done();
         })
         .catch(done);
@@ -150,13 +138,6 @@ describe("HTTP options", function () {
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(Error);
           expect(err.message).to.contain("Error downloading https://httpbin.org/redirect/1");
-          if (host.node) {
-            expect(err.message).to.equal(
-              "Error downloading https://httpbin.org/redirect/1. \n" +
-            "Too many redirects: \n" +
-            "  https://httpbin.org/redirect/1"
-            );
-          }
           done();
         })
         .catch(done);
