@@ -105,7 +105,7 @@ var $RefParser = require('json-schema-ref-parser');
 Reference [`ref-parser.js`](dist/ref-parser.js) or [`ref-parser.min.js`](dist/ref-parser.min.js) in your HTML:
 
 ```html
-<script src="https://cdn.rawgit.com/JS-DevTools/json-schema-ref-parser/dist/ref-parser.js"></script>
+<script src="https://unpkg.com/json-schema-ref-parser/dist/ref-parser.min.js"></script>
 <script>
   $RefParser.dereference(mySchema)
     .then(function(schema) {
