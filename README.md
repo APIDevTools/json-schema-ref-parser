@@ -5,9 +5,6 @@ JSON Schema $Ref Parser
 [![Build Status](https://api.travis-ci.org/APIDevTools/json-schema-ref-parser.svg?branch=master)](https://travis-ci.org/APIDevTools/json-schema-ref-parser)
 [![Dependencies](https://david-dm.org/APIDevTools/json-schema-ref-parser.svg)](https://david-dm.org/APIDevTools/json-schema-ref-parser)
 [![Coverage Status](https://coveralls.io/repos/github/APIDevTools/json-schema-ref-parser/badge.svg?branch=master)](https://coveralls.io/github/APIDevTools/json-schema-ref-parser)
-[![Codacy Score](https://api.codacy.com/project/badge/d8abfe5e9a4044b89bd9f4b999d4a574)](https://www.codacy.com/public/JamesMessinger/json-schema-ref-parser)
-[![Inline docs](https://inch-ci.org/github/APIDevTools/json-schema-ref-parser.svg?branch=master&style=shields)](https://inch-ci.org/github/APIDevTools/json-schema-ref-parser)
-
 [![npm](https://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
 [![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
 
