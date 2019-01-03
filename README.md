@@ -2,7 +2,8 @@ JSON Schema $Ref Parser
 ============================
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
 
-[![Build Status](https://api.travis-ci.org/APIDevTools/json-schema-ref-parser.svg?branch=master)](https://travis-ci.org/APIDevTools/json-schema-ref-parser)
+[![Cross-Platform Compatibility](https://jsdevtools.org/img/os-badges.svg)](https://travis-ci.com/APIDevTools/json-schema-ref-parser)
+[![Build Status](https://api.travis-ci.com/APIDevTools/json-schema-ref-parser.svg?branch=master)](https://travis-ci.com/APIDevTools/json-schema-ref-parser)
 [![Dependencies](https://david-dm.org/APIDevTools/json-schema-ref-parser.svg)](https://david-dm.org/APIDevTools/json-schema-ref-parser)
 [![Coverage Status](https://coveralls.io/repos/github/APIDevTools/json-schema-ref-parser/badge.svg?branch=master)](https://coveralls.io/github/APIDevTools/json-schema-ref-parser)
 [![npm](https://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
