@@ -29,8 +29,7 @@ module.exports = function (karma) {
   };
 
   configureCodeCoverage(config);
-  configureLocalBrowsers(config);
-  configureSauceLabs(config);
+  configureBrowsers(config);
 
   console.log("Karma Config:\n", JSON.stringify(config, null, 2));
   karma.set(config);
@@ -64,7 +63,7 @@ function configureCodeCoverage (config) {
 /**
  * Configures the browsers for the current platform
  */
-function configureLocalBrowsers (config) {
+function configureBrowsers (config) {
   let isWindows = /^win/.test(process.platform) || process.env.WINDOWS === "true";
   let isMac = /^darwin/.test(process.platform);
   let isLinux = !isMac && !isWindows;
