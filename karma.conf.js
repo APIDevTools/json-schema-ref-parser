@@ -1,31 +1,31 @@
 // Karma config
 // https://karma-runner.github.io/0.12/config/configuration-file.html
-'use strict';
+"use strict";
 
 
 module.exports = function (karma) {
   var config = {
-    frameworks: ['mocha', 'chai', 'host-environment'],
-    reporters: ['verbose'],
+    frameworks: ["mocha", "chai", "host-environment"],
+    reporters: ["verbose"],
 
     files: [
       // Polyfills for older browsers
-      'test/polyfills/promise.js',
-      'test/polyfills/typedarray.js',
+      "test/polyfills/promise.js",
+      "test/polyfills/typedarray.js",
 
       // Json Schema $Ref Parser
-      'dist/ref-parser.min.js',
-      { pattern: 'dist/*.map', included: false, served: true },
+      "dist/ref-parser.min.js",
+      { pattern: "dist/*.map", included: false, served: true },
 
       // Test Fixtures
-      'test/fixtures/**/*.js',
+      "test/fixtures/**/*.js",
 
       // Test Specs
-      'test/specs/**/*.parsed.js',
-      'test/specs/**/*.dereferenced.js',
-      'test/specs/**/*.bundled.js',
-      'test/specs/**/*.spec.js',
-      { pattern: 'test/specs/**', included: false, served: true }
+      "test/specs/**/*.parsed.js",
+      "test/specs/**/*.dereferenced.js",
+      "test/specs/**/*.bundled.js",
+      "test/specs/**/*.spec.js",
+      { pattern: "test/specs/**", included: false, served: true }
     ]
   };
 
@@ -34,7 +34,7 @@ module.exports = function (karma) {
   configureLocalBrowsers(config);
   configureSauceLabs(config);
 
-  console.log('Karma Config:\n', JSON.stringify(config, null, 2));
+  console.log("Karma Config:\n", JSON.stringify(config, null, 2));
   karma.set(config);
 };
 
@@ -43,11 +43,11 @@ module.exports = function (karma) {
  * (useful for CI jobs that are only testing Node.js, not web browsers)
  */
 function exitIfDisabled () {
-  var CI = process.env.CI === 'true';
-  var KARMA = process.env.KARMA === 'true';
+  var CI = process.env.CI === "true";
+  var KARMA = process.env.KARMA === "true";
 
   if (CI && !KARMA) {
-    console.warn('Karma is not enabled');
+    console.warn("Karma is not enabled");
     process.exit();
   }
 }
@@ -56,28 +56,28 @@ function exitIfDisabled () {
  * Configures the code-coverage reporter
  */
 function configureCodeCoverage (config) {
-  if (process.argv.indexOf('--coverage') === -1) {
-    console.warn('Code-coverage is not enabled');
+  if (process.argv.indexOf("--coverage") === -1) {
+    console.warn("Code-coverage is not enabled");
     return;
   }
-  else if (process.env.SAUCE === 'true') {
+  else if (process.env.SAUCE === "true") {
     // Code coverage causes sporadic failures on SauceLabs
     // https://github.com/karma-runner/karma-sauce-launcher/issues/95#issuecomment-255020888
-    console.warn('Code-coverage is disabled for SauceLabs');
+    console.warn("Code-coverage is disabled for SauceLabs");
     return;
   }
 
-  config.reporters.push('coverage');
+  config.reporters.push("coverage");
   config.coverageReporter = {
     reporters: [
-      { type: 'text-summary' },
-      { type: 'lcov' }
+      { type: "text-summary" },
+      { type: "lcov" }
     ]
   };
 
   config.files = config.files.map(function (file) {
-    if (typeof file === 'string') {
-      file = file.replace(/^dist\/(.*)\.min\.js$/, 'dist/$1.coverage.js');
+    if (typeof file === "string") {
+      file = file.replace(/^dist\/(.*)\.min\.js$/, "dist/$1.coverage.js");
     }
     return file;
   });
@@ -92,13 +92,13 @@ function configureLocalBrowsers (config) {
   var isLinux = !isMac && !isWindows;
 
   if (isMac) {
-    config.browsers = ['Firefox', 'Chrome', 'Safari'];
+    config.browsers = ["Firefox", "Chrome", "Safari"];
   }
   else if (isLinux) {
-    config.browsers = ['Firefox', 'ChromeHeadless'];
+    config.browsers = ["Firefox", "ChromeHeadless"];
   }
   else if (isWindows) {
-    config.browsers = ['Firefox', 'Chrome', 'IE', 'Edge'];
+    config.browsers = ["Firefox", "Chrome", "IE", "Edge"];
   }
 }
 
@@ -107,18 +107,18 @@ function configureLocalBrowsers (config) {
  * https://github.com/karma-runner/karma-sauce-launcher
  */
 function configureSauceLabs (config) {
-  var SAUCE = process.env.SAUCE === 'true';
+  var SAUCE = process.env.SAUCE === "true";
   var username = process.env.SAUCE_USERNAME;
   var accessKey = process.env.SAUCE_ACCESS_KEY;
 
   if (!SAUCE || !username || !accessKey) {
-    console.warn('SauceLabs is not enabled');
+    console.warn("SauceLabs is not enabled");
     return;
   }
 
-  var project = require('./package.json');
-  var testName = project.name + ' v' + project.version;
-  var build = testName + ' Build #' + process.env.TRAVIS_JOB_NUMBER + ' @ ' + new Date();
+  var project = require("./package.json");
+  var testName = project.name + " v" + project.version;
+  var build = testName + " Build #" + process.env.TRAVIS_JOB_NUMBER + " @ " + new Date();
 
   config.sauceLabs = {
     build: build,
@@ -128,14 +128,14 @@ function configureSauceLabs (config) {
 
   config.customLaunchers = {
     SauceLabs_IE_11: {
-      base: 'SauceLabs',
-      platform: 'Windows 10',
-      browserName: 'internet explorer'
+      base: "SauceLabs",
+      platform: "Windows 10",
+      browserName: "internet explorer"
     },
     SauceLabs_IE_Edge: {
-      base: 'SauceLabs',
-      platform: 'Windows 10',
-      browserName: 'microsoftedge'
+      base: "SauceLabs",
+      platform: "Windows 10",
+      browserName: "microsoftedge"
     },
 
     // TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO FIXME TODO
@@ -151,18 +151,18 @@ function configureSauceLabs (config) {
     // },
 
     SauceLabs_Chrome_Latest: {
-      base: 'SauceLabs',
-      platform: 'Windows 10',
-      browserName: 'chrome'
+      base: "SauceLabs",
+      platform: "Windows 10",
+      browserName: "chrome"
     },
     SauceLabs_Firefox_Latest: {
-      base: 'SauceLabs',
-      platform: 'Windows 10',
-      browserName: 'firefox'
+      base: "SauceLabs",
+      platform: "Windows 10",
+      browserName: "firefox"
     },
   };
 
-  config.reporters.push('saucelabs');
+  config.reporters.push("saucelabs");
   config.browsers = Object.keys(config.customLaunchers);
   config.concurrency = 1;
   config.captureTimeout = 60000;
@@ -175,11 +175,11 @@ function configureSauceLabs (config) {
   // probably due to zero-byte files and special characters in the paths.
   // So, exclude these tests when running on SauceLabs.
   config.exclude = [
-    'test/specs/__*/**',
-    'test/specs/blank/**/*.spec.js',
-    'test/specs/circular*/**/*.spec.js',
-    'test/specs/empty/**/*.spec.js',
-    'test/specs/invalid/**/*.spec.js',
-    'test/specs/parsers/**/*.spec.js',
+    "test/specs/__*/**",
+    "test/specs/blank/**/*.spec.js",
+    "test/specs/circular*/**/*.spec.js",
+    "test/specs/empty/**/*.spec.js",
+    "test/specs/invalid/**/*.spec.js",
+    "test/specs/parsers/**/*.spec.js",
   ];
 }
