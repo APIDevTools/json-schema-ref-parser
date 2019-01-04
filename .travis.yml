@@ -11,10 +11,6 @@ node_js:
   - 8
   - 6
 
-env:
-  - KARMA=true
-  - SAUCE=true
-
 os:
   - linux
   - osx
@@ -44,6 +40,25 @@ after_success:
 
   jobs:
   include:
+    - name: Browser tests (Linux)
+      os: linux
+      script: npm run coverage:browser
+      addons:
+        firefox: latest
+        chrome: stable
+
+    - name: Browser tests (Mac)
+      os: osx
+      script: npm run coverage:browser
+      addons:
+        firefox: latest
+        chrome: stable
+
+    - name: Browser tests (Windows via SauceLabs)
+      os: linux
+      script: npm run coverage:browser
+      env: WINDOWS=true
+
     - stage: Deploy
       name: Publish to npm
       script: true
