@@ -25,7 +25,7 @@ before_script:
 
 script:
   - npm run test:typescript
-  - npm run coverage
+  - npm run coverage:node
 
 after_success:
   # concatenate all code-coverage data into a single file
