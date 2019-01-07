@@ -145,6 +145,7 @@ function configureSauceLabs (config) {
     "test/specs/invalid/**/*.spec.js",
     "test/specs/parsers/**/*.spec.js",
     "test/specs/substrings/**/*.spec.js",
-    "test/specs/yaml.spec.js"
+    "test/specs/yaml.spec.js",
+    "test/specs/root/**/*.spec.js"
   ];
 }

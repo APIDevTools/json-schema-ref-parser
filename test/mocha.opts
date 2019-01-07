@@ -1,4 +1,3 @@
---bail
 --async-only
 --require karma-host-environment
 --recursive
