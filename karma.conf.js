@@ -132,7 +132,7 @@ function configureSauceLabs (config) {
   config.browserDisconnectTolerance = 5,
   config.browserDisconnectTimeout = 60000;
   config.browserNoActivityTimeout = 60000;
-  config.logLevel = "debug";
+  // config.logLevel = "debug";
 
   // The following tests tend to fail on SauceLabs,
   // probably due to zero-byte files and special characters in the paths.
@@ -143,9 +143,6 @@ function configureSauceLabs (config) {
     "test/specs/circular*/**/*.spec.js",
     "test/specs/empty/**/*.spec.js",
     "test/specs/invalid/**/*.spec.js",
-    "test/specs/parsers/**/*.spec.js",
-    // "test/specs/substrings/**/*.spec.js",
-    // "test/specs/yaml.spec.js",
-    // "test/specs/root/**/*.spec.js"
+    "test/specs/parsers/**/*.spec.js"
   ];
 }
