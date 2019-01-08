@@ -28,7 +28,7 @@ module.exports = function (karma) {
     ]
   };
 
-  // configureCodeCoverage(config);
+  configureCodeCoverage(config);
   configureBrowsers(config);
 
   console.log("Karma Config:\n", JSON.stringify(config, null, 2));
@@ -129,10 +129,10 @@ function configureSauceLabs (config) {
   config.browsers = Object.keys(config.customLaunchers);
   // config.concurrency = 1;
   config.captureTimeout = 60000;
-  config.browserDisconnectTolerance = 25,
+  config.browserDisconnectTolerance = 5,
   config.browserDisconnectTimeout = 60000;
   config.browserNoActivityTimeout = 60000;
-  // config.logLevel = "debug";
+  config.logLevel = "debug";
 
   // The following tests tend to fail on SauceLabs,
   // probably due to zero-byte files and special characters in the paths.
