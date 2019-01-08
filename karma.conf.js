@@ -28,7 +28,7 @@ module.exports = function (karma) {
     ]
   };
 
-  configureCodeCoverage(config);
+  // configureCodeCoverage(config);
   configureBrowsers(config);
 
   console.log("Karma Config:\n", JSON.stringify(config, null, 2));
@@ -144,8 +144,8 @@ function configureSauceLabs (config) {
     "test/specs/empty/**/*.spec.js",
     "test/specs/invalid/**/*.spec.js",
     "test/specs/parsers/**/*.spec.js",
-    "test/specs/substrings/**/*.spec.js",
-    "test/specs/yaml.spec.js",
-    "test/specs/root/**/*.spec.js"
+    // "test/specs/substrings/**/*.spec.js",
+    // "test/specs/yaml.spec.js",
+    // "test/specs/root/**/*.spec.js"
   ];
 }
