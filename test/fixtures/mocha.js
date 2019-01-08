@@ -16,7 +16,7 @@
 
     // Most of our tests perform multiple AJAX requests,
     // so we need to increase the timeouts to allow for that
-    this.currentTest.timeout(isSlowEnvironment ? 10000 : 4000);
+    this.currentTest.timeout(isSlowEnvironment ? 20000 : 4000);
     this.currentTest.slow(1000);
   });
 
