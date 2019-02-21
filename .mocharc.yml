@@ -1,0 +1,16 @@
+# Mocha options
+# https://mochajs.org/#configuring-mocha-nodejs
+# https://github.com/mochajs/mocha/blob/master/example/config/.mocharc.yml
+
+spec:
+  - test/fixtures
+  - test/specs/**/*.parsed.js
+  - test/specs/**/*.dereferenced.js
+  - test/specs/**/*.bundled.js
+  - test/specs/**/*.spec.js
+
+require: karma-host-environment
+
+bail: true
+recursive: true
+async-only: true

@@ -1,9 +1,0 @@
---bail
---async-only
---require karma-host-environment
---recursive
-test/fixtures
-test/specs/**/*.parsed.js
-test/specs/**/*.dereferenced.js
-test/specs/**/*.bundled.js
-test/specs/**/*.spec.js
