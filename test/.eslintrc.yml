@@ -10,6 +10,7 @@ globals:
   $RefParser: true
   helper: true
   path: true
+  chai: true
 
   # karma-host-environment
   # https://www.npmjs.com/package/karma-host-environment
