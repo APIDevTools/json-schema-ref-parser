@@ -40,4 +40,4 @@ after_success:
   - cat ./coverage/lcov.info | node_modules/.bin/codacy-coverage -p .
 
   # send code-coverage data to Coveralls
-  - cat ./coverage/lcov.info | node_modules/coveralls/bin/coveralls.js
+  - cat ./coverage/lcov.info | coveralls
