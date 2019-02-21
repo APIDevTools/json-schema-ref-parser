@@ -47,7 +47,7 @@
     "test": "npm run test:node && npm run test:browser && npm run test:typescript && npm run lint",
     "test:node": "mocha",
     "test:browser": "npm run build && karma start --single-run",
-    "test:typescript": "tsc --noEmit --strict --lib esnext test/specs/typescript-definition.ts",
+    "test:typescript": "tsc --noEmit --strict --lib esnext test/specs/typescript-definition.spec.ts",
     "coverage": "npm run coverage:node && npm run coverage:browser",
     "coverage:node": "nyc --reporter=text --reporter=lcov --report-dir coverage/node mocha",
     "coverage:browser": "npm run build -- --coverage && npm run test:browser -- --coverage",
