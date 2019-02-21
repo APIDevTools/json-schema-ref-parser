@@ -190,6 +190,7 @@ declare namespace $RefParser {
       json?: ParserOptions | boolean
       yaml?: ParserOptions | boolean
       text?: (ParserOptions & { encoding?: string }) | boolean
+      [key: string]: ParserOptions | boolean | undefined
     }
 
     /**
