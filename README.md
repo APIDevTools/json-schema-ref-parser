@@ -2,16 +2,15 @@ JSON Schema $Ref Parser
 ============================
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
 
-[![Build Status](https://api.travis-ci.org/APIDevTools/json-schema-ref-parser.svg?branch=master)](https://travis-ci.org/APIDevTools/json-schema-ref-parser)
-[![Dependencies](https://david-dm.org/APIDevTools/json-schema-ref-parser.svg)](https://david-dm.org/APIDevTools/json-schema-ref-parser)
+[![Build Status](https://api.travis-ci.com/APIDevTools/json-schema-ref-parser.svg?branch=master)](https://travis-ci.com/APIDevTools/json-schema-ref-parser)
 [![Coverage Status](https://coveralls.io/repos/github/APIDevTools/json-schema-ref-parser/badge.svg?branch=master)](https://coveralls.io/github/APIDevTools/json-schema-ref-parser)
-[![Codacy Score](https://api.codacy.com/project/badge/d8abfe5e9a4044b89bd9f4b999d4a574)](https://www.codacy.com/public/JamesMessinger/json-schema-ref-parser)
-[![Inline docs](https://inch-ci.org/github/APIDevTools/json-schema-ref-parser.svg?branch=master&style=shields)](https://inch-ci.org/github/APIDevTools/json-schema-ref-parser)
 
 [![npm](https://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
+[![Dependencies](https://david-dm.org/APIDevTools/json-schema-ref-parser.svg)](https://david-dm.org/APIDevTools/json-schema-ref-parser)
 [![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
 
-[![Browser Compatibility](https://saucelabs.com/browser-matrix/json-schema-parser.svg)](https://saucelabs.com/u/json-schema-parser)
+
+[![OS and Browser Compatibility](https://apidevtools.org/img/badges/ci-badges-with-ie.svg)](https://travis-ci.com/APIDevTools/json-schema-ref-parser)
 
 
 The Problem:
@@ -105,7 +104,7 @@ var $RefParser = require('json-schema-ref-parser');
 Reference [`ref-parser.js`](dist/ref-parser.js) or [`ref-parser.min.js`](dist/ref-parser.min.js) in your HTML:
 
 ```html
-<script src="https://cdn.rawgit.com/JS-DevTools/json-schema-ref-parser/dist/ref-parser.js"></script>
+<script src="https://unpkg.com/json-schema-ref-parser/dist/ref-parser.min.js"></script>
 <script>
   $RefParser.dereference(mySchema)
     .then(function(schema) {
@@ -149,3 +148,11 @@ To build/test the project locally on your computer:
 License
 --------------------------
 JSON Schema $Ref Parser is 100% free and open-source, under the [MIT license](LICENSE). Use it however you want.
+
+Big Thanks To
+--------------------------
+Thanks to these awesome companies for their support of Open Source developers ❤
+
+[![Travis CI](https://jsdevtools.org/img/badges/travis-ci.svg)](https://travis-ci.com)
+[![SauceLabs](https://jsdevtools.org/img/badges/sauce-labs.svg)](https://saucelabs.com)
+[![Coveralls](https://jsdevtools.org/img/badges/coveralls.svg)](https://coveralls.io)
