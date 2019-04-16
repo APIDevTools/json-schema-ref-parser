@@ -14,7 +14,7 @@ var myResolver = {
 
   canRead: /^mongodb:/i,
 
-  read: function(file, callback) {
+  read: function(file, callback, $refs) {
     MongoClient.connect(file.url, function(err, db) {
       if (err) {
         callback(err);
@@ -53,8 +53,7 @@ canRead: function(file) {
 }
 ```
 
-When using the function form, the `file` parameter is a [file info object](file-info-object.md), which contains information about the file being resolved.
-
+When using the function form, the `file` parameter is a [file info object](file-info-object.md), which contains information about the file being resolved. The `$refs` parameter is a [`$Refs`](../refs.md) object, which allows your resolver to determine context (ex. `$refs._root$Ref.path` can be used to determine the relative path your resolver is operating from).
 
 #### The `read` method
 This is where the real work of a resolver happens.  The `read` method accepts the same [file info object](file-info-object.md) as the `canRead` function, but rather than returning a boolean value, the `read` method should return the contents of the file.  The file contents should be returned in as raw a form as possible, such as a string or a byte array.  Any further parsing or processing should be done by [parsers](parsers.md).
