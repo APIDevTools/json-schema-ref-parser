@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var name = {
+  let name = {
     required: [
       "first",
       "last"

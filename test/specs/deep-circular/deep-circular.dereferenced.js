@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var name = {
+  let name = {
     required: [
       "first",
       "last"
@@ -42,7 +42,7 @@
     title: "Deep Schema",
     type: "object",
     definitions: {
-      name: name
+      name
     },
     properties: {
       level1: {
@@ -69,21 +69,21 @@
                     ],
                     type: "object",
                     properties: {
-                      name: name,
+                      name,
                       level5: {
                         required: [
                           "name"
                         ],
                         type: "object",
                         properties: {
-                          name: name,
+                          name,
                           level6: {
                             required: [
                               "name"
                             ],
                             type: "object",
                             properties: {
-                              name: name,
+                              name,
                               level7: {
                                 required: [
                                   "name"
@@ -126,14 +126,14 @@
                                                         ],
                                                         type: "object",
                                                         properties: {
-                                                          name: name,
+                                                          name,
                                                           level14: {
                                                             required: [
                                                               "name"
                                                             ],
                                                             type: "object",
                                                             properties: {
-                                                              name: name,
+                                                              name,
                                                               level15: {
                                                                 required: [
                                                                   "name"
@@ -146,7 +146,7 @@
                                                                     ],
                                                                     type: "object",
                                                                     properties: {
-                                                                      name: name,
+                                                                      name,
                                                                       level17: {
                                                                         required: [
                                                                           "name"
@@ -189,21 +189,21 @@
                                                                                                 ],
                                                                                                 type: "object",
                                                                                                 properties: {
-                                                                                                  name: name,
+                                                                                                  name,
                                                                                                   level24: {
                                                                                                     required: [
                                                                                                       "name"
                                                                                                     ],
                                                                                                     type: "object",
                                                                                                     properties: {
-                                                                                                      name: name,
+                                                                                                      name,
                                                                                                       level25: {
                                                                                                         required: [
                                                                                                           "name"
                                                                                                         ],
                                                                                                         type: "object",
                                                                                                         properties: {
-                                                                                                          name: name,
+                                                                                                          name,
                                                                                                           level26: {
                                                                                                             required: [
                                                                                                               "name"
@@ -228,16 +228,16 @@
                                                                                                                         ],
                                                                                                                         type: "object",
                                                                                                                         properties: {
-                                                                                                                          name: name
+                                                                                                                          name
                                                                                                                         }
                                                                                                                       },
-                                                                                                                      name: name
+                                                                                                                      name
                                                                                                                     }
                                                                                                                   },
-                                                                                                                  name: name
+                                                                                                                  name
                                                                                                                 }
                                                                                                               },
-                                                                                                              name: name
+                                                                                                              name
                                                                                                             }
                                                                                                           }
                                                                                                         }
@@ -246,49 +246,49 @@
                                                                                                   }
                                                                                                 }
                                                                                               },
-                                                                                              name: name
+                                                                                              name
                                                                                             }
                                                                                           },
-                                                                                          name: name
+                                                                                          name
                                                                                         }
                                                                                       },
-                                                                                      name: name
+                                                                                      name
                                                                                     }
                                                                                   },
-                                                                                  name: name
+                                                                                  name
                                                                                 }
                                                                               },
-                                                                              name: name
+                                                                              name
                                                                             }
                                                                           },
-                                                                          name: name
+                                                                          name
                                                                         }
                                                                       }
                                                                     }
                                                                   },
-                                                                  name: name
+                                                                  name
                                                                 }
                                                               }
                                                             }
                                                           }
                                                         }
                                                       },
-                                                      name: name
+                                                      name
                                                     }
                                                   },
-                                                  name: name
+                                                  name
                                                 }
                                               },
-                                              name: name
+                                              name
                                             }
                                           },
-                                          name: name
+                                          name
                                         }
                                       },
-                                      name: name
+                                      name
                                     }
                                   },
-                                  name: name
+                                  name
                                 }
                               }
                             }
@@ -297,16 +297,16 @@
                       }
                     }
                   },
-                  name: name
+                  name
                 }
               },
-              name: name
+              name
             }
           },
-          name: name
+          name
         }
       },
-      name: name
+      name
     },
   };
 

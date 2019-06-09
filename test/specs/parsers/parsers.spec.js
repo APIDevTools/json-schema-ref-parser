@@ -21,7 +21,7 @@ describe("References to non-JSON files", function () {
   ));
 
   it("should dereference successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/parsers/parsers.yaml"))
       .then(function (schema) {
@@ -53,7 +53,7 @@ describe("References to non-JSON files", function () {
 
           // Parse all non-YAML files as binary
           binary: {
-            canParse: function (file) {
+            canParse (file) {
               return file.url.substr(-5) !== ".yaml";
             }
           }
@@ -103,11 +103,11 @@ describe("References to non-JSON files", function () {
         parse: {
           // A custom parser that returns the contents of ".foo" files, in reverse
           reverseFooParser: {
-            canParse: function (file) {
+            canParse (file) {
               return file.url.substr(-4) === ".foo";
             },
 
-            parse: function (file) {
+            parse (file) {
               return file.data.toString().split("").reverse().join("");
             }
           }
@@ -127,8 +127,8 @@ describe("References to non-JSON files", function () {
           reverseFooParser: {
             canParse: /\.FOO$/i,
 
-            parse: function (file, callback) {
-              var reversed = file.data.toString().split("").reverse().join("");
+            parse (file, callback) {
+              let reversed = file.data.toString().split("").reverse().join("");
               callback(null, reversed);
             }
           }
@@ -148,9 +148,9 @@ describe("References to non-JSON files", function () {
           reverseFooParser: {
             canParse: [".foo"],
 
-            parse: function (file) {
+            parse (file) {
               return new Promise(function (resolve, reject) {
-                var reversed = file.data.toString().split("").reverse().join("");
+                let reversed = file.data.toString().split("").reverse().join("");
                 resolve(reversed);
               });
             }
@@ -174,7 +174,7 @@ describe("References to non-JSON files", function () {
 
             canParse: /\.(md|html|css|png)$/i,
 
-            parse: function (file, callback) {
+            parse (file, callback) {
               callback("BOMB!!!");
             }
           }

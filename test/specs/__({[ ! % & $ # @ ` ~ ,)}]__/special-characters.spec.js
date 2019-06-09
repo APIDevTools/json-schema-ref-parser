@@ -2,7 +2,7 @@ describe("File names with special characters", function () {
   "use strict";
 
   it("should parse successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.yaml"))
       .then(function (schema) {
@@ -19,7 +19,7 @@ describe("File names with special characters", function () {
   ));
 
   it("should dereference successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.yaml"))
       .then(function (schema) {
@@ -32,7 +32,7 @@ describe("File names with special characters", function () {
   });
 
   it("should bundle successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/__({[ ! % & $ # @ ` ~ ,)}]__/__({[ ! % & $ # @ ` ~ ,)}]__.yaml"))
       .then(function (schema) {

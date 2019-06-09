@@ -3,11 +3,11 @@ describe("$Refs object", function () {
 
   describe("paths", function () {
     it("should only contain the main file when calling `parse()`", function () {
-      var parser = new $RefParser();
+      let parser = new $RefParser();
       return parser
         .parse(path.abs("specs/external/external.yaml"))
         .then(function (schema) {
-          var paths = parser.$refs.paths();
+          let paths = parser.$refs.paths();
           expect(paths).to.have.same.members([
             path.abs("specs/external/external.yaml")
           ]);
@@ -15,13 +15,13 @@ describe("$Refs object", function () {
     });
 
     it("should contain all files when calling `resolve()`", function () {
-      var parser = new $RefParser();
+      let parser = new $RefParser();
       return parser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
           expect($refs).to.equal(parser.$refs);
 
-          var paths = $refs.paths();
+          let paths = $refs.paths();
           expect(paths).to.have.same.members([
             path.abs("specs/external/external.yaml"),
             path.abs("specs/external/definitions/definitions.json"),
@@ -35,7 +35,7 @@ describe("$Refs object", function () {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
-          var paths = $refs.paths("file");
+          let paths = $refs.paths("file");
           if (host.node) {
             expect(paths).to.have.same.members([
               path.abs("specs/external/external.yaml"),
@@ -54,7 +54,7 @@ describe("$Refs object", function () {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
-          var paths = $refs.paths(["http"]);
+          let paths = $refs.paths(["http"]);
           if (host.browser) {
             expect(paths).to.have.same.members([
               path.url("specs/external/external.yaml"),
@@ -83,45 +83,45 @@ describe("$Refs object", function () {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
-          var expected = {};
+          let expected = {};
           expected[path.abs("specs/external/external.yaml")] = helper.parsed.external.schema;
           expected[path.abs("specs/external/definitions/definitions.json")] = helper.parsed.external.definitions;
           expected[path.abs("specs/external/definitions/name.yaml")] = helper.parsed.external.name;
           expected[path.abs("specs/external/definitions/required-string.yaml")] = helper.parsed.external.requiredString;
 
-          var values = $refs.values();
+          let values = $refs.values();
           expect(values).to.deep.equal(expected);
         });
     });
 
     it("should return the paths and values of all dereferenced files", function () {
-      var parser = new $RefParser();
+      let parser = new $RefParser();
       return parser
         .dereference(path.abs("specs/external/external.yaml"))
         .then(function () {
-          var expected = {};
+          let expected = {};
           expected[path.abs("specs/external/external.yaml")] = helper.dereferenced.external;
           expected[path.abs("specs/external/definitions/definitions.json")] = helper.dereferenced.external.definitions;
           expected[path.abs("specs/external/definitions/name.yaml")] = helper.dereferenced.external.definitions.name;
           expected[path.abs("specs/external/definitions/required-string.yaml")] = helper.dereferenced.external.definitions["required string"];
 
-          var values = parser.$refs.values();
+          let values = parser.$refs.values();
           expect(values).to.deep.equal(expected);
         });
     });
 
     it("should return the paths and values of all bundled files", function () {
-      var parser = new $RefParser();
+      let parser = new $RefParser();
       return parser
         .bundle(path.abs("specs/external/external.yaml"))
         .then(function () {
-          var expected = {};
+          let expected = {};
           expected[path.abs("specs/external/external.yaml")] = helper.bundled.external;
           expected[path.abs("specs/external/definitions/definitions.json")] = helper.bundled.external.definitions;
           expected[path.abs("specs/external/definitions/name.yaml")] = helper.bundled.external.definitions.name;
           expected[path.abs("specs/external/definitions/required-string.yaml")] = helper.bundled.external.definitions["required string"];
 
-          var values = parser.$refs.values();
+          let values = parser.$refs.values();
           expect(values).to.deep.equal(expected);
         });
     });
@@ -130,9 +130,9 @@ describe("$Refs object", function () {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
-          var values = $refs.values("file");
+          let values = $refs.values("file");
           if (host.node) {
-            var expected = {};
+            let expected = {};
             expected[path.abs("specs/external/external.yaml")] = helper.parsed.external.schema;
             expected[path.abs("specs/external/definitions/definitions.json")] = helper.parsed.external.definitions;
             expected[path.abs("specs/external/definitions/name.yaml")] = helper.parsed.external.name;
@@ -151,9 +151,9 @@ describe("$Refs object", function () {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
-          var values = $refs.values(["http"]);
+          let values = $refs.values(["http"]);
           if (host.browser) {
-            var expected = {};
+            let expected = {};
             expected[path.url("specs/external/external.yaml")] = helper.parsed.external.schema;
             expected[path.url("specs/external/definitions/definitions.json")] = helper.parsed.external.definitions;
             expected[path.url("specs/external/definitions/name.yaml")] = helper.parsed.external.name;
@@ -228,7 +228,7 @@ describe("$Refs object", function () {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
-          var value = $refs.get("definitions/name.yaml");
+          let value = $refs.get("definitions/name.yaml");
           expect(value).to.deep.equal(helper.parsed.external.name);
         });
     });
@@ -237,7 +237,7 @@ describe("$Refs object", function () {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
-          var value = $refs.get("definitions/name.yaml#");
+          let value = $refs.get("definitions/name.yaml#");
           expect(value).to.deep.equal(helper.parsed.external.name);
         });
     });
@@ -307,7 +307,7 @@ describe("$Refs object", function () {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
-          var $ref = path.abs("specs/external/external.yaml") + "#/properties/name";
+          let $ref = path.abs("specs/external/external.yaml") + "#/properties/name";
           $refs.set($ref, { foo: "bar" });
           expect($refs.get("external.yaml#/properties/name")).to.deep.equal({ foo: "bar" });
         });

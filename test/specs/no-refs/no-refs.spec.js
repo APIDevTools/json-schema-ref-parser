@@ -2,7 +2,7 @@ describe("Schema without any $refs", function () {
   "use strict";
 
   it("should parse successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/no-refs/no-refs.yaml"))
       .then(function (schema) {
@@ -18,7 +18,7 @@ describe("Schema without any $refs", function () {
   ));
 
   it("should dereference successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/no-refs/no-refs.yaml"))
       .then(function (schema) {
@@ -31,7 +31,7 @@ describe("Schema without any $refs", function () {
   });
 
   it("should bundle successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/no-refs/no-refs.yaml"))
       .then(function (schema) {

@@ -6,7 +6,7 @@ describe("Schema with two external refs to the same value and internal ref befor
   "use strict";
 
   it("should parse successfully from an absolute path", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.abs("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
@@ -17,7 +17,7 @@ describe("Schema with two external refs to the same value and internal ref befor
   });
 
   it("should parse successfully from a relative path", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
@@ -28,7 +28,7 @@ describe("Schema with two external refs to the same value and internal ref befor
   });
 
   it("should parse successfully from a url", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.url("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
@@ -57,7 +57,7 @@ describe("Schema with two external refs to the same value and internal ref befor
   ));
 
   it("should dereference successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
@@ -82,7 +82,7 @@ describe("Schema with two external refs to the same value and internal ref befor
   });
 
   it("should bundle successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {

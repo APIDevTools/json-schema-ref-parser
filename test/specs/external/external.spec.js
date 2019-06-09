@@ -2,7 +2,7 @@ describe("Schema with external $refs", function () {
   "use strict";
 
   it("should parse successfully from an absolute path", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.abs("specs/external/external.yaml"))
       .then(function (schema) {
@@ -13,7 +13,7 @@ describe("Schema with external $refs", function () {
   });
 
   it("should parse successfully from a relative path", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/external/external.yaml"))
       .then(function (schema) {
@@ -24,7 +24,7 @@ describe("Schema with external $refs", function () {
   });
 
   it("should parse successfully from a url", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.url("specs/external/external.yaml"))
       .then(function (schema) {
@@ -59,7 +59,7 @@ describe("Schema with external $refs", function () {
   ));
 
   it("should dereference successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/external/external.yaml"))
       .then(function (schema) {
@@ -80,7 +80,7 @@ describe("Schema with external $refs", function () {
   });
 
   it("should bundle successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/external/external.yaml"))
       .then(function (schema) {

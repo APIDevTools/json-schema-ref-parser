@@ -1,7 +1,7 @@
 describe("HTTP options", function () {
   "use strict";
 
-  var windowOnError, testDone;
+  let windowOnError, testDone;
 
   beforeEach(function () {
     // Some browsers throw global errors on XHR errors
@@ -19,7 +19,7 @@ describe("HTTP options", function () {
   describe("http.headers", function () {
     it("should override default HTTP headers", function (done) {
       testDone = done;
-      var parser = new $RefParser();
+      let parser = new $RefParser();
 
       parser.parse("https://httpbin.org/headers", {
         resolve: { http: { headers: {
@@ -37,7 +37,7 @@ describe("HTTP options", function () {
     if (!(host.browser && host.browser.IE)) {
       it("should set custom HTTP headers", function (done) {
         testDone = done;
-        var parser = new $RefParser();
+        let parser = new $RefParser();
 
         parser.parse("https://httpbin.org/headers", {
           resolve: { http: { headers: {
@@ -69,7 +69,7 @@ describe("HTTP options", function () {
 
     it("should follow 5 redirects by default", function (done) {
       testDone = done;
-      var parser = new $RefParser();
+      let parser = new $RefParser();
 
       parser.parse("https://httpbin.org/redirect/5")
         .then(function (schema) {
@@ -81,7 +81,7 @@ describe("HTTP options", function () {
 
     it("should not follow 6 redirects by default", function (done) {
       testDone = done;
-      var parser = new $RefParser();
+      let parser = new $RefParser();
 
       parser.parse("https://httpbin.org/redirect/6")
         .then(function (schema) {
@@ -117,7 +117,7 @@ describe("HTTP options", function () {
 
     it("should follow 10 redirects if http.redirects = 10", function (done) {
       testDone = done;
-      var parser = new $RefParser();
+      let parser = new $RefParser();
 
       parser.parse("https://httpbin.org/redirect/10", {
         resolve: { http: { redirects: 10 }}
@@ -131,7 +131,7 @@ describe("HTTP options", function () {
 
     it("should not follow any redirects if http.redirects = 0", function (done) {
       testDone = done;
-      var parser = new $RefParser();
+      let parser = new $RefParser();
 
       parser.parse("https://httpbin.org/redirect/1", {
         resolve: { http: { redirects: 0 }}
@@ -166,7 +166,7 @@ describe("HTTP options", function () {
   describe("http.withCredentials", function () {
     it('should work by default with CORS "Access-Control-Allow-Origin: *"', function (done) {
       testDone = done;
-      var parser = new $RefParser();
+      let parser = new $RefParser();
 
       // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
       // This should work by-default.
@@ -182,7 +182,7 @@ describe("HTTP options", function () {
 
     it("should download successfully with http.withCredentials = false (default)", function (done) {
       testDone = done;
-      var parser = new $RefParser();
+      let parser = new $RefParser();
 
       // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
       // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
@@ -201,7 +201,7 @@ describe("HTTP options", function () {
     if (host.browser) {
       it("should throw error in browser if http.withCredentials = true", function (done) {
         testDone = done;
-        var parser = new $RefParser();
+        let parser = new $RefParser();
 
         // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
         // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)

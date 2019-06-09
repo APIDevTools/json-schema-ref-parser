@@ -2,7 +2,7 @@ describe("Schema with $refs to parts of external files", function () {
   "use strict";
 
   it("should parse successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/external-partial/external-partial.yaml"))
       .then(function (schema) {
@@ -21,7 +21,7 @@ describe("Schema with $refs to parts of external files", function () {
   ));
 
   it("should dereference successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/external-partial/external-partial.yaml"))
       .then(function (schema) {
@@ -38,7 +38,7 @@ describe("Schema with $refs to parts of external files", function () {
   });
 
   it("should bundle successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/external-partial/external-partial.yaml"))
       .then(function (schema) {

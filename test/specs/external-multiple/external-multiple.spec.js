@@ -2,7 +2,7 @@ describe("Schema with multiple external $refs to different parts of a file", fun
   "use strict";
 
   it("should parse successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.abs("specs/external-multiple/external-multiple.yaml"))
       .then(function (schema) {
@@ -19,7 +19,7 @@ describe("Schema with multiple external $refs to different parts of a file", fun
   ));
 
   it("should dereference successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/external-multiple/external-multiple.yaml"))
       .then(function (schema) {
@@ -35,7 +35,7 @@ describe("Schema with multiple external $refs to different parts of a file", fun
   });
 
   it("should bundle successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/external-multiple/external-multiple.yaml"))
       .then(function (schema) {

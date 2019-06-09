@@ -2,7 +2,7 @@ describe("Schema with a top-level (root) $ref", function () {
   "use strict";
 
   it("should parse successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/root/root.yaml"))
       .then(function (schema) {
@@ -21,7 +21,7 @@ describe("Schema with a top-level (root) $ref", function () {
   ));
 
   it("should dereference successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/root/root.yaml"))
       .then(function (schema) {
@@ -37,7 +37,7 @@ describe("Schema with a top-level (root) $ref", function () {
   });
 
   it("should bundle successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/root/root.yaml"))
       .then(function (schema) {

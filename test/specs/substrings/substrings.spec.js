@@ -2,7 +2,7 @@ describe("$refs that are substrings of each other", function () {
   "use strict";
 
   it("should parse successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/substrings/substrings.yaml"))
       .then(function (schema) {
@@ -20,7 +20,7 @@ describe("$refs that are substrings of each other", function () {
   ));
 
   it("should dereference successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/substrings/substrings.yaml"))
       .then(function (schema) {
@@ -38,7 +38,7 @@ describe("$refs that are substrings of each other", function () {
   });
 
   it("should bundle successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/substrings/substrings.yaml"))
       .then(function (schema) {

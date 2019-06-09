@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var path;
+  let path;
   if (host.node) {
     path = filesystemPathHelpers();
   }
@@ -15,9 +15,9 @@
    * Helper functions for getting local filesystem paths in various formats
    */
   function filesystemPathHelpers () {
-    var _path = require("path");
-    var _url = require("url");
-    var _testsDir = _path.resolve(__dirname, "..");
+const let _path = require("path");
+const let _url = require("url");
+    let _testsDir = _path.resolve(__dirname, "..");
 
     // Run all tests from the "test" directory
     process.chdir(_path.join(__dirname, ".."));
@@ -26,14 +26,14 @@
       /**
        * Returns the relative path of a file in the "test" directory
        */
-      rel: function (file) {
+      rel (file) {
         return _path.normalize(file);
       },
 
       /**
        * Returns the absolute path of a file in the "test" directory
        */
-      abs: function (file) {
+      abs (file) {
         file = _path.join(_testsDir, file || _path.sep);
         return file;
       },
@@ -42,17 +42,17 @@
        * Returns the path of a file in the "test" directory as a URL.
        * (e.g. "file://path/to/json-schema-ref-parser/test/files...")
        */
-      url: function (file) {
-        var pathname = path.abs(file);
+      url (file) {
+        let pathname = path.abs(file);
 
         if (host.os.windows) {
           pathname = pathname.replace(/\\/g, "/");  // Convert Windows separators to URL separators
         }
 
-        var url = _url.format({
+        let url = _url.format({
           protocol: "file:",
           slashes: true,
-          pathname: pathname
+          pathname
         });
 
         return url;
@@ -61,7 +61,7 @@
       /**
        * Returns the absolute path of the current working directory.
        */
-      cwd: function () {
+      cwd () {
         return _path.join(process.cwd(), _path.sep);
       }
     };
@@ -72,8 +72,8 @@
    */
   function urlPathHelpers () {
     // Get the URL of the "test" directory
-    var filename = document.querySelector('script[src*="fixtures/path.js"]').src;
-    var _testsDir = filename.substr(0, filename.indexOf("fixtures/path.js"));
+    let filename = document.querySelector('script[src*="fixtures/path.js"]').src;
+    let _testsDir = filename.substr(0, filename.indexOf("fixtures/path.js"));
 
     /**
      * URI-encodes the given file name
@@ -88,7 +88,7 @@
        *
        * NOTE: When running in Karma the absolute path is returned instead
        */
-      rel: function (file) {
+      rel (file) {
         // Encode special characters in paths
         file = encodePath(file);
 
@@ -107,7 +107,7 @@
       /**
        * Returns the absolute path of a file in the "test" directory
        */
-      abs: function (file) {
+      abs (file) {
         return _testsDir + encodePath(file);
       },
 
@@ -115,14 +115,14 @@
        * Returns the path of a file in the "test" directory as an absolute URL.
        * (e.g. "http://localhost/test/files/...")
        */
-      url: function (file) {
+      url (file) {
         return path.abs(file);
       },
 
       /**
        * Returns the path of the current page.
        */
-      cwd: function () {
+      cwd () {
         return location.href;
       }
     };

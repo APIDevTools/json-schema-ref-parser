@@ -2,7 +2,7 @@ describe("Object sources with file paths", function () {
   "use strict";
 
   it("should dereference a single object", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(
         // This file doesn't actually need to exist. But its path will be used to resolve external $refs
@@ -19,7 +19,7 @@ describe("Object sources with file paths", function () {
         expect(schema).to.deep.equal(helper.dereferenced.internal);
 
         // The schema path should match the one we pass-in
-        var expectedPaths = [
+        let expectedPaths = [
           path.abs("path/that/does/not/exist.yaml")
         ];
         expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
@@ -36,7 +36,7 @@ describe("Object sources with file paths", function () {
   });
 
   it("should dereference an object that references external files", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(
         // This file doesn't actually need to exist. But its path will be used to resolve external $refs
@@ -54,7 +54,7 @@ describe("Object sources with file paths", function () {
 
         // The schema path should match the one we passed-in.
         // All other paths should be the actual paths of referenced files.
-        var expectedPaths = [
+        let expectedPaths = [
           path.abs("specs/object-source-with-path/schema-file-that-does-not-exist.yaml"),
           path.abs("specs/object-source-with-path/definitions/definitions.json"),
           path.abs("specs/object-source-with-path/definitions/name.yaml"),
@@ -77,7 +77,7 @@ describe("Object sources with file paths", function () {
   });
 
   it("should bundle an object that references external files", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(
         // This file doesn't actually need to exist. But its path will be used to resolve external $refs
@@ -95,7 +95,7 @@ describe("Object sources with file paths", function () {
 
         // The schema path should match the one we passed-in.
         // All other paths should be the actual paths of referenced files.
-        var expectedPaths = [
+        let expectedPaths = [
           path.abs("specs/object-source-with-path/schema-file-that-does-not-exist.yaml"),
           path.abs("specs/object-source-with-path/definitions/definitions.json"),
           path.abs("specs/object-source-with-path/definitions/name.yaml"),

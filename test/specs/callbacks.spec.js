@@ -12,7 +12,7 @@ describe("Callback & Promise syntax", function () {
 
   function testCallbackSuccess (method) {
     return function (done) {
-      var parser = new $RefParser();
+      let parser = new $RefParser();
       parser[method](path.rel("specs/internal/internal.yaml"), function (err, result) {
         try {
           expect(err).to.be.null;
@@ -50,7 +50,7 @@ describe("Callback & Promise syntax", function () {
 
   function testPromiseSuccess (method) {
     return function () {
-      var parser = new $RefParser();
+      let parser = new $RefParser();
       return parser[method](path.rel("specs/internal/internal.yaml"))
         .then(function (result) {
           expect(result).to.be.an("object").and.ok;

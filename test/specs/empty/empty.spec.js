@@ -2,7 +2,7 @@ describe("Empty schema", function () {
   "use strict";
 
   it("should parse successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/empty/empty.json"))
       .then(function (schema) {
@@ -19,7 +19,7 @@ describe("Empty schema", function () {
   ));
 
   it("should dereference successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/empty/empty.json"))
       .then(function (schema) {
@@ -34,7 +34,7 @@ describe("Empty schema", function () {
   });
 
   it("should bundle successfully", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/empty/empty.json"))
       .then(function (schema) {

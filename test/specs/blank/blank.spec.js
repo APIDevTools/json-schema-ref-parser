@@ -1,7 +1,7 @@
 describe("Blank files", function () {
   "use strict";
 
-  var windowOnError, testDone;
+  let windowOnError, testDone;
 
   beforeEach(function () {
     // Some old Webkit browsers throw an error when downloading zero-byte files.

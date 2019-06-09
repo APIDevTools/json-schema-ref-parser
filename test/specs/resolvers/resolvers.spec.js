@@ -44,7 +44,7 @@ describe("options.resolve", function () {
           foo: {
             canRead: /^foo\:\/\//i,
 
-            read: function (file) {
+            read (file) {
               return { bar: { baz: "hello world" }};
             }
           }
@@ -63,7 +63,7 @@ describe("options.resolve", function () {
           foo: {
             canRead: /^foo\:\/\//i,
 
-            read: function (file, callback) {
+            read (file, callback) {
               callback(null, { bar: { baz: "hello world" }});
             }
           }
@@ -83,7 +83,7 @@ describe("options.resolve", function () {
             foo: {
               canRead: /^foo\:\/\//i,
 
-              read: function (file) {
+              read (file) {
                 return Promise.resolve({ bar: { baz: "hello world" }});
               }
             }
@@ -105,7 +105,7 @@ describe("options.resolve", function () {
 
             canRead: true,
 
-            read: function (file) {
+            read (file) {
               throw new Error("BOMB!!!");
             }
           },

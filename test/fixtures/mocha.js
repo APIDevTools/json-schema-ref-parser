@@ -12,7 +12,7 @@
 
   beforeEach(function () {
     // Flag TravisCI and SauceLabs as being very slow environments
-    var isSlowEnvironment = host.env.CI || host.karma;
+    let isSlowEnvironment = host.env.CI || host.karma;
 
     // Most of our tests perform multiple AJAX requests,
     // so we need to increase the timeouts to allow for that

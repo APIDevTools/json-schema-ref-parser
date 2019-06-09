@@ -2,7 +2,7 @@ describe("Object sources (instead of file paths)", function () {
   "use strict";
 
   it("should dereference a single object", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(helper.cloneDeep(helper.parsed.internal))
       .then(function (schema) {
@@ -10,7 +10,7 @@ describe("Object sources (instead of file paths)", function () {
         expect(schema).to.deep.equal(helper.dereferenced.internal);
 
         // The schema path should be the current directory
-        var expectedPaths = [
+        let expectedPaths = [
           path.cwd()
         ];
         expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
@@ -27,7 +27,7 @@ describe("Object sources (instead of file paths)", function () {
   });
 
   it("should dereference an object that references external files", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .dereference(helper.cloneDeep(helper.parsed.objectSource.schema))
       .then(function (schema) {
@@ -35,7 +35,7 @@ describe("Object sources (instead of file paths)", function () {
         expect(schema).to.deep.equal(helper.dereferenced.objectSource);
 
         // The schema path should be the current directory, and all other paths should be absolute
-        var expectedPaths = [
+        let expectedPaths = [
           path.cwd(),
           path.abs("specs/object-source/definitions/definitions.json"),
           path.abs("specs/object-source/definitions/name.yaml"),
@@ -58,7 +58,7 @@ describe("Object sources (instead of file paths)", function () {
   });
 
   it("should bundle an object that references external files", function () {
-    var parser = new $RefParser();
+    let parser = new $RefParser();
     return parser
       .bundle(helper.cloneDeep(helper.parsed.objectSource.schema))
       .then(function (schema) {
@@ -66,7 +66,7 @@ describe("Object sources (instead of file paths)", function () {
         expect(schema).to.deep.equal(helper.bundled.objectSource);
 
         // The schema path should be the current directory, and all other paths should be absolute
-        var expectedPaths = [
+        let expectedPaths = [
           path.cwd(),
           path.abs("specs/object-source/definitions/definitions.json"),
           path.abs("specs/object-source/definitions/name.yaml"),
