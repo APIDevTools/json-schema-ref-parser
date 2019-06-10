@@ -51,7 +51,7 @@ JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/d
 - Can [dereference](https://apidevtools.org/json-schema-ref-parser/docs/ref-parser.html#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
 - Supports [circular references](https://apidevtools.org/json-schema-ref-parser/docs/#circular-refs), nested references, back-references, and cross-references between files
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object instance
-- [Tested](https://apidevtools.org/json-schema-ref-parser/test/) in Node, io.js, and all major web browsers on Windows, Mac, and Linux
+- [Tested](https://travis-ci.com/APIDevTools/json-schema-ref-parser) in Node and all major web browsers on Windows, Mac, and Linux
 
 
 Example
@@ -140,9 +140,6 @@ To build/test the project locally on your computer:
 
 4. __Run the tests__<br>
 `npm test`
-
-5. __Start the local web server__<br>
-`npm start` (then browse to [http://localhost:8080/test/](http://localhost:8080/test/))
 
 
 License

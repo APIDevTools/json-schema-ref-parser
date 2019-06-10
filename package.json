@@ -52,9 +52,8 @@
     "coverage:node": "nyc --reporter=text --reporter=lcov --report-dir coverage/node mocha",
     "coverage:browser": "npm run build -- --coverage && npm run test:browser -- --coverage",
     "upgrade": "npm-check -u",
-    "bump": "bump --prompt --grep dist/* --tag --push --all",
-    "release": "npm run upgrade && npm test && npm run bump",
-    "start": "http-server -c-1 -o http://localhost:8080/test/"
+    "bump": "bump --prompt --tag --push --all",
+    "release": "npm run upgrade && npm test && npm run bump"
   },
   "devDependencies": {
     "@babel/polyfill": "^7.4.4",
@@ -64,7 +63,6 @@
     "coveralls": "^3.0.2",
     "eslint": "^5.12.0",
     "eslint-config-modular": "^7.0.0",
-    "http-server": "^0.11.1",
     "karma": "^4.0.0",
     "karma-chai": "^0.1.0",
     "karma-chrome-launcher": "^2.2.0",
