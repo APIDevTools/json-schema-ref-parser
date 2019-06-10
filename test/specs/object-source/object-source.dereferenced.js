@@ -1,3 +1,7 @@
+"use strict";
+
+const helper = require("../../fixtures/helper");
+
 helper.dereferenced.objectSource =
 {
   title: "Person",

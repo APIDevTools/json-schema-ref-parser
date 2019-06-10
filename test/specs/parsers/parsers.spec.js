@@ -1,6 +1,11 @@
-describe("References to non-JSON files", function () {
-  "use strict";
+"use strict";
 
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
+describe("References to non-JSON files", () => {
   it("should parse successfully", function () {
     return $RefParser
       .parse(path.rel("specs/parsers/parsers.yaml"))

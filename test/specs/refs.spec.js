@@ -1,6 +1,12 @@
-describe("$Refs object", function () {
-  "use strict";
+"use strict";
 
+const host = require("host-environment");
+const { expect } = require("chai");
+const $RefParser = require("../..");
+const helper = require("../fixtures/helper");
+const path = require("../fixtures/path");
+
+describe("$Refs object", () => {
   describe("paths", function () {
     it("should only contain the main file when calling `parse()`", function () {
       let parser = new $RefParser();

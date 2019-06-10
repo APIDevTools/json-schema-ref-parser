@@ -1,6 +1,11 @@
-describe("Schema with multiple external $refs to different parts of a file", function () {
-  "use strict";
+"use strict";
 
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
+describe("Schema with multiple external $refs to different parts of a file", () => {
   it("should parse successfully", function () {
     let parser = new $RefParser();
     return parser

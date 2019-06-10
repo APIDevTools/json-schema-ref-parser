@@ -1,6 +1,12 @@
-describe("Blank files", function () {
-  "use strict";
+"use strict";
 
+const host = require("host-environment");
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
+describe("Blank files", function () {
   let windowOnError, testDone;
 
   beforeEach(function () {

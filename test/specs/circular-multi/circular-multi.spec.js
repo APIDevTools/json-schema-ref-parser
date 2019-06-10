@@ -1,6 +1,11 @@
-describe("multiple circular $refs at the same depth in the schema", function () {
-  "use strict";
+"use strict";
 
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
+describe("multiple circular $refs at the same depth in the schema", () => {
   it("should bundle successfully", function () {
     let parser = new $RefParser();
 

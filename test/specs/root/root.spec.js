@@ -1,6 +1,11 @@
-describe("Schema with a top-level (root) $ref", function () {
-  "use strict";
+"use strict";
 
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
+describe("Schema with a top-level (root) $ref", () => {
   it("should parse successfully", function () {
     let parser = new $RefParser();
     return parser

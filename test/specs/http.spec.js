@@ -1,6 +1,10 @@
-describe("HTTP options", function () {
-  "use strict";
+"use strict";
 
+const host = require("host-environment");
+const { expect } = require("chai");
+const $RefParser = require("../..");
+
+describe("HTTP options", () => {
   let windowOnError, testDone;
 
   beforeEach(function () {

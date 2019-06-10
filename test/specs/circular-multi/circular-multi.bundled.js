@@ -1,3 +1,7 @@
+"use strict";
+
+const helper = require("../../fixtures/helper");
+
 helper.bundled.circularMulti = {
   $schema: "http://json-schema.org/draft-07/schema#",
   properties: {

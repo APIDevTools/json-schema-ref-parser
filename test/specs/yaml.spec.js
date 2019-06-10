@@ -1,6 +1,9 @@
-describe("YAML object", function () {
-  "use strict";
+"use strict";
 
+const { expect } = require("chai");
+const $RefParser = require("../..");
+
+describe("YAML object", () => {
   describe("parse", function () {
     it("should parse an object",
       function (done) {

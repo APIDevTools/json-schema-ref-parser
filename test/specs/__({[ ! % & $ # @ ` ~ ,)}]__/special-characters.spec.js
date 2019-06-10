@@ -1,6 +1,11 @@
-describe("File names with special characters", function () {
-  "use strict";
+"use strict";
 
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+const { expect } = require("chai");
+
+describe("File names with special characters", function () {
   it("should parse successfully", function () {
     let parser = new $RefParser();
     return parser

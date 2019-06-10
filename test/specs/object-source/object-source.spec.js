@@ -1,6 +1,11 @@
-describe("Object sources (instead of file paths)", function () {
-  "use strict";
+"use strict";
 
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
+describe("Object sources (instead of file paths)", () => {
   it("should dereference a single object", function () {
     let parser = new $RefParser();
     return parser

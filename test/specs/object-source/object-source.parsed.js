@@ -1,3 +1,8 @@
+"use strict";
+
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
 helper.parsed.objectSource =
 {
   schema: {

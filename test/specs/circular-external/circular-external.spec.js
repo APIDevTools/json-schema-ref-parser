@@ -1,6 +1,11 @@
-describe("Schema with circular (recursive) external $refs", function () {
-  "use strict";
+"use strict";
 
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
+describe("Schema with circular (recursive) external $refs", () => {
   it("should parse successfully", function () {
     let parser = new $RefParser();
     return parser
@@ -73,4 +78,3 @@ describe("Schema with circular (recursive) external $refs", function () {
       });
   });
 });
-

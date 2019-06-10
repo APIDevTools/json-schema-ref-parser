@@ -1,6 +1,11 @@
-describe("Callback & Promise syntax", function () {
-  "use strict";
+"use strict";
 
+const { expect } = require("chai");
+const $RefParser = require("../..");
+const helper = require("../fixtures/helper");
+const path = require("../fixtures/path");
+
+describe("Callback & Promise syntax", () => {
   ["parse", "resolve", "dereference", "bundle"].forEach(function (method) {
     describe(method + " method", function () {
       it("should call the callback function upon success", testCallbackSuccess(method));
@@ -75,4 +80,3 @@ describe("Callback & Promise syntax", function () {
     };
   }
 });
-

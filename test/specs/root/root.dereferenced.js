@@ -1,3 +1,7 @@
+"use strict";
+
+const helper = require("../../fixtures/helper");
+
 helper.dereferenced.root =
 {
   title: "Extending a root $ref",

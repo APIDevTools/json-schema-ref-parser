@@ -1,6 +1,11 @@
-describe("options.resolve", function () {
-  "use strict";
+"use strict";
 
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
+describe("options.resolve", () => {
   it('should not resolve external links if "resolve.external" is disabled', function () {
     return $RefParser
       .dereference(path.abs("specs/resolvers/resolvers.yaml"), { resolve: { external: false }})

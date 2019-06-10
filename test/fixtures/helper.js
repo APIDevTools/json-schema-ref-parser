@@ -1,27 +1,29 @@
-(function () {
-  "use strict";
+"use strict";
 
-  host.global.helper = {};
+const $RefParser = require("../..");
+const host = require("host-environment");
+const { expect } = require("chai");
 
+const helper = module.exports = {
   /**
    * Parsed JSON schemas
    */
-  helper.parsed = {};
+  parsed: {},
 
   /**
    * Dereferenced JSON schemas
    */
-  helper.dereferenced = {};
+  dereferenced: {},
 
   /**
    * Bundled JSON schemas
    */
-  helper.bundled = {};
+  bundled: {},
 
   /**
    * Throws an error if called.
    */
-  helper.shouldNotGetCalled = function shouldNotGetCalled (done) {
+  shouldNotGetCalled (done) {
     let err = new Error("This function should not have gotten called.");
     if (typeof done === "function") {
       return function (err2) {
@@ -36,7 +38,7 @@
     else {
       throw err;
     }
-  };
+  },
 
   /**
    * Tests the {@link $RefParser.resolve} method,
@@ -46,7 +48,7 @@
    * @param {...*} [params] - The expected resolved file paths and values
    * @returns {Function}
    */
-  helper.testResolve = function testResolve (filePath, params) {
+  testResolve (filePath, params) {
     let parsedSchema = arguments[2];
     let expectedFiles = [], expectedValues = [], actualFiles;
 
@@ -94,12 +96,12 @@
         })
         .catch(helper.shouldNotGetCalled(done));
     };
-  };
+  },
 
   /**
    * Converts Buffer objects to POJOs, so they can be compared using Chai
    */
-  helper.convertNodeBuffersToPOJOs = function convertNodeBuffersToPOJOs (value) {
+  convertNodeBuffersToPOJOs (value) {
     if (value && (value._isBuffer || (value.constructor && value.constructor.name === "Buffer"))) {
       // Convert Buffers to POJOs for comparison
       value = value.toJSON();
@@ -110,12 +112,12 @@
       }
     }
     return value;
-  };
+  },
 
   /**
    * Creates a deep clone of the given value.
    */
-  helper.cloneDeep = function cloneDeep (value) {
+  cloneDeep (value) {
     let clone = value;
     if (value && typeof (value) === "object") {
       clone = value instanceof Array ? [] : {};
@@ -125,6 +127,5 @@
       }
     }
     return clone;
-  };
-
-}());
+  },
+};

@@ -1,17 +1,17 @@
-(function () {
-  "use strict";
+"use strict";
 
-  helper.dereferenced.specialCharacters =
-    {
-      definitions: {
-        foo: {
-          type: "object",
-          description: "Testing file/folder names with spaces and special characters"
-        },
-        "__<({[ ! % & $ # @ + = ? \\ / \" ' ' ` ~ , ; : >)}]__": {
-          type: "object",
-          description: "Testing internal $refs with spaces and special characters"
-        }
-      }
-    };
-}());
+const helper = require("../../fixtures/helper");
+
+helper.dereferenced.specialCharacters =
+{
+  definitions: {
+    foo: {
+      type: "object",
+      description: "Testing file/folder names with spaces and special characters"
+    },
+    "__<({[ ! % & $ # @ + = ? \\ / \" ' ' ` ~ , ; : >)}]__": {
+      type: "object",
+      description: "Testing internal $refs with spaces and special characters"
+    }
+  }
+};

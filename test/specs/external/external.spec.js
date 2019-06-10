@@ -1,6 +1,11 @@
-describe("Schema with external $refs", function () {
-  "use strict";
+"use strict";
 
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
+describe("Schema with external $refs", () => {
   it("should parse successfully from an absolute path", function () {
     let parser = new $RefParser();
     return parser

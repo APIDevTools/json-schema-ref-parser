@@ -1,10 +1,15 @@
+"use strict";
+
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
 /**
  * This test is from PR #62
  * https://github.com/APIDevTools/json-schema-ref-parser/pull/62
  */
-describe("Schema with two external refs to the same value and internal ref before", function () {
-  "use strict";
-
+describe("Schema with two external refs to the same value and internal ref before", () => {
   it("should parse successfully from an absolute path", function () {
     let parser = new $RefParser();
     return parser

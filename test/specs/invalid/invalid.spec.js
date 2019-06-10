@@ -1,6 +1,12 @@
-describe("Invalid syntax", function () {
-  "use strict";
+"use strict";
 
+const host = require("host-environment");
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const helper = require("../../fixtures/helper");
+const path = require("../../fixtures/path");
+
+describe("Invalid syntax", () => {
   describe("in main file", function () {
     it("should throw an error for an invalid file path", function () {
       return $RefParser
