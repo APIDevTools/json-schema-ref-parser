@@ -85,36 +85,39 @@ $RefParser.dereference(mySchema)
 For more detailed examples, please see the [API Documentation](https://apidevtools.org/json-schema-ref-parser/docs/)
 
 
+
 Installation
 --------------------------
-#### Node
 Install using [npm](https://docs.npmjs.com/about-npm/):
 
 ```bash
 npm install json-schema-ref-parser
 ```
 
-Then require it in your code:
+
+
+Usage
+--------------------------
+When using Json-Schema-Ref-Parser in Node.js apps, you'll probably want to use **CommonJS** syntax:
 
 ```javascript
-var $RefParser = require('json-schema-ref-parser');
+const $RefParser = require("json-schema-ref-parser");
 ```
 
-#### Web Browsers
-Reference [`ref-parser.js`](dist/ref-parser.js) or [`ref-parser.min.js`](dist/ref-parser.min.js) in your HTML:
+When using a transpiler such as [Babel](https://babeljs.io/) or [TypeScript](https://www.typescriptlang.org/), or a bundler such as [Webpack](https://webpack.js.org/) or [Rollup](https://rollupjs.org/), you can use **ECMAScript modules** syntax instead:
 
-```html
-<script src="https://unpkg.com/json-schema-ref-parser/dist/ref-parser.min.js"></script>
-<script>
-  $RefParser.dereference(mySchema)
-    .then(function(schema) {
-      console.log(schema.definitions.person.properties.firstName);
-    })
-    .catch(function(err) {
-      console.error(err);
-    });
-</script>
+```javascript
+import $RefParser from "json-schema-ref-parser";
 ```
+
+
+
+Browser support
+--------------------------
+Json-Schema-Ref-Parser supports recent versions of every major web browser.  Older browsers may require [Babel](https://babeljs.io/) and/or [polyfills](https://babeljs.io/docs/en/next/babel-polyfill).
+
+To use Json-Schema-Ref-Parser in a browser, you'll need to use a bundling tool such as [Webpack](https://webpack.js.org/), [Rollup](https://rollupjs.org/), [Parcel](https://parceljs.org/), or [Browserify](http://browserify.org/). Some bundlers may require a bit of configuration, such as setting `browser: true` in [rollup-plugin-resolve](https://github.com/rollup/rollup-plugin-node-resolve).
+
 
 
 API Documentation

@@ -34,23 +34,17 @@
     "fs": false
   },
   "files": [
-    "dist/ref-parser.js",
-    "dist/ref-parser.js.map",
-    "dist/ref-parser.min.js",
-    "dist/ref-parser.min.js.map",
     "lib"
   ],
   "scripts": {
     "lint": "eslint lib test/fixtures test/specs",
-    "build": "simplifyify lib/index.js --outfile dist/ref-parser.js --standalone \\$RefParser --bundle --debug --minify",
-    "watch": "npm run build -- --watch",
     "test": "npm run test:node && npm run test:browser && npm run test:typescript && npm run lint",
     "test:node": "mocha",
-    "test:browser": "npm run build && karma start --single-run",
+    "test:browser": "karma start --single-run",
     "test:typescript": "tsc --noEmit --strict --lib esnext test/specs/typescript-definition.spec.ts",
     "coverage": "npm run coverage:node && npm run coverage:browser",
     "coverage:node": "nyc --reporter=text --reporter=lcov --report-dir coverage/node mocha",
-    "coverage:browser": "npm run build -- --coverage && npm run test:browser -- --coverage",
+    "coverage:browser": "npm run test:browser -- --coverage",
     "upgrade": "npm-check -u",
     "bump": "bump --prompt --tag --push --all",
     "release": "npm run upgrade && npm test && npm run bump"
