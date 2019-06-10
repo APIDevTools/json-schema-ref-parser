@@ -11,10 +11,6 @@ extends:
   - modular/node
   - modular/es6
 
-globals:
-  Promise: false
-  Symbol: false
-
 rules:
   # This rule erroneously flags functions that use the `arguments` object
   no-unused-vars: off

@@ -57,6 +57,7 @@
     "start": "http-server -c-1 -o http://localhost:8080/test/"
   },
   "devDependencies": {
+    "@babel/polyfill": "^7.4.4",
     "@types/json-schema": "^7.0.1",
     "@types/node": "^11.9.4",
     "chai": "^4.2.0",
