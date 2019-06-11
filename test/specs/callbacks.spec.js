@@ -7,7 +7,7 @@ const path = require("../utils/path");
 
 describe("Callback & Promise syntax", () => {
   ["parse", "resolve", "dereference", "bundle"].forEach(function (method) {
-    describe(method + " method", () => {
+    describe(method + " method", function () {
       it("should call the callback function upon success", testCallbackSuccess(method));
       it("should call the callback function upon failure", testCallbackError(method));
       it("should resolve the Promise upon success", testPromiseSuccess(method));

@@ -8,21 +8,8 @@ const helper = module.exports = {
   /**
    * Throws an error if called.
    */
-  shouldNotGetCalled (done) {
-    let err = new Error("This function should not have gotten called.");
-    if (typeof done === "function") {
-      return function (err2) {
-        if (err2 instanceof Error) {
-          done(err2);
-        }
-        else {
-          done(err);
-        }
-      };
-    }
-    else {
-      throw err;
-    }
+  shouldNotGetCalled () {
+    throw new Error("This function should not have gotten called.");
   },
 
   /**
@@ -42,44 +29,39 @@ const helper = module.exports = {
       expectedValues.push(arguments[i + 1]);
     }
 
-    return function (done) {
+    return async () => {
       let parser = new $RefParser();
-      parser
-        .resolve(filePath)
-        .then(function ($refs) {
-          expect(parser.schema).to.deep.equal(parsedSchema);
-          expect(parser.$refs).to.equal($refs);
+      let $refs = await parser.resolve(filePath);
 
-          // Resolved file paths
-          try {
-            expect((actualFiles = $refs.paths())).to.have.same.members(expectedFiles);
-            if (host.node) {
-              expect((actualFiles = $refs.paths(["file"]))).to.have.same.members(expectedFiles);
-              expect($refs.paths("http")).to.be.an("array").with.lengthOf(0);
-            }
-            else {
-              expect((actualFiles = $refs.paths(["http"]))).to.have.same.members(expectedFiles);
-              expect($refs.paths("file")).to.be.an("array").with.lengthOf(0);
-            }
-          }
-          catch (e) {
-            console.log("Expected Files:", JSON.stringify(expectedFiles, null, 2));
-            console.log("Actual Files:", JSON.stringify(actualFiles, null, 2));
-            throw e;
-          }
+      expect(parser.schema).to.deep.equal(parsedSchema);
+      expect(parser.$refs).to.equal($refs);
 
-          // Resolved values
-          let values = $refs.values();
-          expect(values).to.have.keys(expectedFiles);
-          expectedFiles.forEach(function (file, i) {
-            let actual = helper.convertNodeBuffersToPOJOs(values[file]);
-            let expected = expectedValues[i];
-            expect(actual).to.deep.equal(expected, file);
-          });
+      // Resolved file paths
+      try {
+        expect((actualFiles = $refs.paths())).to.have.same.members(expectedFiles);
+        if (host.node) {
+          expect((actualFiles = $refs.paths(["file"]))).to.have.same.members(expectedFiles);
+          expect($refs.paths("http")).to.be.an("array").with.lengthOf(0);
+        }
+        else {
+          expect((actualFiles = $refs.paths(["http"]))).to.have.same.members(expectedFiles);
+          expect($refs.paths("file")).to.be.an("array").with.lengthOf(0);
+        }
+      }
+      catch (e) {
+        console.log("Expected Files:", JSON.stringify(expectedFiles, null, 2));
+        console.log("Actual Files:", JSON.stringify(actualFiles, null, 2));
+        throw e;
+      }
 
-          done();
-        })
-        .catch(helper.shouldNotGetCalled(done));
+      // Resolved values
+      let values = $refs.values();
+      expect(values).to.have.keys(expectedFiles);
+      expectedFiles.forEach(function (file, i) {
+        let actual = helper.convertNodeBuffersToPOJOs(values[file]);
+        let expected = expectedValues[i];
+        expect(actual).to.deep.equal(expected, file);
+      });
     };
   },
 
