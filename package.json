@@ -65,7 +65,7 @@
     "npm-check": "^5.9.0",
     "nyc": "^14.1.1",
     "typescript": "^3.5.1",
-    "version-bump-prompt": "^5.0.1"
+    "version-bump-prompt": "^5.0.2"
   },
   "dependencies": {
     "call-me-maybe": "^1.0.1",
