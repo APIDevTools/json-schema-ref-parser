@@ -4,7 +4,7 @@ const { expect } = require("chai");
 const $RefParser = require("../../lib");
 
 describe("YAML object", () => {
-  describe("parse", function () {
+  describe("parse", () => {
     it("should parse an object",
       function (done) {
         let obj = $RefParser.YAML.parse(
@@ -52,7 +52,7 @@ describe("YAML object", () => {
     );
   });
 
-  describe("stringify", function () {
+  describe("stringify", () => {
     it("should stringify an object",
       function (done) {
         let yaml = $RefParser.YAML.stringify({

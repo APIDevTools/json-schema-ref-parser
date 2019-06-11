@@ -6,7 +6,7 @@ const helper = require("../../utils/helper");
 const path = require("../../utils/path");
 
 describe("Empty schema", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/empty/empty.json"))
@@ -23,7 +23,7 @@ describe("Empty schema", () => {
     path.abs("specs/empty/empty.json"), {}
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/empty/empty.json"))
@@ -38,7 +38,7 @@ describe("Empty schema", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/empty/empty.json"))
@@ -50,7 +50,7 @@ describe("Empty schema", () => {
       });
   });
 
-  it('should throw an error if "parse.json.allowEmpty" is disabled', function () {
+  it('should throw an error if "parse.json.allowEmpty" is disabled', () => {
     return $RefParser
       .parse(path.rel("specs/empty/empty.json"), { parse: { json: { allowEmpty: false }}})
       .then(helper.shouldNotGetCalled)

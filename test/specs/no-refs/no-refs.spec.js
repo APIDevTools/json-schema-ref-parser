@@ -7,7 +7,7 @@ const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 
 describe("Schema without any $refs", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/no-refs/no-refs.yaml"))
@@ -23,7 +23,7 @@ describe("Schema without any $refs", () => {
     path.abs("specs/no-refs/no-refs.yaml"), parsedSchema
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/no-refs/no-refs.yaml"))
@@ -36,7 +36,7 @@ describe("Schema without any $refs", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/no-refs/no-refs.yaml"))

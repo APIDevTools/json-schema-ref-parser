@@ -9,7 +9,7 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("Schema with internal $refs", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/internal/internal.yaml"))
@@ -25,7 +25,7 @@ describe("Schema with internal $refs", () => {
     path.abs("specs/internal/internal.yaml"), parsedSchema
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/internal/internal.yaml"))
@@ -46,7 +46,7 @@ describe("Schema with internal $refs", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/internal/internal.yaml"))

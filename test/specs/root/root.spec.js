@@ -9,7 +9,7 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("Schema with a top-level (root) $ref", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/root/root.yaml"))
@@ -28,7 +28,7 @@ describe("Schema with a top-level (root) $ref", () => {
     path.abs("specs/root/definitions/name.yaml"), parsedSchema.name
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/root/root.yaml"))
@@ -44,7 +44,7 @@ describe("Schema with a top-level (root) $ref", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/root/root.yaml"))

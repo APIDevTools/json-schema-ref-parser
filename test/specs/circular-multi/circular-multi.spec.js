@@ -6,7 +6,7 @@ const path = require("../../utils/path");
 const bundledSchema = require("./bundled");
 
 describe("multiple circular $refs at the same depth in the schema", () => {
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
 
     return parser

@@ -7,8 +7,8 @@ const helper = require("../../utils/helper");
 const path = require("../../utils/path");
 
 describe("Invalid syntax", () => {
-  describe("in main file", function () {
-    it("should throw an error for an invalid file path", function () {
+  describe("in main file", () => {
+    it("should throw an error for an invalid file path", () => {
       return $RefParser
         .dereference("this file does not exist")
         .then(helper.shouldNotGetCalled)
@@ -21,7 +21,7 @@ describe("Invalid syntax", () => {
         });
     });
 
-    it("should throw an error for an invalid YAML file", function () {
+    it("should throw an error for an invalid YAML file", () => {
       return $RefParser
         .dereference(path.rel("specs/invalid/invalid.yaml"))
         .then(helper.shouldNotGetCalled)
@@ -32,7 +32,7 @@ describe("Invalid syntax", () => {
         });
     });
 
-    it("should throw an error for an invalid JSON file", function () {
+    it("should throw an error for an invalid JSON file", () => {
       return $RefParser
         .dereference(path.rel("specs/invalid/invalid.json"))
         .then(helper.shouldNotGetCalled)
@@ -43,7 +43,7 @@ describe("Invalid syntax", () => {
         });
     });
 
-    it("should throw an error for an invalid JSON file with YAML disabled", function () {
+    it("should throw an error for an invalid JSON file with YAML disabled", () => {
       return $RefParser
         .dereference(path.rel("specs/invalid/invalid.json"), { parse: { yaml: false }})
         .then(helper.shouldNotGetCalled)
@@ -54,7 +54,7 @@ describe("Invalid syntax", () => {
         });
     });
 
-    it("should throw an error for an invalid YAML file with JSON and YAML disabled", function () {
+    it("should throw an error for an invalid YAML file with JSON and YAML disabled", () => {
       return $RefParser
         .dereference(path.rel("specs/invalid/invalid.yaml"), { parse: { yaml: false, json: false }})
         .then(helper.shouldNotGetCalled)
@@ -65,8 +65,8 @@ describe("Invalid syntax", () => {
     });
   });
 
-  describe("in referenced files", function () {
-    it("should throw an error for an invalid YAML file", function () {
+  describe("in referenced files", () => {
+    it("should throw an error for an invalid YAML file", () => {
       return $RefParser
         .dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }})
         .then(helper.shouldNotGetCalled)
@@ -77,7 +77,7 @@ describe("Invalid syntax", () => {
         });
     });
 
-    it("should throw an error for an invalid JSON file", function () {
+    it("should throw an error for an invalid JSON file", () => {
       return $RefParser
         .dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }})
         .then(helper.shouldNotGetCalled)
@@ -88,7 +88,7 @@ describe("Invalid syntax", () => {
         });
     });
 
-    it("should throw an error for an invalid JSON file with YAML disabled", function () {
+    it("should throw an error for an invalid JSON file with YAML disabled", () => {
       return $RefParser
         .dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, {
           parse: { yaml: false }
@@ -101,7 +101,7 @@ describe("Invalid syntax", () => {
         });
     });
 
-    it("should NOT throw an error for an invalid YAML file with JSON and YAML disabled", function () {
+    it("should NOT throw an error for an invalid YAML file with JSON and YAML disabled", () => {
       return $RefParser
         .dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, {
           parse: { yaml: false, json: false }

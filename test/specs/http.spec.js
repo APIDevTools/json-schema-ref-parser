@@ -20,7 +20,7 @@ describe("HTTP options", () => {
     host.global.onerror = windowOnError;
   });
 
-  describe("http.headers", function () {
+  describe("http.headers", () => {
     it("should override default HTTP headers", function (done) {
       testDone = done;
       let parser = new $RefParser();
@@ -57,7 +57,7 @@ describe("HTTP options", () => {
     }
   });
 
-  describe("http.redirect", function () {
+  describe("http.redirect", () => {
     if (host.karma && host.env.CI) {
       // These tests fail in Safari when running on Sauce Labs (they pass when running on Safari locally).
       // It gets an XHR error when trying to reach httpbin.org.
@@ -167,7 +167,7 @@ describe("HTTP options", () => {
     });
   });
 
-  describe("http.withCredentials", function () {
+  describe("http.withCredentials", () => {
     it('should work by default with CORS "Access-Control-Allow-Origin: *"', function (done) {
       testDone = done;
       let parser = new $RefParser();

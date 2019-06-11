@@ -9,7 +9,7 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("Schema with deeply-nested $refs", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/deep/deep.yaml"))
@@ -27,7 +27,7 @@ describe("Schema with deeply-nested $refs", () => {
     path.abs("specs/deep/definitions/required-string.yaml"), parsedSchema.requiredString
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/deep/deep.yaml"))
@@ -47,7 +47,7 @@ describe("Schema with deeply-nested $refs", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/deep/deep.yaml"))

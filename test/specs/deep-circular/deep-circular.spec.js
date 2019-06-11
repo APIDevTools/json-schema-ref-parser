@@ -9,7 +9,7 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("Schema with deeply-nested circular $refs", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/deep-circular/deep-circular.yaml"))
@@ -31,7 +31,7 @@ describe("Schema with deeply-nested circular $refs", () => {
     path.abs("specs/deep-circular/definitions/required-string.yaml"), parsedSchema.requiredString
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/deep-circular/deep-circular.yaml"))
@@ -52,7 +52,7 @@ describe("Schema with deeply-nested circular $refs", () => {
       });
   });
 
-  it('should throw an error if "options.$refs.circular" is false', function () {
+  it('should throw an error if "options.$refs.circular" is false', () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/deep-circular/deep-circular.yaml"), { dereference: { circular: false }})
@@ -75,7 +75,7 @@ describe("Schema with deeply-nested circular $refs", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/deep-circular/deep-circular.yaml"))

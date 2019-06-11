@@ -8,7 +8,7 @@ const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
 
 describe("References to non-JSON files", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     return $RefParser
       .parse(path.rel("specs/parsers/parsers.yaml"))
       .then(function (schema) {
@@ -27,7 +27,7 @@ describe("References to non-JSON files", () => {
     path.abs("specs/parsers/files/empty"), dereferencedSchema.defaultParsers.definitions.empty
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/parsers/parsers.yaml"))
@@ -42,7 +42,7 @@ describe("References to non-JSON files", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     return $RefParser
       .bundle(path.rel("specs/parsers/parsers.yaml"))
       .then(function (schema) {
@@ -51,7 +51,7 @@ describe("References to non-JSON files", () => {
       });
   });
 
-  it('should parse text as binary if "parse.text" is disabled', function () {
+  it('should parse text as binary if "parse.text" is disabled', () => {
     return $RefParser
       .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
@@ -77,7 +77,7 @@ describe("References to non-JSON files", () => {
       });
   });
 
-  it('should throw an error if "parse.text" and "parse.binary" are disabled', function () {
+  it('should throw an error if "parse.text" and "parse.binary" are disabled', () => {
     return $RefParser
       .dereference(path.rel("specs/parsers/parsers.yaml"), { parse: { text: false, binary: false }})
       .then(helper.shouldNotGetCalled)
@@ -87,7 +87,7 @@ describe("References to non-JSON files", () => {
       });
   });
 
-  it("should use a custom parser with static values", function () {
+  it("should use a custom parser with static values", () => {
     return $RefParser
       .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
@@ -104,7 +104,7 @@ describe("References to non-JSON files", () => {
       });
   });
 
-  it("should use a custom parser that returns a value", function () {
+  it("should use a custom parser that returns a value", () => {
     return $RefParser
       .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
@@ -126,7 +126,7 @@ describe("References to non-JSON files", () => {
       });
   });
 
-  it("should use a custom parser that calls a callback", function () {
+  it("should use a custom parser that calls a callback", () => {
     return $RefParser
       .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
@@ -147,7 +147,7 @@ describe("References to non-JSON files", () => {
       });
   });
 
-  it("should use a custom parser that returns a promise", function () {
+  it("should use a custom parser that returns a promise", () => {
     return $RefParser
       .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
@@ -170,7 +170,7 @@ describe("References to non-JSON files", () => {
       });
   });
 
-  it("should continue parsing if a custom parser fails", function () {
+  it("should continue parsing if a custom parser fails", () => {
     return $RefParser
       .dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {

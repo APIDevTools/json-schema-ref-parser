@@ -10,8 +10,8 @@ const dereferencedSchema = require("./external/dereferenced");
 const bundledSchema = require("./external/bundled");
 
 describe("$Refs object", () => {
-  describe("paths", function () {
-    it("should only contain the main file when calling `parse()`", function () {
+  describe("paths", () => {
+    it("should only contain the main file when calling `parse()`", () => {
       let parser = new $RefParser();
       return parser
         .parse(path.abs("specs/external/external.yaml"))
@@ -23,7 +23,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should contain all files when calling `resolve()`", function () {
+    it("should contain all files when calling `resolve()`", () => {
       let parser = new $RefParser();
       return parser
         .resolve(path.abs("specs/external/external.yaml"))
@@ -40,7 +40,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should return only local files", function () {
+    it("should return only local files", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -59,7 +59,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should return only URLs", function () {
+    it("should return only URLs", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -79,8 +79,8 @@ describe("$Refs object", () => {
     });
   });
 
-  describe("values", function () {
-    it("should be the same as `toJSON()`", function () {
+  describe("values", () => {
+    it("should be the same as `toJSON()`", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -88,7 +88,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should return the paths and values of all resolved files", function () {
+    it("should return the paths and values of all resolved files", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -103,7 +103,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should return the paths and values of all dereferenced files", function () {
+    it("should return the paths and values of all dereferenced files", () => {
       let parser = new $RefParser();
       return parser
         .dereference(path.abs("specs/external/external.yaml"))
@@ -119,7 +119,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should return the paths and values of all bundled files", function () {
+    it("should return the paths and values of all bundled files", () => {
       let parser = new $RefParser();
       return parser
         .bundle(path.abs("specs/external/external.yaml"))
@@ -135,7 +135,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should return only local files and values", function () {
+    it("should return only local files and values", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -156,7 +156,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should return only URLs and values", function () {
+    it("should return only URLs and values", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -178,8 +178,8 @@ describe("$Refs object", () => {
     });
   });
 
-  describe("exists", function () {
-    it("should work with absolute paths", function () {
+  describe("exists", () => {
+    it("should work with absolute paths", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -190,7 +190,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should work with relative paths", function () {
+    it("should work with relative paths", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -201,7 +201,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should return false if the $ref does not exist", function () {
+    it("should return false if the $ref does not exist", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -210,8 +210,8 @@ describe("$Refs object", () => {
     });
   });
 
-  describe("get", function () {
-    it("should work with absolute paths", function () {
+  describe("get", () => {
+    it("should work with absolute paths", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -222,7 +222,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should work with relative paths", function () {
+    it("should work with relative paths", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -233,7 +233,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should get the entire file if there is no hash", function () {
+    it("should get the entire file if there is no hash", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -242,7 +242,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should get the entire file if the hash is empty", function () {
+    it("should get the entire file if the hash is empty", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -251,7 +251,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it('should try to get an empty key if the hash is "#/"', function () {
+    it('should try to get an empty key if the hash is "#/"', () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -267,7 +267,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should resolve values across multiple files if necessary", function () {
+    it("should resolve values across multiple files if necessary", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -280,7 +280,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should throw an error if the file does not exist", function () {
+    it("should throw an error if the file does not exist", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -294,7 +294,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should throw an error if the JSON Pointer path does not exist", function () {
+    it("should throw an error if the JSON Pointer path does not exist", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -311,8 +311,8 @@ describe("$Refs object", () => {
     });
   });
 
-  describe("set", function () {
-    it("should work with absolute paths", function () {
+  describe("set", () => {
+    it("should work with absolute paths", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -322,7 +322,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should work with relative paths", function () {
+    it("should work with relative paths", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -331,7 +331,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should resolve values across multiple files if necessary", function () {
+    it("should resolve values across multiple files if necessary", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -340,7 +340,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should throw an error if the file does not exist", function () {
+    it("should throw an error if the file does not exist", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
@@ -354,7 +354,7 @@ describe("$Refs object", () => {
         });
     });
 
-    it("should NOT throw an error if the JSON Pointer path does not exist (it creates the new value instead)", function () {
+    it("should NOT throw an error if the JSON Pointer path does not exist (it creates the new value instead)", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {

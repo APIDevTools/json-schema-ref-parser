@@ -9,7 +9,7 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("Schema with $refs to parts of external files", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/external-partial/external-partial.yaml"))
@@ -28,7 +28,7 @@ describe("Schema with $refs to parts of external files", () => {
     path.abs("specs/external-partial/definitions/required-string.yaml"), parsedSchema.requiredString
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/external-partial/external-partial.yaml"))
@@ -45,7 +45,7 @@ describe("Schema with $refs to parts of external files", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/external-partial/external-partial.yaml"))

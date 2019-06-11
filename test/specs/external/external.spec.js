@@ -9,7 +9,7 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("Schema with external $refs", () => {
-  it("should parse successfully from an absolute path", function () {
+  it("should parse successfully from an absolute path", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.abs("specs/external/external.yaml"))
@@ -20,7 +20,7 @@ describe("Schema with external $refs", () => {
       });
   });
 
-  it("should parse successfully from a relative path", function () {
+  it("should parse successfully from a relative path", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/external/external.yaml"))
@@ -31,7 +31,7 @@ describe("Schema with external $refs", () => {
       });
   });
 
-  it("should parse successfully from a url", function () {
+  it("should parse successfully from a url", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.url("specs/external/external.yaml"))
@@ -66,7 +66,7 @@ describe("Schema with external $refs", () => {
     path.url("specs/external/definitions/required-string.yaml"), parsedSchema.requiredString
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/external/external.yaml"))
@@ -87,7 +87,7 @@ describe("Schema with external $refs", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/external/external.yaml"))

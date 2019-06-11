@@ -13,7 +13,7 @@ const bundledSchema = require("./bundled");
  * https://github.com/APIDevTools/json-schema-ref-parser/pull/62
  */
 describe("Schema with two external refs to the same value and internal ref before", () => {
-  it("should parse successfully from an absolute path", function () {
+  it("should parse successfully from an absolute path", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.abs("specs/external-from-internal/external-from-internal.yaml"))
@@ -24,7 +24,7 @@ describe("Schema with two external refs to the same value and internal ref befor
       });
   });
 
-  it("should parse successfully from a relative path", function () {
+  it("should parse successfully from a relative path", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/external-from-internal/external-from-internal.yaml"))
@@ -35,7 +35,7 @@ describe("Schema with two external refs to the same value and internal ref befor
       });
   });
 
-  it("should parse successfully from a url", function () {
+  it("should parse successfully from a url", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.url("specs/external-from-internal/external-from-internal.yaml"))
@@ -64,7 +64,7 @@ describe("Schema with two external refs to the same value and internal ref befor
     path.url("specs/external-from-internal/definitions.yaml"), parsedSchema.definitions
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/external-from-internal/external-from-internal.yaml"))
@@ -89,7 +89,7 @@ describe("Schema with two external refs to the same value and internal ref befor
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/external-from-internal/external-from-internal.yaml"))

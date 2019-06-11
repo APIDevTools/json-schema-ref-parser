@@ -9,7 +9,7 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("$refs that are substrings of each other", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/substrings/substrings.yaml"))
@@ -27,7 +27,7 @@ describe("$refs that are substrings of each other", () => {
     path.abs("specs/substrings/definitions/strings.yaml"), parsedSchema.strings
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/substrings/substrings.yaml"))
@@ -45,7 +45,7 @@ describe("$refs that are substrings of each other", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/substrings/substrings.yaml"))

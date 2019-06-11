@@ -7,8 +7,8 @@ const { expect } = require("chai");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
 
-describe("File names with special characters", function () {
-  it("should parse successfully", function () {
+describe("File names with special characters", () => {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/__({[ % & $ # @ ` ~ ,)}]__/__({[ % & $ # @ ` ~ ,)}]__.yaml"))
@@ -25,7 +25,7 @@ describe("File names with special characters", function () {
     path.abs("specs/__({[ % & $ # @ ` ~ ,)}]__/__({[ % & $ # @ ` ~ ,)}]__/__({[ % & $ # @ ` ~ ,)}]__.json"), parsedSchema.file
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/__({[ % & $ # @ ` ~ ,)}]__/__({[ % & $ # @ ` ~ ,)}]__.yaml"))
@@ -38,7 +38,7 @@ describe("File names with special characters", function () {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/__({[ % & $ # @ ` ~ ,)}]__/__({[ % & $ # @ ` ~ ,)}]__.yaml"))

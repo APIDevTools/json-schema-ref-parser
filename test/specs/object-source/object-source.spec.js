@@ -11,7 +11,7 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("Object sources (instead of file paths)", () => {
-  it("should dereference a single object", function () {
+  it("should dereference a single object", () => {
     let parser = new $RefParser();
     return parser
       .dereference(helper.cloneDeep(internalRefsParsedSchema))
@@ -36,7 +36,7 @@ describe("Object sources (instead of file paths)", () => {
       });
   });
 
-  it("should dereference an object that references external files", function () {
+  it("should dereference an object that references external files", () => {
     let parser = new $RefParser();
     return parser
       .dereference(helper.cloneDeep(parsedSchema.schema))
@@ -67,7 +67,7 @@ describe("Object sources (instead of file paths)", () => {
       });
   });
 
-  it("should bundle an object that references external files", function () {
+  it("should bundle an object that references external files", () => {
     let parser = new $RefParser();
     return parser
       .bundle(helper.cloneDeep(parsedSchema.schema))

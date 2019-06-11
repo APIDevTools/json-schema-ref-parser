@@ -8,7 +8,7 @@ const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
 
 describe("options.resolve", () => {
-  it('should not resolve external links if "resolve.external" is disabled', function () {
+  it('should not resolve external links if "resolve.external" is disabled', () => {
     return $RefParser
       .dereference(path.abs("specs/resolvers/resolvers.yaml"), { resolve: { external: false }})
       .then(function (schema) {
@@ -16,7 +16,7 @@ describe("options.resolve", () => {
       });
   });
 
-  it("should throw an error for unrecognized protocols", function () {
+  it("should throw an error for unrecognized protocols", () => {
     return $RefParser
       .dereference(path.abs("specs/resolvers/resolvers.yaml"))
       .then(helper.shouldNotGetCalled)
@@ -26,7 +26,7 @@ describe("options.resolve", () => {
       });
   });
 
-  it("should use a custom resolver with static values", function () {
+  it("should use a custom resolver with static values", () => {
     return $RefParser
       .dereference(path.abs("specs/resolvers/resolvers.yaml"), {
         resolve: {
@@ -43,7 +43,7 @@ describe("options.resolve", () => {
       });
   });
 
-  it("should use a custom resolver that returns a value", function () {
+  it("should use a custom resolver that returns a value", () => {
     return $RefParser
       .dereference(path.abs("specs/resolvers/resolvers.yaml"), {
         resolve: {
@@ -62,7 +62,7 @@ describe("options.resolve", () => {
       });
   });
 
-  it("should use a custom resolver that calls a callback", function () {
+  it("should use a custom resolver that calls a callback", () => {
     return $RefParser
       .dereference(path.abs("specs/resolvers/resolvers.yaml"), {
         resolve: {
@@ -82,7 +82,7 @@ describe("options.resolve", () => {
   });
 
   if (typeof Promise === "function") {
-    it("should use a custom resolver that returns a promise", function () {
+    it("should use a custom resolver that returns a promise", () => {
       return $RefParser
         .dereference(path.abs("specs/resolvers/resolvers.yaml"), {
           resolve: {
@@ -102,7 +102,7 @@ describe("options.resolve", () => {
     });
   }
 
-  it("should continue resolving if a custom resolver fails", function () {
+  it("should continue resolving if a custom resolver fails", () => {
     return $RefParser
       .dereference(path.abs("specs/resolvers/resolvers.yaml"), {
         resolve: {

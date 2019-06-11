@@ -9,7 +9,7 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("Schema with multiple external $refs to different parts of a file", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.abs("specs/external-multiple/external-multiple.yaml"))
@@ -26,7 +26,7 @@ describe("Schema with multiple external $refs to different parts of a file", () 
     path.abs("specs/external-multiple/definitions.yaml"), parsedSchema.definitions
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/external-multiple/external-multiple.yaml"))
@@ -42,7 +42,7 @@ describe("Schema with multiple external $refs to different parts of a file", () 
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/external-multiple/external-multiple.yaml"))

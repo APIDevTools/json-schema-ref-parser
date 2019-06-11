@@ -8,7 +8,7 @@ const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
 
-describe("Blank files", function () {
+describe("Blank files", () => {
   let windowOnError, testDone;
 
   beforeEach(function () {
@@ -24,7 +24,7 @@ describe("Blank files", function () {
     host.global.onerror = windowOnError;
   });
 
-  describe("main file", function () {
+  describe("main file", () => {
     it("should throw an error for a blank YAML file", function (done) {
       testDone = done;
       $RefParser
@@ -69,7 +69,7 @@ describe("Blank files", function () {
     });
   });
 
-  describe("referenced files", function () {
+  describe("referenced files", () => {
     it("should parse successfully", function (done) {
       testDone = done;
       $RefParser

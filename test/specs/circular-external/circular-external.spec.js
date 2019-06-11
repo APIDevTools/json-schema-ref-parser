@@ -9,7 +9,7 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("Schema with circular (recursive) external $refs", () => {
-  it("should parse successfully", function () {
+  it("should parse successfully", () => {
     let parser = new $RefParser();
     return parser
       .parse(path.rel("specs/circular-external/circular-external.yaml"))
@@ -33,7 +33,7 @@ describe("Schema with circular (recursive) external $refs", () => {
     path.abs("specs/circular-external/definitions/person.yaml"), parsedSchema.person
   ));
 
-  it("should dereference successfully", function () {
+  it("should dereference successfully", () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/circular-external/circular-external.yaml"))
@@ -51,7 +51,7 @@ describe("Schema with circular (recursive) external $refs", () => {
       });
   });
 
-  it('should throw an error if "options.$refs.circular" is false', function () {
+  it('should throw an error if "options.$refs.circular" is false', () => {
     let parser = new $RefParser();
     return parser
       .dereference(path.rel("specs/circular-external/circular-external.yaml"), { dereference: { circular: false }})
@@ -67,7 +67,7 @@ describe("Schema with circular (recursive) external $refs", () => {
       });
   });
 
-  it("should bundle successfully", function () {
+  it("should bundle successfully", () => {
     let parser = new $RefParser();
     return parser
       .bundle(path.rel("specs/circular-external/circular-external.yaml"))
