@@ -2,8 +2,11 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
+const parsedSchema = require("./parsed");
+const dereferencedSchema = require("./dereferenced");
+const bundledSchema = require("./bundled");
 
 describe("$refs that are substrings of each other", () => {
   it("should parse successfully", function () {
@@ -12,16 +15,16 @@ describe("$refs that are substrings of each other", () => {
       .parse(path.rel("specs/substrings/substrings.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.substrings.schema);
+        expect(schema).to.deep.equal(parsedSchema.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/substrings/substrings.yaml")]);
       });
   });
 
   it("should resolve successfully", helper.testResolve(
     path.rel("specs/substrings/substrings.yaml"),
-    path.abs("specs/substrings/substrings.yaml"), helper.parsed.substrings.schema,
-    path.abs("specs/substrings/definitions/definitions.json"), helper.parsed.substrings.definitions,
-    path.abs("specs/substrings/definitions/strings.yaml"), helper.parsed.substrings.strings
+    path.abs("specs/substrings/substrings.yaml"), parsedSchema.schema,
+    path.abs("specs/substrings/definitions/definitions.json"), parsedSchema.definitions,
+    path.abs("specs/substrings/definitions/strings.yaml"), parsedSchema.strings
   ));
 
   it("should dereference successfully", function () {
@@ -30,7 +33,7 @@ describe("$refs that are substrings of each other", () => {
       .dereference(path.rel("specs/substrings/substrings.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.dereferenced.substrings);
+        expect(schema).to.deep.equal(dereferencedSchema);
 
         // Reference equality
         expect(schema.properties.firstName).to.equal(schema.definitions.name);
@@ -48,7 +51,7 @@ describe("$refs that are substrings of each other", () => {
       .bundle(path.rel("specs/substrings/substrings.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.bundled.substrings);
+        expect(schema).to.deep.equal(bundledSchema);
       });
   });
 });

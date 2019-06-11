@@ -2,27 +2,29 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
+const parsedSchema = require("./parsed");
+const dereferencedSchema = require("./dereferenced");
 
 describe("References to non-JSON files", () => {
   it("should parse successfully", function () {
     return $RefParser
       .parse(path.rel("specs/parsers/parsers.yaml"))
       .then(function (schema) {
-        expect(schema).to.deep.equal(helper.parsed.parsers.schema);
+        expect(schema).to.deep.equal(parsedSchema.schema);
       });
   });
 
   it("should resolve successfully", helper.testResolve(
     path.rel("specs/parsers/parsers.yaml"),
-    path.abs("specs/parsers/parsers.yaml"), helper.parsed.parsers.schema,
-    path.abs("specs/parsers/files/README.md"), helper.dereferenced.parsers.defaultParsers.definitions.markdown,
-    path.abs("specs/parsers/files/page.html"), helper.dereferenced.parsers.defaultParsers.definitions.html,
-    path.abs("specs/parsers/files/style.css"), helper.dereferenced.parsers.defaultParsers.definitions.css,
-    path.abs("specs/parsers/files/binary.png"), helper.dereferenced.parsers.defaultParsers.definitions.binary,
-    path.abs("specs/parsers/files/unknown.foo"), helper.dereferenced.parsers.defaultParsers.definitions.unknown,
-    path.abs("specs/parsers/files/empty"), helper.dereferenced.parsers.defaultParsers.definitions.empty
+    path.abs("specs/parsers/parsers.yaml"), parsedSchema.schema,
+    path.abs("specs/parsers/files/README.md"), dereferencedSchema.defaultParsers.definitions.markdown,
+    path.abs("specs/parsers/files/page.html"), dereferencedSchema.defaultParsers.definitions.html,
+    path.abs("specs/parsers/files/style.css"), dereferencedSchema.defaultParsers.definitions.css,
+    path.abs("specs/parsers/files/binary.png"), dereferencedSchema.defaultParsers.definitions.binary,
+    path.abs("specs/parsers/files/unknown.foo"), dereferencedSchema.defaultParsers.definitions.unknown,
+    path.abs("specs/parsers/files/empty"), dereferencedSchema.defaultParsers.definitions.empty
   ));
 
   it("should dereference successfully", function () {
@@ -33,7 +35,7 @@ describe("References to non-JSON files", () => {
         expect(schema).to.equal(parser.schema);
 
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-        expect(schema).to.deep.equal(helper.dereferenced.parsers.defaultParsers);
+        expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
 
         // The "circular" flag should NOT be set
         expect(parser.$refs.circular).to.equal(false);
@@ -45,7 +47,7 @@ describe("References to non-JSON files", () => {
       .bundle(path.rel("specs/parsers/parsers.yaml"))
       .then(function (schema) {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-        expect(schema).to.deep.equal(helper.dereferenced.parsers.defaultParsers);
+        expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
       });
   });
 
@@ -71,7 +73,7 @@ describe("References to non-JSON files", () => {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
         schema.definitions.unknown = helper.convertNodeBuffersToPOJOs(schema.definitions.unknown);
         schema.definitions.empty = helper.convertNodeBuffersToPOJOs(schema.definitions.empty);
-        expect(schema).to.deep.equal(helper.dereferenced.parsers.binaryParser);
+        expect(schema).to.deep.equal(dereferencedSchema.binaryParser);
       });
   });
 
@@ -98,7 +100,7 @@ describe("References to non-JSON files", () => {
         }
       })
       .then(function (schema) {
-        expect(schema).to.deep.equal(helper.dereferenced.parsers.staticParser);
+        expect(schema).to.deep.equal(dereferencedSchema.staticParser);
       });
   });
 
@@ -120,7 +122,7 @@ describe("References to non-JSON files", () => {
       })
       .then(function (schema) {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-        expect(schema).to.deep.equal(helper.dereferenced.parsers.customParser);
+        expect(schema).to.deep.equal(dereferencedSchema.customParser);
       });
   });
 
@@ -141,7 +143,7 @@ describe("References to non-JSON files", () => {
       })
       .then(function (schema) {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-        expect(schema).to.deep.equal(helper.dereferenced.parsers.customParser);
+        expect(schema).to.deep.equal(dereferencedSchema.customParser);
       });
   });
 
@@ -164,7 +166,7 @@ describe("References to non-JSON files", () => {
       })
       .then(function (schema) {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-        expect(schema).to.deep.equal(helper.dereferenced.parsers.customParser);
+        expect(schema).to.deep.equal(dereferencedSchema.customParser);
       });
   });
 
@@ -187,7 +189,7 @@ describe("References to non-JSON files", () => {
       })
       .then(function (schema) {
         schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-        expect(schema).to.deep.equal(helper.dereferenced.parsers.defaultParsers);
+        expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
       });
   });
 

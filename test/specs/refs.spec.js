@@ -1,10 +1,13 @@
 "use strict";
 
-const host = require("host-environment");
+const { host } = require("host-environment");
 const { expect } = require("chai");
-const $RefParser = require("../..");
-const helper = require("../fixtures/helper");
-const path = require("../fixtures/path");
+const $RefParser = require("../../lib");
+const helper = require("../utils/helper");
+const path = require("../utils/path");
+const parsedSchema = require("./external/parsed");
+const dereferencedSchema = require("./external/dereferenced");
+const bundledSchema = require("./external/bundled");
 
 describe("$Refs object", () => {
   describe("paths", function () {
@@ -90,10 +93,10 @@ describe("$Refs object", () => {
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
           let expected = {};
-          expected[path.abs("specs/external/external.yaml")] = helper.parsed.external.schema;
-          expected[path.abs("specs/external/definitions/definitions.json")] = helper.parsed.external.definitions;
-          expected[path.abs("specs/external/definitions/name.yaml")] = helper.parsed.external.name;
-          expected[path.abs("specs/external/definitions/required-string.yaml")] = helper.parsed.external.requiredString;
+          expected[path.abs("specs/external/external.yaml")] = parsedSchema.schema;
+          expected[path.abs("specs/external/definitions/definitions.json")] = parsedSchema.definitions;
+          expected[path.abs("specs/external/definitions/name.yaml")] = parsedSchema.name;
+          expected[path.abs("specs/external/definitions/required-string.yaml")] = parsedSchema.requiredString;
 
           let values = $refs.values();
           expect(values).to.deep.equal(expected);
@@ -106,10 +109,10 @@ describe("$Refs object", () => {
         .dereference(path.abs("specs/external/external.yaml"))
         .then(function () {
           let expected = {};
-          expected[path.abs("specs/external/external.yaml")] = helper.dereferenced.external;
-          expected[path.abs("specs/external/definitions/definitions.json")] = helper.dereferenced.external.definitions;
-          expected[path.abs("specs/external/definitions/name.yaml")] = helper.dereferenced.external.definitions.name;
-          expected[path.abs("specs/external/definitions/required-string.yaml")] = helper.dereferenced.external.definitions["required string"];
+          expected[path.abs("specs/external/external.yaml")] = dereferencedSchema;
+          expected[path.abs("specs/external/definitions/definitions.json")] = dereferencedSchema.definitions;
+          expected[path.abs("specs/external/definitions/name.yaml")] = dereferencedSchema.definitions.name;
+          expected[path.abs("specs/external/definitions/required-string.yaml")] = dereferencedSchema.definitions["required string"];
 
           let values = parser.$refs.values();
           expect(values).to.deep.equal(expected);
@@ -122,10 +125,10 @@ describe("$Refs object", () => {
         .bundle(path.abs("specs/external/external.yaml"))
         .then(function () {
           let expected = {};
-          expected[path.abs("specs/external/external.yaml")] = helper.bundled.external;
-          expected[path.abs("specs/external/definitions/definitions.json")] = helper.bundled.external.definitions;
-          expected[path.abs("specs/external/definitions/name.yaml")] = helper.bundled.external.definitions.name;
-          expected[path.abs("specs/external/definitions/required-string.yaml")] = helper.bundled.external.definitions["required string"];
+          expected[path.abs("specs/external/external.yaml")] = bundledSchema;
+          expected[path.abs("specs/external/definitions/definitions.json")] = bundledSchema.definitions;
+          expected[path.abs("specs/external/definitions/name.yaml")] = bundledSchema.definitions.name;
+          expected[path.abs("specs/external/definitions/required-string.yaml")] = bundledSchema.definitions["required string"];
 
           let values = parser.$refs.values();
           expect(values).to.deep.equal(expected);
@@ -139,10 +142,10 @@ describe("$Refs object", () => {
           let values = $refs.values("file");
           if (host.node) {
             let expected = {};
-            expected[path.abs("specs/external/external.yaml")] = helper.parsed.external.schema;
-            expected[path.abs("specs/external/definitions/definitions.json")] = helper.parsed.external.definitions;
-            expected[path.abs("specs/external/definitions/name.yaml")] = helper.parsed.external.name;
-            expected[path.abs("specs/external/definitions/required-string.yaml")] = helper.parsed.external.requiredString;
+            expected[path.abs("specs/external/external.yaml")] = parsedSchema.schema;
+            expected[path.abs("specs/external/definitions/definitions.json")] = parsedSchema.definitions;
+            expected[path.abs("specs/external/definitions/name.yaml")] = parsedSchema.name;
+            expected[path.abs("specs/external/definitions/required-string.yaml")] = parsedSchema.requiredString;
 
             values = $refs.values();
             expect(values).to.deep.equal(expected);
@@ -160,10 +163,10 @@ describe("$Refs object", () => {
           let values = $refs.values(["http"]);
           if (host.browser) {
             let expected = {};
-            expected[path.url("specs/external/external.yaml")] = helper.parsed.external.schema;
-            expected[path.url("specs/external/definitions/definitions.json")] = helper.parsed.external.definitions;
-            expected[path.url("specs/external/definitions/name.yaml")] = helper.parsed.external.name;
-            expected[path.url("specs/external/definitions/required-string.yaml")] = helper.parsed.external.requiredString;
+            expected[path.url("specs/external/external.yaml")] = parsedSchema.schema;
+            expected[path.url("specs/external/definitions/definitions.json")] = parsedSchema.definitions;
+            expected[path.url("specs/external/definitions/name.yaml")] = parsedSchema.name;
+            expected[path.url("specs/external/definitions/required-string.yaml")] = parsedSchema.requiredString;
 
             values = $refs.values();
             expect(values).to.deep.equal(expected);
@@ -212,10 +215,10 @@ describe("$Refs object", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
-          expect($refs.get(path.abs("specs/external/external.yaml"))).to.deep.equal(helper.parsed.external.schema);
-          expect($refs.get(path.abs("specs/external/definitions/definitions.json"))).to.deep.equal(helper.parsed.external.definitions);
-          expect($refs.get(path.abs("specs/external/definitions/name.yaml"))).to.deep.equal(helper.parsed.external.name);
-          expect($refs.get(path.abs("specs/external/definitions/required-string.yaml"))).to.deep.equal(helper.parsed.external.requiredString);
+          expect($refs.get(path.abs("specs/external/external.yaml"))).to.deep.equal(parsedSchema.schema);
+          expect($refs.get(path.abs("specs/external/definitions/definitions.json"))).to.deep.equal(parsedSchema.definitions);
+          expect($refs.get(path.abs("specs/external/definitions/name.yaml"))).to.deep.equal(parsedSchema.name);
+          expect($refs.get(path.abs("specs/external/definitions/required-string.yaml"))).to.deep.equal(parsedSchema.requiredString);
         });
     });
 
@@ -223,10 +226,10 @@ describe("$Refs object", () => {
       return $RefParser
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
-          expect($refs.get("external.yaml")).to.deep.equal(helper.parsed.external.schema);
-          expect($refs.get("definitions/definitions.json")).to.deep.equal(helper.parsed.external.definitions);
-          expect($refs.get("definitions/name.yaml")).to.deep.equal(helper.parsed.external.name);
-          expect($refs.get("definitions/required-string.yaml")).to.deep.equal(helper.parsed.external.requiredString);
+          expect($refs.get("external.yaml")).to.deep.equal(parsedSchema.schema);
+          expect($refs.get("definitions/definitions.json")).to.deep.equal(parsedSchema.definitions);
+          expect($refs.get("definitions/name.yaml")).to.deep.equal(parsedSchema.name);
+          expect($refs.get("definitions/required-string.yaml")).to.deep.equal(parsedSchema.requiredString);
         });
     });
 
@@ -235,7 +238,7 @@ describe("$Refs object", () => {
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
           let value = $refs.get("definitions/name.yaml");
-          expect(value).to.deep.equal(helper.parsed.external.name);
+          expect(value).to.deep.equal(parsedSchema.name);
         });
     });
 
@@ -244,7 +247,7 @@ describe("$Refs object", () => {
         .resolve(path.abs("specs/external/external.yaml"))
         .then(function ($refs) {
           let value = $refs.get("definitions/name.yaml#");
-          expect(value).to.deep.equal(helper.parsed.external.name);
+          expect(value).to.deep.equal(parsedSchema.name);
         });
     });
 

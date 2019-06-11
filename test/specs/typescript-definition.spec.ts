@@ -1,4 +1,4 @@
-import $RefParser = require('../../');
+import $RefParser = require('../../lib');
 import assert = require("assert");
 
 const baseUrl = "http://example.com/schema";

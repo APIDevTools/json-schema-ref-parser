@@ -1,7 +1,7 @@
 "use strict";
 
 const { expect } = require("chai");
-const $RefParser = require("../..");
+const $RefParser = require("../../lib");
 
 describe("YAML object", () => {
   describe("parse", function () {

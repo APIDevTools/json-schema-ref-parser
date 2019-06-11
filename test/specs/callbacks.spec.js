@@ -1,9 +1,9 @@
 "use strict";
 
 const { expect } = require("chai");
-const $RefParser = require("../..");
-const helper = require("../fixtures/helper");
-const path = require("../fixtures/path");
+const $RefParser = require("../../lib");
+const helper = require("../utils/helper");
+const path = require("../utils/path");
 
 describe("Callback & Promise syntax", () => {
   ["parse", "resolve", "dereference", "bundle"].forEach(function (method) {

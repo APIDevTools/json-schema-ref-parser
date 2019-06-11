@@ -2,8 +2,11 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
+const parsedSchema = require("./parsed");
+const dereferencedSchema = require("./dereferenced");
+const bundledSchema = require("./bundled");
 
 describe("Schema with $refs to parts of external files", () => {
   it("should parse successfully", function () {
@@ -12,17 +15,17 @@ describe("Schema with $refs to parts of external files", () => {
       .parse(path.rel("specs/external-partial/external-partial.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.externalPartial.schema);
+        expect(schema).to.deep.equal(parsedSchema.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/external-partial/external-partial.yaml")]);
       });
   });
 
   it("should resolve successfully", helper.testResolve(
     path.rel("specs/external-partial/external-partial.yaml"),
-    path.abs("specs/external-partial/external-partial.yaml"), helper.parsed.externalPartial.schema,
-    path.abs("specs/external-partial/definitions/definitions.json"), helper.parsed.externalPartial.definitions,
-    path.abs("specs/external-partial/definitions/name.yaml"), helper.parsed.externalPartial.name,
-    path.abs("specs/external-partial/definitions/required-string.yaml"), helper.parsed.externalPartial.requiredString
+    path.abs("specs/external-partial/external-partial.yaml"), parsedSchema.schema,
+    path.abs("specs/external-partial/definitions/definitions.json"), parsedSchema.definitions,
+    path.abs("specs/external-partial/definitions/name.yaml"), parsedSchema.name,
+    path.abs("specs/external-partial/definitions/required-string.yaml"), parsedSchema.requiredString
   ));
 
   it("should dereference successfully", function () {
@@ -31,7 +34,7 @@ describe("Schema with $refs to parts of external files", () => {
       .dereference(path.rel("specs/external-partial/external-partial.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.dereferenced.externalPartial);
+        expect(schema).to.deep.equal(dereferencedSchema);
 
         // Reference equality
         expect(schema.properties.name.properties.first)
@@ -48,7 +51,7 @@ describe("Schema with $refs to parts of external files", () => {
       .bundle(path.rel("specs/external-partial/external-partial.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.bundled.externalPartial);
+        expect(schema).to.deep.equal(bundledSchema);
       });
   });
 });

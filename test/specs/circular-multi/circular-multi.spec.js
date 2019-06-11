@@ -2,8 +2,8 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const path = require("../../utils/path");
+const bundledSchema = require("./bundled");
 
 describe("multiple circular $refs at the same depth in the schema", () => {
   it("should bundle successfully", function () {
@@ -13,7 +13,7 @@ describe("multiple circular $refs at the same depth in the schema", () => {
       .bundle(path.rel("specs/circular-multi/definitions/root.json"))
       .then(function (schema) {
         expect(schema).to.deep.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.bundled.circularMulti);
+        expect(schema).to.deep.equal(bundledSchema);
       });
   });
 });

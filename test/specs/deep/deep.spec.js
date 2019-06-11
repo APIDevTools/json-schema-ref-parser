@@ -2,8 +2,11 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
+const parsedSchema = require("./parsed");
+const dereferencedSchema = require("./dereferenced");
+const bundledSchema = require("./bundled");
 
 describe("Schema with deeply-nested $refs", () => {
   it("should parse successfully", function () {
@@ -12,16 +15,16 @@ describe("Schema with deeply-nested $refs", () => {
       .parse(path.rel("specs/deep/deep.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.deep.schema);
+        expect(schema).to.deep.equal(parsedSchema.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/deep/deep.yaml")]);
       });
   });
 
   it("should resolve successfully", helper.testResolve(
     path.rel("specs/deep/deep.yaml"),
-    path.abs("specs/deep/deep.yaml"), helper.parsed.deep.schema,
-    path.abs("specs/deep/definitions/name.yaml"), helper.parsed.deep.name,
-    path.abs("specs/deep/definitions/required-string.yaml"), helper.parsed.deep.requiredString
+    path.abs("specs/deep/deep.yaml"), parsedSchema.schema,
+    path.abs("specs/deep/definitions/name.yaml"), parsedSchema.name,
+    path.abs("specs/deep/definitions/required-string.yaml"), parsedSchema.requiredString
   ));
 
   it("should dereference successfully", function () {
@@ -30,7 +33,7 @@ describe("Schema with deeply-nested $refs", () => {
       .dereference(path.rel("specs/deep/deep.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.dereferenced.deep);
+        expect(schema).to.deep.equal(dereferencedSchema);
 
         // Reference equality
         expect(schema.properties.name.type)
@@ -50,7 +53,7 @@ describe("Schema with deeply-nested $refs", () => {
       .bundle(path.rel("specs/deep/deep.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.bundled.deep);
+        expect(schema).to.deep.equal(bundledSchema);
       });
   });
 });

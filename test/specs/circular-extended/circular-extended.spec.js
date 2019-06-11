@@ -2,8 +2,11 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
+const parsedSchema = require("./parsed");
+const dereferencedSchema = require("./dereferenced");
+const bundledSchema = require("./bundled");
 
 describe("Schema with circular $refs that extend each other", () => {
   describe("$ref to self", function () {
@@ -13,7 +16,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .parse(path.rel("specs/circular-extended/circular-extended-self.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.parsed.circularExtended.self);
+          expect(schema).to.deep.equal(parsedSchema.self);
           expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/circular-extended/circular-extended-self.yaml")]);
 
           // The "circular" flag should NOT be set
@@ -24,8 +27,8 @@ describe("Schema with circular $refs that extend each other", () => {
 
     it("should resolve successfully", helper.testResolve(
       path.rel("specs/circular-extended/circular-extended-self.yaml"),
-      path.abs("specs/circular-extended/circular-extended-self.yaml"), helper.parsed.circularExtended.self,
-      path.abs("specs/circular-extended/definitions/thing.yaml"), helper.parsed.circularExtended.thing
+      path.abs("specs/circular-extended/circular-extended-self.yaml"), parsedSchema.self,
+      path.abs("specs/circular-extended/definitions/thing.yaml"), parsedSchema.thing
     ));
 
     it("should dereference successfully", function () {
@@ -34,7 +37,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .dereference(path.rel("specs/circular-extended/circular-extended-self.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.dereferenced.circularExtended.self);
+          expect(schema).to.deep.equal(dereferencedSchema.self);
 
           // The "circular" flag should be set
           expect(parser.$refs.circular).to.equal(true);
@@ -47,7 +50,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .dereference(path.rel("specs/circular-extended/circular-extended-self.yaml"), { dereference: { circular: "ignore" }})
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.dereferenced.circularExtended.self);
+          expect(schema).to.deep.equal(dereferencedSchema.self);
 
           // The "circular" flag should be set
           expect(parser.$refs.circular).to.equal(true);
@@ -76,7 +79,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .bundle(path.rel("specs/circular-extended/circular-extended-self.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.bundled.circularExtended.self);
+          expect(schema).to.deep.equal(bundledSchema.self);
 
           // The "circular" flag should NOT be set
           // (it only gets set by `dereference`)
@@ -92,7 +95,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .parse(path.rel("specs/circular-extended/circular-extended-ancestor.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.parsed.circularExtended.ancestor);
+          expect(schema).to.deep.equal(parsedSchema.ancestor);
           expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/circular-extended/circular-extended-ancestor.yaml")]);
 
           // The "circular" flag should NOT be set
@@ -103,10 +106,10 @@ describe("Schema with circular $refs that extend each other", () => {
 
     it("should resolve successfully", helper.testResolve(
       path.rel("specs/circular-extended/circular-extended-ancestor.yaml"),
-      path.abs("specs/circular-extended/circular-extended-ancestor.yaml"), helper.parsed.circularExtended.ancestor,
-      path.abs("specs/circular-extended/definitions/person-with-spouse.yaml"), helper.parsed.circularExtended.personWithSpouse,
-      path.abs("specs/circular-extended/definitions/pet.yaml"), helper.parsed.circularExtended.pet,
-      path.abs("specs/circular-extended/definitions/animals.yaml"), helper.parsed.circularExtended.animals
+      path.abs("specs/circular-extended/circular-extended-ancestor.yaml"), parsedSchema.ancestor,
+      path.abs("specs/circular-extended/definitions/person-with-spouse.yaml"), parsedSchema.personWithSpouse,
+      path.abs("specs/circular-extended/definitions/pet.yaml"), parsedSchema.pet,
+      path.abs("specs/circular-extended/definitions/animals.yaml"), parsedSchema.animals
     ));
 
     it("should dereference successfully", function () {
@@ -115,7 +118,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .dereference(path.rel("specs/circular-extended/circular-extended-ancestor.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.dereferenced.circularExtended.ancestor.fullyDereferenced);
+          expect(schema).to.deep.equal(dereferencedSchema.ancestor.fullyDereferenced);
 
           // The "circular" flag should be set
           expect(parser.$refs.circular).to.equal(true);
@@ -134,7 +137,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .dereference(path.rel("specs/circular-extended/circular-extended-ancestor.yaml"), { dereference: { circular: "ignore" }})
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.dereferenced.circularExtended.ancestor.ignoreCircular$Refs);
+          expect(schema).to.deep.equal(dereferencedSchema.ancestor.ignoreCircular$Refs);
 
           // The "circular" flag should be set
           expect(parser.$refs.circular).to.equal(true);
@@ -163,7 +166,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .bundle(path.rel("specs/circular-extended/circular-extended-ancestor.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.bundled.circularExtended.ancestor);
+          expect(schema).to.deep.equal(bundledSchema.ancestor);
 
           // The "circular" flag should NOT be set
           // (it only gets set by `dereference`)
@@ -179,7 +182,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .parse(path.rel("specs/circular-extended/circular-extended-indirect.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.parsed.circularExtended.indirect);
+          expect(schema).to.deep.equal(parsedSchema.indirect);
           expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/circular-extended/circular-extended-indirect.yaml")]);
 
           // The "circular" flag should NOT be set
@@ -190,11 +193,11 @@ describe("Schema with circular $refs that extend each other", () => {
 
     it("should resolve successfully", helper.testResolve(
       path.rel("specs/circular-extended/circular-extended-indirect.yaml"),
-      path.abs("specs/circular-extended/circular-extended-indirect.yaml"), helper.parsed.circularExtended.indirect,
-      path.abs("specs/circular-extended/definitions/parent-with-children.yaml"), helper.parsed.circularExtended.parentWithChildren,
-      path.abs("specs/circular-extended/definitions/child-with-parents.yaml"), helper.parsed.circularExtended.childWithParents,
-      path.abs("specs/circular-extended/definitions/pet.yaml"), helper.parsed.circularExtended.pet,
-      path.abs("specs/circular-extended/definitions/animals.yaml"), helper.parsed.circularExtended.animals
+      path.abs("specs/circular-extended/circular-extended-indirect.yaml"), parsedSchema.indirect,
+      path.abs("specs/circular-extended/definitions/parent-with-children.yaml"), parsedSchema.parentWithChildren,
+      path.abs("specs/circular-extended/definitions/child-with-parents.yaml"), parsedSchema.childWithParents,
+      path.abs("specs/circular-extended/definitions/pet.yaml"), parsedSchema.pet,
+      path.abs("specs/circular-extended/definitions/animals.yaml"), parsedSchema.animals
     ));
 
     it("should dereference successfully", function () {
@@ -203,7 +206,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .dereference(path.rel("specs/circular-extended/circular-extended-indirect.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.dereferenced.circularExtended.indirect.fullyDereferenced);
+          expect(schema).to.deep.equal(dereferencedSchema.indirect.fullyDereferenced);
 
           // The "circular" flag should be set
           expect(parser.$refs.circular).to.equal(true);
@@ -224,7 +227,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .dereference(path.rel("specs/circular-extended/circular-extended-indirect.yaml"), { dereference: { circular: "ignore" }})
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.dereferenced.circularExtended.indirect.ignoreCircular$Refs);
+          expect(schema).to.deep.equal(dereferencedSchema.indirect.ignoreCircular$Refs);
 
           // The "circular" flag should be set
           expect(parser.$refs.circular).to.equal(true);
@@ -253,7 +256,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .bundle(path.rel("specs/circular-extended/circular-extended-indirect.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.bundled.circularExtended.indirect);
+          expect(schema).to.deep.equal(bundledSchema.indirect);
 
           // The "circular" flag should NOT be set
           // (it only gets set by `dereference`)
@@ -269,7 +272,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .parse(path.rel("specs/circular-extended/circular-extended-indirect-ancestor.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.parsed.circularExtended.indirectAncestor);
+          expect(schema).to.deep.equal(parsedSchema.indirectAncestor);
           expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/circular-extended/circular-extended-indirect-ancestor.yaml")]);
 
           // The "circular" flag should NOT be set
@@ -280,11 +283,11 @@ describe("Schema with circular $refs that extend each other", () => {
 
     it("should resolve successfully", helper.testResolve(
       path.rel("specs/circular-extended/circular-extended-indirect-ancestor.yaml"),
-      path.abs("specs/circular-extended/circular-extended-indirect-ancestor.yaml"), helper.parsed.circularExtended.indirectAncestor,
-      path.abs("specs/circular-extended/definitions/parent-with-child.yaml"), helper.parsed.circularExtended.parentWithChild,
-      path.abs("specs/circular-extended/definitions/child-with-children.yaml"), helper.parsed.circularExtended.childWithChildren,
-      path.abs("specs/circular-extended/definitions/pet.yaml"), helper.parsed.circularExtended.pet,
-      path.abs("specs/circular-extended/definitions/animals.yaml"), helper.parsed.circularExtended.animals
+      path.abs("specs/circular-extended/circular-extended-indirect-ancestor.yaml"), parsedSchema.indirectAncestor,
+      path.abs("specs/circular-extended/definitions/parent-with-child.yaml"), parsedSchema.parentWithChild,
+      path.abs("specs/circular-extended/definitions/child-with-children.yaml"), parsedSchema.childWithChildren,
+      path.abs("specs/circular-extended/definitions/pet.yaml"), parsedSchema.pet,
+      path.abs("specs/circular-extended/definitions/animals.yaml"), parsedSchema.animals
     ));
 
     it("should dereference successfully", function () {
@@ -293,7 +296,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .dereference(path.rel("specs/circular-extended/circular-extended-indirect-ancestor.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.dereferenced.circularExtended.indirectAncestor.fullyDereferenced);
+          expect(schema).to.deep.equal(dereferencedSchema.indirectAncestor.fullyDereferenced);
 
           // The "circular" flag should be set
           expect(parser.$refs.circular).to.equal(true);
@@ -314,7 +317,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .dereference(path.rel("specs/circular-extended/circular-extended-indirect-ancestor.yaml"), { dereference: { circular: "ignore" }})
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.dereferenced.circularExtended.indirectAncestor.ignoreCircular$Refs);
+          expect(schema).to.deep.equal(dereferencedSchema.indirectAncestor.ignoreCircular$Refs);
 
           // The "circular" flag should be set
           expect(parser.$refs.circular).to.equal(true);
@@ -343,7 +346,7 @@ describe("Schema with circular $refs that extend each other", () => {
         .bundle(path.rel("specs/circular-extended/circular-extended-indirect-ancestor.yaml"))
         .then(function (schema) {
           expect(schema).to.equal(parser.schema);
-          expect(schema).to.deep.equal(helper.bundled.circularExtended.indirectAncestor);
+          expect(schema).to.deep.equal(bundledSchema.indirectAncestor);
 
           // The "circular" flag should NOT be set
           // (it only gets set by `dereference`)

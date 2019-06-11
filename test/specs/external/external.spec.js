@@ -2,8 +2,11 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
+const parsedSchema = require("./parsed");
+const dereferencedSchema = require("./dereferenced");
+const bundledSchema = require("./bundled");
 
 describe("Schema with external $refs", () => {
   it("should parse successfully from an absolute path", function () {
@@ -12,7 +15,7 @@ describe("Schema with external $refs", () => {
       .parse(path.abs("specs/external/external.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.external.schema);
+        expect(schema).to.deep.equal(parsedSchema.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/external/external.yaml")]);
       });
   });
@@ -23,7 +26,7 @@ describe("Schema with external $refs", () => {
       .parse(path.rel("specs/external/external.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.external.schema);
+        expect(schema).to.deep.equal(parsedSchema.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/external/external.yaml")]);
       });
   });
@@ -34,33 +37,33 @@ describe("Schema with external $refs", () => {
       .parse(path.url("specs/external/external.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.external.schema);
+        expect(schema).to.deep.equal(parsedSchema.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.url("specs/external/external.yaml")]);
       });
   });
 
   it("should resolve successfully from an absolute path", helper.testResolve(
     path.abs("specs/external/external.yaml"),
-    path.abs("specs/external/external.yaml"), helper.parsed.external.schema,
-    path.abs("specs/external/definitions/definitions.json"), helper.parsed.external.definitions,
-    path.abs("specs/external/definitions/name.yaml"), helper.parsed.external.name,
-    path.abs("specs/external/definitions/required-string.yaml"), helper.parsed.external.requiredString
+    path.abs("specs/external/external.yaml"), parsedSchema.schema,
+    path.abs("specs/external/definitions/definitions.json"), parsedSchema.definitions,
+    path.abs("specs/external/definitions/name.yaml"), parsedSchema.name,
+    path.abs("specs/external/definitions/required-string.yaml"), parsedSchema.requiredString
   ));
 
   it("should resolve successfully from a relative path", helper.testResolve(
     path.rel("specs/external/external.yaml"),
-    path.abs("specs/external/external.yaml"), helper.parsed.external.schema,
-    path.abs("specs/external/definitions/definitions.json"), helper.parsed.external.definitions,
-    path.abs("specs/external/definitions/name.yaml"), helper.parsed.external.name,
-    path.abs("specs/external/definitions/required-string.yaml"), helper.parsed.external.requiredString
+    path.abs("specs/external/external.yaml"), parsedSchema.schema,
+    path.abs("specs/external/definitions/definitions.json"), parsedSchema.definitions,
+    path.abs("specs/external/definitions/name.yaml"), parsedSchema.name,
+    path.abs("specs/external/definitions/required-string.yaml"), parsedSchema.requiredString
   ));
 
   it("should resolve successfully from a url", helper.testResolve(
     path.url("specs/external/external.yaml"),
-    path.url("specs/external/external.yaml"), helper.parsed.external.schema,
-    path.url("specs/external/definitions/definitions.json"), helper.parsed.external.definitions,
-    path.url("specs/external/definitions/name.yaml"), helper.parsed.external.name,
-    path.url("specs/external/definitions/required-string.yaml"), helper.parsed.external.requiredString
+    path.url("specs/external/external.yaml"), parsedSchema.schema,
+    path.url("specs/external/definitions/definitions.json"), parsedSchema.definitions,
+    path.url("specs/external/definitions/name.yaml"), parsedSchema.name,
+    path.url("specs/external/definitions/required-string.yaml"), parsedSchema.requiredString
   ));
 
   it("should dereference successfully", function () {
@@ -69,7 +72,7 @@ describe("Schema with external $refs", () => {
       .dereference(path.rel("specs/external/external.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.dereferenced.external);
+        expect(schema).to.deep.equal(dereferencedSchema);
 
         // Reference equality
         expect(schema.properties.name).to.equal(schema.definitions.name);
@@ -90,7 +93,7 @@ describe("Schema with external $refs", () => {
       .bundle(path.rel("specs/external/external.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.bundled.external);
+        expect(schema).to.deep.equal(bundledSchema);
       });
   });
 });

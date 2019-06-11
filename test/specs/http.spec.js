@@ -1,8 +1,8 @@
 "use strict";
 
-const host = require("host-environment");
+const { host } = require("host-environment");
 const { expect } = require("chai");
-const $RefParser = require("../..");
+const $RefParser = require("../../lib");
 
 describe("HTTP options", () => {
   let windowOnError, testDone;

@@ -1,10 +1,10 @@
 "use strict";
 
-const host = require("host-environment");
+const { host } = require("host-environment");
 const { expect } = require("chai");
-const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const $RefParser = require("../../../lib");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
 
 describe("Invalid syntax", () => {
   describe("in main file", function () {

@@ -2,8 +2,11 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
+const parsedSchema = require("./parsed");
+const dereferencedSchema = require("./dereferenced");
+const bundledSchema = require("./bundled");
 
 describe("Schema with internal $refs", () => {
   it("should parse successfully", function () {
@@ -12,14 +15,14 @@ describe("Schema with internal $refs", () => {
       .parse(path.rel("specs/internal/internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.internal);
+        expect(schema).to.deep.equal(parsedSchema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/internal/internal.yaml")]);
       });
   });
 
   it("should resolve successfully", helper.testResolve(
     path.rel("specs/internal/internal.yaml"),
-    path.abs("specs/internal/internal.yaml"), helper.parsed.internal
+    path.abs("specs/internal/internal.yaml"), parsedSchema
   ));
 
   it("should dereference successfully", function () {
@@ -28,7 +31,7 @@ describe("Schema with internal $refs", () => {
       .dereference(path.rel("specs/internal/internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.dereferenced.internal);
+        expect(schema).to.deep.equal(dereferencedSchema);
 
         // Reference equality
         expect(schema.properties.name).to.equal(schema.definitions.name);
@@ -49,7 +52,7 @@ describe("Schema with internal $refs", () => {
       .bundle(path.rel("specs/internal/internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.bundled.internal);
+        expect(schema).to.deep.equal(bundledSchema);
       });
   });
 });

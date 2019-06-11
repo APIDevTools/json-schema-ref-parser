@@ -2,15 +2,17 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
+const parsedSchema = require("./parsed");
+const dereferencedSchema = require("./dereferenced");
 
 describe("options.resolve", () => {
   it('should not resolve external links if "resolve.external" is disabled', function () {
     return $RefParser
       .dereference(path.abs("specs/resolvers/resolvers.yaml"), { resolve: { external: false }})
       .then(function (schema) {
-        expect(schema).to.deep.equal(helper.parsed.resolvers);
+        expect(schema).to.deep.equal(parsedSchema);
       });
   });
 
@@ -37,7 +39,7 @@ describe("options.resolve", () => {
         }
       })
       .then(function (schema) {
-        expect(schema).to.deep.equal(helper.dereferenced.resolvers);
+        expect(schema).to.deep.equal(dereferencedSchema);
       });
   });
 
@@ -56,7 +58,7 @@ describe("options.resolve", () => {
         }
       })
       .then(function (schema) {
-        expect(schema).to.deep.equal(helper.dereferenced.resolvers);
+        expect(schema).to.deep.equal(dereferencedSchema);
       });
   });
 
@@ -75,7 +77,7 @@ describe("options.resolve", () => {
         }
       })
       .then(function (schema) {
-        expect(schema).to.deep.equal(helper.dereferenced.resolvers);
+        expect(schema).to.deep.equal(dereferencedSchema);
       });
   });
 
@@ -95,7 +97,7 @@ describe("options.resolve", () => {
           }
         })
         .then(function (schema) {
-          expect(schema).to.deep.equal(helper.dereferenced.resolvers);
+          expect(schema).to.deep.equal(dereferencedSchema);
         });
     });
   }
@@ -124,7 +126,7 @@ describe("options.resolve", () => {
         }
       })
       .then(function (schema) {
-        expect(schema).to.deep.equal(helper.dereferenced.resolvers);
+        expect(schema).to.deep.equal(dereferencedSchema);
       });
   });
 

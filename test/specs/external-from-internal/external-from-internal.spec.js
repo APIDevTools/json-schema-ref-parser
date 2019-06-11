@@ -2,8 +2,11 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
+const parsedSchema = require("./parsed");
+const dereferencedSchema = require("./dereferenced");
+const bundledSchema = require("./bundled");
 
 /**
  * This test is from PR #62
@@ -16,7 +19,7 @@ describe("Schema with two external refs to the same value and internal ref befor
       .parse(path.abs("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.externalFromInternal.schema);
+        expect(schema).to.deep.equal(parsedSchema.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/external-from-internal/external-from-internal.yaml")]);
       });
   });
@@ -27,7 +30,7 @@ describe("Schema with two external refs to the same value and internal ref befor
       .parse(path.rel("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.externalFromInternal.schema);
+        expect(schema).to.deep.equal(parsedSchema.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/external-from-internal/external-from-internal.yaml")]);
       });
   });
@@ -38,27 +41,27 @@ describe("Schema with two external refs to the same value and internal ref befor
       .parse(path.url("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.parsed.externalFromInternal.schema);
+        expect(schema).to.deep.equal(parsedSchema.schema);
         expect(parser.$refs.paths()).to.deep.equal([path.url("specs/external-from-internal/external-from-internal.yaml")]);
       });
   });
 
   it("should resolve successfully from an absolute path", helper.testResolve(
     path.abs("specs/external-from-internal/external-from-internal.yaml"),
-    path.abs("specs/external-from-internal/external-from-internal.yaml"), helper.parsed.externalFromInternal.schema,
-    path.abs("specs/external-from-internal/definitions.yaml"), helper.parsed.externalFromInternal.definitions
+    path.abs("specs/external-from-internal/external-from-internal.yaml"), parsedSchema.schema,
+    path.abs("specs/external-from-internal/definitions.yaml"), parsedSchema.definitions
   ));
 
   it("should resolve successfully from a relative path", helper.testResolve(
     path.rel("specs/external-from-internal/external-from-internal.yaml"),
-    path.abs("specs/external-from-internal/external-from-internal.yaml"), helper.parsed.externalFromInternal.schema,
-    path.abs("specs/external-from-internal/definitions.yaml"), helper.parsed.externalFromInternal.definitions
+    path.abs("specs/external-from-internal/external-from-internal.yaml"), parsedSchema.schema,
+    path.abs("specs/external-from-internal/definitions.yaml"), parsedSchema.definitions
   ));
 
   it("should resolve successfully from a url", helper.testResolve(
     path.url("specs/external-from-internal/external-from-internal.yaml"),
-    path.url("specs/external-from-internal/external-from-internal.yaml"), helper.parsed.externalFromInternal.schema,
-    path.url("specs/external-from-internal/definitions.yaml"), helper.parsed.externalFromInternal.definitions
+    path.url("specs/external-from-internal/external-from-internal.yaml"), parsedSchema.schema,
+    path.url("specs/external-from-internal/definitions.yaml"), parsedSchema.definitions
   ));
 
   it("should dereference successfully", function () {
@@ -67,7 +70,7 @@ describe("Schema with two external refs to the same value and internal ref befor
       .dereference(path.rel("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.dereferenced.externalFromInternal);
+        expect(schema).to.deep.equal(dereferencedSchema);
 
         // Reference equality
         expect(schema.internal1).to.equal(schema.internal2);
@@ -92,7 +95,7 @@ describe("Schema with two external refs to the same value and internal ref befor
       .bundle(path.rel("specs/external-from-internal/external-from-internal.yaml"))
       .then(function (schema) {
         expect(schema).to.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.bundled.externalFromInternal);
+        expect(schema).to.deep.equal(bundledSchema);
       });
   });
 });

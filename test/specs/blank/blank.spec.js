@@ -1,10 +1,12 @@
 "use strict";
 
-const host = require("host-environment");
+const { host } = require("host-environment");
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const helper = require("../../fixtures/helper");
-const path = require("../../fixtures/path");
+const helper = require("../../utils/helper");
+const path = require("../../utils/path");
+const parsedSchema = require("./parsed");
+const dereferencedSchema = require("./dereferenced");
 
 describe("Blank files", function () {
   let windowOnError, testDone;
@@ -30,7 +32,8 @@ describe("Blank files", function () {
         .then(helper.shouldNotGetCalled(done))
         .catch(function (err) {
           expect(err).to.be.an.instanceOf(SyntaxError);
-          expect(err.message).to.contain('blank/files/blank.yaml" is not a valid JSON Schema');
+          expect(err.message).to.contain("blank/files/blank.yaml");
+          expect(err.message).to.contain("is not a valid JSON Schema");
           done();
         })
         .catch(done);
@@ -72,7 +75,7 @@ describe("Blank files", function () {
       $RefParser
         .parse(path.rel("specs/blank/blank.yaml"))
         .then(function (schema) {
-          expect(schema).to.deep.equal(helper.parsed.blank.schema);
+          expect(schema).to.deep.equal(parsedSchema.schema);
           done();
         })
         .catch(done);
@@ -80,12 +83,12 @@ describe("Blank files", function () {
 
     it("should resolve successfully", helper.testResolve(
       path.rel("specs/blank/blank.yaml"),
-      path.abs("specs/blank/blank.yaml"), helper.parsed.blank.schema,
-      path.abs("specs/blank/files/blank.yaml"), helper.parsed.blank.yaml,
-      path.abs("specs/blank/files/blank.json"), helper.parsed.blank.json,
-      path.abs("specs/blank/files/blank.txt"), helper.parsed.blank.text,
-      path.abs("specs/blank/files/blank.png"), helper.parsed.blank.binary,
-      path.abs("specs/blank/files/blank.foo"), helper.parsed.blank.unknown
+      path.abs("specs/blank/blank.yaml"), parsedSchema.schema,
+      path.abs("specs/blank/files/blank.yaml"), parsedSchema.yaml,
+      path.abs("specs/blank/files/blank.json"), parsedSchema.json,
+      path.abs("specs/blank/files/blank.txt"), parsedSchema.text,
+      path.abs("specs/blank/files/blank.png"), parsedSchema.binary,
+      path.abs("specs/blank/files/blank.foo"), parsedSchema.unknown
     ));
 
     it("should dereference successfully", function (done) {
@@ -94,7 +97,7 @@ describe("Blank files", function () {
         .dereference(path.rel("specs/blank/blank.yaml"))
         .then(function (schema) {
           schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
-          expect(schema).to.deep.equal(helper.dereferenced.blank);
+          expect(schema).to.deep.equal(dereferencedSchema);
           done();
         })
         .catch(done);
@@ -106,7 +109,7 @@ describe("Blank files", function () {
         .bundle(path.rel("specs/blank/blank.yaml"))
         .then(function (schema) {
           schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
-          expect(schema).to.deep.equal(helper.dereferenced.blank);
+          expect(schema).to.deep.equal(dereferencedSchema);
           done();
         })
         .catch(done);
