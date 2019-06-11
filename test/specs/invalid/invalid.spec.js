@@ -111,7 +111,7 @@ describe("Invalid syntax", () => {
 
     it("should NOT throw an error for an invalid YAML file with JSON and YAML disabled", async () => {
       const schema = await $RefParser
-        .dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") } }, {
+        .dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, {
           parse: { yaml: false, json: false }
         });
 

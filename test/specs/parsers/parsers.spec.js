@@ -50,7 +50,7 @@ describe("References to non-JSON files", () => {
           text: false,
           // Parse all non-YAML files as binary
           binary: {
-            canParse(file) {
+            canParse (file) {
               return file.url.substr(-5) !== ".yaml";
             }
           }
@@ -97,10 +97,10 @@ describe("References to non-JSON files", () => {
         parse: {
           // A custom parser that returns the contents of ".foo" files, in reverse
           reverseFooParser: {
-            canParse(file) {
+            canParse (file) {
               return file.url.substr(-4) === ".foo";
             },
-            parse(file) {
+            parse (file) {
               return file.data.toString().split("").reverse().join("");
             }
           }
@@ -117,7 +117,7 @@ describe("References to non-JSON files", () => {
           // A custom parser that returns the contents of ".foo" files, in reverse
           reverseFooParser: {
             canParse: /\.FOO$/i,
-            parse(file, callback) {
+            parse (file, callback) {
               let reversed = file.data.toString().split("").reverse().join("");
               callback(null, reversed);
             }
@@ -135,7 +135,7 @@ describe("References to non-JSON files", () => {
           // A custom parser that returns the contents of ".foo" files, in reverse
           reverseFooParser: {
             canParse: [".foo"],
-            parse(file) {
+            parse (file) {
               return new Promise(function (resolve, reject) {
                 let reversed = file.data.toString().split("").reverse().join("");
                 resolve(reversed);
@@ -157,7 +157,7 @@ describe("References to non-JSON files", () => {
           badParser: {
             order: 1,
             canParse: /\.(md|html|css|png)$/i,
-            parse(file, callback) {
+            parse (file, callback) {
               callback("BOMB!!!");
             }
           }
