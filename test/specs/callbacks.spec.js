@@ -6,19 +6,19 @@ const helper = require("../utils/helper");
 const path = require("../utils/path");
 
 describe("Callback & Promise syntax", () => {
-  ["parse", "resolve", "dereference", "bundle"].forEach(function (method) {
-    describe(method + " method", function () {
+  for (let method of ["parse", "resolve", "dereference", "bundle"]) {
+    describe(method + " method", () => {
       it("should call the callback function upon success", testCallbackSuccess(method));
       it("should call the callback function upon failure", testCallbackError(method));
       it("should resolve the Promise upon success", testPromiseSuccess(method));
       it("should reject the Promise upon failure", testPromiseError(method));
     });
-  });
+  }
 
   function testCallbackSuccess (method) {
     return function (done) {
       let parser = new $RefParser();
-      parser[method](path.rel("specs/internal/internal.yaml"), function (err, result) {
+      parser[method](path.rel("specs/internal/internal.yaml"), (err, result) => {
         try {
           expect(err).to.be.null;
           expect(result).to.be.an("object").and.ok;
@@ -40,7 +40,7 @@ describe("Callback & Promise syntax", () => {
 
   function testCallbackError (method) {
     return function (done) {
-      $RefParser[method](path.rel("specs/invalid/invalid.yaml"), function (err, result) {
+      $RefParser[method](path.rel("specs/invalid/invalid.yaml"), (err, result) => {
         try {
           expect(err).to.be.an.instanceOf(SyntaxError);
           expect(result).to.be.undefined;
@@ -57,7 +57,7 @@ describe("Callback & Promise syntax", () => {
     return function () {
       let parser = new $RefParser();
       return parser[method](path.rel("specs/internal/internal.yaml"))
-        .then(function (result) {
+        .then((result) => {
           expect(result).to.be.an("object").and.ok;
 
           if (method === "resolve") {
@@ -74,7 +74,7 @@ describe("Callback & Promise syntax", () => {
     return function () {
       return $RefParser[method](path.rel("specs/invalid/invalid.yaml"))
         .then(helper.shouldNotGetCalled)
-        .catch(function (err) {
+        .catch((err) => {
           expect(err).to.be.an.instanceOf(SyntaxError);
         });
     };

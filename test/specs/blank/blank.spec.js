@@ -11,7 +11,7 @@ const dereferencedSchema = require("./dereferenced");
 describe("Blank files", () => {
   let windowOnError, testDone;
 
-  beforeEach(function () {
+  beforeEach(() => {
     // Some old Webkit browsers throw an error when downloading zero-byte files.
     windowOnError = host.global.onerror;
     host.global.onerror = function () {
@@ -20,7 +20,7 @@ describe("Blank files", () => {
     };
   });
 
-  afterEach(function () {
+  afterEach(() => {
     host.global.onerror = windowOnError;
   });
 

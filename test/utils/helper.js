@@ -57,11 +57,11 @@ const helper = module.exports = {
       // Resolved values
       let values = $refs.values();
       expect(values).to.have.keys(expectedFiles);
-      expectedFiles.forEach(function (file, i) {
+      for (let [i, file] of expectedFiles.entries()) {
         let actual = helper.convertNodeBuffersToPOJOs(values[file]);
         let expected = expectedValues[i];
         expect(actual).to.deep.equal(expected, file);
-      });
+      }
     };
   },
 

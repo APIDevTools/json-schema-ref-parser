@@ -7,7 +7,7 @@ const $RefParser = require("../../lib");
 describe("HTTP options", () => {
   let windowOnError, testDone;
 
-  beforeEach(function () {
+  beforeEach(() => {
     // Some browsers throw global errors on XHR errors
     windowOnError = host.global.onerror;
     host.global.onerror = function () {
@@ -16,7 +16,7 @@ describe("HTTP options", () => {
     };
   });
 
-  afterEach(function () {
+  afterEach(() => {
     host.global.onerror = windowOnError;
   });
 

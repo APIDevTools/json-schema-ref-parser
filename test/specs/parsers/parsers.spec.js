@@ -43,19 +43,18 @@ describe("References to non-JSON files", () => {
   });
 
   it('should parse text as binary if "parse.text" is disabled', async () => {
-    const schema = await $RefParser
-      .dereference(path.rel("specs/parsers/parsers.yaml"), {
-        parse: {
-          // Disable the text parser
-          text: false,
-          // Parse all non-YAML files as binary
-          binary: {
-            canParse (file) {
-              return file.url.substr(-5) !== ".yaml";
-            }
+    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      parse: {
+        // Disable the text parser
+        text: false,
+        // Parse all non-YAML files as binary
+        binary: {
+          canParse (file) {
+            return file.url.substr(-5) !== ".yaml";
           }
         }
-      });
+      }
+    });
     schema.definitions.markdown = helper.convertNodeBuffersToPOJOs(schema.definitions.markdown);
     schema.definitions.html = helper.convertNodeBuffersToPOJOs(schema.definitions.html);
     schema.definitions.css = helper.convertNodeBuffersToPOJOs(schema.definitions.css);
@@ -77,92 +76,87 @@ describe("References to non-JSON files", () => {
   });
 
   it("should use a custom parser with static values", async () => {
-    const schema = await $RefParser
-      .dereference(path.rel("specs/parsers/parsers.yaml"), {
-        parse: {
-          // A custom parser that always returns the same value
-          staticParser: {
-            order: 201,
-            canParse: true,
-            parse: "The quick brown fox jumped over the lazy dog"
-          }
+    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      parse: {
+        // A custom parser that always returns the same value
+        staticParser: {
+          order: 201,
+          canParse: true,
+          parse: "The quick brown fox jumped over the lazy dog"
         }
-      });
+      }
+    });
     expect(schema).to.deep.equal(dereferencedSchema.staticParser);
   });
 
   it("should use a custom parser that returns a value", async () => {
-    const schema = await $RefParser
-      .dereference(path.rel("specs/parsers/parsers.yaml"), {
-        parse: {
-          // A custom parser that returns the contents of ".foo" files, in reverse
-          reverseFooParser: {
-            canParse (file) {
-              return file.url.substr(-4) === ".foo";
-            },
-            parse (file) {
-              return file.data.toString().split("").reverse().join("");
-            }
+    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      parse: {
+        // A custom parser that returns the contents of ".foo" files, in reverse
+        reverseFooParser: {
+          canParse (file) {
+            return file.url.substr(-4) === ".foo";
+          },
+          parse (file) {
+            return file.data.toString().split("").reverse().join("");
           }
         }
-      });
+      }
+    });
     schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.customParser);
   });
 
   it("should use a custom parser that calls a callback", async () => {
-    const schema = await $RefParser
-      .dereference(path.rel("specs/parsers/parsers.yaml"), {
-        parse: {
-          // A custom parser that returns the contents of ".foo" files, in reverse
-          reverseFooParser: {
-            canParse: /\.FOO$/i,
-            parse (file, callback) {
-              let reversed = file.data.toString().split("").reverse().join("");
-              callback(null, reversed);
-            }
+    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      parse: {
+        // A custom parser that returns the contents of ".foo" files, in reverse
+        reverseFooParser: {
+          canParse: /\.FOO$/i,
+          parse (file, callback) {
+            let reversed = file.data.toString().split("").reverse().join("");
+            callback(null, reversed);
           }
         }
-      });
+      }
+    });
     schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.customParser);
   });
 
   it("should use a custom parser that returns a promise", async () => {
-    const schema = await $RefParser
-      .dereference(path.rel("specs/parsers/parsers.yaml"), {
-        parse: {
-          // A custom parser that returns the contents of ".foo" files, in reverse
-          reverseFooParser: {
-            canParse: [".foo"],
-            parse (file) {
-              return new Promise(function (resolve, reject) {
-                let reversed = file.data.toString().split("").reverse().join("");
-                resolve(reversed);
-              });
-            }
+    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      parse: {
+        // A custom parser that returns the contents of ".foo" files, in reverse
+        reverseFooParser: {
+          canParse: [".foo"],
+          async parse (file) {
+            let reversed = await new Promise((resolve) => {
+              resolve(file.data.toString().split("").reverse().join(""));
+            });
+            return reversed;
           }
         }
-      });
+      }
+    });
     schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.customParser);
   });
 
   it("should continue parsing if a custom parser fails", async () => {
-    const schema = await $RefParser
-      .dereference(path.rel("specs/parsers/parsers.yaml"), {
-        parse: {
-          // A custom parser that always fails,
-          // so the built-in parsers will be used as a fallback
-          badParser: {
-            order: 1,
-            canParse: /\.(md|html|css|png)$/i,
-            parse (file, callback) {
-              callback("BOMB!!!");
-            }
+    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      parse: {
+        // A custom parser that always fails,
+        // so the built-in parsers will be used as a fallback
+        badParser: {
+          order: 1,
+          canParse: /\.(md|html|css|png)$/i,
+          parse (file, callback) {
+            callback("BOMB!!!");
           }
         }
-      });
+      }
+    });
     schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
   });

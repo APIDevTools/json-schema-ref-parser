@@ -1,6 +1,5 @@
 "use strict";
 
-
 const { host } = require("host-environment");
 
 if (host.node) {
