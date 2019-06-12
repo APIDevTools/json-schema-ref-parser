@@ -6,7 +6,9 @@ JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 ## [v7.0.0](https://github.com/APIDevTools/json-schema-ref-parser/tree/v7.0.0) (2019-06-11)
 
 - Dropped support for Node 6
+
 - Updated all code to ES6+ syntax (async/await, template literals, arrow functions, etc.)
+
 - No longer including a pre-built bundle in the package. such as [Webpack](https://webpack.js.org/), [Rollup](https://rollupjs.org/), [Parcel](https://parceljs.org/), or [Browserify](http://browserify.org/) to include JSON Schema $Ref Parser in your app
 
 [Full Changelog](https://github.com/APIDevTools/json-schema-ref-parser/compare/v6.1.0...v7.0.0)
