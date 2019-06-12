@@ -17,16 +17,14 @@ This is the default export of JSON Schema $Ref Parser.  You can creates instance
 The `schema` property is the parsed/bundled/dereferenced JSON Schema object.  This is the same value that is passed to the callback function (or Promise) when calling the [`parse`](#parseschema-options-callback), [`bundle`](#bundleschema-options-callback), or [`dereference`](#dereferenceschema-options-callback) methods.
 
 ```javascript
-var parser = new $RefParser();
+let parser = new $RefParser();
 
 parser.schema;                  // => null
 
-parser.dereference("my-schema.json")
-  .then(function(schema) {
-    typeof parser.schema;       // => "object"
+let schema = await parser.dereference("my-schema.json");
+typeof parser.schema;       // => "object"
 
-    schema === parser.schema;   // => true
-  });
+schema === parser.schema;   // => true
 ```
 
 
@@ -36,14 +34,12 @@ The `$refs` property is a [`$Refs`](refs.md) object, which lets you access all o
 This is the same value that is passed to the callback function (or Promise) when calling the [`resolve`](#resolveschema-options-callback) method.
 
 ```javascript
-var parser = new $RefParser();
+let parser = new $RefParser();
 
 parser.$refs.paths();           // => [] empty array
 
-parser.dereference("my-schema.json")
-  .then(function() {
-    parser.$refs.paths();       // => ["my-schema.json"]
-  });
+await parser.dereference("my-schema.json");
+parser.$refs.paths();       // => ["my-schema.json"]
 ```
 
 
@@ -66,15 +62,14 @@ Dereferences all `$ref` pointers in the JSON Schema, replacing each reference wi
 The `dereference` method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object.  Again, this is great for programmatic usage, but it does introduce the risk of [circular references](README.md#circular-refs), so be careful if you intend to serialize the schema using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).  Consider using the [`bundle`](#bundleschema-options-callback) method instead, which does not create circular references.
 
 ```javascript
-$RefParser.dereference("my-schema.yaml")
-  .then(function(schema) {
-    // The `schema` object is a normal JavaScript object,
-    // so you can easily access any part of the schema using simple dot notation
-    console.log(schema.definitions.person.properties.firstName); // => {type: "string"}
+let schema = await $RefParser.dereference("my-schema.yaml");
 
-    // Object reference equality works as expected
-    schema.definitions.thing === schema.definitions.batmobile;   // => true
-  });
+// The `schema` object is a normal JavaScript object,
+// so you can easily access any part of the schema using simple dot notation
+console.log(schema.definitions.person.properties.firstName); // => {type: "string"}
+
+// Object reference equality works as expected
+schema.definitions.thing === schema.definitions.batmobile;   // => true
 ```
 
 
@@ -97,10 +92,8 @@ Bundles all referenced files/URLs into a single schema that only has _internal_ 
 This also eliminates the risk of [circular references](README.md#circular-refs), so the schema can be safely serialized using [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify).
 
 ```javascript
-$RefParser.bundle("my-schema.yaml")
-  .then(function(schema) {
-    console.log(schema.definitions.person); // => {$ref: "#/definitions/schemas~1people~1Bruce-Wayne.json"}
-  });
+let schema = await $RefParser.bundle("my-schema.yaml");
+console.log(schema.definitions.person); // => {$ref: "#/definitions/schemas~1people~1Bruce-Wayne.json"}
 ```
 
 
@@ -125,10 +118,8 @@ See [Callbacks vs. Promises](README.md#callbacks-vs-promises)
 Parses the given JSON Schema file (in JSON or YAML format), and returns it as a JavaScript object.  This method **does not** resolve `$ref` pointers or dereference anything.  It simply parses _one_ file and returns it.
 
 ```javascript
-$RefParser.parse("my-schema.yaml")
-  .then(function(schema) {
-    console.log(schema.definitions.person); // => {$ref: "schemas/people/Bruce-Wayne.json"}
-  });
+let schema = await $RefParser.parse("my-schema.yaml");
+console.log(schema.definitions.person); // => {$ref: "schemas/people/Bruce-Wayne.json"}
 ```
 
 
@@ -151,15 +142,14 @@ See [Callbacks vs. Promises](README.md#callbacks-vs-promises)
 Resolves all JSON references (`$ref` pointers) in the given JSON Schema file.  If it references any other files/URLs, then they will be downloaded and resolved as well.   This method **does not** dereference anything.  It simply gives you a [`$Refs`](refs.md) object, which is a map of all the resolved references and their values.
 
 ```javascript
-$RefParser.resolve("my-schema.yaml")
-  .then(function($refs) {
-    // $refs.paths() returns the paths of all the files in your schema
-    var filePaths = $refs.paths();
+let $refs = await $RefParser.resolve("my-schema.yaml");
 
-    // $refs.get() lets you query parts of your schema
-    var name = $refs.get("schemas/people/Bruce-Wayne.json#/properties/name");
+// $refs.paths() returns the paths of all the files in your schema
+let filePaths = $refs.paths();
 
-    // $refs.set() lets you change parts of your schema
-    $refs.set("schemas/people/Bruce-Wayne.json#/properties/favoriteColor/default", "black");
-  });
+// $refs.get() lets you query parts of your schema
+let name = $refs.get("schemas/people/Bruce-Wayne.json#/properties/name");
+
+// $refs.set() lets you change parts of your schema
+$refs.set("schemas/people/Bruce-Wayne.json#/properties/favoriteColor/default", "black");
 ```

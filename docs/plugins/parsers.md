@@ -9,14 +9,14 @@ You can see the source code for any of the built-in parsers [right here](../../l
 The fastest way to learn is by example, so let's do that.  Here's a simplistic parser that parses CSV files (comma-separated values):
 
 ```javascript
-var myParser = {
+let myParser = {
   order: 1,
 
   canParse: ".csv",
 
-  parse: function(file) {
-    var lines = file.data.toString().split("\n");
-    return lines.map(function(line) {
+  parse(file) {
+    let lines = file.data.toString().split("\n");
+    return lines.map((line) => {
       return line.split(",");
     });
   }
@@ -37,19 +37,21 @@ If _none_ of the parsers match the file, then _all_ of them are tried, in order,
 The `canParse` property tells JSON Schema $Ref Parser what kind of files your parser can handle. In this example, we've simply specified a file extension, but we could have used a simple boolean, an array of file extensions, a regular expression, or even a function with custom logic to determine which files to parse.  Here are examples of each approach:
 
 ```javascript
-// Parse ALL file types
-canParse: true
+let myParser = {
+  // Parse ALL file types
+  canParse: true
 
-// An array of file extensions (lowercased)
-canParse: [".txt", ".csv"]
+  // An array of file extensions (lowercased)
+  canParse: [".txt", ".csv"]
 
-// A regular expression (matched against the FULL file path)
-canParse: /\.(txt|csv)$/i
+  // A regular expression (matched against the FULL file path)
+  canParse: /\.(txt|csv)$/i
 
-// A function that returns a truthy/falsy value
-canParse: function(file) {
-  return file.extension === ".csv" || file.extension === ".txt";
-}
+  // A function that returns a truthy/falsy value
+  canParse(file) {
+    return file.extension === ".csv" || file.extension === ".txt";
+  }
+};
 ```
 
 When using the function form, the `file` parameter is a [file info object](file-info-object.md), which contains information about the file being parsed.
@@ -57,35 +59,38 @@ When using the function form, the `file` parameter is a [file info object](file-
 #### The `parse` method
 Obviously, this is where the real work of a parser happens.  The `parse` method accepts the same [file info object](file-info-object.md) as the `canParse` function, but rather than returning a boolean value, the `parse` method should return a JavaScript representation of the file contents.  For our CSV parser, that is a two-dimensional array of lines and values.  For your parser, it might be an object, a string, a custom class, or anything else.
 
-Unlike the `canParse` function, the `parse` method can also be asynchronous. This might be important if your parser needs to retrieve data from a database or if it relies on an external HTTP service to return the parsed value.  You can return your asynchronous value using either an [ES6 Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) or a Node.js-style error-first callback.  Here are examples of both approaches:
+Unlike the `canParse` function, the `parse` method can also be asynchronous. This might be important if your parser needs to retrieve data from a database or if it relies on an external HTTP service to return the parsed value.  You can return your asynchronous value via a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) or a Node.js-style error-first callback.  Here are examples of both approaches:
 
 ```javascript
-// Return the value in a callback function
-parse: function(file, callback) {
-  doSomethingAsync(file.data, function(data) {
-    if (data) {
-      // Success !
-      callback(null, data);
-    }
-    else {
-      // Error !
-      callback(new Error("No data!"));
-    }
-  });
-}
-
-// Return the value in an ES6 Promise
-parse: function(file) {
-  doSomethingAsync(file.data)
-    .then(function(data) {
+let myCallbackParser = {
+  // Return the value in a callback function
+  parse(file, callback) {
+    doSomethingAsync(file.data, (data) => {
       if (data) {
         // Success !
-        return data;
+        callback(null, data);
       }
       else {
         // Error !
-        throw new Error("No data!");
+        callback(new Error("No data!"));
       }
     });
-}
+  }
+};
+
+let myPromiseParser = {
+  // Return the value in an ES6 Promise
+  async parse(file) {
+    let data = await doSomethingAsync(file.data);
+
+    if (data) {
+      // Success !
+      return data;
+    }
+    else {
+      // Error !
+      throw new Error("No data!");
+    }
+  }
+};
 ```

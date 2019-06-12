@@ -58,7 +58,7 @@ Example
 --------------------------
 
 ```javascript
-$RefParser.dereference(mySchema, function(err, schema) {
+$RefParser.dereference(mySchema, (err, schema) => {
   if (err) {
     console.error(err);
   }
@@ -67,19 +67,19 @@ $RefParser.dereference(mySchema, function(err, schema) {
     // including referenced files, combined into a single object
     console.log(schema.definitions.person.properties.firstName);
   }
-});
+}
 ```
 
-Or use [Promises syntax](http://javascriptplayground.com/blog/2015/02/promises/) instead. The following example is the same as above:
+Or use `async`/`await` syntax instead. The following example is the same as above:
 
 ```javascript
-$RefParser.dereference(mySchema)
-  .then(function(schema) {
-    console.log(schema.definitions.person.properties.firstName);
-  })
-  .catch(function(err) {
-    console.error(err);
-  });
+try {
+  let schema = await $RefParser.dereference(mySchema);
+  console.log(schema.definitions.person.properties.firstName);
+}
+catch(err) {
+  console.error(err);
+}
 ```
 
 For more detailed examples, please see the [API Documentation](https://apidevtools.org/json-schema-ref-parser/docs/)
