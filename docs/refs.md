@@ -24,13 +24,12 @@ This object is a map of JSON References and their resolved values.  It also has 
 This property is `true` if the schema contains any [circular references](README.md#circular-refs).  You may want to check this property before serializing the dereferenced schema as JSON, since [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) does not support circular references by default.
 
 ```javascript
-var parser = new $RefParser();
-parser.dereference("my-schema.json")
-  .then(function() {
-    if (parser.$refs.circular) {
-      console.log('The schema contains circular references');
-    }
-  });
+let parser = new $RefParser();
+await parser.dereference("my-schema.json");
+
+if (parser.$refs.circular) {
+  console.log('The schema contains circular references');
+}
 ```
 
 
@@ -43,17 +42,16 @@ Optionally only return certain types of paths ("file", "http", etc.)
 Returns the paths/URLs of all the files in your schema (including the main schema file).
 
 ```javascript
-$RefParser.resolve("my-schema.json")
-  .then(function($refs) {
-    // Get the paths of ALL files in the schema
-    $refs.paths();
+let $refs = await $RefParser.resolve("my-schema.json");
 
-    // Get the paths of local files only
-    $refs.paths("file");
+// Get the paths of ALL files in the schema
+$refs.paths();
 
-    // Get all URLs
-    $refs.paths("http");
-  });
+// Get the paths of local files only
+$refs.paths("file");
+
+// Get all URLs
+$refs.paths("http");
 ```
 
 ### `values([types])`
@@ -65,16 +63,15 @@ Optionally only return values from certain locations ("file", "http", etc.)
 Returns a map of paths/URLs and their correspond values.
 
 ```javascript
-$RefParser.resolve("my-schema.json")
-  .then(function($refs) {
-    // Get ALL paths & values in the schema
-    // (this is the same as $refs.toJSON())
-    var values = $refs.values();
+let $refs = await $RefParser.resolve("my-schema.json");
 
-    values["schemas/people/Bruce-Wayne.json"];
-    values["schemas/places.yaml"];
-    values["http://wayne-enterprises.com/things/batmobile"];
-  });
+// Get ALL paths & values in the schema
+// (this is the same as $refs.toJSON())
+let values = $refs.values();
+
+values["schemas/people/Bruce-Wayne.json"];
+values["schemas/places.yaml"];
+values["http://wayne-enterprises.com/things/batmobile"];
 ```
 
 
@@ -87,11 +84,10 @@ The JSON Reference path, optionally with a JSON Pointer in the hash
 Returns `true` if the given path exists in the schema; otherwise, returns `false`
 
 ```javascript
-$RefParser.resolve("my-schema.json")
-  .then(function($refs) {
-    $refs.exists("schemas/places.yaml#/definitions/Gotham-City"); // => true
-    $refs.exists("schemas/places.yaml#/definitions/Metropolis");  // => false
-  });
+let $refs = await $RefParser.resolve("my-schema.json");
+
+$refs.exists("schemas/places.yaml#/definitions/Gotham-City"); // => true
+$refs.exists("schemas/places.yaml#/definitions/Metropolis");  // => false
 ```
 
 
@@ -104,10 +100,8 @@ The JSON Reference path, optionally with a JSON Pointer in the hash
 Gets the value at the given path in the schema. Throws an error if the path does not exist.
 
 ```javascript
-$RefParser.resolve("my-schema.json")
-  .then(function($refs) {
-    var value = $refs.get("schemas/people/Bruce-Wayne.json#/properties/address");
-  });
+let $refs = await $RefParser.resolve("my-schema.json");
+let value = $refs.get("schemas/people/Bruce-Wayne.json#/properties/address");
 ```
 
 
@@ -122,8 +116,6 @@ The value to assign. Can be anything (object, string, number, etc.)
 Sets the value at the given path in the schema. If the property, or any of its parents, don't exist, they will be created.
 
 ```javascript
-$RefParser.resolve("my-schema.json")
-  .then(function($refs) {
-    $refs.set("schemas/people/Bruce-Wayne.json#/properties/favoriteColor/default", "black");
-  });
+let $refs = await $RefParser.resolve("my-schema.json");
+$refs.set("schemas/people/Bruce-Wayne.json#/properties/favoriteColor/default", "black");
 ```

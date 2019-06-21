@@ -51,14 +51,14 @@ JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/d
 - Can [dereference](https://apidevtools.org/json-schema-ref-parser/docs/ref-parser.html#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
 - Supports [circular references](https://apidevtools.org/json-schema-ref-parser/docs/#circular-refs), nested references, back-references, and cross-references between files
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object instance
-- [Tested](https://apidevtools.org/json-schema-ref-parser/test/) in Node, io.js, and all major web browsers on Windows, Mac, and Linux
+- [Tested](https://travis-ci.com/APIDevTools/json-schema-ref-parser) in Node and all major web browsers on Windows, Mac, and Linux
 
 
 Example
 --------------------------
 
 ```javascript
-$RefParser.dereference(mySchema, function(err, schema) {
+$RefParser.dereference(mySchema, (err, schema) => {
   if (err) {
     console.error(err);
   }
@@ -67,54 +67,57 @@ $RefParser.dereference(mySchema, function(err, schema) {
     // including referenced files, combined into a single object
     console.log(schema.definitions.person.properties.firstName);
   }
-});
+}
 ```
 
-Or use [Promises syntax](http://javascriptplayground.com/blog/2015/02/promises/) instead. The following example is the same as above:
+Or use `async`/`await` syntax instead. The following example is the same as above:
 
 ```javascript
-$RefParser.dereference(mySchema)
-  .then(function(schema) {
-    console.log(schema.definitions.person.properties.firstName);
-  })
-  .catch(function(err) {
-    console.error(err);
-  });
+try {
+  let schema = await $RefParser.dereference(mySchema);
+  console.log(schema.definitions.person.properties.firstName);
+}
+catch(err) {
+  console.error(err);
+}
 ```
 
 For more detailed examples, please see the [API Documentation](https://apidevtools.org/json-schema-ref-parser/docs/)
 
 
+
 Installation
 --------------------------
-#### Node
 Install using [npm](https://docs.npmjs.com/about-npm/):
 
 ```bash
 npm install json-schema-ref-parser
 ```
 
-Then require it in your code:
+
+
+Usage
+--------------------------
+When using Json-Schema-Ref-Parser in Node.js apps, you'll probably want to use **CommonJS** syntax:
 
 ```javascript
-var $RefParser = require('json-schema-ref-parser');
+const $RefParser = require("json-schema-ref-parser");
 ```
 
-#### Web Browsers
-Reference [`ref-parser.js`](dist/ref-parser.js) or [`ref-parser.min.js`](dist/ref-parser.min.js) in your HTML:
+When using a transpiler such as [Babel](https://babeljs.io/) or [TypeScript](https://www.typescriptlang.org/), or a bundler such as [Webpack](https://webpack.js.org/) or [Rollup](https://rollupjs.org/), you can use **ECMAScript modules** syntax instead:
 
-```html
-<script src="https://unpkg.com/json-schema-ref-parser/dist/ref-parser.min.js"></script>
-<script>
-  $RefParser.dereference(mySchema)
-    .then(function(schema) {
-      console.log(schema.definitions.person.properties.firstName);
-    })
-    .catch(function(err) {
-      console.error(err);
-    });
-</script>
+```javascript
+import $RefParser from "json-schema-ref-parser";
 ```
+
+
+
+Browser support
+--------------------------
+Json-Schema-Ref-Parser supports recent versions of every major web browser.  Older browsers may require [Babel](https://babeljs.io/) and/or [polyfills](https://babeljs.io/docs/en/next/babel-polyfill).
+
+To use Json-Schema-Ref-Parser in a browser, you'll need to use a bundling tool such as [Webpack](https://webpack.js.org/), [Rollup](https://rollupjs.org/), [Parcel](https://parceljs.org/), or [Browserify](http://browserify.org/). Some bundlers may require a bit of configuration, such as setting `browser: true` in [rollup-plugin-resolve](https://github.com/rollup/rollup-plugin-node-resolve).
+
 
 
 API Documentation
@@ -140,9 +143,6 @@ To build/test the project locally on your computer:
 
 4. __Run the tests__<br>
 `npm test`
-
-5. __Start the local web server__<br>
-`npm start` (then browse to [http://localhost:8080/test/](http://localhost:8080/test/))
 
 
 License

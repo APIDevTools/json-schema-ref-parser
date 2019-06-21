@@ -9,11 +9,7 @@ extends:
   - modular/style
   - modular/browser
   - modular/node
-  - modular/es5
-
-globals:
-  Promise: false
-  Symbol: false
+  - modular/es6
 
 rules:
   # This rule erroneously flags functions that use the `arguments` object

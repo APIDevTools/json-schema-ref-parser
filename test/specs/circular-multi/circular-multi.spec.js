@@ -1,14 +1,16 @@
-describe("multiple circular $refs at the same depth in the schema", function () {
-  "use strict";
+"use strict";
 
-  it("should bundle successfully", function () {
-    var parser = new $RefParser();
+const { expect } = require("chai");
+const $RefParser = require("../../..");
+const path = require("../../utils/path");
+const bundledSchema = require("./bundled");
 
-    return parser
-      .bundle(path.rel("specs/circular-multi/definitions/root.json"))
-      .then(function (schema) {
-        expect(schema).to.deep.equal(parser.schema);
-        expect(schema).to.deep.equal(helper.bundled.circularMulti);
-      });
+describe("multiple circular $refs at the same depth in the schema", () => {
+  it("should bundle successfully", async () => {
+    let parser = new $RefParser();
+
+    const schema = await parser.bundle(path.rel("specs/circular-multi/definitions/root.json"));
+    expect(schema).to.deep.equal(parser.schema);
+    expect(schema).to.deep.equal(bundledSchema);
   });
 });

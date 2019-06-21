@@ -1,9 +1,13 @@
-describe("HTTP options", function () {
-  "use strict";
+"use strict";
 
-  var windowOnError, testDone;
+const { host } = require("host-environment");
+const { expect } = require("chai");
+const $RefParser = require("../../lib");
 
-  beforeEach(function () {
+describe("HTTP options", () => {
+  let windowOnError, testDone;
+
+  beforeEach(() => {
     // Some browsers throw global errors on XHR errors
     windowOnError = host.global.onerror;
     host.global.onerror = function () {
@@ -12,48 +16,40 @@ describe("HTTP options", function () {
     };
   });
 
-  afterEach(function () {
+  afterEach(() => {
     host.global.onerror = windowOnError;
   });
 
-  describe("http.headers", function () {
-    it("should override default HTTP headers", function (done) {
-      testDone = done;
-      var parser = new $RefParser();
+  describe("http.headers", () => {
+    it("should override default HTTP headers", async () => {
+      let parser = new $RefParser();
 
-      parser.parse("https://httpbin.org/headers", {
+      let schema = await parser.parse("https://httpbin.org/headers", {
         resolve: { http: { headers: {
           accept: "application/json"
         }}}
-      })
-        .then(function (schema) {
-          expect(schema.headers).to.have.property("Accept", "application/json");
-          done();
-        })
-        .catch(done);
+      });
+
+      expect(schema.headers).to.have.property("Accept", "application/json");
     });
 
     // Old versions of IE don't allow setting custom headers
     if (!(host.browser && host.browser.IE)) {
-      it("should set custom HTTP headers", function (done) {
-        testDone = done;
-        var parser = new $RefParser();
+      it("should set custom HTTP headers", async () => {
+        let parser = new $RefParser();
 
-        parser.parse("https://httpbin.org/headers", {
+        let schema = await parser.parse("https://httpbin.org/headers", {
           resolve: { http: { headers: {
             "my-custom-header": "hello, world"
           }}}
-        })
-          .then(function (schema) {
-            expect(schema.headers).to.have.property("My-Custom-Header", "hello, world");
-            done();
-          })
-          .catch(done);
+        });
+
+        expect(schema.headers).to.have.property("My-Custom-Header", "hello, world");
       });
     }
   });
 
-  describe("http.redirect", function () {
+  describe("http.redirect", () => {
     if (host.karma && host.env.CI) {
       // These tests fail in Safari when running on Sauce Labs (they pass when running on Safari locally).
       // It gets an XHR error when trying to reach httpbin.org.
@@ -67,159 +63,132 @@ describe("HTTP options", function () {
       this.currentTest.slow(3000);
     });
 
-    it("should follow 5 redirects by default", function (done) {
-      testDone = done;
-      var parser = new $RefParser();
+    it("should follow 5 redirects by default", async () => {
+      let parser = new $RefParser();
 
-      parser.parse("https://httpbin.org/redirect/5")
-        .then(function (schema) {
-          expect(schema.url).to.equal("https://httpbin.org/get");
-          done();
-        })
-        .catch(done);
+      let schema = await parser.parse("https://httpbin.org/redirect/5");
+      expect(schema.url).to.equal("https://httpbin.org/get");
     });
 
-    it("should not follow 6 redirects by default", function (done) {
-      testDone = done;
-      var parser = new $RefParser();
+    it("should not follow 6 redirects by default", async () => {
+      try {
+        let parser = new $RefParser();
+        let schema = await parser.parse("https://httpbin.org/redirect/6");
 
-      parser.parse("https://httpbin.org/redirect/6")
-        .then(function (schema) {
-          if (host.node) {
-            throw new Error("All 6 redirects were followed. That should NOT have happened!");
-          }
-          else {
-            // Some web browsers will automatically follow redirects.
-            // Nothing we can do about that.
-            expect(schema.url).to.equal("https://httpbin.org/get");
-            done();
-          }
-        })
-        .catch(function (err) {
-          expect(err).to.be.an.instanceOf(Error);
-          expect(err.message).to.contain("Error downloading https://httpbin.org/redirect/6");
-          if (host.node) {
-            expect(err.message).to.equal(
-              "Error downloading https://httpbin.org/redirect/6. \n" +
-              "Too many redirects: \n" +
-              "  https://httpbin.org/redirect/6 \n" +
-              "  https://httpbin.org/relative-redirect/5 \n" +
-              "  https://httpbin.org/relative-redirect/4 \n" +
-              "  https://httpbin.org/relative-redirect/3 \n" +
-              "  https://httpbin.org/relative-redirect/2 \n" +
-              "  https://httpbin.org/relative-redirect/1"
-            );
-          }
-          done();
-        })
-        .catch(done);
-    });
-
-    it("should follow 10 redirects if http.redirects = 10", function (done) {
-      testDone = done;
-      var parser = new $RefParser();
-
-      parser.parse("https://httpbin.org/redirect/10", {
-        resolve: { http: { redirects: 10 }}
-      })
-        .then(function (schema) {
-          expect(schema.url).to.equal("https://httpbin.org/get");
-          done();
-        })
-        .catch(done);
-    });
-
-    it("should not follow any redirects if http.redirects = 0", function (done) {
-      testDone = done;
-      var parser = new $RefParser();
-
-      parser.parse("https://httpbin.org/redirect/1", {
-        resolve: { http: { redirects: 0 }}
-      })
-        .then(function (schema) {
-          if (host.node) {
-            throw new Error("The redirect was followed. That should NOT have happened!");
-          }
-          else {
+        if (host.node) {
+          throw new Error("All 6 redirects were followed. That should NOT have happened!");
+        }
+        else {
           // Some web browsers will automatically follow redirects.
           // Nothing we can do about that.
-            expect(schema.url).to.equal("https://httpbin.org/get");
-            done();
-          }
-        })
-        .catch(function (err) {
-          expect(err).to.be.an.instanceOf(Error);
-          expect(err.message).to.contain("Error downloading https://httpbin.org/redirect/1");
-          if (host.node) {
-            expect(err.message).to.equal(
-              "Error downloading https://httpbin.org/redirect/1. \n" +
+          expect(schema.url).to.equal("https://httpbin.org/get");
+        }
+      }
+      catch (err) {
+        expect(err).to.be.an.instanceOf(Error);
+        expect(err.message).to.contain("Error downloading https://httpbin.org/redirect/6");
+        if (host.node) {
+          expect(err.message).to.equal(
+            "Error downloading https://httpbin.org/redirect/6. \n" +
             "Too many redirects: \n" +
-            "  https://httpbin.org/redirect/1"
-            );
-          }
-          done();
-        })
-        .catch(done);
+            "  https://httpbin.org/redirect/6 \n" +
+            "  https://httpbin.org/relative-redirect/5 \n" +
+            "  https://httpbin.org/relative-redirect/4 \n" +
+            "  https://httpbin.org/relative-redirect/3 \n" +
+            "  https://httpbin.org/relative-redirect/2 \n" +
+            "  https://httpbin.org/relative-redirect/1"
+          );
+        }
+      }
+    });
+
+    it("should follow 10 redirects if http.redirects = 10", async () => {
+      let parser = new $RefParser();
+
+      let schema = await parser.parse("https://httpbin.org/redirect/10", {
+        resolve: { http: { redirects: 10 }}
+      });
+
+      expect(schema.url).to.equal("https://httpbin.org/get");
+    });
+
+    it("should not follow any redirects if http.redirects = 0", async () => {
+      try {
+        let parser = new $RefParser();
+        let schema = await parser.parse("https://httpbin.org/redirect/1", {
+          resolve: { http: { redirects: 0 }}
+        });
+
+        if (host.node) {
+          throw new Error("The redirect was followed. That should NOT have happened!");
+        }
+        else {
+        // Some web browsers will automatically follow redirects.
+        // Nothing we can do about that.
+          expect(schema.url).to.equal("https://httpbin.org/get");
+        }
+      }
+      catch (err) {
+        expect(err).to.be.an.instanceOf(Error);
+        expect(err.message).to.contain("Error downloading https://httpbin.org/redirect/1");
+        if (host.node) {
+          expect(err.message).to.equal(
+            "Error downloading https://httpbin.org/redirect/1. \n" +
+          "Too many redirects: \n" +
+          "  https://httpbin.org/redirect/1"
+          );
+        }
+      }
     });
   });
 
-  describe("http.withCredentials", function () {
-    it('should work by default with CORS "Access-Control-Allow-Origin: *"', function (done) {
-      testDone = done;
-      var parser = new $RefParser();
+  describe("http.withCredentials", () => {
+    it('should work by default with CORS "Access-Control-Allow-Origin: *"', async () => {
+      let parser = new $RefParser();
 
       // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
       // This should work by-default.
-      parser.parse("https://petstore.swagger.io/v2/swagger.json")
-        .then(function (schema) {
-          expect(schema).to.be.an("object");
-          expect(schema).not.to.be.empty;
-          expect(parser.schema).to.equal(schema);
-          done();
-        })
-        .catch(done);
+      let schema = await parser.parse("https://petstore.swagger.io/v2/swagger.json");
+
+      expect(schema).to.be.an("object");
+      expect(schema).not.to.be.empty;
+      expect(parser.schema).to.equal(schema);
     });
 
-    it("should download successfully with http.withCredentials = false (default)", function (done) {
-      testDone = done;
-      var parser = new $RefParser();
+    it("should download successfully with http.withCredentials = false (default)", async () => {
+      let parser = new $RefParser();
 
       // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
       // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
-      parser.parse("https://petstore.swagger.io/v2/swagger.json", {
+      let schema = await parser.parse("https://petstore.swagger.io/v2/swagger.json", {
         resolve: { http: { withCredentials: false }}
-      })
-        .then(function (schema) {
-          expect(schema).to.be.an("object");
-          expect(schema).not.to.be.empty;
-          expect(parser.schema).to.equal(schema);
-          done();
-        })
-        .catch(done);
+      });
+
+      expect(schema).to.be.an("object");
+      expect(schema).not.to.be.empty;
+      expect(parser.schema).to.equal(schema);
     });
 
     if (host.browser) {
-      it("should throw error in browser if http.withCredentials = true", function (done) {
-        testDone = done;
-        var parser = new $RefParser();
+      it("should throw error in browser if http.withCredentials = true", async () => {
+        try {
+          let parser = new $RefParser();
 
-        // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
-        // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
-        parser.parse("https://petstore.swagger.io/v2/swagger.json", {
-          resolve: { http: { withCredentials: true }}
-        })
-          .then(function (schema) {
-          // The request succeeded, which means this browser doesn't support CORS.
-            expect(schema).to.be.an("object");
-            expect(schema).not.to.be.empty;
-            expect(parser.schema).to.equal(schema);
-            done();
-          })
-          .catch(function (err) {
-          // The request failed, which is expected
-            expect(err.message).to.contain("Error downloading https://petstore.swagger.io/v2/swagger.json");
-            done();
+          // Swagger.io has CORS enabled, with "Access-Control-Allow-Origin" set to a wildcard ("*").
+          // So, withCredentials MUST be false (this is the default, but we're testing it explicitly here)
+          let schema = await parser.parse("https://petstore.swagger.io/v2/swagger.json", {
+            resolve: { http: { withCredentials: true }}
           });
+
+          // The request succeeded, which means this browser doesn't support CORS.
+          expect(schema).to.be.an("object");
+          expect(schema).not.to.be.empty;
+          expect(parser.schema).to.equal(schema);
+        }
+        catch (err) {
+          // The request failed, which is expected
+          expect(err.message).to.contain("Error downloading https://petstore.swagger.io/v2/swagger.json");
+        }
       });
     }
   });
