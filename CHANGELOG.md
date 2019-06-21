@@ -3,6 +3,13 @@ All notable changes will be documented in this file.
 JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [v7.1.0](https://github.com/APIDevTools/json-schema-ref-parser/tree/v7.1.0) (2019-06-21)
+
+- Merged [PR #124](https://github.com/APIDevTools/json-schema-ref-parser/pull/124/), which provides more context to [custom resolvers](https://apidevtools.org/json-schema-ref-parser/docs/plugins/resolvers.html).
+
+[Full Changelog](https://github.com/APIDevTools/json-schema-ref-parser/compare/v7.0.1...v7.1.0)
+
+
 ## [v7.0.0](https://github.com/APIDevTools/json-schema-ref-parser/tree/v7.0.0) (2019-06-11)
 
 - Dropped support for Node 6
