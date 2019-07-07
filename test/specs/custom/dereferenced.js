@@ -56,7 +56,7 @@ module.exports =
   type: "object",
   properties: {
     gender: {
-      $ref: '#/definitions/genderEnum'
+      $ref: "#/definitions/genderEnum"
     },
     age: {
       minimum: 0,

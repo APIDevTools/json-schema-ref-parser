@@ -46,7 +46,7 @@ module.exports =
         "female"
       ],
       type: "string",
-    }    
+    }
   },
   required: [
     "name"

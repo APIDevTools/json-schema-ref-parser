@@ -12,7 +12,7 @@ const options = {
   dereference: {
     circular: true,
 
-    isRefResolved: function(value) {
+    isRefResolved (value) {
 
       // don't resolve where $ref contains the word 'gender'
       return value.$ref.match(/\/gender/g) === null;
