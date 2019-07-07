@@ -28,7 +28,15 @@ $RefParser.dereference("my-schema.yaml", {
     }
   },
   dereference: {
-    circular: false                 // Don't allow circular $refs
+    circular: false                  // Don't allow circular $refs
+
+    // custom function that decides if a particular $ref is allowed to be resolved.
+    isRefResolved: function(value) {
+
+     // resolve the reference if it doesn't match /NZCodeSets or /ISO
+     return value.$ref.match(/\/NZCodeSets/g) === null &&
+            value.$ref.match(/\/ISO/g) === null
+    }
   }
 });
 ```
@@ -74,3 +82,4 @@ The `dereference` options control how JSON Schema $Ref Parser will dereference `
 |Option(s)             |Type                |Description
 |:---------------------|:-------------------|:------------
 |`circular`|`boolean` or `"ignore"`|Determines whether [circular `$ref` pointers](README.md#circular-refs) are handled.<br><br>If set to `false`, then a `ReferenceError` will be thrown if the schema contains any circular references.<br><br> If set to `"ignore"`, then circular references will simply be ignored.  No error will be thrown, but the [`$Refs.circular`](refs.md#circular) property will still be set to `true`.
+|`isRefResolved`|`function (value)` | Custom javascript function that determines if particular `$ref` pointers will be resolved or not. e.g. based upon the `$ref` value matching a `regexp`.<br><br>Function takes a single `value` parameter and returns `true` if the `$ref` is to be resolved; `false` if the `$ref` is not to be resolved|

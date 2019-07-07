@@ -1,0 +1,44 @@
+title: Person
+type: object
+definitions:
+  name:
+    type: object
+    required:
+      - first
+      - last
+    properties:
+      first:
+        $ref: "#/definitions/requiredString"
+      last:
+        $ref: "#/definitions/name/properties/first"
+      middle:
+        type:
+          $ref: "#/definitions/name/properties/first/type"
+        minLength:
+          $ref: "#/definitions/name/properties/last/minLength"
+      prefix:
+        $ref: "#/definitions/name/properties/last"
+        minLength: 3
+      suffix:
+        type: string
+        $ref: "#/definitions/name/properties/prefix"
+        maxLength: 3
+  requiredString:
+    title: requiredString
+    type: string
+    minLength: 1
+  genderEnum:
+    type: string
+    enum:
+      - male
+      - female
+required:
+  - name
+properties:
+  name:
+    $ref: "#/definitions/name"
+  age:
+    type: integer
+    minimum: 0
+  gender:
+    $ref: "#/definitions/genderEnum"
