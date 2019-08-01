@@ -1,5 +1,7 @@
 "use strict";
 
+const { createServer } = require("http");
+
 const { host } = require("host-environment");
 const { expect } = require("chai");
 const $RefParser = require("../../lib");
@@ -189,6 +191,100 @@ describe("HTTP options", () => {
           // The request failed, which is expected
           expect(err.message).to.contain("Error downloading https://petstore.swagger.io/v2/swagger.json");
         }
+      });
+    }
+  });
+
+  describe("http.retries", () => {
+    // The test starts its own server which we cannot do in browsers
+    // The option is unrelated to the request transport though so it's
+    // safe to test in Node only.
+    if (host.node) {
+      it("should retry http requests by default", (done) => {
+        let count = 0;
+        const server = createServer((request, response) => {
+          // fail first request with 500, make 2nd request succeed
+          if (count++) {
+            response.writeHead(200, { "Content-Type": "application/json" });
+            response.write('{"ok": true}');
+            return response.end();
+          }
+
+          response.writeHead(500);
+          response.write("Oops");
+          response.end();
+        });
+
+        server.listen(0, async () => {
+          const url = "http://localhost:" + server.address().port;
+          try {
+            const parser = new $RefParser();
+
+            let schema = await parser.parse(url);
+            expect.fail("Should not resolve");
+          }
+          catch (err) {
+            expect(err.message).to.contain(`Error downloading ${url}`);
+          }
+
+          server.close(done);
+        });
+      });
+
+      it("should retry http requests", (done) => {
+        let count = 0;
+        const server = createServer((request, response) => {
+          // fail first request with 500, make 2nd request succeed
+          if (count++) {
+            response.writeHead(200, { "Content-Type": "application/json" });
+            response.write('{"ok": true}');
+            return response.end();
+          }
+
+          response.writeHead(500);
+          response.write("Oops");
+          response.end();
+        });
+
+        server.listen(0, async () => {
+          const parser = new $RefParser();
+          const url = "http://localhost:" + server.address().port;
+
+          let schema = await parser.parse(url, { resolve: { http: { retries: 1 }}});
+          server.close(done);
+          expect(schema).to.deep.equal({ ok: true });
+        });
+      });
+
+      it("should not retry more often than configured", (done) => {
+        let count = 0;
+        const server = createServer((request, response) => {
+          // fail first two request with 500, make 3rd request succeed
+          if (count++ > 1) {
+            response.writeHead(200, { "Content-Type": "application/json" });
+            response.write('{"ok": true}');
+            return response.end();
+          }
+
+          response.writeHead(500);
+          response.write("Oops");
+          response.end();
+        });
+
+        server.listen(0, async () => {
+          const url = "http://localhost:" + server.address().port;
+          try {
+            const parser = new $RefParser();
+
+            await parser.parse(url, { resolve: { http: { retries: 1 }}});
+            expect.fail("Should not resolve");
+          }
+          catch (err) {
+            expect(err.message).to.contain(`Error downloading ${url}`);
+          }
+
+          server.close(done);
+        });
       });
     }
   });
