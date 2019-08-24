@@ -10,7 +10,7 @@ JSON Schema $Ref Parser
 [![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
 
 
-[![OS and Browser Compatibility](https://apidevtools.org/img/badges/ci-badges-with-ie.svg)](https://travis-ci.com/APIDevTools/json-schema-ref-parser)
+[![OS and Browser Compatibility](https://apitools.dev/img/badges/ci-badges-with-ie.svg)](https://travis-ci.com/APIDevTools/json-schema-ref-parser)
 
 
 The Problem:
@@ -46,10 +46,10 @@ The Solution:
 JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03) and [JSON Pointer](https://tools.ietf.org/html/rfc6901) implementation that crawls even the most complex [JSON Schemas](http://json-schema.org/latest/json-schema-core.html) and gives you simple, straightforward JavaScript objects.
 
 - Use **JSON** or **YAML** schemas &mdash; or even a mix of both!
-- Supports `$ref` pointers to external files and URLs, as well as [custom sources](https://apidevtools.org/json-schema-ref-parser/docs/plugins/resolvers.html) such as databases
-- Can [bundle](https://apidevtools.org/json-schema-ref-parser/docs/ref-parser.html#bundlepath-options-callback) multiple files into a single schema that only has _internal_ `$ref` pointers
-- Can [dereference](https://apidevtools.org/json-schema-ref-parser/docs/ref-parser.html#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
-- Supports [circular references](https://apidevtools.org/json-schema-ref-parser/docs/#circular-refs), nested references, back-references, and cross-references between files
+- Supports `$ref` pointers to external files and URLs, as well as [custom sources](https://apitools.dev/json-schema-ref-parser/docs/plugins/resolvers.html) such as databases
+- Can [bundle](https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#bundlepath-options-callback) multiple files into a single schema that only has _internal_ `$ref` pointers
+- Can [dereference](https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
+- Supports [circular references](https://apitools.dev/json-schema-ref-parser/docs/#circular-refs), nested references, back-references, and cross-references between files
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object instance
 - [Tested](https://travis-ci.com/APIDevTools/json-schema-ref-parser) in Node and all major web browsers on Windows, Mac, and Linux
 
@@ -82,7 +82,7 @@ catch(err) {
 }
 ```
 
-For more detailed examples, please see the [API Documentation](https://apidevtools.org/json-schema-ref-parser/docs/)
+For more detailed examples, please see the [API Documentation](https://apitools.dev/json-schema-ref-parser/docs/)
 
 
 
@@ -122,7 +122,7 @@ To use Json-Schema-Ref-Parser in a browser, you'll need to use a bundling tool s
 
 API Documentation
 --------------------------
-Full API documentation is available [right here](https://apidevtools.org/json-schema-ref-parser/docs/)
+Full API documentation is available [right here](https://apitools.dev/json-schema-ref-parser/docs/)
 
 
 Contributing

@@ -22,7 +22,7 @@
       "email": "boris@performancejs.com"
     }
   ],
-  "homepage": "https://apidevtools.org/json-schema-ref-parser/",
+  "homepage": "https://apitools.dev/json-schema-ref-parser/",
   "repository": {
     "type": "git",
     "url": "https://github.com/APIDevTools/json-schema-ref-parser.git"
