@@ -221,6 +221,16 @@ declare namespace $RefParser {
        * If set to `"ignore"`, then circular references will simply be ignored. No error will be thrown, but the `$Refs.circular` property will still be set to `true`.
        */
       circular?: boolean | 'ignore'
+      /**
+       * Determines whether $ref pointers to id are handled.
+       *
+       * If set to `true`, then the pointer will be dereferenced.
+       *
+       * If set to `false`, then a `ReferenceError` will be thrown if the schema contains any references to ids.
+       *
+       * If set to `"ignore"`, then references to id will simply be ignored. No error will be thrown. (default)
+       */
+      id?: boolean | 'ignore'
     }
   }
 

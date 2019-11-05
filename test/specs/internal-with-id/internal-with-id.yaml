@@ -1,0 +1,22 @@
+title: Customer
+type: object
+definitions:
+  address:
+    $id: "#address"
+    type: object
+    properties:
+      streetAddress:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+    required:
+      - streetAddress
+      - city
+      - state
+properties:
+  billingAddress:
+    $ref: "#address"
+  shippingAddress:
+    $ref: "#address"

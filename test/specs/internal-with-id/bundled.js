@@ -1,0 +1,32 @@
+"use strict";
+
+module.exports = {
+  definitions: {
+    address: {
+      required: ["streetAddress", "city", "state"],
+      $id: "#address",
+      type: "object",
+      properties: {
+        streetAddress: {
+          type: "string"
+        },
+        city: {
+          type: "string"
+        },
+        state: {
+          type: "string"
+        }
+      }
+    }
+  },
+  type: "object",
+  properties: {
+    billingAddress: {
+      $ref: "#address"
+    },
+    shippingAddress: {
+      $ref: "#address"
+    }
+  },
+  title: "Customer"
+};
