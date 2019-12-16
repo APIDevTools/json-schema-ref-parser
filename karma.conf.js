@@ -24,9 +24,10 @@ module.exports = karmaConfig({
   sourceDir: "lib",
   fixtures: "test/fixtures/**/*.js",
   browsers: {
-    ie: true,
+    ie: false,
+    safari: false
   },
   config: {
-    exclude,
+    exclude
   }
 });

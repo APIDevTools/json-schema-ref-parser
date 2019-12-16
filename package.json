@@ -31,7 +31,9 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "browser": {
-    "fs": false
+    "fs": false,
+    "http": false,
+    "https": false
   },
   "files": [
     "lib"
@@ -70,6 +72,7 @@
   "dependencies": {
     "call-me-maybe": "^1.0.1",
     "js-yaml": "^3.13.1",
-    "ono": "^5.1.0"
+    "ono": "^5.1.0",
+    "url": "^0.11.0"
   }
 }
