@@ -50,26 +50,26 @@
     "release": "npm run upgrade && npm test && npm run bump"
   },
   "devDependencies": {
-    "@babel/polyfill": "^7.6.0",
-    "@types/json-schema": "^7.0.1",
-    "@types/node": "^12.11.6",
+    "@babel/polyfill": "^7.7.0",
+    "@types/json-schema": "^7.0.4",
+    "@types/node": "^13.1.2",
     "chai": "^4.2.0",
-    "coveralls": "^3.0.7",
-    "eslint": "^6.5.1",
+    "coveralls": "^3.0.9",
+    "eslint": "^6.8.0",
     "eslint-config-modular": "^7.0.1",
     "host-environment": "^1.1.4",
     "karma": "^4.4.1",
     "karma-cli": "^2.0.0",
-    "karma-config": "^1.5.6",
+    "karma-config": "^1.5.7",
     "mocha": "^6.2.2",
     "npm-check": "^5.9.0",
-    "nyc": "^14.1.1",
-    "typescript": "^3.6.4",
-    "version-bump-prompt": "^5.0.5"
+    "nyc": "^15.0.0",
+    "typescript": "^3.7.4",
+    "version-bump-prompt": "^5.0.7"
   },
   "dependencies": {
     "call-me-maybe": "^1.0.1",
     "js-yaml": "^3.13.1",
-    "ono": "^5.1.0"
+    "ono": "^6.0.0"
   }
 }
