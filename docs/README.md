@@ -52,7 +52,7 @@ The difference is that in the second example you now have a reference to `parser
 
 
 ### Callbacks vs. Promises
-Many people prefer [Promise syntax](http://javascriptplayground.com/blog/2015/02/promises/) or `async`/`awiat` instead of callbacks.  JSON Schema $Ref Parser allows you to use whichever one you prefer.
+Many people prefer [Promise syntax](http://javascriptplayground.com/blog/2015/02/promises/) or `async`/`await` instead of callbacks.  JSON Schema $Ref Parser allows you to use whichever one you prefer.
 
 If you pass a callback function to any method, then the method will call the callback using the Node.js error-first convention.  If you do _not_ pass a callback function, then the method will return a Promise.
 
