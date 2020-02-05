@@ -6,6 +6,7 @@ const helper = require("../../utils/helper");
 const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
+const { StoplightParserError, ParserError } = require("../../../lib/util/errors");
 
 describe("References to non-JSON files", () => {
   it("should parse successfully", async () => {
@@ -70,7 +71,7 @@ describe("References to non-JSON files", () => {
       helper.shouldNotGetCalled();
     }
     catch (err) {
-      expect(err).to.be.an.instanceOf(SyntaxError);
+      expect(err).to.be.an.instanceOf(StoplightParserError);
       expect(err.message).to.contain("Error parsing ");
     }
   });
@@ -161,4 +162,26 @@ describe("References to non-JSON files", () => {
     expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
   });
 
+  it("should normalize errors thrown by parsers", async () => {
+    try {
+      await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+        parse: {
+          // A custom parser that always fails,
+          // so the built-in parsers will be used as a fallback
+          yaml: {
+            order: 1,
+            parse () {
+              throw new Error("Woops");
+            }
+          }
+        }
+      });
+      helper.shouldNotGetCalled();
+    }
+    catch (err) {
+      expect(err).to.be.instanceof(ParserError);
+      expect(err.message).to.contain("Error parsing");
+      expect(err.message).to.contain("arsers/parsers.yaml: Woops");
+    }
+  });
 });
