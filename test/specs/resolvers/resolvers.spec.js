@@ -6,6 +6,7 @@ const helper = require("../../utils/helper");
 const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
+const { ResolverError } = require("../../../lib/util/errors");
 
 describe("options.resolve", () => {
   it('should not resolve external links if "resolve.external" is disabled', async () => {
@@ -111,4 +112,25 @@ describe("options.resolve", () => {
     expect(schema).to.deep.equal(dereferencedSchema);
   });
 
+  it("should normalize errors thrown by resolvers", async () => {
+    try {
+      await $RefParser.dereference({ $ref: path.abs("specs/resolvers/resolvers.yaml") }, {
+        resolve: {
+          // A custom resolver that always fails
+          file: {
+            order: 1,
+            canRead: true,
+            parse () {
+              throw new Error("Woops");
+            }
+          }
+        }
+      });
+      helper.shouldNotGetCalled();
+    }
+    catch (err) {
+      expect(err).to.be.instanceof(ResolverError);
+      expect(err.message).to.contain("Error opening file");
+    }
+  });
 });
