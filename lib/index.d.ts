@@ -299,6 +299,16 @@ declare namespace $RefParser {
      * A regular expression can be used to match files by their full path. A string (or array of strings) can be used to match files by their file extension. Or a function can be used to perform more complex matching logic. See the custom parser docs for details.
      */
     canParse?: boolean | RegExp | string | string[] | ((file: FileInfo) => boolean)
+
+    /**
+     * This is where the real work of a parser happens. The `parse` method accepts the same [file info object](file-info-object.md) as the `canParse` function, but rather than returning a boolean value, the `parse` method should return a JavaScript representation of the file contents.  For our CSV parser, that is a two-dimensional array of lines and values.  For your parser, it might be an object, a string, a custom class, or anything else.
+     *
+     * Unlike the `canParse` function, the `parse` method can also be asynchronous. This might be important if your parser needs to retrieve data from a database or if it relies on an external HTTP service to return the parsed value.  You can return your asynchronous value via a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) or a Node.js-style error-first callback.  Here are examples of both approaches:
+     */
+    parse(
+      file: FileInfo,
+      callback?: (error: Error | null, data: string | null) => any
+    ): unknown | Promise<unknown>
   }
 
   /**
