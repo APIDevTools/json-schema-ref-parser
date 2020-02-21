@@ -193,5 +193,73 @@ describe("Invalid syntax", () => {
         foo: ":\n"
       });
     });
+
+    describe("when failFast is false", () => {
+      it("should not throw an error for an invalid file path", async () => {
+        const parser = new $RefParser();
+        const result = await parser.dereference({ foo: { $ref: "this file does not exist" }}, { failFast: false });
+        expect(parser.errors.length).to.equal(1);
+        expect(parser.errors).to.containSubset([
+          {
+            name: ResolverError.name,
+            message: expectedValue => expectedValue.startsWith("Error opening file"),
+            path: ["foo"],
+            source: expectedValue => expectedValue.endsWith("/test/"),
+          }
+        ]);
+      });
+
+      it("should not throw an error for an invalid YAML file", async () => {
+        const parser = new $RefParser();
+        const result = await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, { failFast: false });
+        expect(result).to.deep.equal({ foo: null });
+        expect(parser.errors.length).to.equal(1);
+        expect(parser.errors).to.containSubset([
+          {
+            name: ParserError.name,
+            message: "incomplete explicit mapping pair; a key node is missed",
+            path: ["foo"],
+            source: expectedValue => expectedValue.endsWith("/test/"),
+          },
+        ]);
+      });
+
+      it("should not throw an error for an invalid JSON file", async () => {
+        const parser = new $RefParser();
+        const result = await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, { failFast: false });
+        expect(result).to.deep.equal({ foo: null });
+        expect(parser.errors.length).to.equal(1);
+        expect(parser.errors).to.containSubset([
+          {
+            name: ParserError.name,
+            message: "unexpected end of the stream within a flow collection",
+            path: ["foo"],
+            source: expectedValue => expectedValue.endsWith("/test/"),
+          }
+        ]);
+      });
+
+      it("should not throw an error for an invalid JSON file with YAML disabled", async () => {
+        const parser = new $RefParser();
+        const result = await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, { failFast: false, parse: { yaml: false }});
+        expect(result).to.deep.equal({ foo: null });
+        expect(parser.errors.length).to.equal(1);
+        expect(parser.errors).to.containSubset([
+          {
+            name: ParserError.name,
+            message: "CloseBraceExpected",
+            path: ["foo"],
+            source: expectedValue => expectedValue.endsWith("/test/"),
+          }
+        ]);
+      });
+
+      it("should not throw an error for an invalid YAML file with JSON and YAML disabled", async () => {
+        const parser = new $RefParser();
+        const result = await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, { failFast: false, parse: { yaml: false, json: false }});
+        expect(result).to.deep.equal({ foo: ":\n" });
+        expect(parser.errors).to.deep.equal([]);
+      });
+    });
   });
 });
