@@ -26,6 +26,13 @@ declare class $RefParser {
   $refs: $RefParser.$Refs
 
   /**
+   * List of all errors
+   *
+   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#errors
+   */
+  errors: Array<$RefParser.GenericError | $RefParser.ResolverError | $RefParser.ParserError | $RefParser.MissingPointerError>;
+
+  /**
    * Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value. This results in a schema object that does not contain any `$ref` pointers. Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object. This is great for programmatic usage, especially when using tools that don't understand JSON references.
    *
    * The dereference method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object. Again, this is great for programmatic usage, but it does introduce the risk of circular references, so be careful if you intend to serialize the schema using `JSON.stringify()`. Consider using the bundle method instead, which does not create circular references.
@@ -209,6 +216,12 @@ declare namespace $RefParser {
     } & {
       [key: string]: Partial<ResolverOptions>
     }
+
+    /**
+     * Determines how lenient the processing should be.
+     * If this option is enable, the processing will be performed in a bail mode - will abort upon the first exception.
+     */
+    failFast?: boolean;
 
     /**
      * The `dereference` options control how JSON Schema `$Ref` Parser will dereference `$ref` pointers within the JSON schema.
@@ -398,4 +411,15 @@ declare namespace $RefParser {
     set($ref: string, value: JSONSchema4Type | JSONSchema6Type): void
   }
 
+  export class GenericError extends Error {
+    readonly message: string;
+    readonly path: Array<string | number>;
+    readonly source: string;
+  }
+
+  export class ParserError extends GenericError {}
+  export class ResolverError extends GenericError {
+    readonly code?: string;
+  }
+  export class MissingPointerError extends GenericError {}
 }
