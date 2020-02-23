@@ -30,7 +30,7 @@ declare class $RefParser {
    *
    * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#errors
    */
-  errors: Array<$RefParser.GenericError | $RefParser.ResolverError | $RefParser.ParserError | $RefParser.MissingPointerError>;
+  errors: Array<$RefParser.GenericError | $RefParser.ResolverError | $RefParser.ParserError | $RefParser.MissingPointerError | $RefParser.UnmatchedParserError | $RefParser.UnmatchedResolverError>;
 
   /**
    * Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value. This results in a schema object that does not contain any `$ref` pointers. Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object. This is great for programmatic usage, especially when using tools that don't understand JSON references.
@@ -418,8 +418,10 @@ declare namespace $RefParser {
   }
 
   export class ParserError extends GenericError {}
+  export class UnmatchedParserError extends GenericError {}
   export class ResolverError extends GenericError {
     readonly code?: string;
   }
+  export class UnmatchedResolverError extends GenericError {}
   export class MissingPointerError extends GenericError {}
 }

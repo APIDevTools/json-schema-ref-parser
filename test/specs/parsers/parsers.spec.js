@@ -6,7 +6,7 @@ const helper = require("../../utils/helper");
 const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
-const { StoplightParserError, ParserError } = require("../../../lib/util/errors");
+const { StoplightParserError, ParserError, UnmatchedParserError } = require("../../../lib/util/errors");
 
 describe("References to non-JSON files", () => {
   it("should parse successfully", async () => {
@@ -63,6 +63,24 @@ describe("References to non-JSON files", () => {
     schema.definitions.unknown = helper.convertNodeBuffersToPOJOs(schema.definitions.unknown);
     schema.definitions.empty = helper.convertNodeBuffersToPOJOs(schema.definitions.empty);
     expect(schema).to.deep.equal(dereferencedSchema.binaryParser);
+  });
+
+  it("should throw an error if no no parser can be matched", async () => {
+    try {
+      await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+        parse: {
+          yaml: false,
+          json: false,
+          text: false,
+          binary: false,
+        },
+      });
+    }
+    catch (err) {
+      expect(err).to.be.an.instanceOf(SyntaxError);
+      expect(err.message).to.contain("Unable to parse ");
+      expect(err.message).to.contain("parsers/parsers.yaml");
+    }
   });
 
   it('should throw an error if "parse.text" and "parse.binary" are disabled', async () => {
@@ -183,5 +201,28 @@ describe("References to non-JSON files", () => {
       expect(err.message).to.contain("Error parsing");
       expect(err.message).to.contain("arsers/parsers.yaml: Woops");
     }
+  });
+
+  it("should let no parser to be matched if fastFail is false", async () => {
+    const parser = new $RefParser();
+    await parser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      parse: {
+        yaml: false,
+        json: false,
+        text: false,
+        binary: false,
+      },
+      failFast: false,
+    });
+
+    expect(parser.errors.length).to.equal(1);
+    expect(parser.errors).to.containSubset([
+      {
+        name: UnmatchedParserError.name,
+        message: expectedValue => expectedValue.startsWith("Could not find parser for"),
+        path: [],
+        source: expectedValue => expectedValue.endsWith("specs/parsers/parsers.yaml"),
+      },
+    ]);
   });
 });

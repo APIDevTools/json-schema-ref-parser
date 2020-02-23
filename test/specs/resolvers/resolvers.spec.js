@@ -1,12 +1,15 @@
 "use strict";
 
-const { expect } = require("chai");
+const chai = require("chai");
+const chaiSubset = require("chai-subset");
+chai.use(chaiSubset);
+const { expect } = chai;
 const $RefParser = require("../../..");
 const helper = require("../../utils/helper");
 const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
-const { ResolverError } = require("../../../lib/util/errors");
+const { ResolverError, UnmatchedResolverError } = require("../../../lib/util/errors");
 
 describe("options.resolve", () => {
   it('should not resolve external links if "resolve.external" is disabled', async () => {
@@ -132,5 +135,26 @@ describe("options.resolve", () => {
       expect(err).to.be.instanceof(ResolverError);
       expect(err.message).to.contain("Error opening file");
     }
+  });
+
+  it("should let no resolver to be matched if fastFail is false", async () => {
+    const parser = new $RefParser();
+    await parser.dereference(path.abs("specs/resolvers/resolvers.yaml"), {
+      resolve: {
+        file: false,
+        http: false,
+      },
+      failFast: false,
+    });
+
+    expect(parser.errors.length).to.equal(1);
+    expect(parser.errors).to.containSubset([
+      {
+        name: UnmatchedResolverError.name,
+        message: expectedValue => expectedValue.startsWith("Could not find resolver for"),
+        path: [],
+        source: expectedValue => expectedValue.endsWith("specs/resolvers/resolvers.yaml"),
+      },
+    ]);
   });
 });
