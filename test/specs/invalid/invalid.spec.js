@@ -82,9 +82,9 @@ describe("Invalid syntax", () => {
         expect(parser.errors).to.containSubset([
           {
             name: ResolverError.name,
-            message: expectedValue => expectedValue.startsWith("Error opening file"),
+            message: expectedValue => expectedValue.startsWith("Error opening file") || expectedValue.endsWith("HTTP ERROR 404"),
             path: [],
-            source: expectedValue => expectedValue.endsWith("/test/this file does not exist"),
+            source: expectedValue => expectedValue.endsWith("this file does not exist") || expectedValue.startsWith("http://localhost"),
           }
         ]);
       });
@@ -198,13 +198,14 @@ describe("Invalid syntax", () => {
       it("should not throw an error for an invalid file path", async () => {
         const parser = new $RefParser();
         const result = await parser.dereference({ foo: { $ref: "this file does not exist" }}, { failFast: false });
+        expect(result).to.deep.equal({ foo: null });
         expect(parser.errors.length).to.equal(1);
         expect(parser.errors).to.containSubset([
           {
             name: ResolverError.name,
-            message: expectedValue => expectedValue.startsWith("Error opening file"),
+            message: expectedValue => expectedValue.startsWith("Error opening file") || expectedValue.endsWith("HTTP ERROR 404"),
             path: ["foo"],
-            source: expectedValue => expectedValue.endsWith("/test/"),
+            source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
           }
         ]);
       });
@@ -219,7 +220,7 @@ describe("Invalid syntax", () => {
             name: ParserError.name,
             message: "incomplete explicit mapping pair; a key node is missed",
             path: ["foo"],
-            source: expectedValue => expectedValue.endsWith("/test/"),
+            source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
           },
         ]);
       });
@@ -234,7 +235,7 @@ describe("Invalid syntax", () => {
             name: ParserError.name,
             message: "unexpected end of the stream within a flow collection",
             path: ["foo"],
-            source: expectedValue => expectedValue.endsWith("/test/"),
+            source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
           }
         ]);
       });
@@ -249,7 +250,7 @@ describe("Invalid syntax", () => {
             name: ParserError.name,
             message: "CloseBraceExpected",
             path: ["foo"],
-            source: expectedValue => expectedValue.endsWith("/test/"),
+            source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
           }
         ]);
       });

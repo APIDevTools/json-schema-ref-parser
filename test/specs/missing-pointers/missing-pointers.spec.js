@@ -29,7 +29,7 @@ describe("Schema with missing pointers", () => {
         name: MissingPointerError.name,
         message: "Token \"baz\" does not exist.",
         path: ["foo"],
-        source: expectedValue => expectedValue.endsWith("/test/"),
+        source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
       }
     ]);
   });

@@ -1,6 +1,9 @@
 "use strict";
 
-const { expect } = require("chai");
+const chai = require("chai");
+const chaiSubset = require("chai-subset");
+chai.use(chaiSubset);
+const { expect } = chai;
 const $RefParser = require("../../..");
 const helper = require("../../utils/helper");
 const path = require("../../utils/path");
@@ -221,7 +224,7 @@ describe("References to non-JSON files", () => {
         name: UnmatchedParserError.name,
         message: expectedValue => expectedValue.startsWith("Could not find parser for"),
         path: [],
-        source: expectedValue => expectedValue.endsWith("specs/parsers/parsers.yaml"),
+        source: expectedValue => expectedValue.endsWith("specs/parsers/parsers.yaml") || expectedValue.startsWith("http://localhost"),
       },
     ]);
   });
