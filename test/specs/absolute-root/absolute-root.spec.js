@@ -1,6 +1,7 @@
 "use strict";
 
 const { expect } = require("chai");
+const { resolve } = require("path");
 const $RefParser = require("../../..");
 const path = require("../../utils/path");
 const helper = require("../../utils/helper");
@@ -10,6 +11,9 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("When executed in the context of root directory", () => {
+  // Store the OS root directory
+  const root = resolve("/");
+
   // Store references to the original methods
   const originalProcessCwd = process.cwd;
   const originalUrlCwd = url.cwd;
@@ -18,7 +22,7 @@ describe("When executed in the context of root directory", () => {
    * A mock `process.cwd()` implementation that always returns the root diretory
    */
   function mockProcessCwd () {
-    return "/";
+    return root;
   }
 
   /**
