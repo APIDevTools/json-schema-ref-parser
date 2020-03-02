@@ -10,24 +10,37 @@ const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
 describe("When executed in the context of root directory", () => {
-  const { cwd } = url;
-  const { cwd: processCwd } = process;
+  // Store references to the original methods
+  const originalProcessCwd = process.cwd;
+  const originalUrlCwd = url.cwd;
 
-  beforeEach(() => {
-    url.cwd = function () {
-      try {
-        process.cwd = () => "/";
-        return cwd.apply(null, arguments);
-      }
-      finally {
-        process.cwd = processCwd;
-      }
-    };
+  /**
+   * A mock `process.cwd()` implementation that always returns the root diretory
+   */
+  function mockProcessCwd () {
+    return "/";
+  }
+
+  /**
+   * Temporarily mocks `process.cwd()` while calling the real `url.cwd()` implemenation
+   */
+  function mockUrlCwd () {
+    try {
+      process.cwd = mockProcessCwd;
+      return originalUrlCwd.apply(null, arguments);
+    }
+    finally {
+      process.cwd = originalProcessCwd;
+    }
+  }
+
+  beforeEach("Mock process.cwd and url.cwd", () => {
+    url.cwd = mockUrlCwd;
   });
 
-  afterEach(() => {
-    url.cwd = cwd;
-    process.cwd = processCwd; // already restored at line 19, but just in case
+  afterEach("Restore process.cwd and url.cwd", () => {
+    url.cwd = originalUrlCwd;
+    process.cwd = originalProcessCwd; // already restored by the finally block above, but just in case
   });
 
 
