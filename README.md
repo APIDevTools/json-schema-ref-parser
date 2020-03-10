@@ -8,6 +8,7 @@ JSON Schema $Ref Parser
 [![npm](https://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
 [![Dependencies](https://david-dm.org/APIDevTools/json-schema-ref-parser.svg)](https://david-dm.org/APIDevTools/json-schema-ref-parser)
 [![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
+[![Buy us a tree](https://img.shields.io/badge/Treeware-%F0%9F%8C%B3-lightgreen)](https://click.treeware.earth/APIDevTools/json-schema-ref-parser)
 
 
 [![OS and Browser Compatibility](https://apitools.dev/img/badges/ci-badges-with-ie.svg)](https://travis-ci.com/APIDevTools/json-schema-ref-parser)
@@ -145,6 +146,16 @@ To build/test the project locally on your computer:
 License
 --------------------------
 JSON Schema $Ref Parser is 100% free and open-source, under the [MIT license](LICENSE). Use it however you want.
+
+Treeware
+--------------------------
+You're free to use this package, but if it makes it to your production environment you are required to buy the world a tree.
+
+It’s now common knowledge that one of the best tools to tackle the climate crisis and keep our temperatures from rising above 1.5C is to <a href="https://www.bbc.co.uk/news/science-environment-48870920">plant trees</a>. If you support this package and contribute to the Treeware forest you’ll be creating employment for local families and restoring wildlife habitats.
+
+[You can buy trees here](https://click.treeware.earth/APIDevTools/json-schema-ref-parser)
+
+Read more about Treeware at [treeware.earth](http://treeware.earth)
 
 Big Thanks To
 --------------------------
