@@ -51,25 +51,24 @@
   },
   "devDependencies": {
     "@babel/polyfill": "^7.7.0",
+    "@jsdevtools/eslint-config-modular": "^8.0.0",
+    "@jsdevtools/host-environment": "^2.0.2",
+    "@jsdevtools/karma-config": "^3.1.2",
+    "@jsdevtools/version-bump-prompt": "^6.0.2",
     "@types/json-schema": "^7.0.4",
     "@types/node": "^13.1.2",
     "chai": "^4.2.0",
-    "coveralls": "^3.0.9",
     "eslint": "^6.8.0",
-    "eslint-config-modular": "^7.0.1",
-    "host-environment": "^1.1.4",
     "karma": "^4.4.1",
     "karma-cli": "^2.0.0",
-    "karma-config": "^1.5.7",
-    "mocha": "^6.2.2",
+    "mocha": "^7.1.0",
     "npm-check": "^5.9.0",
     "nyc": "^15.0.0",
-    "typescript": "^3.7.4",
-    "version-bump-prompt": "^5.0.7"
+    "typescript": "^3.7.4"
   },
   "dependencies": {
     "call-me-maybe": "^1.0.1",
     "js-yaml": "^3.13.1",
-    "ono": "^6.0.0"
+    "@jsdevtools/ono": "^7.1.0"
   }
 }
