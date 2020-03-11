@@ -147,16 +147,9 @@ License
 --------------------------
 JSON Schema $Ref Parser is 100% free and open-source, under the [MIT license](LICENSE). Use it however you want.
 
-Treeware
---------------------------
-You're free to use this package, but if it makes it to your production environment you are required to buy the world a tree.
+If you use JSON Schema $Ref Parser, then we ask that you [**buy the world a tree**](https://click.treeware.earth/APIDevTools/json-schema-ref-parser) to thank us for our work.
 
-It’s now common knowledge that one of the best tools to tackle the climate crisis and keep our temperatures from rising above 1.5C is to <a href="https://www.bbc.co.uk/news/science-environment-48870920">plant trees</a>. If you support this package and contribute to the Treeware forest you’ll be creating employment for local families and restoring wildlife habitats.
-
-[You can buy trees here](https://click.treeware.earth/APIDevTools/json-schema-ref-parser)
-
-Read more about Treeware at [treeware.earth](http://treeware.earth)
-
+By contributing to the Treeware forest you’ll be creating employment for local families and restoring wildlife habitats.  Read more about Treeware at [treeware.earth](http://treeware.earth)
 Big Thanks To
 --------------------------
 Thanks to these awesome companies for their support of Open Source developers ❤
