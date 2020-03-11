@@ -143,6 +143,7 @@ To build/test the project locally on your computer:
 `npm test`
 
 
+
 License
 --------------------------
 JSON Schema $Ref Parser is 100% free and open-source, under the [MIT license](LICENSE). Use it however you want.
@@ -150,6 +151,9 @@ JSON Schema $Ref Parser is 100% free and open-source, under the [MIT license](LI
 If you use JSON Schema $Ref Parser, then we ask that you [**buy the world a tree**](https://click.treeware.earth/APIDevTools/json-schema-ref-parser) to thank us for our work.
 
 By contributing to the Treeware forest you’ll be creating employment for local families and restoring wildlife habitats.  Read more about Treeware at [treeware.earth](http://treeware.earth)
+
+
+
 Big Thanks To
 --------------------------
 Thanks to these awesome companies for their support of Open Source developers ❤
