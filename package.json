@@ -37,8 +37,9 @@
     "lib"
   ],
   "scripts": {
+    "clean": "shx rm -rf .nyc_output coverage",
     "lint": "eslint lib test/fixtures test/specs",
-    "test": "npm run test:node && npm run test:browser && npm run test:typescript && npm run lint",
+    "test": "npm run test:node && npm run test:typescript && npm run test:browser && npm run lint",
     "test:node": "mocha",
     "test:browser": "karma start --single-run",
     "test:typescript": "tsc --noEmit --strict --lib esnext test/specs/typescript-definition.spec.ts",
@@ -47,7 +48,7 @@
     "coverage:browser": "npm run test:browser -- --coverage",
     "upgrade": "npm-check -u && npm audit fix",
     "bump": "bump --tag --push --all",
-    "release": "npm run upgrade && npm test && npm run bump"
+    "release": "npm run upgrade && npm run clean && npm test && npm run bump"
   },
   "devDependencies": {
     "@babel/polyfill": "^7.7.0",
@@ -64,6 +65,7 @@
     "mocha": "^7.1.0",
     "npm-check": "^5.9.0",
     "nyc": "^15.0.0",
+    "shx": "^0.3.2",
     "typescript": "^3.7.4"
   },
   "dependencies": {
