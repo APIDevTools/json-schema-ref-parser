@@ -1,7 +1,7 @@
 "use strict";
 
 const $RefParser = require("../../lib");
-const { host } = require("host-environment");
+const { host } = require("@jsdevtools/host-environment");
 const { expect } = require("chai");
 
 const helper = module.exports = {

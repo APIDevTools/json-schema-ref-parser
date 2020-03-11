@@ -3,7 +3,7 @@
 // https://jstools.dev/karma-config/
 
 "use strict";
-const { karmaConfig } = require("karma-config");
+const { karmaConfig } = require("@jsdevtools/karma-config");
 let exclude = [];
 
 if (process.env.WINDOWS && process.env.CI) {
