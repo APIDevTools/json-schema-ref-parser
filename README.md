@@ -8,7 +8,7 @@ JSON Schema $Ref Parser
 [![npm](https://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
 [![Dependencies](https://david-dm.org/APIDevTools/json-schema-ref-parser.svg)](https://david-dm.org/APIDevTools/json-schema-ref-parser)
 [![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
-[![Buy us a tree](https://img.shields.io/badge/Treeware-%F0%9F%8C%B3-lightgreen)](https://click.treeware.earth/APIDevTools/json-schema-ref-parser)
+[![Buy us a tree](https://img.shields.io/badge/Treeware-%F0%9F%8C%B3-lightgreen)](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser)
 
 
 [![OS and Browser Compatibility](https://apitools.dev/img/badges/ci-badges-with-ie.svg)](https://travis-ci.com/APIDevTools/json-schema-ref-parser)
@@ -148,7 +148,7 @@ License
 --------------------------
 JSON Schema $Ref Parser is 100% free and open-source, under the [MIT license](LICENSE). Use it however you want.
 
-If you use JSON Schema $Ref Parser, then we ask that you [**buy the world a tree**](https://click.treeware.earth/APIDevTools/json-schema-ref-parser) to thank us for our work.
+If you use JSON Schema $Ref Parser, then we ask that you [**buy the world a tree**](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser) to thank us for our work.
 
 By contributing to the Treeware forest you’ll be creating employment for local families and restoring wildlife habitats.  Read more about Treeware at [treeware.earth](http://treeware.earth)
 
