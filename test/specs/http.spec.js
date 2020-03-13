@@ -50,7 +50,7 @@ describe("HTTP options", () => {
   });
 
   describe("http.redirect", () => {
-    if (host.karma && host.env.CI) {
+    if (host.browser.safari && host.karma && host.karma.ci) {
       // These tests fail in Safari when running on Sauce Labs (they pass when running on Safari locally).
       // It gets an XHR error when trying to reach httpbin.org.
       // TODO: Only skip these tests on Safari on Sauce Labs
