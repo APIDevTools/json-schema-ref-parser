@@ -8,7 +8,7 @@ JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 [v8.0.0](https://github.com/APIDevTools/json-schema-ref-parser/tree/v8.0.0) (2020-03-13)
 ----------------------------------------------------------------------------------------------------
 
-- Moved JSON Schema $Ref Parser to the @APIDevTools scope](https://www.npmjs.com/org/apidevtools) on NPM
+- Moved JSON Schema $Ref Parser to the [@APIDevTools scope](https://www.npmjs.com/org/apidevtools) on NPM
 
 - The "json-schema-ref-parser" NPM package is now just a wrapper around the scoped "@apidevtools/json-schema-ref-parser" package
 
