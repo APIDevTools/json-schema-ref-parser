@@ -1,0 +1,11 @@
+{
+  "required string": {
+    "$ref": "required-string.yaml"
+  },
+  "string": {
+    "$ref": "#/required%20string/type"
+  },
+  "name": {
+    "$ref": "../definitions/name.yaml"
+  }
+}

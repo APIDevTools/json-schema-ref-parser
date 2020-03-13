@@ -1,0 +1,3 @@
+title: required string
+type: string
+minLength: 1
