@@ -1,0 +1,43 @@
+{
+  "name": "json-schema-ref-parser",
+  "version": "X.X.X",
+  "description": "Parse, Resolve, and Dereference JSON Schema $ref pointers",
+  "keywords": [
+    "json",
+    "schema",
+    "jsonschema",
+    "json-schema",
+    "json-pointer",
+    "$ref",
+    "dereference",
+    "resolve"
+  ],
+  "author": {
+    "name": "James Messinger",
+    "url": "https://jamesmessinger.com"
+  },
+  "contributors": [
+    {
+      "name": "Boris Cherny",
+      "email": "boris@performancejs.com"
+    }
+  ],
+  "homepage": "https://apitools.dev/json-schema-ref-parser/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/APIDevTools/json-schema-ref-parser.git"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "X.X.X"
+  }
+}
