@@ -1,6 +1,6 @@
 "use strict";
 
-const { host } = require("host-environment");
+const { host } = require("@jsdevtools/host-environment");
 const chai = require("chai");
 const chaiSubset = require("chai-subset");
 chai.use(chaiSubset);

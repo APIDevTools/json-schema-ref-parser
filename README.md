@@ -2,15 +2,16 @@ JSON Schema $Ref Parser
 ============================
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
 
-[![Build Status](https://api.travis-ci.com/APIDevTools/json-schema-ref-parser.svg?branch=master)](https://travis-ci.com/APIDevTools/json-schema-ref-parser)
+[![Build Status](https://github.com/APIDevTools/json-schema-ref-parser/workflows/CI-CD/badge.svg?branch=master)](https://github.com/APIDevTools/json-schema-ref-parser/blob/master/.github/workflows/CI-CD.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/APIDevTools/json-schema-ref-parser/badge.svg?branch=master)](https://coveralls.io/github/APIDevTools/json-schema-ref-parser)
 
-[![npm](https://img.shields.io/npm/v/json-schema-ref-parser.svg)](https://www.npmjs.com/package/json-schema-ref-parser)
+[![npm](https://img.shields.io/npm/v/@apidevtools/json-schema-ref-parser.svg)](https://www.npmjs.com/package/@apidevtools/json-schema-ref-parser)
 [![Dependencies](https://david-dm.org/APIDevTools/json-schema-ref-parser.svg)](https://david-dm.org/APIDevTools/json-schema-ref-parser)
-[![License](https://img.shields.io/npm/l/json-schema-ref-parser.svg)](LICENSE)
+[![License](https://img.shields.io/npm/l/@apidevtools/json-schema-ref-parser.svg)](LICENSE)
+[![Buy us a tree](https://img.shields.io/badge/Treeware-%F0%9F%8C%B3-lightgreen)](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser)
 
 
-[![OS and Browser Compatibility](https://apitools.dev/img/badges/ci-badges-with-ie.svg)](https://travis-ci.com/APIDevTools/json-schema-ref-parser)
+[![OS and Browser Compatibility](https://apitools.dev/img/badges/ci-badges-with-ie.svg)](https://github.com/APIDevTools/json-schema-ref-parser/blob/master/.github/workflows/CI-CD.yaml)
 
 
 The Problem:
@@ -51,7 +52,7 @@ JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/d
 - Can [dereference](https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferencepath-options-callback) your schema, producing a plain-old JavaScript object that's easy to work with
 - Supports [circular references](https://apitools.dev/json-schema-ref-parser/docs/#circular-refs), nested references, back-references, and cross-references between files
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object instance
-- [Tested](https://travis-ci.com/APIDevTools/json-schema-ref-parser) in Node and all major web browsers on Windows, Mac, and Linux
+- Tested in Node and all major web browsers on Windows, Mac, and Linux
 
 
 Example
@@ -91,38 +92,39 @@ Installation
 Install using [npm](https://docs.npmjs.com/about-npm/):
 
 ```bash
-npm install json-schema-ref-parser
+npm install @apidevtools/json-schema-ref-parser
 ```
 
 
 
 Usage
 --------------------------
-When using Json-Schema-Ref-Parser in Node.js apps, you'll probably want to use **CommonJS** syntax:
+When using JSON Schema $Ref Parser in Node.js apps, you'll probably want to use **CommonJS** syntax:
 
 ```javascript
-const $RefParser = require("json-schema-ref-parser");
+const $RefParser = require("@apidevtools/json-schema-ref-parser");
 ```
 
 When using a transpiler such as [Babel](https://babeljs.io/) or [TypeScript](https://www.typescriptlang.org/), or a bundler such as [Webpack](https://webpack.js.org/) or [Rollup](https://rollupjs.org/), you can use **ECMAScript modules** syntax instead:
 
 ```javascript
-import $RefParser from "json-schema-ref-parser";
+import $RefParser from "@apidevtools/json-schema-ref-parser";
 ```
 
 
 
 Browser support
 --------------------------
-Json-Schema-Ref-Parser supports recent versions of every major web browser.  Older browsers may require [Babel](https://babeljs.io/) and/or [polyfills](https://babeljs.io/docs/en/next/babel-polyfill).
+JSON Schema $Ref Parser supports recent versions of every major web browser.  Older browsers may require [Babel](https://babeljs.io/) and/or [polyfills](https://babeljs.io/docs/en/next/babel-polyfill).
 
-To use Json-Schema-Ref-Parser in a browser, you'll need to use a bundling tool such as [Webpack](https://webpack.js.org/), [Rollup](https://rollupjs.org/), [Parcel](https://parceljs.org/), or [Browserify](http://browserify.org/). Some bundlers may require a bit of configuration, such as setting `browser: true` in [rollup-plugin-resolve](https://github.com/rollup/rollup-plugin-node-resolve).
+To use JSON Schema $Ref Parser in a browser, you'll need to use a bundling tool such as [Webpack](https://webpack.js.org/), [Rollup](https://rollupjs.org/), [Parcel](https://parceljs.org/), or [Browserify](http://browserify.org/). Some bundlers may require a bit of configuration, such as setting `browser: true` in [rollup-plugin-resolve](https://github.com/rollup/rollup-plugin-node-resolve).
 
 
 
 API Documentation
 --------------------------
 Full API documentation is available [right here](https://apitools.dev/json-schema-ref-parser/docs/)
+
 
 
 Contributing
@@ -138,16 +140,18 @@ To build/test the project locally on your computer:
 2. __Install dependencies__<br>
 `npm install`
 
-3. __Run the build script__<br>
-`npm run build`
-
-4. __Run the tests__<br>
+3. __Run the tests__<br>
 `npm test`
+
 
 
 License
 --------------------------
 JSON Schema $Ref Parser is 100% free and open-source, under the [MIT license](LICENSE). Use it however you want.
+
+This package is [Treeware](http://treeware.earth). If you use it in production, then we ask that you [**buy the world a tree**](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser) to thank us for our work. By contributing to the Treeware forest you’ll be creating employment for local families and restoring wildlife habitats.
+
+
 
 Big Thanks To
 --------------------------

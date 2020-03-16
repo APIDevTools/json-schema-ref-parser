@@ -1,6 +1,6 @@
 "use strict";
 
-const { host } = require("host-environment");
+const { host } = require("@jsdevtools/host-environment");
 
 // Mocha configuration
 if (host.browser) {
@@ -13,10 +13,10 @@ if (host.browser) {
 
 beforeEach(function () {
   // Flag TravisCI and SauceLabs as being very slow environments
-  let isSlowEnvironment = host.env.CI || host.karma;
+  let isSlowEnvironment = host.ci || host.karma;
 
   // Most of our tests perform multiple AJAX requests,
   // so we need to increase the timeouts to allow for that
-  this.currentTest.timeout(isSlowEnvironment ? 20000 : 4000);
+  this.currentTest.timeout(isSlowEnvironment ? 40000 : 4000);
   this.currentTest.slow(1000);
 });
