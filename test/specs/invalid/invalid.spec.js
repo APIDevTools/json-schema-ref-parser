@@ -20,7 +20,7 @@ describe("Invalid syntax", () => {
       catch (err) {
         expect(err).to.be.an.instanceOf(ResolverError);
         if (host.node) {
-          expect(err.code).to.equal("ENOENT");
+          expect(err.ioErrorCode).to.equal("ENOENT");
           expect(err.message).to.contain("Error opening file ");
         }
       }

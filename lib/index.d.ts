@@ -411,18 +411,39 @@ declare namespace $RefParser {
     set($ref: string, value: JSONSchema4Type | JSONSchema6Type): void
   }
 
+  export type JSONParserErrorType = "EUNKNOWN" | "EPARSER" | "EUNMATCHEDPARSER" | "ERESOLVER" | "EUNMATCHEDRESOLVER" | "EMISSINGPOINTER" | "EINVALIDPOINTER";
+
   export class JSONParserError extends Error {
+    readonly name: string;
     readonly message: string;
     readonly path: Array<string | number>;
     readonly source: string;
+    readonly code: JSONParserErrorType;
   }
 
-  export class ParserError extends JSONParserError {}
-  export class UnmatchedParserError extends JSONParserError {}
-  export class ResolverError extends JSONParserError {
-    readonly code?: string;
+  export class ParserError extends JSONParserError {
+    readonly name = "ParserError";
+    readonly code = "EPARSER";
   }
-  export class UnmatchedResolverError extends JSONParserError {}
-  export class MissingPointerError extends JSONParserError {}
-  export class InvalidPointerError extends JSONParserError {}
+  export class UnmatchedParserError extends JSONParserError {
+    readonly name = "UnmatchedParserError";
+    readonly code ="EUNMATCHEDPARSER";
+  }
+  export class ResolverError extends JSONParserError {
+    readonly name = "ResolverError";
+    readonly code ="ERESOLVER";
+    readonly ioErrorCode?: string;
+  }
+  export class UnmatchedResolverError extends JSONParserError {
+    readonly name = "UnmatchedResolverError";
+    readonly code ="EUNMATCHEDRESOLVER";
+  }
+  export class MissingPointerError extends JSONParserError {
+    readonly name = "MissingPointerError";
+    readonly code ="EMISSINGPOINTER";
+  }
+  export class InvalidPointerError extends JSONParserError {
+    readonly name = "InvalidPointerError";
+    readonly code ="EINVALIDPOINTER";
+  }
 }
