@@ -30,7 +30,7 @@ declare class $RefParser {
    *
    * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#errors
    */
-  errors: Array<$RefParser.GenericError | $RefParser.InvalidPointerError | $RefParser.ResolverError | $RefParser.ParserError | $RefParser.MissingPointerError | $RefParser.UnmatchedParserError | $RefParser.UnmatchedResolverError>;
+  errors: Array<$RefParser.JSONParserError | $RefParser.InvalidPointerError | $RefParser.ResolverError | $RefParser.ParserError | $RefParser.MissingPointerError | $RefParser.UnmatchedParserError | $RefParser.UnmatchedResolverError>;
 
   /**
    * Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value. This results in a schema object that does not contain any `$ref` pointers. Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object. This is great for programmatic usage, especially when using tools that don't understand JSON references.
@@ -411,18 +411,18 @@ declare namespace $RefParser {
     set($ref: string, value: JSONSchema4Type | JSONSchema6Type): void
   }
 
-  export class GenericError extends Error {
+  export class JSONParserError extends Error {
     readonly message: string;
     readonly path: Array<string | number>;
     readonly source: string;
   }
 
-  export class ParserError extends GenericError {}
-  export class UnmatchedParserError extends GenericError {}
-  export class ResolverError extends GenericError {
+  export class ParserError extends JSONParserError {}
+  export class UnmatchedParserError extends JSONParserError {}
+  export class ResolverError extends JSONParserError {
     readonly code?: string;
   }
-  export class UnmatchedResolverError extends GenericError {}
-  export class MissingPointerError extends GenericError {}
-  export class InvalidPointerError extends GenericError {}
+  export class UnmatchedResolverError extends JSONParserError {}
+  export class MissingPointerError extends JSONParserError {}
+  export class InvalidPointerError extends JSONParserError {}
 }
