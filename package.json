@@ -70,9 +70,8 @@
   },
   "dependencies": {
     "@stoplight/json": "^3.5.1",
-    "@stoplight/yaml": "^3.5.1",
+    "@stoplight/yaml": "^3.6.0",
     "call-me-maybe": "^1.0.1",
-    "js-yaml": "^3.13.1",
-    "ono": "^6.0.0"
+    "ono": "^7.1.1"
   }
 }
