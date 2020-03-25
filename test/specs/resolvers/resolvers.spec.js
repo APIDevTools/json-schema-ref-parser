@@ -9,7 +9,7 @@ const helper = require("../../utils/helper");
 const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
-const { ResolverError, UnmatchedResolverError } = require("../../../lib/util/errors");
+const { ResolverError, UnmatchedResolverError, JSONParserErrorGroup } = require("../../../lib/util/errors");
 
 describe("options.resolve", () => {
   it('should not resolve external links if "resolve.external" is disabled', async () => {
@@ -137,24 +137,29 @@ describe("options.resolve", () => {
     }
   });
 
-  it("should let no resolver to be matched if fastFail is false", async () => {
+  it("should throw a grouped error if no resolver can be matched and fastFail is false", async () => {
     const parser = new $RefParser();
-    await parser.dereference(path.abs("specs/resolvers/resolvers.yaml"), {
-      resolve: {
-        file: false,
-        http: false,
-      },
-      failFast: false,
-    });
-
-    expect(parser.errors.length).to.equal(1);
-    expect(parser.errors).to.containSubset([
-      {
-        name: UnmatchedResolverError.name,
-        message: expectedValue => expectedValue.startsWith("Could not find resolver for"),
-        path: [],
-        source: expectedValue => expectedValue.endsWith("specs/resolvers/resolvers.yaml"),
-      },
-    ]);
+    try {
+      await parser.dereference(path.abs("specs/resolvers/resolvers.yaml"), {
+        resolve: {
+          file: false,
+          http: false,
+        },
+        failFast: false,
+      });
+      helper.shouldNotGetCalled();
+    }
+    catch (err) {
+      expect(err).to.be.instanceof(JSONParserErrorGroup);
+      expect(err.errors.length).to.equal(1);
+      expect(err.errors).to.containSubset([
+        {
+          name: UnmatchedResolverError.name,
+          message: expectedValue => expectedValue.startsWith("Could not find resolver for"),
+          path: [],
+          source: expectedValue => expectedValue.endsWith("specs/resolvers/resolvers.yaml"),
+        },
+      ]);
+    }
   });
 });

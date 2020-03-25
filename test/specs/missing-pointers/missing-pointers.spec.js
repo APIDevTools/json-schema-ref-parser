@@ -5,8 +5,9 @@ const chaiSubset = require("chai-subset");
 chai.use(chaiSubset);
 const { expect } = chai;
 const $RefParser = require("../../../lib");
+const { JSONParserErrorGroup, MissingPointerError } = require("../../../lib/util/errors");
 const helper = require("../../utils/helper");
-const { MissingPointerError } = require("../../../lib/util/errors");
+const path = require("../../utils/path");
 
 describe("Schema with missing pointers", () => {
   it("should throw an error for missing pointer", async () => {
@@ -20,17 +21,25 @@ describe("Schema with missing pointers", () => {
     }
   });
 
-  it("should not throw an error for missing pointer if failFast is false", async () => {
+  it("should throw a grouped error for missing pointer if failFast is false", async () => {
     const parser = new $RefParser();
-    const result = await parser.dereference({ foo: { $ref: "#/baz" }}, { failFast: false });
-    expect(result).to.deep.equal({ foo: null });
-    expect(parser.errors).to.containSubset([
-      {
-        name: MissingPointerError.name,
-        message: "Token \"baz\" does not exist.",
-        path: ["foo"],
-        source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
-      }
-    ]);
+    try {
+      await parser.dereference({ foo: { $ref: "#/baz" }}, { failFast: false });
+      helper.shouldNotGetCalled();
+    }
+    catch (err) {
+      expect(err).to.be.instanceof(JSONParserErrorGroup);
+      expect(err.files).to.equal(parser);
+      expect(err.files.$refs._root$Ref.value).to.deep.equal({ foo: null });
+      expect(err.message).to.have.string("1 error occurred while reading '");
+      expect(err.errors).to.containSubset([
+        {
+          name: MissingPointerError.name,
+          message: "Token \"baz\" does not exist.",
+          path: ["foo"],
+          source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
+        }
+      ]);
+    }
   });
 });

@@ -9,7 +9,7 @@ const helper = require("../../utils/helper");
 const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
-const { StoplightParserError, ParserError, UnmatchedParserError } = require("../../../lib/util/errors");
+const { JSONParserErrorGroup, StoplightParserError, ParserError, UnmatchedParserError } = require("../../../lib/util/errors");
 
 describe("References to non-JSON files", () => {
   it("should parse successfully", async () => {
@@ -206,26 +206,31 @@ describe("References to non-JSON files", () => {
     }
   });
 
-  it("should let no parser to be matched if fastFail is false", async () => {
-    const parser = new $RefParser();
-    await parser.dereference(path.rel("specs/parsers/parsers.yaml"), {
-      parse: {
-        yaml: false,
-        json: false,
-        text: false,
-        binary: false,
-      },
-      failFast: false,
-    });
-
-    expect(parser.errors.length).to.equal(1);
-    expect(parser.errors).to.containSubset([
-      {
-        name: UnmatchedParserError.name,
-        message: expectedValue => expectedValue.startsWith("Could not find parser for"),
-        path: [],
-        source: expectedValue => expectedValue.endsWith("specs/parsers/parsers.yaml") || expectedValue.startsWith("http://localhost"),
-      },
-    ]);
+  it("should throw a grouped error if no parser can be matched and fastFail is false", async () => {
+    try {
+      const parser = new $RefParser();
+      await parser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+        parse: {
+          yaml: false,
+          json: false,
+          text: false,
+          binary: false,
+        },
+        failFast: false,
+      });
+      helper.shouldNotGetCalled();
+    }
+    catch (err) {
+      expect(err).to.be.instanceof(JSONParserErrorGroup);
+      expect(err.errors.length).to.equal(1);
+      expect(err.errors).to.containSubset([
+        {
+          name: UnmatchedParserError.name,
+          message: expectedValue => expectedValue.startsWith("Could not find parser for"),
+          path: [],
+          source: expectedValue => expectedValue.endsWith("specs/parsers/parsers.yaml") || expectedValue.startsWith("http://localhost"),
+        },
+      ]);
+    }
   });
 });

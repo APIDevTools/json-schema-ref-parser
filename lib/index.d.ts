@@ -26,13 +26,6 @@ declare class $RefParser {
   $refs: $RefParser.$Refs
 
   /**
-   * List of all errors
-   *
-   * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#errors
-   */
-  errors: Array<$RefParser.JSONParserError | $RefParser.InvalidPointerError | $RefParser.ResolverError | $RefParser.ParserError | $RefParser.MissingPointerError | $RefParser.UnmatchedParserError | $RefParser.UnmatchedResolverError>;
-
-  /**
    * Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value. This results in a schema object that does not contain any `$ref` pointers. Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object. This is great for programmatic usage, especially when using tools that don't understand JSON references.
    *
    * The dereference method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object. Again, this is great for programmatic usage, but it does introduce the risk of circular references, so be careful if you intend to serialize the schema using `JSON.stringify()`. Consider using the bundle method instead, which does not create circular references.
@@ -417,8 +410,29 @@ declare namespace $RefParser {
     readonly name: string;
     readonly message: string;
     readonly path: Array<string | number>;
-    readonly source: string;
+    readonly errors: string;
     readonly code: JSONParserErrorType;
+  }
+
+  export class JSONParserErrorGroup extends Error {
+    /**
+     * List of all errors
+     *
+     * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#errors
+     */
+    readonly errors: Array<$RefParser.JSONParserError | $RefParser.InvalidPointerError | $RefParser.ResolverError | $RefParser.ParserError | $RefParser.MissingPointerError | $RefParser.UnmatchedParserError | $RefParser.UnmatchedResolverError>;
+
+    /**
+     * The fields property is a `$RefParser` instance
+     *
+     * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html
+     */
+    readonly files: $RefParser;
+
+    /**
+     * User friendly message containing the total amount of errors, as well as the absolute path to the source document
+     */
+    readonly message: string;
   }
 
   export class ParserError extends JSONParserError {
