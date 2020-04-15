@@ -68,7 +68,7 @@ $RefParser.dereference(mySchema, (err, schema) => {
     // including referenced files, combined into a single object
     console.log(schema.definitions.person.properties.firstName);
   }
-}
+})
 ```
 
 Or use `async`/`await` syntax instead. The following example is the same as above:
