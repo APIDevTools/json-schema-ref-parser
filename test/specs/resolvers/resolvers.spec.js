@@ -1,11 +1,15 @@
 "use strict";
 
-const { expect } = require("chai");
+const chai = require("chai");
+const chaiSubset = require("chai-subset");
+chai.use(chaiSubset);
+const { expect } = chai;
 const $RefParser = require("../../..");
 const helper = require("../../utils/helper");
 const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
+const { ResolverError, UnmatchedResolverError, JSONParserErrorGroup } = require("../../../lib/util/errors");
 
 describe("options.resolve", () => {
   it('should not resolve external links if "resolve.external" is disabled', async () => {
@@ -111,4 +115,51 @@ describe("options.resolve", () => {
     expect(schema).to.deep.equal(dereferencedSchema);
   });
 
+  it("should normalize errors thrown by resolvers", async () => {
+    try {
+      await $RefParser.dereference({ $ref: path.abs("specs/resolvers/resolvers.yaml") }, {
+        resolve: {
+          // A custom resolver that always fails
+          file: {
+            order: 1,
+            canRead: true,
+            parse () {
+              throw new Error("Woops");
+            }
+          }
+        }
+      });
+      helper.shouldNotGetCalled();
+    }
+    catch (err) {
+      expect(err).to.be.instanceof(ResolverError);
+      expect(err.message).to.contain("Error opening file");
+    }
+  });
+
+  it("should throw a grouped error if no resolver can be matched and fastFail is false", async () => {
+    const parser = new $RefParser();
+    try {
+      await parser.dereference(path.abs("specs/resolvers/resolvers.yaml"), {
+        resolve: {
+          file: false,
+          http: false,
+        },
+        failFast: false,
+      });
+      helper.shouldNotGetCalled();
+    }
+    catch (err) {
+      expect(err).to.be.instanceof(JSONParserErrorGroup);
+      expect(err.errors.length).to.equal(1);
+      expect(err.errors).to.containSubset([
+        {
+          name: UnmatchedResolverError.name,
+          message: expectedValue => expectedValue.startsWith("Could not find resolver for"),
+          path: [],
+          source: expectedValue => expectedValue.endsWith("specs/resolvers/resolvers.yaml"),
+        },
+      ]);
+    }
+  });
 });

@@ -27,6 +27,7 @@ $RefParser.dereference("my-schema.yaml", {
       withCredentials: true,        // Include auth credentials when resolving HTTP references
     }
   },
+  failFast: true,                   // Abort upon first exception
   dereference: {
     circular: false                 // Don't allow circular $refs
   }

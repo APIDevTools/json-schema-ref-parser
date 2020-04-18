@@ -211,6 +211,12 @@ declare namespace $RefParser {
     }
 
     /**
+     * Determines how lenient the processing should be.
+     * If this option is enable, the processing will be performed in a bail mode - will abort upon the first exception.
+     */
+    failFast?: boolean;
+
+    /**
      * The `dereference` options control how JSON Schema `$Ref` Parser will dereference `$ref` pointers within the JSON schema.
      */
     dereference?: {
@@ -398,4 +404,60 @@ declare namespace $RefParser {
     set($ref: string, value: JSONSchema4Type | JSONSchema6Type): void
   }
 
+  export type JSONParserErrorType = "EUNKNOWN" | "EPARSER" | "EUNMATCHEDPARSER" | "ERESOLVER" | "EUNMATCHEDRESOLVER" | "EMISSINGPOINTER" | "EINVALIDPOINTER";
+
+  export class JSONParserError extends Error {
+    readonly name: string;
+    readonly message: string;
+    readonly path: Array<string | number>;
+    readonly errors: string;
+    readonly code: JSONParserErrorType;
+  }
+
+  export class JSONParserErrorGroup extends Error {
+    /**
+     * List of all errors
+     *
+     * See https://github.com/APIDevTools/json-schema-ref-parser/blob/master/docs/ref-parser.md#errors
+     */
+    readonly errors: Array<$RefParser.JSONParserError | $RefParser.InvalidPointerError | $RefParser.ResolverError | $RefParser.ParserError | $RefParser.MissingPointerError | $RefParser.UnmatchedParserError | $RefParser.UnmatchedResolverError>;
+
+    /**
+     * The fields property is a `$RefParser` instance
+     *
+     * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html
+     */
+    readonly files: $RefParser;
+
+    /**
+     * User friendly message containing the total amount of errors, as well as the absolute path to the source document
+     */
+    readonly message: string;
+  }
+
+  export class ParserError extends JSONParserError {
+    readonly name = "ParserError";
+    readonly code = "EPARSER";
+  }
+  export class UnmatchedParserError extends JSONParserError {
+    readonly name = "UnmatchedParserError";
+    readonly code ="EUNMATCHEDPARSER";
+  }
+  export class ResolverError extends JSONParserError {
+    readonly name = "ResolverError";
+    readonly code ="ERESOLVER";
+    readonly ioErrorCode?: string;
+  }
+  export class UnmatchedResolverError extends JSONParserError {
+    readonly name = "UnmatchedResolverError";
+    readonly code ="EUNMATCHEDRESOLVER";
+  }
+  export class MissingPointerError extends JSONParserError {
+    readonly name = "MissingPointerError";
+    readonly code ="EMISSINGPOINTER";
+  }
+  export class InvalidPointerError extends JSONParserError {
+    readonly name = "InvalidPointerError";
+    readonly code ="EINVALIDPOINTER";
+  }
 }

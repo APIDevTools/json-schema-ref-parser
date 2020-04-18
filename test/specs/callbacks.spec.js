@@ -4,6 +4,7 @@ const { expect } = require("chai");
 const $RefParser = require("../../lib");
 const helper = require("../utils/helper");
 const path = require("../utils/path");
+const { StoplightParserError } = require("../../lib/util/errors");
 
 describe("Callback & Promise syntax", () => {
   for (let method of ["parse", "resolve", "dereference", "bundle"]) {
@@ -42,7 +43,7 @@ describe("Callback & Promise syntax", () => {
     return function (done) {
       $RefParser[method](path.rel("specs/invalid/invalid.yaml"), (err, result) => {
         try {
-          expect(err).to.be.an.instanceOf(SyntaxError);
+          expect(err).to.be.an.instanceOf(StoplightParserError);
           expect(result).to.be.undefined;
           done();
         }
@@ -75,7 +76,7 @@ describe("Callback & Promise syntax", () => {
       return $RefParser[method](path.rel("specs/invalid/invalid.yaml"))
         .then(helper.shouldNotGetCalled)
         .catch((err) => {
-          expect(err).to.be.an.instanceOf(SyntaxError);
+          expect(err).to.be.an.instanceOf(StoplightParserError);
         });
     };
   }
