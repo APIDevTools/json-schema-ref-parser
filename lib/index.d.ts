@@ -410,6 +410,7 @@ declare namespace $RefParser {
   export class JSONParserError extends Error {
     readonly name: string;
     readonly message: string;
+    readonly source: string;
     readonly path: Array<string | number>;
     readonly errors: string;
     readonly code: JSONParserErrorType;
