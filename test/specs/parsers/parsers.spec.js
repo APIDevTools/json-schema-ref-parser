@@ -216,7 +216,7 @@ describe("References to non-JSON files", () => {
           text: false,
           binary: false,
         },
-        failFast: false,
+        continueOnError: true,
       });
       helper.shouldNotGetCalled();
     }

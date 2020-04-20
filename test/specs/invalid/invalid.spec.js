@@ -73,11 +73,11 @@ describe("Invalid syntax", () => {
       }
     });
 
-    describe("when failFast is false", () => {
+    describe("when continueOnError is true", () => {
       it("should throw a grouped error for an invalid file path", async () => {
         const parser = new $RefParser();
         try {
-          await parser.dereference("this file does not exist", { failFast: false });
+          await parser.dereference("this file does not exist", { continueOnError: true });
           helper.shouldNotGetCalled();
         }
         catch (err) {
@@ -100,7 +100,7 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid YAML file", async () => {
         const parser = new $RefParser();
         try {
-          await parser.dereference(path.rel("specs/invalid/invalid.yaml"), { failFast: false });
+          await parser.dereference(path.rel("specs/invalid/invalid.yaml"), { continueOnError: true });
           helper.shouldNotGetCalled();
         }
         catch (err) {
@@ -122,7 +122,7 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid JSON file", async () => {
         const parser = new $RefParser();
         try {
-          await parser.dereference(path.rel("specs/invalid/invalid.json"), { failFast: false });
+          await parser.dereference(path.rel("specs/invalid/invalid.json"), { continueOnError: true });
           helper.shouldNotGetCalled();
         }
         catch (err) {
@@ -144,7 +144,7 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid JSON file with YAML disabled", async () => {
         const parser = new $RefParser();
         try {
-          await parser.dereference(path.rel("specs/invalid/invalid.json"), { failFast: false, parse: { yaml: false }});
+          await parser.dereference(path.rel("specs/invalid/invalid.json"), { continueOnError: true, parse: { yaml: false }});
           helper.shouldNotGetCalled();
         }
         catch (err) {
@@ -165,7 +165,7 @@ describe("Invalid syntax", () => {
 
       it("should not throw an error for an invalid YAML file with JSON and YAML disabled", async () => {
         const parser = new $RefParser();
-        const result = await parser.dereference(path.rel("specs/invalid/invalid.yaml"), { failFast: false, parse: { yaml: false, json: false }});
+        const result = await parser.dereference(path.rel("specs/invalid/invalid.yaml"), { continueOnError: true, parse: { yaml: false, json: false }});
         expect(result).to.be.null;
       });
     });
@@ -222,11 +222,11 @@ describe("Invalid syntax", () => {
       });
     });
 
-    describe("when failFast is false", () => {
+    describe("when continueOnError is true", () => {
       it("should throw a grouped error for an invalid file path", async () => {
         try {
           const parser = new $RefParser();
-          await parser.dereference({ foo: { $ref: "this file does not exist" }}, { failFast: false });
+          await parser.dereference({ foo: { $ref: "this file does not exist" }}, { continueOnError: true });
           helper.shouldNotGetCalled();
         }
         catch (err) {
@@ -247,7 +247,7 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid YAML file", async () => {
         try {
           const parser = new $RefParser();
-          await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, { failFast: false });
+          await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, { continueOnError: true });
           helper.shouldNotGetCalled();
         }
         catch (err) {
@@ -268,7 +268,7 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid JSON file", async () => {
         try {
           const parser = new $RefParser();
-          await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, { failFast: false });
+          await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, { continueOnError: true });
           helper.shouldNotGetCalled();
         }
         catch (err) {
@@ -289,7 +289,7 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid JSON file with YAML disabled", async () => {
         try {
           const parser = new $RefParser();
-          await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, { failFast: false, parse: { yaml: false }});
+          await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, { continueOnError: true, parse: { yaml: false }});
           helper.shouldNotGetCalled();
         }
         catch (err) {
@@ -309,7 +309,7 @@ describe("Invalid syntax", () => {
 
       it("should not throw an error for an invalid YAML file with JSON and YAML disabled", async () => {
         const parser = new $RefParser();
-        const result = await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, { failFast: false, parse: { yaml: false, json: false }});
+        const result = await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, { continueOnError: true, parse: { yaml: false, json: false }});
         expect(result).to.deep.equal({ foo: ":\n" });
       });
     });

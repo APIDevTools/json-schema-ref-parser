@@ -21,10 +21,10 @@ describe("Schema with invalid pointers", () => {
     }
   });
 
-  it("should throw a grouped error for an invalid pointer if failFast is false", async () => {
+  it("should throw a grouped error for an invalid pointer if continueOnError is true", async () => {
     const parser = new $RefParser();
     try {
-      await parser.dereference(path.rel("specs/invalid-pointers/invalid.json"), { failFast: false });
+      await parser.dereference(path.rel("specs/invalid-pointers/invalid.json"), { continueOnError: true });
       helper.shouldNotGetCalled();
     }
     catch (err) {

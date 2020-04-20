@@ -145,7 +145,7 @@ describe("options.resolve", () => {
           file: false,
           http: false,
         },
-        failFast: false,
+        continueOnError: true,
       });
       helper.shouldNotGetCalled();
     }

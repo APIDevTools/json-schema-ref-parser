@@ -211,10 +211,11 @@ declare namespace $RefParser {
     }
 
     /**
-     * Determines how lenient the processing should be.
-     * If this option is enable, the processing will be performed in a bail mode - will abort upon the first exception.
+     * By default, JSON Schema $Ref Parser throws the first error it encounters. Setting `continueOnError` to `true`
+     * causes it to keep processing as much as possible and then throw a single error that contains all errors
+     * that were encountered.
      */
-    failFast?: boolean;
+    continueOnError?: boolean;
 
     /**
      * The `dereference` options control how JSON Schema `$Ref` Parser will dereference `$ref` pointers within the JSON schema.

@@ -21,10 +21,10 @@ describe("Schema with missing pointers", () => {
     }
   });
 
-  it("should throw a grouped error for missing pointer if failFast is false", async () => {
+  it("should throw a grouped error for missing pointer if continueOnError is true", async () => {
     const parser = new $RefParser();
     try {
-      await parser.dereference({ foo: { $ref: "#/baz" }}, { failFast: false });
+      await parser.dereference({ foo: { $ref: "#/baz" }}, { continueOnError: true });
       helper.shouldNotGetCalled();
     }
     catch (err) {
