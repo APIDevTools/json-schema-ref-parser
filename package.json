@@ -71,8 +71,7 @@
   },
   "dependencies": {
     "@jsdevtools/ono": "^7.1.2",
-    "@stoplight/json": "^3.7.0",
-    "@stoplight/yaml": "^3.8.0",
-    "call-me-maybe": "^1.0.1"
+    "call-me-maybe": "^1.0.1",
+    "js-yaml": "^3.13.1"
   }
 }

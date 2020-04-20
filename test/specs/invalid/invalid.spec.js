@@ -8,7 +8,7 @@ const { expect } = chai;
 const $RefParser = require("../../../lib");
 const helper = require("../../utils/helper");
 const path = require("../../utils/path");
-const { JSONParserErrorGroup, StoplightParserError, ParserError, ResolverError } = require("../../../lib/util/errors");
+const { JSONParserErrorGroup, ParserError, ResolverError } = require("../../../lib/util/errors");
 
 describe("Invalid syntax", () => {
   describe("in main file", () => {
@@ -32,7 +32,7 @@ describe("Invalid syntax", () => {
         helper.shouldNotGetCalled();
       }
       catch (err) {
-        expect(err).to.be.an.instanceOf(StoplightParserError);
+        expect(err).to.be.an.instanceOf(ParserError);
         expect(err.message).to.contain("Error parsing ");
         expect(err.message).to.contain("invalid/invalid.yaml");
       }
@@ -44,7 +44,7 @@ describe("Invalid syntax", () => {
         helper.shouldNotGetCalled();
       }
       catch (err) {
-        expect(err).to.be.an.instanceOf(StoplightParserError);
+        expect(err).to.be.an.instanceOf(ParserError);
         expect(err.message).to.contain("Error parsing ");
         expect(err.message).to.contain("invalid/invalid.json");
       }
@@ -56,7 +56,7 @@ describe("Invalid syntax", () => {
         helper.shouldNotGetCalled();
       }
       catch (err) {
-        expect(err).to.be.an.instanceOf(StoplightParserError);
+        expect(err).to.be.an.instanceOf(ParserError);
         expect(err.message).to.contain("Error parsing ");
         expect(err.message).to.contain("invalid/invalid.json");
       }
@@ -111,7 +111,7 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: "incomplete explicit mapping pair; a key node is missed",
+              message: `Error parsing ${path.abs("specs/invalid/invalid.yaml")}: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 1:\n    :\n    ^`,
               path: [],
               source: expectedValue => expectedValue.endsWith("test/specs/invalid/invalid.yaml"),
             },
@@ -133,7 +133,7 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: "unexpected end of the stream within a flow collection",
+              message: `Error parsing ${path.abs("specs/invalid/invalid.json")}: unexpected end of the stream within a flow collection at line 2, column 1:\n    \n    ^`,
               path: [],
               source: expectedValue => expectedValue.endsWith("test/specs/invalid/invalid.json"),
             }
@@ -155,7 +155,10 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: "CloseBraceExpected",
+              message: expectedValue => (
+                expectedValue === `Error parsing ${path.abs("specs/invalid/invalid.json")}: Unexpected end of JSON input` ||
+                expectedValue === `Error parsing ${path.abs("specs/invalid/invalid.json")}: JSON.parse: end of data while reading object contents at line 2 column 1 of the JSON data` // this is thrown on Firefox
+              ),
               path: [],
               source: expectedValue => expectedValue.endsWith("test/specs/invalid/invalid.json"),
             }
@@ -178,7 +181,7 @@ describe("Invalid syntax", () => {
         helper.shouldNotGetCalled();
       }
       catch (err) {
-        expect(err).to.be.an.instanceOf(StoplightParserError);
+        expect(err).to.be.an.instanceOf(ParserError);
         expect(err.message).to.contain("Error parsing ");
         expect(err.message).to.contain("invalid/invalid.yaml");
       }
@@ -190,7 +193,7 @@ describe("Invalid syntax", () => {
         helper.shouldNotGetCalled();
       }
       catch (err) {
-        expect(err).to.be.an.instanceOf(StoplightParserError);
+        expect(err).to.be.an.instanceOf(ParserError);
         expect(err.message).to.contain("Error parsing ");
         expect(err.message).to.contain("invalid/invalid.json");
       }
@@ -204,7 +207,7 @@ describe("Invalid syntax", () => {
         helper.shouldNotGetCalled();
       }
       catch (err) {
-        expect(err).to.be.an.instanceOf(StoplightParserError);
+        expect(err).to.be.an.instanceOf(ParserError);
         expect(err.message).to.contain("Error parsing ");
         expect(err.message).to.contain("invalid/invalid.json");
       }
@@ -257,7 +260,7 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: "incomplete explicit mapping pair; a key node is missed",
+              message: `Error parsing ${path.abs("specs/invalid/invalid.yaml")}: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 1:\n    :\n    ^`,
               path: ["foo"],
               source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
             },
@@ -278,7 +281,7 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: "unexpected end of the stream within a flow collection",
+              message: `Error parsing ${path.abs("specs/invalid/invalid.json")}: unexpected end of the stream within a flow collection at line 2, column 1:\n    \n    ^`,
               path: ["foo"],
               source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
             }
@@ -299,7 +302,10 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: "CloseBraceExpected",
+              message: expectedValue => (
+                expectedValue === `Error parsing ${path.abs("specs/invalid/invalid.json")}: Unexpected end of JSON input` ||
+                expectedValue === `Error parsing ${path.abs("specs/invalid/invalid.json")}: JSON.parse: end of data while reading object contents at line 2 column 1 of the JSON data` // this is thrown on Firefox
+              ),
               path: ["foo"],
               source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
             }
