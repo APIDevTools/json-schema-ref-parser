@@ -11,10 +11,10 @@ module.exports = karmaConfig({
   sourceDir: "lib",
   fixtures: "test/fixtures/**/*.js",
   browsers: {
-    chrome: !host.os.windows,
+    chrome: true,
     firefox: host.os.linux,
     safari: host.os.linux,    // SauceLabs
-    edge: host.os.linux,      // SauceLabs
-    ie: host.os.windows,
+    edge: false, // host.os.linux,      // SauceLabs
+    ie: false, // host.os.windows,
   },
 });
