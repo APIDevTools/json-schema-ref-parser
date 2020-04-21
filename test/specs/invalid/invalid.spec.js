@@ -156,13 +156,13 @@ describe("Invalid syntax", () => {
           expect(err.files).to.equal(parser);
           expect(err.message).to.equal(`1 error occurred while reading '${path.abs("specs/invalid/invalid.json")}'`);
           expect(err.errors.length).to.equal(1);
-          expect(err.errors[0].message).to.equal("");
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
               message: message => (
                 message.includes("invalid.json: Unexpected end of JSON input") ||
                 message.includes("invalid.json: JSON.parse: end of data while reading object contents") ||    // Firefox
+                message.includes("invalid.json: JSON.parse error: Expected '}'") ||                           // Safari
                 message.includes("invalid.json: JSON.parse Error: Invalid character") ||                      // Edge
                 message.includes("invalid.json: Syntax error")                                                // IE
               ),
@@ -310,13 +310,13 @@ describe("Invalid syntax", () => {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
           expect(err.files.$refs._root$Ref.value).to.deep.equal({ foo: null });
           expect(err.errors.length).to.equal(1);
-          expect(err.errors[0].message).to.equal("");
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
               message: message => (
                 message.includes("invalid.json: Unexpected end of JSON input") ||
                 message.includes("invalid.json: JSON.parse: end of data while reading object contents") ||    // Firefox
+                message.includes("invalid.json: JSON.parse error: Expected '}'") ||                           // Safari
                 message.includes("invalid.json: JSON.parse Error: Invalid character") ||                      // Edge
                 message.includes("invalid.json: Syntax error")                                                // IE
               ),
