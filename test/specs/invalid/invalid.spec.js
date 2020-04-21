@@ -145,7 +145,7 @@ describe("Invalid syntax", () => {
         }
       });
 
-      it("should throw a grouped error for an invalid JSON file with YAML disabled", async () => {
+      it.only("should throw a grouped error for an invalid JSON file with YAML disabled", async () => {
         const parser = new $RefParser();
         try {
           await parser.dereference(path.rel("specs/invalid/invalid.json"), { continueOnError: true, parse: { yaml: false }});
@@ -156,6 +156,7 @@ describe("Invalid syntax", () => {
           expect(err.files).to.equal(parser);
           expect(err.message).to.equal(`1 error occurred while reading '${path.abs("specs/invalid/invalid.json")}'`);
           expect(err.errors.length).to.equal(1);
+          expect(err.errors[0].message).to.equal("");
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
@@ -299,7 +300,7 @@ describe("Invalid syntax", () => {
         }
       });
 
-      it("should throw a grouped error for an invalid JSON file with YAML disabled", async () => {
+      it.only("should throw a grouped error for an invalid JSON file with YAML disabled", async () => {
         try {
           const parser = new $RefParser();
           await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, { continueOnError: true, parse: { yaml: false }});
@@ -309,6 +310,7 @@ describe("Invalid syntax", () => {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
           expect(err.files.$refs._root$Ref.value).to.deep.equal({ foo: null });
           expect(err.errors.length).to.equal(1);
+          expect(err.errors[0].message).to.equal("");
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
