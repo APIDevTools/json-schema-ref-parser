@@ -5,6 +5,23 @@ JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
 
 
 
+[v9.0.0](https://github.com/APIDevTools/json-schema-ref-parser/tree/v9.0.0) (2020-04-21)
+----------------------------------------------------------------------------------------------------
+
+#### Breaking Changes
+
+- Removed the `YAML` export. We recommend using [`@stoplight/yaml`](https://www.npmjs.com/package/@stoplight/yaml) instead
+
+
+#### Other Changes
+
+- Added a new [`continueOnError` option](https://apitools.dev/json-schema-ref-parser/docs/options) that allows you to get all errors rather than just the first one
+
+
+[Full Changelog](https://github.com/APIDevTools/json-schema-ref-parser/compare/v8.0.0...v9.0.0)
+
+
+
 [v8.0.0](https://github.com/APIDevTools/json-schema-ref-parser/tree/v8.0.0) (2020-03-13)
 ----------------------------------------------------------------------------------------------------
 
