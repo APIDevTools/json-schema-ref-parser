@@ -155,9 +155,9 @@ describe("options.resolve", () => {
       expect(err.errors).to.containSubset([
         {
           name: UnmatchedResolverError.name,
-          message: expectedValue => expectedValue.startsWith("Could not find resolver for"),
+          message: message => message.startsWith("Could not find resolver for"),
           path: [],
-          source: expectedValue => expectedValue.endsWith("specs/resolvers/resolvers.yaml"),
+          source: message => message.endsWith("specs/resolvers/resolvers.yaml"),
         },
       ]);
     }

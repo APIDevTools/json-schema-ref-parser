@@ -89,9 +89,9 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ResolverError.name,
-              message: expectedValue => expectedValue.startsWith("Error opening file") || expectedValue.endsWith("HTTP ERROR 404"),
+              message: message => message.startsWith("Error opening file") || message.endsWith("HTTP ERROR 404"),
               path: [],
-              source: expectedValue => expectedValue.endsWith("this file does not exist") || expectedValue.startsWith("http://localhost"),
+              source: message => message.endsWith("this file does not exist") || message.startsWith("http://localhost"),
             }
           ]);
         }
@@ -111,9 +111,11 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: `Error parsing ${path.abs("specs/invalid/invalid.yaml")}: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 1:\n    :\n    ^`,
+              message: message => (
+                message.includes("invalid.yaml: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 1:")
+              ),
               path: [],
-              source: expectedValue => expectedValue.endsWith("test/specs/invalid/invalid.yaml"),
+              source: message => message.endsWith("test/specs/invalid/invalid.yaml"),
             },
           ]);
         }
@@ -133,9 +135,11 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: `Error parsing ${path.abs("specs/invalid/invalid.json")}: unexpected end of the stream within a flow collection at line 2, column 1:\n    \n    ^`,
+              message: message => (
+                message.includes("invalid.json: unexpected end of the stream within a flow collection at line 2, column 1:")
+              ),
               path: [],
-              source: expectedValue => expectedValue.endsWith("test/specs/invalid/invalid.json"),
+              source: message => message.endsWith("test/specs/invalid/invalid.json"),
             }
           ]);
         }
@@ -155,12 +159,14 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: expectedValue => (
-                expectedValue === `Error parsing ${path.abs("specs/invalid/invalid.json")}: Unexpected end of JSON input` ||
-                expectedValue === `Error parsing ${path.abs("specs/invalid/invalid.json")}: JSON.parse: end of data while reading object contents at line 2 column 1 of the JSON data` // this is thrown on Firefox
+              message: message => (
+                message.includes("invalid.json: Unexpected end of JSON input") ||
+                message.includes("invalid.json: JSON.parse: end of data while reading object contents") ||    // Firefox
+                message.includes("invalid.json: JSON.parse Error: Invalid character") ||                      // Edge
+                message.includes("invalid.json: Syntax error")                                                // IE
               ),
               path: [],
-              source: expectedValue => expectedValue.endsWith("test/specs/invalid/invalid.json"),
+              source: message => message.endsWith("test/specs/invalid/invalid.json"),
             }
           ]);
         }
@@ -239,9 +245,9 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ResolverError.name,
-              message: expectedValue => expectedValue.startsWith("Error opening file") || expectedValue.endsWith("HTTP ERROR 404"),
+              message: message => message.startsWith("Error opening file") || message.endsWith("HTTP ERROR 404"),
               path: ["foo"],
-              source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
+              source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
             }
           ]);
         }
@@ -260,9 +266,11 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: `Error parsing ${path.abs("specs/invalid/invalid.yaml")}: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 1:\n    :\n    ^`,
+              message: message => (
+                message.includes("invalid.yaml: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 1:")
+              ),
               path: ["foo"],
-              source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
+              source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
             },
           ]);
         }
@@ -281,9 +289,11 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: `Error parsing ${path.abs("specs/invalid/invalid.json")}: unexpected end of the stream within a flow collection at line 2, column 1:\n    \n    ^`,
+              message: message => (
+                message.includes("invalid.json: unexpected end of the stream within a flow collection at line 2, column 1:")
+              ),
               path: ["foo"],
-              source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
+              source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
             }
           ]);
         }
@@ -302,12 +312,14 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
-              message: expectedValue => (
-                expectedValue === `Error parsing ${path.abs("specs/invalid/invalid.json")}: Unexpected end of JSON input` ||
-                expectedValue === `Error parsing ${path.abs("specs/invalid/invalid.json")}: JSON.parse: end of data while reading object contents at line 2 column 1 of the JSON data` // this is thrown on Firefox
+              message: message => (
+                message.includes("invalid.json: Unexpected end of JSON input") ||
+                message.includes("invalid.json: JSON.parse: end of data while reading object contents") ||    // Firefox
+                message.includes("invalid.json: JSON.parse Error: Invalid character") ||                      // Edge
+                message.includes("invalid.json: Syntax error")                                                // IE
               ),
               path: ["foo"],
-              source: expectedValue => expectedValue.endsWith("/test/") || expectedValue.startsWith("http://localhost"),
+              source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
             }
           ]);
         }

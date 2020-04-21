@@ -22,11 +22,11 @@ const helper = module.exports = {
    */
   testResolve (filePath, params) {
     let parsedSchema = arguments[2];
-    let expectedFiles = [], expectedValues = [], actualFiles;
+    let expectedFiles = [], messages = [], actualFiles;
 
     for (let i = 1; i < arguments.length; i += 2) {
       expectedFiles.push(arguments[i]);
-      expectedValues.push(arguments[i + 1]);
+      messages.push(arguments[i + 1]);
     }
 
     return async () => {
@@ -59,7 +59,7 @@ const helper = module.exports = {
       expect(values).to.have.keys(expectedFiles);
       for (let [i, file] of expectedFiles.entries()) {
         let actual = helper.convertNodeBuffersToPOJOs(values[file]);
-        let expected = expectedValues[i];
+        let expected = messages[i];
         expect(actual).to.deep.equal(expected, file);
       }
     };

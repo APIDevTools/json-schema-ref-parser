@@ -226,9 +226,9 @@ describe("References to non-JSON files", () => {
       expect(err.errors).to.containSubset([
         {
           name: UnmatchedParserError.name,
-          message: expectedValue => expectedValue.startsWith("Could not find parser for"),
+          message: message => message.startsWith("Could not find parser for"),
           path: [],
-          source: expectedValue => expectedValue.endsWith("specs/parsers/parsers.yaml") || expectedValue.startsWith("http://localhost"),
+          source: message => message.endsWith("specs/parsers/parsers.yaml") || message.startsWith("http://localhost"),
         },
       ]);
     }
