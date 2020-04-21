@@ -162,7 +162,7 @@ describe("Invalid syntax", () => {
               message: message => (
                 message.includes("invalid.json: Unexpected end of JSON input") ||
                 message.includes("invalid.json: JSON.parse: end of data while reading object contents") ||    // Firefox
-                message.includes("invalid.json: JSON.parse error: Expected '}'") ||                           // Safari
+                message.includes("invalid.json: JSON Parse error: Expected '}'") ||                           // Safari
                 message.includes("invalid.json: JSON.parse Error: Invalid character") ||                      // Edge
                 message.includes("invalid.json: Syntax error")                                                // IE
               ),
@@ -316,7 +316,7 @@ describe("Invalid syntax", () => {
               message: message => (
                 message.includes("invalid.json: Unexpected end of JSON input") ||
                 message.includes("invalid.json: JSON.parse: end of data while reading object contents") ||    // Firefox
-                message.includes("invalid.json: JSON.parse error: Expected '}'") ||                           // Safari
+                message.includes("invalid.json: JSON Parse error: Expected '}'") ||                           // Safari
                 message.includes("invalid.json: JSON.parse Error: Invalid character") ||                      // Edge
                 message.includes("invalid.json: Syntax error")                                                // IE
               ),
