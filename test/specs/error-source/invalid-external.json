@@ -1,0 +1,13 @@
+{
+  "foo": {
+    "baz": {
+      "$ref": "./broken-external.json#/components/messages/testMessage/payload"
+    },
+    "bar": {
+      "$ref": "#/foo/baz-2"
+    },
+    "bazinga": {
+      "$ref": "/#foo/baz-2"
+    }
+  }
+}
