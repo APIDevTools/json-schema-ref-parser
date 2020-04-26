@@ -408,11 +408,12 @@ declare namespace $RefParser {
   export type JSONParserErrorType = "EUNKNOWN" | "EPARSER" | "EUNMATCHEDPARSER" | "ERESOLVER" | "EUNMATCHEDRESOLVER" | "EMISSINGPOINTER" | "EINVALIDPOINTER";
 
   export class JSONParserError extends Error {
+    constructor(message: string, source: string);
+
     readonly name: string;
     readonly message: string;
     readonly source: string;
     readonly path: Array<string | number>;
-    readonly errors: string;
     readonly code: JSONParserErrorType;
   }
 
@@ -438,27 +439,39 @@ declare namespace $RefParser {
   }
 
   export class ParserError extends JSONParserError {
+    constructor(message: string, source: string);
+
     readonly name = "ParserError";
     readonly code = "EPARSER";
   }
   export class UnmatchedParserError extends JSONParserError {
+    constructor(source: string);
+
     readonly name = "UnmatchedParserError";
     readonly code ="EUNMATCHEDPARSER";
   }
   export class ResolverError extends JSONParserError {
+    constructor(ex: Error | NodeJS.ErrnoException, source: string);
+
     readonly name = "ResolverError";
     readonly code ="ERESOLVER";
     readonly ioErrorCode?: string;
   }
   export class UnmatchedResolverError extends JSONParserError {
+    constructor(source: string);
+
     readonly name = "UnmatchedResolverError";
     readonly code ="EUNMATCHEDRESOLVER";
   }
   export class MissingPointerError extends JSONParserError {
+    constructor(token: string | number, source: string);
+
     readonly name = "MissingPointerError";
     readonly code ="EMISSINGPOINTER";
   }
   export class InvalidPointerError extends JSONParserError {
+    constructor(pointer: string, source: string);
+
     readonly name = "InvalidPointerError";
     readonly code ="EINVALIDPOINTER";
   }
