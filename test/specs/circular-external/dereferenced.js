@@ -25,7 +25,7 @@ const dereferencedSchema = module.exports =
       },
     },
     thing: {
-      $ref: "#/definitions/thing"
+      $ref: "circular-external.yaml#/definitions/thing"
     },
     person: {
       title: "person",
