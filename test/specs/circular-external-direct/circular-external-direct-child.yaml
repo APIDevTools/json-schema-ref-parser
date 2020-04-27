@@ -1,0 +1,2 @@
+foo:
+  $ref: ./circular-external-direct-root.yaml#/foo
