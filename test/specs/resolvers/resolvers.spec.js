@@ -137,6 +137,28 @@ describe("options.resolve", () => {
     }
   });
 
+  it("should throw an error if no resolver returned a result", async () => {
+    try {
+      await $RefParser.dereference(path.rel("specs/resolvers/resolvers.yaml"), {
+        resolve: {
+          http: false,
+          file: {
+            order: 1,
+            canRead: true,
+            read () {
+
+            }
+          }
+        }
+      });
+      helper.shouldNotGetCalled();
+    }
+    catch (err) {
+      // would time out otherwise
+      expect(err).to.be.an.instanceOf(ResolverError);
+    }
+  });
+
   it("should throw a grouped error if no resolver can be matched and fastFail is false", async () => {
     const parser = new $RefParser();
     try {

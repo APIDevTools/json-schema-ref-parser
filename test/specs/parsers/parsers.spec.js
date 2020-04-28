@@ -68,7 +68,7 @@ describe("References to non-JSON files", () => {
     expect(schema).to.deep.equal(dereferencedSchema.binaryParser);
   });
 
-  it("should throw an error if no no parser can be matched", async () => {
+  it("should throw an error if no parser can be matched", async () => {
     try {
       await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
         parse: {
@@ -78,11 +78,35 @@ describe("References to non-JSON files", () => {
           binary: false,
         },
       });
+      helper.shouldNotGetCalled();
     }
     catch (err) {
       expect(err).to.be.an.instanceOf(SyntaxError);
       expect(err.message).to.contain("Unable to parse ");
       expect(err.message).to.contain("parsers/parsers.yaml");
+    }
+  });
+
+  it("should throw an error if no parser returned a result", async () => {
+    try {
+      await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+        parse: {
+          yaml: {
+            canParse: true,
+            parse () {
+            }
+          },
+          json: false,
+          text: false,
+          binary: false,
+        },
+      });
+      helper.shouldNotGetCalled();
+    }
+    catch (err) {
+      // would time out otherwise
+      expect(err).to.be.an.instanceOf(ParserError);
+      expect(err.message).to.contain("No promise has been returned or callback has been called.");
     }
   });
 
