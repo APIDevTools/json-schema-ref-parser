@@ -36,7 +36,7 @@ describe("Schema with invalid pointers", () => {
           name: InvalidPointerError.name,
           message: "Invalid $ref pointer \"f\". Pointers must begin with \"#/\"",
           path: ["foo"],
-          source: path.abs("specs/invalid-pointers/invalid.json"),
+          source: path.unixify(path.abs("specs/invalid-pointers/invalid.json")),
         }
       ]);
     }

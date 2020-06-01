@@ -37,6 +37,13 @@ function filesystemPathHelpers () {
     },
 
     /**
+     * Returns the path with normalized, UNIX-like, slashes. Disk letter is lower-cased, if present.
+     */
+    unixify (file) {
+      return file.replace(/\\/g, "/").replace(/^[A-Z](?=:\/)/, (letter) => letter.toLowerCase());
+    },
+
+    /**
      * Returns the path of a file in the "test" directory as a URL.
      * (e.g. "file://path/to/json-schema-ref-parser/test/files...")
      */
@@ -111,6 +118,12 @@ function urlPathHelpers () {
       return testsDir + encodePath(file);
     },
 
+    /**
+     * Does nothing. Needed to comply with Filesystem path helpers.
+     */
+    unixify (file) {
+      return file;
+    },
     /**
      * Returns the path of a file in the "test" directory as an absolute URL.
      * (e.g. "http://localhost/test/files/...")
