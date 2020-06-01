@@ -38,7 +38,7 @@ describe("Report correct error source and path for", () => {
       expect(err.errors).to.containSubset([
         {
           name: ResolverError.name,
-          source: path.abs("specs/error-source/broken-external.json"),
+          source: path.unixify(path.abs("specs/error-source/broken-external.json")),
           path: ["components", "schemas", "testSchema", "properties", "test"],
           message: message => typeof message === "string",
         },
@@ -56,13 +56,13 @@ describe("Report correct error source and path for", () => {
       expect(err.errors).to.containSubset([
         {
           name: MissingPointerError.name,
-          source: path.abs("specs/error-source/invalid-external.json"),
+          source: path.unixify(path.abs("specs/error-source/invalid-external.json")),
           path: ["foo", "bar"],
           message: message => typeof message === "string",
         },
         {
           name: ResolverError.name,
-          source: path.abs("specs/error-source/broken-external.json"),
+          source: path.unixify(path.abs("specs/error-source/broken-external.json")),
           path: ["components", "schemas", "testSchema", "properties", "test"],
           message: message => typeof message === "string",
         },
@@ -80,7 +80,7 @@ describe("Report correct error source and path for", () => {
       expect(err.errors).to.containSubset([
         {
           name: InvalidPointerError.name,
-          source: path.abs("specs/error-source/invalid-pointer.json"),
+          source: path.unixify(path.abs("specs/error-source/invalid-pointer.json")),
           path: ["foo", "baz"],
           message: message => typeof message === "string",
         },
