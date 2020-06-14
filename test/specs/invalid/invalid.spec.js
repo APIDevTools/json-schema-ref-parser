@@ -112,7 +112,7 @@ describe("Invalid syntax", () => {
             {
               name: ParserError.name,
               message: message => (
-                message.includes("invalid.yaml: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 1:")
+                message.includes("invalid.yaml: incomplete explicit mapping pair; a key node is missed at line 1, column 1:")
               ),
               path: [],
               source: message => message.endsWith("test/specs/invalid/invalid.yaml"),
@@ -268,7 +268,7 @@ describe("Invalid syntax", () => {
             {
               name: ParserError.name,
               message: message => (
-                message.includes("invalid.yaml: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 1:")
+                message.includes("invalid.yaml: incomplete explicit mapping pair; a key node is missed at line 1, column 1:")
               ),
               path: ["foo"],
               source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
