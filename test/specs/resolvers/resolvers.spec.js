@@ -159,7 +159,7 @@ describe("options.resolve", () => {
     }
   });
 
-  it("should throw a grouped error if no resolver can be matched and fastFail is false", async () => {
+  it("should throw a grouped error if no resolver can be matched and continueOnError is true", async () => {
     const parser = new $RefParser();
     try {
       await parser.dereference(path.abs("specs/resolvers/resolvers.yaml"), {
