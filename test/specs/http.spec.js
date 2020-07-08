@@ -49,7 +49,9 @@ describe("HTTP options", () => {
     }
   });
 
-  describe("http.redirect", () => {
+  // 2020-07-08 - The HTTPBin redirect endpoints are suddenly returning 404 errors. Not sure why 🤷‍♂️
+  // TODO: Re-enable these tests once HTTPBin is working again
+  describe.skip("http.redirect", () => {
     if (host.browser.safari && host.karma && host.karma.ci) {
       // These tests fail in Safari when running on Sauce Labs (they pass when running on Safari locally).
       // It gets an XHR error when trying to reach httpbin.org.
