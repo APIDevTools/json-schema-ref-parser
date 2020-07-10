@@ -57,7 +57,7 @@
     "@jsdevtools/karma-config": "^3.1.4",
     "@jsdevtools/version-bump-prompt": "^6.0.3",
     "@types/json-schema": "^7.0.4",
-    "@types/node": "^14.0.19",
+    "@types/node": "^14.0.20",
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
     "eslint": "^7.4.0",
