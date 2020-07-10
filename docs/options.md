@@ -10,6 +10,7 @@ Example
 
 ```javascript
 $RefParser.dereference("my-schema.yaml", {
+  continueOnError: true,            // Don't throw on the first error
   parse: {
     json: false,                    // Disable the JSON parser
     yaml: {
@@ -27,7 +28,6 @@ $RefParser.dereference("my-schema.yaml", {
       withCredentials: true,        // Include auth credentials when resolving HTTP references
     }
   },
-  continueOnError: true,            // Don't throw on the first error
   dereference: {
     circular: false                 // Don't allow circular $refs
   }
