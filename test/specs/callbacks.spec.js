@@ -21,8 +21,8 @@ describe("Callback & Promise syntax", () => {
       let parser = new $RefParser();
       parser[method](path.rel("specs/internal/internal.yaml"), (err, result) => {
         try {
-          expect(err).to.be.null;
-          expect(result).to.be.an("object").and.ok;
+          expect(err).to.equal(null);
+          expect(result).to.be.an("object");
 
           if (method === "resolve") {
             expect(result).to.equal(parser.$refs);
@@ -44,7 +44,7 @@ describe("Callback & Promise syntax", () => {
       $RefParser[method](path.rel("specs/invalid/invalid.yaml"), (err, result) => {
         try {
           expect(err).to.be.an.instanceOf(ParserError);
-          expect(result).to.be.undefined;
+          expect(result).to.equal(undefined);
           done();
         }
         catch (e) {
@@ -59,7 +59,7 @@ describe("Callback & Promise syntax", () => {
       let parser = new $RefParser();
       return parser[method](path.rel("specs/internal/internal.yaml"))
         .then((result) => {
-          expect(result).to.be.an("object").and.ok;
+          expect(result).to.be.an("object");
 
           if (method === "resolve") {
             expect(result).to.equal(parser.$refs);

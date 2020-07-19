@@ -1,7 +1,5 @@
 "use strict";
 
-const helper = require("../../utils/helper");
-
 let name = {
   required: [
     "first",

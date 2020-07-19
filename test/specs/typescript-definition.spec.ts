@@ -1,13 +1,13 @@
-import $RefParser = require('../../lib');
-import assert = require("assert");
+import * as assert from "assert";
+import * as $RefParser from "../../lib";
 
 const baseUrl = "http://example.com/schema";
 const schemaPath = "my-schema.json";
 const schemaObject: $RefParser.JSONSchema = { title: "my-schema" };
 const options = {};
-const promiseResolve = (schema: object) => undefined;
-const promiseReject = (err: Error) => undefined;
-const callback = (err: Error | null, schema?: object) => undefined;
+const promiseResolve = (_: object) => undefined;
+const promiseReject = (_: Error) => undefined;
+const callback = (_err: Error | null, _schema?: object) => undefined;
 
 
 // $RefParser class instance
