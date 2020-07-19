@@ -176,7 +176,7 @@ describe("Invalid syntax", () => {
       it("should not throw an error for an invalid YAML file with JSON and YAML disabled", async () => {
         const parser = new $RefParser();
         const result = await parser.dereference(path.rel("specs/invalid/invalid.yaml"), { continueOnError: true, parse: { yaml: false, json: false }});
-        expect(result).to.be.null;
+        expect(result).to.equal(null);
       });
     });
   });

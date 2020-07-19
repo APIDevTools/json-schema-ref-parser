@@ -157,7 +157,7 @@ describe("HTTP options", () => {
       let schema = await parser.parse("https://petstore.swagger.io/v2/swagger.json");
 
       expect(schema).to.be.an("object");
-      expect(schema).not.to.be.empty;
+      expect(schema).not.to.be.empty;  // eslint-disable-line no-unused-expressions
       expect(parser.schema).to.equal(schema);
     });
 
@@ -171,7 +171,7 @@ describe("HTTP options", () => {
       });
 
       expect(schema).to.be.an("object");
-      expect(schema).not.to.be.empty;
+      expect(schema).not.to.be.empty;  // eslint-disable-line no-unused-expressions
       expect(parser.schema).to.equal(schema);
     });
 
@@ -188,7 +188,7 @@ describe("HTTP options", () => {
 
           // The request succeeded, which means this browser doesn't support CORS.
           expect(schema).to.be.an("object");
-          expect(schema).not.to.be.empty;
+          expect(schema).not.to.be.empty;  // eslint-disable-line no-unused-expressions
           expect(parser.schema).to.equal(schema);
         }
         catch (err) {

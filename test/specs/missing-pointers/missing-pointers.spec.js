@@ -7,7 +7,6 @@ const { expect } = chai;
 const $RefParser = require("../../../lib");
 const { JSONParserErrorGroup, MissingPointerError } = require("../../../lib/util/errors");
 const helper = require("../../utils/helper");
-const path = require("../../utils/path");
 
 describe("Schema with missing pointers", () => {
   it("should throw an error for missing pointer", async () => {
