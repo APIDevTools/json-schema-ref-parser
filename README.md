@@ -129,7 +129,7 @@ Full API documentation is available [right here](https://apitools.dev/json-schem
 
 Contributing
 --------------------------
-I welcome any contributions, enhancements, and bug-fixes.  [File an issue](https://github.com/APIDevTools/json-schema-ref-parser/issues) on GitHub and [submit a pull request](https://github.com/APIDevTools/json-schema-ref-parser/pulls).
+I welcome any contributions, enhancements, and bug-fixes.  [Open an issue](https://github.com/APIDevTools/json-schema-ref-parser/issues) on GitHub and [submit a pull request](https://github.com/APIDevTools/json-schema-ref-parser/pulls).
 
 #### Building/Testing
 To build/test the project locally on your computer:
