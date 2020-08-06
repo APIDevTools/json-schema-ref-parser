@@ -466,7 +466,7 @@ declare namespace $RefParser {
     public readonly code = "EUNMATCHEDRESOLVER";
   }
   export class MissingPointerError extends JSONParserError {
-    public constructor(token: string | number, source: string);
+    public constructor(token: string | number, source: string, targetRef: string, targetFound: string, parentPath: string);
 
     public readonly name = "MissingPointerError";
     public readonly code = "EMISSINGPOINTER";

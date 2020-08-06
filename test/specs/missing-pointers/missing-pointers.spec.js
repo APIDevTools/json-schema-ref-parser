@@ -81,5 +81,28 @@ describe("Schema with missing pointers", () => {
         ]);
       }
     });
+
+    it("should throw an missing pointer error with details for target and parent", async () => {
+      const parser = new $RefParser();
+      try {
+        await parser.dereference({ foo: { $ref: path.abs("specs/missing-pointers/error-details.yaml") }}, { continueOnError: true });
+        helper.shouldNotGetCalled();
+      }
+      catch (err) {
+        expect(err).to.be.instanceof(JSONParserErrorGroup);
+        expect(err.files).to.equal(parser);
+        expect(err.message).to.have.string("1 error occurred while reading '");
+        expect(err.errors).to.containSubset([
+          {
+            name: MissingPointerError.name,
+            message: 'Token "ThisIsMissing" does not exist.',
+            targetToken: 'ThisIsMissing',
+            targetRef: "#/components/parameters/ThisIsMissing",
+            targetFound: "#/components/parameters",
+            parentPath: "#/paths/~1pet/post/parameters/0"
+          }
+        ]);
+      }
+    });
   });
 });
