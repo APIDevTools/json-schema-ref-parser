@@ -1,0 +1,23 @@
+{
+  "title": "Airplane",
+  "type": "object",
+  "properties": {
+    "name": {
+      "$ref": "#/definitions/Name"
+    },
+    "repairman": {
+      "$ref": "./user.json"
+    },
+    "manufacturer": {
+      "$ref": "./manufacturer.json"
+    }
+  },
+  "definitions": {
+    "Name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "example": "747"
+    }
+  }
+}

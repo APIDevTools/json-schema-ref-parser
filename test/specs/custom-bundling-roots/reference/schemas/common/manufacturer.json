@@ -1,0 +1,19 @@
+{
+  "title": "Manufacturer",
+  "type": "object",
+  "properties": {
+    "name": {
+      "$ref": "#/definitions/Name"
+    },
+    "owner": {
+      "$ref": "../alt/user.json"
+    }
+  },
+  "definitions": {
+    "Name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 20
+    }
+  }
+}

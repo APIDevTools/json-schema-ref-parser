@@ -30,7 +30,8 @@ $RefParser.dereference("my-schema.yaml", {
   },
   dereference: {
     circular: false                 // Don't allow circular $refs
-  }
+  },
+  bundle: {}                        // bundling specific options
 });
 ```
 
@@ -75,3 +76,15 @@ The `dereference` options control how JSON Schema $Ref Parser will dereference `
 |Option(s)             |Type                |Description
 |:---------------------|:-------------------|:------------
 |`circular`|`boolean` or `"ignore"`|Determines whether [circular `$ref` pointers](README.md#circular-refs) are handled.<br><br>If set to `false`, then a `ReferenceError` will be thrown if the schema contains any circular references.<br><br> If set to `"ignore"`, then circular references will simply be ignored.  No error will be thrown, but the [`$Refs.circular`](refs.md#circular) property will still be set to `true`.
+
+`bundle` Options
+
+The `bundle` options control how JSON Schema $Ref Parser will bundle `$ref` pointers within the JSON schema.
+
+
+|Option(s)             |Type                |Description
+|:---------------------|:-------------------|:------------
+|`generateKey`|`(value: any, file: string, hash: string or null) => string or null`|Used to generate $ref.
+|`shouldInline`|`(pathFromRoot: string) => boolean`|Determines whether a value of given reference should be inlined in the resulting output.
+|`defaultRoot`|`string`|The default root to optimize for.
+

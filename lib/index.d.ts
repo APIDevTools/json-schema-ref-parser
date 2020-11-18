@@ -232,6 +232,32 @@ declare namespace $RefParser {
        */
       circular?: boolean | "ignore";
     };
+
+    bundle?: {
+      /**
+       * Used to generate $ref.
+       * If null is returned, the default logic applies.
+       *
+       * @param {*} value
+       * @param {string} file
+       * @param {string|null} hash
+       * @return {string|null}
+       */
+      generateKey?(value: unknown, file: string, hash: string | null): string | null;
+
+      /**
+       * Determines whether a value of given reference should be inlined in the resulting output.
+       *
+       * @param {string} pathFromRoot
+       * @return boolean
+       */
+      shouldInline?(pathFromRoot: string): boolean;
+
+      /**
+       * The default root to optimize for.
+       */
+      defaultRoot?: string;
+    };
   }
 
   export interface HTTPResolverOptions extends Partial<ResolverOptions> {

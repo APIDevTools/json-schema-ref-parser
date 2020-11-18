@@ -1,0 +1,17 @@
+{
+  "title": "Airport",
+  "type": "object",
+  "properties": {
+    "name": {
+      "$ref": "#/definitions/Name"
+    }
+  },
+  "definitions": {
+    "Name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50,
+      "example": "JFK"
+    }
+  }
+}

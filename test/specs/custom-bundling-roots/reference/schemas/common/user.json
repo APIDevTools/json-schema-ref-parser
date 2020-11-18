@@ -1,0 +1,19 @@
+{
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "firstName": {
+      "$ref": "#/definitions/Name"
+    },
+    "lastName": {
+      "$ref": "#/definitions/Name"
+    }
+  },
+  "definitions": {
+    "Name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 20
+    }
+  }
+}

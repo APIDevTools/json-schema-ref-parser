@@ -1,0 +1,28 @@
+{
+  "swagger": "2.0",
+  "paths": {
+    "/flight/{id}": {
+      "parameters": [
+        {
+          "$ref": "./reference/parameters/id.json"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "./reference/parameters/id.json"
+            }
+          },
+          "400": {
+            "schema": {
+              "foo": {
+                "$ref": "./reference/parameters/id.json#/type"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

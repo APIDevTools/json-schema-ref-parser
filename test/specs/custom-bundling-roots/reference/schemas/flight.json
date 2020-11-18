@@ -1,0 +1,18 @@
+{
+  "title": "Flight",
+  "type": "object",
+  "properties": {
+    "pilot": {
+      "$ref": "./common/user.json"
+    },
+    "airplane": {
+      "$ref": "./common/airplane.v1.json"
+    },
+    "airport": {
+      "$ref": "https://example.com/api/nodes.raw/?srn=org/proj/data-model-dictionary/reference/common/models/Airport"
+    },
+    "airport_masked": {
+      "$ref": "https://example.com/api/nodes.raw/?srn=org/proj/data-model-dictionary/reference/common/models/Airport&mid=123"
+    }
+  }
+}

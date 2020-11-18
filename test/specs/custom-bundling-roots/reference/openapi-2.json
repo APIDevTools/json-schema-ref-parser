@@ -1,0 +1,62 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Foo",
+    "version": "1.0"
+  },
+  "host": "localhost:3000",
+  "paths": {
+    "/flight/{id}": {
+      "parameters": [
+        {
+          "$ref": "./parameters/id.json"
+        }
+      ],
+      "get": {
+        "operationId": "get-flights",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Flight"
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "post-flight-id",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "./schemas/flight.json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/Flight"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Flight": {
+      "title": "Flight",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "flight": {
+          "$ref": "./schemas/flight.json"
+        }
+      }
+    }
+  }
+}

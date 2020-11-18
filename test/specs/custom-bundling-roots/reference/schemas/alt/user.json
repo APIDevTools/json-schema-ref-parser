@@ -1,0 +1,20 @@
+{
+  "title": "Alt User",
+  "description": "Allows for a longer name than regular user",
+  "type": "object",
+  "properties": {
+    "firstName": {
+      "$ref": "#/definitions/Name"
+    },
+    "lastName": {
+      "$ref": "#/definitions/Name"
+    }
+  },
+  "definitions": {
+    "Name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 50
+    }
+  }
+}
