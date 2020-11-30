@@ -1,59 +1,14 @@
+/* eslint-disable camelcase */
 "use strict";
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
 const path = require("../../utils/path");
 const nock = require("nock");
-const { getDefaultsForOAS2, getDefaultsForOAS3 } = require("../../../lib/bundle/defaults");
+const { getDefaultsForOldJsonSchema, getDefaultsForOAS2 } = require("../../../lib/bundle/defaults");
+const createStoplightDefaults = require("../../../lib/bundle/stoplight-defaults");
 
 describe("Custom bundling roots", () => {
-  describe("reference files", () => {
-    before(() => {
-      nock("https://example.com")
-        .persist(true)
-        .get("/api/nodes.raw/")
-        .query({
-          srn: "org/proj/data-model-dictionary/reference/common/models/Airport",
-        })
-        .reply(200, require("./reference/mocks/airport-unmasked.json"));
-
-      nock("https://example.com")
-        .persist(true)
-        .get("/api/nodes.raw/")
-        .query({
-          srn: "org/proj/data-model-dictionary/reference/common/models/Airport",
-          mid: "123"
-        })
-        .reply(200, require("./reference/mocks/airport-masked.json"));
-    });
-
-    after(() => {
-      nock.cleanAll();
-    });
-
-    it("should allow to customize bundling roots for OAS2", async () => {
-      let parser = new $RefParser();
-
-      const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/reference/openapi-2.json"), {
-        bundle: getDefaultsForOAS2(),
-      });
-
-      expect(schema).to.equal(parser.schema);
-      expect(schema).to.deep.equal(require("./reference/openapi-2-bundled.js"));
-    });
-
-    it("should allow to customize bundling roots for OAS3", async () => {
-      let parser = new $RefParser();
-
-      const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/reference/openapi-3.json"), {
-        bundle: getDefaultsForOAS3(),
-      });
-
-      expect(schema).to.equal(parser.schema);
-      expect(schema).to.deep.equal(require("./reference/openapi-3.bundled.js"));
-    });
-  });
-
   it("mixed inline", async () => {
     let parser = new $RefParser();
 
@@ -100,6 +55,312 @@ describe("Custom bundling roots", () => {
           ]
         }
       },
+    });
+  });
+
+  it("should handle $refs whose parents were remapped", async () => {
+    nock("http://localhost:8080")
+      .get("/api/nodes.raw/")
+      .query({
+        srn: "gh/stoplightio/test/Book.v1.yaml"
+      })
+      .reply(200, {
+        properties: {
+          author: {
+            $ref: "#/definitions/Book_Author"
+          },
+          publisher: {
+            properties: {
+              city: {
+                $ref: "#/definitions/City"
+              }
+            }
+          }
+        },
+        definitions: {
+          City: {
+            properties: {
+              street: {
+                type: "string"
+              }
+            }
+          },
+          Book_Author: {
+            properties: {
+              name: {
+                type: "string"
+              },
+              contact: {
+                properties: {
+                  name: {
+                    $ref: "#/definitions/Book_Author/properties/name"
+                  },
+                  address: {
+                    street: {
+                      $ref: "#/definitions/City/properties/street"
+                    },
+                  }
+                }
+              }
+            }
+          }
+        },
+      });
+
+    const model = {
+      properties: {
+        id: {
+          type: "string"
+        },
+        book: {
+          $ref: "http://localhost:8080/api/nodes.raw/?srn=gh/stoplightio/test/Book.v1.yaml"
+        }
+      }
+    };
+
+    let parser = new $RefParser();
+
+    const schema = await parser.bundle(model, {
+      bundle: getDefaultsForOldJsonSchema(),
+    });
+
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal({
+      definitions: {
+        "Book.v1": {
+          definitions: {},
+          properties: {
+            author: {
+              $ref: "#/definitions/Book.v1_Book_Author"
+            },
+            publisher: {
+              properties: {
+                city: {
+                  $ref: "#/definitions/Book.v1_City"
+                }
+              }
+            }
+          }
+        },
+        "Book.v1_Book_Author": {
+          properties: {
+            contact: {
+              properties: {
+                address: {
+                  street: {
+                    $ref: "#/definitions/Book.v1_City/properties/street"
+                  }
+                },
+                name: {
+                  $ref: "#/definitions/Book.v1_Book_Author/properties/name"
+                }
+              }
+            },
+            name: {
+              type: "string"
+            }
+          }
+        },
+        "Book.v1_City": {
+          properties: {
+            street: {
+              type: "string"
+            }
+          }
+        },
+      },
+      properties: {
+        book: {
+          $ref: "#/definitions/Book.v1"
+        },
+        id: {
+          type: "string"
+        }
+      }
+    });
+  });
+
+  describe("Stoplight-specific defaults", () => {
+    describe("reference files", () => {
+      before(() => {
+        nock("https://example.com")
+          .persist(true)
+          .get("/api/nodes.raw/")
+          .query({
+            srn: "org/proj/data-model-dictionary/reference/common/models/Airport",
+          })
+          .reply(200, require("./reference/mocks/airport-unmasked.json"));
+
+        nock("https://example.com")
+          .persist(true)
+          .get("/api/nodes.raw/")
+          .query({
+            srn: "org/proj/data-model-dictionary/reference/common/models/Airport",
+            mid: "123"
+          })
+          .reply(200, require("./reference/mocks/airport-masked.json"));
+      });
+
+      after(() => {
+        nock.cleanAll();
+      });
+
+      it("should allow to customize bundling roots for OAS2", async () => {
+        const defaults = createStoplightDefaults(__dirname, "http://localhost:8080/api/nodes.raw/", "gh/stoplightio/test");
+        let parser = new $RefParser();
+
+        const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/reference/openapi-2.json"), {
+          bundle: defaults.oas2,
+        });
+
+        expect(schema).to.equal(parser.schema);
+        expect(schema).to.deep.equal(require("./reference/openapi-2-bundled.js"));
+      });
+
+      it("should allow to customize bundling roots for OAS3", async () => {
+        const defaults = createStoplightDefaults(__dirname, "http://localhost:8080/api/nodes.raw/", "gh/stoplightio/test");
+        let parser = new $RefParser();
+
+        const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/reference/openapi-3.json"), {
+          bundle: defaults.oas3,
+        });
+
+        expect(schema).to.equal(parser.schema);
+        expect(schema).to.deep.equal(require("./reference/openapi-3.bundled.js"));
+      });
+    });
+
+    it("should append mid to the key", async () => {
+      const defaults = createStoplightDefaults(__dirname, "http://localhost:8080/api/nodes.raw/", "gh/stoplightio/test");
+      nock("http://localhost:8080")
+        .get("/api/nodes.raw/")
+        .query({
+          srn: "gh/stoplightio/test/Book.v1.yaml",
+          mid: "2",
+        })
+        .reply(200, {
+          properties: {
+            id: {
+              type: "string"
+            }
+          }
+        });
+
+      const model = {
+        properties: {
+          id: {
+            type: "string"
+          },
+          book: {
+            $ref: "http://localhost:8080/api/nodes.raw/?srn=gh/stoplightio/test/Book.v1.yaml&mid=2"
+          }
+        }
+      };
+
+      let parser = new $RefParser();
+
+      const schema = await parser.bundle(__dirname, model, {
+        bundle: defaults.json_schema,
+      });
+
+      expect(schema).to.equal(parser.schema);
+      expect(schema).to.deep.equal({
+        definitions: {
+          "Book.v1_m2": {
+            properties: {
+              id: {
+                type: "string"
+              }
+            }
+          }
+        },
+        properties: {
+          book: {
+            $ref: "#/definitions/Book.v1_m2"
+          },
+          id: {
+            type: "string"
+          }
+        }
+      });
+    });
+
+    it("should recognize v1 & v2 references", async () => {
+      const defaults = createStoplightDefaults(__dirname, "https://example.com/api/nodes.raw/", "org/proj/data-model-dictionary");
+      nock("https://example.com")
+        .get("/api/nodes.raw/")
+        .query({
+          srn: "org/proj/data-model-dictionary/reference/book.yaml"
+        })
+        .reply(200, {
+          properties: {
+            id: {
+              type: "string"
+            }
+          }
+        });
+
+      nock("https://example.com")
+        .get("/api/nodes.raw/org/proj/data-model-dictionary/reference/book.yaml")
+        .reply(200, {
+          properties: {
+            id: {
+              type: "string"
+            }
+          }
+        });
+
+      const model = {
+        properties: {
+          id: {
+            type: "string"
+          },
+          book: {
+            oneOf: [
+              {
+                $ref: "https://example.com/api/nodes.raw/?srn=org/proj/data-model-dictionary/reference/book.yaml"
+              },
+              {
+                $ref: "https://example.com/api/nodes.raw/org/proj/data-model-dictionary/reference/book.yaml"
+              },
+            ],
+          },
+        }
+      };
+
+      let parser = new $RefParser();
+
+      const schema = await parser.bundle(__dirname, model, {
+        bundle: defaults.json_schema,
+      });
+
+      expect(schema).to.equal(parser.schema);
+      expect(schema).to.deep.equal({
+        definitions: {
+          Book: {
+            properties: {
+              id: {
+                type: "string"
+              }
+            }
+          }
+        },
+        properties: {
+          book: {
+            oneOf: [
+              {
+                $ref: "#/definitions/Book"
+              },
+              {
+                $ref: "#/definitions/Book"
+              },
+            ],
+          },
+          id: {
+            type: "string"
+          }
+        }
+      });
     });
   });
 });
