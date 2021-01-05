@@ -1,5 +1,5 @@
 import { JSONSchema4, JSONSchema4Type, JSONSchema6, JSONSchema6Type } from "json-schema";
-import { RequestInit } from "node-fetch";
+import { Request, RequestInit } from "node-fetch";
 
 export = $RefParser;
 
@@ -240,6 +240,16 @@ declare namespace $RefParser {
      * Provide `RequestInit` on HTTP Resolver
      */
     requestInit?: RequestInit;
+
+    /**
+     * pre process `Request` object on HTTP Resolver
+     *
+     * e.g:
+     *   1. modify request method
+     *   2. re-mapping url
+     *   etc
+     */
+    preprocessor?(request: Request): Request;
   }
 
   /**
