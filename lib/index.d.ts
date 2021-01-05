@@ -1,4 +1,5 @@
 import { JSONSchema4, JSONSchema4Type, JSONSchema6, JSONSchema6Type } from "json-schema";
+import { RequestInit } from "node-fetch";
 
 export = $RefParser;
 
@@ -235,26 +236,10 @@ declare namespace $RefParser {
   }
 
   export interface HTTPResolverOptions extends Partial<ResolverOptions> {
-
     /**
-     * You can specify any HTTP headers that should be sent when downloading files. For example, some servers may require you to set the `Accept` or `Referrer` header.
+     * Provide `RequestInit` on HTTP Resolver
      */
-    headers?: object;
-
-    /**
-     * The amount of time (in milliseconds) to wait for a response from the server when downloading files. The default is 5 seconds.
-     */
-    timeout?: number;
-
-    /**
-     * The maximum number of HTTP redirects to follow per file. The default is 5. To disable automatic following of redirects, set this to zero.
-     */
-    redirects?: number;
-
-    /**
-     * Set this to `true` if you're downloading files from a CORS-enabled server that requires authentication
-     */
-    withCredentials?: boolean;
+    requestInit?: RequestInit;
   }
 
   /**
