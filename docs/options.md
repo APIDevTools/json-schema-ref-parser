@@ -66,7 +66,7 @@ JSON Schema $Ref Parser comes with built-in support for HTTP and HTTPS, as well 
 |`http.timeout`        |`number`   |The amount of time (in milliseconds) to wait for a response from the server when downloading files. The default is 5 seconds.
 |`http.redirects`      |`number`   |The maximum number of HTTP redirects to follow per file. The default is 5. To disable automatic following of redirects, set this to zero.
 |`http.withCredentials`|`boolean`|Set this to `true` if you're downloading files from a CORS-enabled server that requires authentication
-
+|`http.fetch`|`function`|Provide other `window.fetch` polyfill or native implementation
 
 `dereference` Options
 -------------------
