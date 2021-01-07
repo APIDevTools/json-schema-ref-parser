@@ -4,7 +4,7 @@
 const { expect } = require("chai");
 const $RefParser = require("../../..");
 const path = require("../../utils/path");
-const nock = require("nock");
+const setupHttpMocks = require("../../utils/setup-http-mocks");
 const { getDefaultsForOldJsonSchema, getDefaultsForOAS2 } = require("../../../lib/bundle/defaults");
 const createStoplightDefaults = require("../../../lib/bundle/stoplight-defaults");
 
@@ -59,12 +59,8 @@ describe("Custom bundling roots", () => {
   });
 
   it("should handle $refs whose parents were remapped", async () => {
-    nock("http://localhost:8080")
-      .get("/api/nodes.raw/")
-      .query({
-        srn: "gh/stoplightio/test/Book.v1.yaml"
-      })
-      .reply(200, {
+    setupHttpMocks({
+      "http://localhost:8080/api/nodes.raw?srn=gh/stoplightio/test/Book.v1.yaml": {
         properties: {
           author: {
             $ref: "#/definitions/Book_Author"
@@ -105,7 +101,8 @@ describe("Custom bundling roots", () => {
             }
           }
         },
-      });
+      }
+    });
 
     const model = {
       properties: {
@@ -182,35 +179,21 @@ describe("Custom bundling roots", () => {
 
   describe("Stoplight-specific defaults", () => {
     describe("reference files", () => {
-      before(() => {
-        nock("https://example.com")
-          .persist(true)
-          .get("/api/nodes.raw/")
-          .query({
-            srn: "org/proj/data-model-dictionary/reference/common/models/Airport",
-          })
-          .reply(200, require("./reference/mocks/airport-unmasked.json"));
+      let defaults;
+      beforeEach(() => {
+        setupHttpMocks({
+          "https://example.com/api/nodes.raw?srn=org/proj/data-model-dictionary/reference/common/models/Airport": require("./reference/mocks/airport-unmasked.json"),
+          "https://example.com/api/nodes.raw?srn=org/proj/data-model-dictionary/reference/common/models/Airport&mid=123": require("./reference/mocks/airport-masked.json"),
+        });
 
-        nock("https://example.com")
-          .persist(true)
-          .get("/api/nodes.raw/")
-          .query({
-            srn: "org/proj/data-model-dictionary/reference/common/models/Airport",
-            mid: "123"
-          })
-          .reply(200, require("./reference/mocks/airport-masked.json"));
-      });
-
-      after(() => {
-        nock.cleanAll();
-      });
-
-      it("should allow to customize bundling roots for OAS2", async () => {
-        let defaults = createStoplightDefaults({
+        defaults = createStoplightDefaults({
           cwd: __dirname,
           endpointUrl: "http://localhost:8080/api/nodes.raw/",
           srn: "gh/stoplightio/test"
         });
+      });
+
+      it("should allow to customize bundling roots for OAS2", async () => {
         let parser = new $RefParser();
 
         const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/reference/openapi-2.json"), {
@@ -222,11 +205,6 @@ describe("Custom bundling roots", () => {
       });
 
       it("should allow to customize bundling roots for OAS3", async () => {
-        let defaults = createStoplightDefaults({
-          cwd: __dirname,
-          endpointUrl: "http://localhost:8080/api/nodes.raw/",
-          srn: "gh/stoplightio/test"
-        });
         let parser = new $RefParser();
 
         const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/reference/openapi-3.json"), {
@@ -244,19 +222,16 @@ describe("Custom bundling roots", () => {
         endpointUrl: "http://localhost:8080/api/nodes.raw/",
         srn: "gh/stoplightio/test"
       });
-      nock("http://localhost:8080")
-        .get("/api/nodes.raw/")
-        .query({
-          srn: "gh/stoplightio/test/Book.v1.yaml",
-          mid: "2",
-        })
-        .reply(200, {
+
+      setupHttpMocks({
+        "http://localhost:8080/api/nodes.raw?srn=gh/stoplightio/test/Book.v1.yaml&mid=2": {
           properties: {
             id: {
               type: "string"
             }
           }
-        });
+        }
+      });
 
       const model = {
         properties: {
@@ -303,45 +278,13 @@ describe("Custom bundling roots", () => {
         endpointUrl: "http://localhost:8080/api/nodes.raw/",
         srn: "gh/stoplightio/test"
       });
-      nock("http://localhost:8080")
-        .get("/api/nodes.raw/")
-        .query({
-          srn: "gh/stoplightio/test/Book.v1.yaml"
-        })
-        .reply(200, {
-          title: "Plain Book v1",
-        });
 
-      nock("http://localhost:8080")
-        .get("/api/nodes.raw/")
-        .query({
-          srn: "gh/stoplightio/test/Book.v1.yaml",
-          mid: "2",
-        })
-        .reply(200, {
-          title: "Book v1 mid 2",
-        });
-
-      nock("http://localhost:8080")
-        .get("/api/nodes.raw/")
-        .query({
-          srn: "gh/stoplightio/test/Book.v1.yaml",
-          mid: "3",
-        })
-        .reply(200, {
-          title: "Book v1 mid 3",
-        });
-
-      nock("http://localhost:8080")
-        .get("/api/nodes.raw/")
-        .query({
-          srn: "gh/stoplightio/test/Book.v2.yaml",
-          mid: "104",
-        })
-        .reply(200, {
-          title: "Book v2 mid 104",
-        });
-
+      setupHttpMocks({
+        "http://localhost:8080/api/nodes.raw?srn=gh/stoplightio/test/Book.v1.yaml": { title: "Plain Book v1" },
+        "http://localhost:8080/api/nodes.raw?srn=gh/stoplightio/test/Book.v1.yaml&mid=2": { title: "Book v1 mid 2" },
+        "http://localhost:8080/api/nodes.raw?srn=gh/stoplightio/test/Book.v1.yaml&mid=3": { title: "Book v1 mid 3" },
+        "http://localhost:8080/api/nodes.raw?srn=gh/stoplightio/test/Book.v2.yaml&mid=104": { title: "Book v2 mid 104" },
+      });
 
       const model = {
         properties: {
@@ -413,28 +356,23 @@ describe("Custom bundling roots", () => {
         endpointUrl: "https://example.com/api/nodes.raw/",
         srn: "org/proj/data-model-dictionary"
       });
-      nock("https://example.com")
-        .get("/api/nodes.raw/")
-        .query({
-          srn: "org/proj/data-model-dictionary/reference/book.yaml"
-        })
-        .reply(200, {
-          properties: {
-            id: {
-              type: "string"
-            }
-          }
-        });
 
-      nock("https://example.com")
-        .get("/api/nodes.raw/org/proj/data-model-dictionary/reference/book.yaml")
-        .reply(200, {
+      setupHttpMocks({
+        "https://example.com/api/nodes.raw?srn=org/proj/data-model-dictionary/reference/book.yaml": {
           properties: {
             id: {
               type: "string"
             }
           }
-        });
+        },
+        "https://example.com/api/nodes.raw/org/proj/data-model-dictionary/reference/book.yaml": {
+          properties: {
+            id: {
+              type: "string"
+            }
+          }
+        },
+      });
 
       const model = {
         properties: {

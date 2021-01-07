@@ -61,6 +61,7 @@
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
     "eslint": "^7.5.0",
+    "fetch-mock": "^9.11.0",
     "karma": "^5.0.2",
     "karma-cli": "^2.0.0",
     "mocha": "^8.0.1",

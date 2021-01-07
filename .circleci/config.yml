@@ -1,0 +1,69 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@3.0.0
+
+executors:
+  linux:
+    docker:
+      - image: cimg/base:2020.01
+
+commands:
+  install:
+    steps:
+      - run:
+          name: Install dependencies
+          command: npm ci
+
+  test-node:
+    steps:
+      - run:
+          name: Lint the code
+          command: npm run lint
+      - run:
+          name: Run node tests
+          command: npm run test:node
+      - run:
+          name: Verify typings
+          command: npm run test:typescript
+
+jobs:
+  test:
+    parameters:
+      os:
+        type: executor
+      node-version:
+        type: string
+    executor: << parameters.os >>
+    steps:
+      - checkout
+      - node/install:
+          node-version: << parameters.node-version >>.0
+          install-yarn: false
+          install-npm: true
+      - install
+      - test-node
+
+  test-browser:
+    docker:
+      - image: circleci/node:latest-browsers
+    steps:
+      - checkout
+      - install
+      - run:
+          name: Run browser tests
+          command: npm run test:browser
+
+workflows:
+  commit:
+    jobs:
+      - test:
+          matrix:
+            parameters:
+              os:
+                - linux
+              node-version:
+                - "10.18"
+                - "12.9"
+                - "14.9"
+      - test-browser
