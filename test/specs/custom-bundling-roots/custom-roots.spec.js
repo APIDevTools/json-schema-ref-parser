@@ -206,7 +206,11 @@ describe("Custom bundling roots", () => {
       });
 
       it("should allow to customize bundling roots for OAS2", async () => {
-        const defaults = createStoplightDefaults(__dirname, "http://localhost:8080/api/nodes.raw/", "gh/stoplightio/test");
+        let defaults = createStoplightDefaults({
+          cwd: __dirname,
+          endpointUrl: "http://localhost:8080/api/nodes.raw/",
+          srn: "gh/stoplightio/test"
+        });
         let parser = new $RefParser();
 
         const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/reference/openapi-2.json"), {
@@ -218,7 +222,11 @@ describe("Custom bundling roots", () => {
       });
 
       it("should allow to customize bundling roots for OAS3", async () => {
-        const defaults = createStoplightDefaults(__dirname, "http://localhost:8080/api/nodes.raw/", "gh/stoplightio/test");
+        let defaults = createStoplightDefaults({
+          cwd: __dirname,
+          endpointUrl: "http://localhost:8080/api/nodes.raw/",
+          srn: "gh/stoplightio/test"
+        });
         let parser = new $RefParser();
 
         const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/reference/openapi-3.json"), {
@@ -231,7 +239,11 @@ describe("Custom bundling roots", () => {
     });
 
     it("given no collision, should not append mid to the key", async () => {
-      const defaults = createStoplightDefaults(__dirname, "http://localhost:8080/api/nodes.raw/", "gh/stoplightio/test");
+      let defaults = createStoplightDefaults({
+        cwd: __dirname,
+        endpointUrl: "http://localhost:8080/api/nodes.raw/",
+        srn: "gh/stoplightio/test"
+      });
       nock("http://localhost:8080")
         .get("/api/nodes.raw/")
         .query({
@@ -286,8 +298,11 @@ describe("Custom bundling roots", () => {
     });
 
     it("given collision, should append mid to the key", async () => {
-      const defaults = createStoplightDefaults(__dirname, "http://localhost:8080/api/nodes.raw/", "gh/stoplightio/test");
-
+      let defaults = createStoplightDefaults({
+        cwd: __dirname,
+        endpointUrl: "http://localhost:8080/api/nodes.raw/",
+        srn: "gh/stoplightio/test"
+      });
       nock("http://localhost:8080")
         .get("/api/nodes.raw/")
         .query({
@@ -393,7 +408,11 @@ describe("Custom bundling roots", () => {
     });
 
     it("should recognize v1 & v2 references", async () => {
-      const defaults = createStoplightDefaults(__dirname, "https://example.com/api/nodes.raw/", "org/proj/data-model-dictionary");
+      let defaults = createStoplightDefaults({
+        cwd: __dirname,
+        endpointUrl: "https://example.com/api/nodes.raw/",
+        srn: "org/proj/data-model-dictionary"
+      });
       nock("https://example.com")
         .get("/api/nodes.raw/")
         .query({
