@@ -244,16 +244,6 @@ declare namespace $RefParser {
     headers?: object;
 
     /**
-     * The amount of time (in milliseconds) to wait for a response from the server when downloading files. The default is 5 seconds.
-     */
-    timeout?: number;
-
-    /**
-     * The maximum number of HTTP redirects to follow per file. The default is 5. To disable automatic following of redirects, set this to zero.
-     */
-    redirects?: number;
-
-    /**
      * Set this to `true` if you're downloading files from a CORS-enabled server that requires authentication
      */
     withCredentials?: boolean;
