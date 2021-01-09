@@ -66,6 +66,7 @@ JSON Schema $Ref Parser comes with built-in support for HTTP and HTTPS, as well 
 |`http.withCredentials`|`boolean`|Set this to `true` if you're downloading files from a CORS-enabled server that requires authentication
 |`http.fetch`|`function`|Provide other `window.fetch` polyfill or native implementation
 
+
 `dereference` Options
 -------------------
 The `dereference` options control how JSON Schema $Ref Parser will dereference `$ref` pointers within the JSON schema.
