@@ -4,20 +4,20 @@
     "/flight/{id}": {
       "parameters": [
         {
-          "$ref": "./reference/parameters/id.json"
+          "$ref": "./id.json"
         }
       ],
       "get": {
         "responses": {
           "200": {
             "schema": {
-              "$ref": "./reference/parameters/id.json"
+              "$ref": "./id.json"
             }
           },
           "400": {
             "schema": {
               "foo": {
-                "$ref": "./reference/parameters/id.json#/type"
+                "$ref": "./id.json#/type"
               }
             }
           }
