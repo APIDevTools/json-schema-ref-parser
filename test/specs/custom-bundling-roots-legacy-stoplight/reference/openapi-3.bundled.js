@@ -14,10 +14,7 @@ module.exports = {
     "/flight/{id}": {
       parameters: [
         {
-          type: "number",
-          name: "id",
-          in: "path",
-          required: true
+          $ref: "#/components/schemas/Id"
         }
       ],
       get: {
@@ -168,6 +165,12 @@ module.exports = {
         minLength: 1,
         maxLength: 100,
         example: "747"
+      },
+      Id: {
+        in: "path",
+        name: "id",
+        required: true,
+        type: "number"
       },
       Manufacturer: {
         definitions: {},

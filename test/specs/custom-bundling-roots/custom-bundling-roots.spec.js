@@ -46,10 +46,7 @@ describe("Custom bundling roots", () => {
           },
           parameters: [
             {
-              in: "path",
-              name: "id",
-              required: true,
-              type: "number"
+              $ref: "#/definitions/Id"
             }
           ]
         }
@@ -221,6 +218,51 @@ describe("Custom bundling roots", () => {
       },
       foo: {
         $ref: "#/baz/bar"
+      }
+    });
+  });
+
+  it("should not create redundant roots", async () => {
+    let parser = new $RefParser();
+    const model = {
+      properties: {
+        user: {
+          properties: {
+            id: {
+              $ref: "#/definitions/Id"
+            }
+          },
+        }
+      },
+      definitions: {
+        Id: {
+          $ref: path.rel("specs/custom-bundling-roots/id.json")
+        }
+      }
+    };
+
+    const schema = await parser.bundle(model, {
+      bundle: getDefaultsForOldJsonSchema(),
+    });
+
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal({
+      properties: {
+        user: {
+          properties: {
+            id: {
+              $ref: "#/definitions/Id"
+            }
+          },
+        }
+      },
+      definitions: {
+        Id: {
+          type: "number",
+          name: "id",
+          in: "path",
+          required: true
+        }
       }
     });
   });

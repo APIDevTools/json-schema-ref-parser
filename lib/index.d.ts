@@ -246,14 +246,6 @@ declare namespace $RefParser {
       generateKey?(value: unknown, file: string, hash: string | null): string | null;
 
       /**
-       * Determines whether a value of given reference should be inlined in the resulting output.
-       *
-       * @param {string} pathFromRoot
-       * @return boolean
-       */
-      shouldInline?(pathFromRoot: string): boolean;
-
-      /**
        * The default root to optimize for.
        */
       defaultRoot?: string;

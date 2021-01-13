@@ -85,6 +85,5 @@ The `bundle` options control how JSON Schema $Ref Parser will bundle `$ref` poin
 |Option(s)             |Type                |Description
 |:---------------------|:-------------------|:------------
 |`generateKey`|`(value: any, file: string, hash: string or null) => string or null`|Used to generate $ref.
-|`shouldInline`|`(pathFromRoot: string) => boolean`|Determines whether a value of given reference should be inlined in the resulting output.
 |`defaultRoot`|`string`|The default root to optimize for.
 
