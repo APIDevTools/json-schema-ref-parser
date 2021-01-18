@@ -117,7 +117,8 @@ jobs:
 
   release:
     name: Release
-    if: github.ref == 'refs/heads/master'
+    # removed to test beta branch.
+    # if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
