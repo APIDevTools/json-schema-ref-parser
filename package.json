@@ -83,12 +83,7 @@
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      [
-        "@semantic-release/changelog",
-        {
-          "changelogFile": "CHANGELOG.md"
-        }
-      ],
+      "@semantic-release/changelog",
       [
         "@amanda-mitchell/semantic-release-npm-multiple",
         {
