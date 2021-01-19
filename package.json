@@ -73,6 +73,7 @@
     "@jsdevtools/ono": "^7.1.3",
     "abort-controller": "^3.0.0",
     "call-me-maybe": "^1.0.1",
+    "fastestsmallesttextencoderdecoder": "^1.0.22",
     "isomorphic-fetch": "^3.0.0",
     "js-yaml": "^3.13.1"
   }

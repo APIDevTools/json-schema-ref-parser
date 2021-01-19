@@ -10,6 +10,7 @@ const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
 const { JSONParserErrorGroup, ParserError, UnmatchedParserError } = require("../../../lib/util/errors");
+const TextDecoder = require("../../../lib/util/text-decoder");
 
 describe("References to non-JSON files", () => {
   it("should parse successfully", async () => {
