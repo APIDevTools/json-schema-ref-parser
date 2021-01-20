@@ -157,6 +157,6 @@ Big Thanks To
 --------------------------
 Thanks to these awesome companies for their support of Open Source developers ❤
 
-[![Travis CI](https://jstools.dev/img/badges/travis-ci.svg)](https://travis-ci.com)
+[![Stoplight](https://i.ibb.co/bdyQxrv/Stoplight-logo.png)](https://stoplight.io/?utm_source=github&utm_medium=readme&utm_campaign=json_schema_ref_parser)
 [![SauceLabs](https://jstools.dev/img/badges/sauce-labs.svg)](https://saucelabs.com)
 [![Coveralls](https://jstools.dev/img/badges/coveralls.svg)](https://coveralls.io)
