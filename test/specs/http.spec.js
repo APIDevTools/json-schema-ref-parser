@@ -24,7 +24,7 @@ describe("HTTP options", () => {
     it("should override default HTTP headers", async () => {
       let parser = new $RefParser();
 
-      let schema = await parser.parse("https://httpbin.org/headers", {
+      let schema = await parser.parse("https://nghttp2.org/httpbin/headers", {
         resolve: { http: { headers: {
           accept: "application/json"
         }}}
@@ -38,7 +38,7 @@ describe("HTTP options", () => {
       it("should set custom HTTP headers", async () => {
         let parser = new $RefParser();
 
-        let schema = await parser.parse("https://httpbin.org/headers", {
+        let schema = await parser.parse("https://nghttp2.org/httpbin/headers", {
           resolve: { http: { headers: {
             "my-custom-header": "hello, world"
           }}}
@@ -50,8 +50,8 @@ describe("HTTP options", () => {
   });
 
   // 2020-07-08 - The HTTPBin redirect endpoints are suddenly returning 404 errors. Not sure why 🤷‍♂️
-  // TODO: Re-enable these tests once HTTPBin is working again
-  describe.skip("http.redirect", () => {
+  // we have to use https://nghttp2.org/httpbin, see https://github.com/postmanlabs/httpbin/issues/617
+  describe("http.redirect", () => {
     if (host.browser.safari && host.karma && host.karma.ci) {
       // These tests fail in Safari when running on Sauce Labs (they pass when running on Safari locally).
       // It gets an XHR error when trying to reach httpbin.org.
@@ -67,14 +67,14 @@ describe("HTTP options", () => {
     it("should follow 5 redirects by default", async () => {
       let parser = new $RefParser();
 
-      let schema = await parser.parse("https://httpbin.org/redirect/5");
-      expect(schema.url).to.equal("https://httpbin.org/get");
+      let schema = await parser.parse("https://nghttp2.org/httpbin/redirect/5");
+      expect(schema.url).to.equal("https://nghttp2.org/httpbin/get");
     });
 
     it("should not follow 6 redirects by default", async () => {
       try {
         let parser = new $RefParser();
-        let schema = await parser.parse("https://httpbin.org/redirect/6");
+        let schema = await parser.parse("https://nghttp2.org/httpbin/redirect/6");
 
         if (host.node) {
           throw new Error("All 6 redirects were followed. That should NOT have happened!");
@@ -82,22 +82,22 @@ describe("HTTP options", () => {
         else {
           // Some web browsers will automatically follow redirects.
           // Nothing we can do about that.
-          expect(schema.url).to.equal("https://httpbin.org/get");
+          expect(schema.url).to.equal("https://nghttp2.org/httpbin/get");
         }
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(Error);
-        expect(err.message).to.contain("Error downloading https://httpbin.org/redirect/6");
+        expect(err.message).to.contain("Error downloading https://nghttp2.org/httpbin/redirect/6");
         if (host.node) {
           expect(err.message).to.equal(
-            "Error downloading https://httpbin.org/redirect/6. \n" +
+            "Error downloading https://nghttp2.org/httpbin/redirect/6. \n" +
             "Too many redirects: \n" +
-            "  https://httpbin.org/redirect/6 \n" +
-            "  https://httpbin.org/relative-redirect/5 \n" +
-            "  https://httpbin.org/relative-redirect/4 \n" +
-            "  https://httpbin.org/relative-redirect/3 \n" +
-            "  https://httpbin.org/relative-redirect/2 \n" +
-            "  https://httpbin.org/relative-redirect/1"
+            "  https://nghttp2.org/httpbin/redirect/6 \n" +
+            "  https://nghttp2.org/httpbin/relative-redirect/5 \n" +
+            "  https://nghttp2.org/httpbin/relative-redirect/4 \n" +
+            "  https://nghttp2.org/httpbin/relative-redirect/3 \n" +
+            "  https://nghttp2.org/httpbin/relative-redirect/2 \n" +
+            "  https://nghttp2.org/httpbin/relative-redirect/1"
           );
         }
       }
@@ -106,17 +106,17 @@ describe("HTTP options", () => {
     it("should follow 10 redirects if http.redirects = 10", async () => {
       let parser = new $RefParser();
 
-      let schema = await parser.parse("https://httpbin.org/redirect/10", {
+      let schema = await parser.parse("https://nghttp2.org/httpbin/redirect/10", {
         resolve: { http: { redirects: 10 }}
       });
 
-      expect(schema.url).to.equal("https://httpbin.org/get");
+      expect(schema.url).to.equal("https://nghttp2.org/httpbin/get");
     });
 
     it("should not follow any redirects if http.redirects = 0", async () => {
       try {
         let parser = new $RefParser();
-        let schema = await parser.parse("https://httpbin.org/redirect/1", {
+        let schema = await parser.parse("https://nghttp2.org/httpbin/redirect/1", {
           resolve: { http: { redirects: 0 }}
         });
 
@@ -126,17 +126,17 @@ describe("HTTP options", () => {
         else {
         // Some web browsers will automatically follow redirects.
         // Nothing we can do about that.
-          expect(schema.url).to.equal("https://httpbin.org/get");
+          expect(schema.url).to.equal("https://nghttp2.org/httpbin/get");
         }
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(Error);
-        expect(err.message).to.contain("Error downloading https://httpbin.org/redirect/1");
+        expect(err.message).to.contain("Error downloading https://nghttp2.org/httpbin/redirect/1");
         if (host.node) {
           expect(err.message).to.equal(
-            "Error downloading https://httpbin.org/redirect/1. \n" +
-          "Too many redirects: \n" +
-          "  https://httpbin.org/redirect/1"
+            "Error downloading https://nghttp2.org/httpbin/redirect/1 \n" +
+          "uri requested responds with a redirect, redirect mode is set to error: " +
+          "https://nghttp2.org/httpbin/redirect/1"
           );
         }
       }

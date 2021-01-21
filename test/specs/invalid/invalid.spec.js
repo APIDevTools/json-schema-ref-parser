@@ -89,7 +89,7 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ResolverError.name,
-              message: message => message.startsWith("Error opening file") || message.endsWith("HTTP ERROR 404"),
+              message: message => message.startsWith("Error opening file") || message.endsWith("Not Found"),
               path: [],
               source: message => message.endsWith("this file does not exist") || message.startsWith("http://localhost"),
             }
@@ -246,7 +246,7 @@ describe("Invalid syntax", () => {
           expect(err.errors).to.containSubset([
             {
               name: ResolverError.name,
-              message: message => message.startsWith("Error opening file") || message.endsWith("HTTP ERROR 404"),
+              message: message => message.startsWith("Error opening file") || message.endsWith("Not Found"),
               path: ["foo"],
               source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
             }
