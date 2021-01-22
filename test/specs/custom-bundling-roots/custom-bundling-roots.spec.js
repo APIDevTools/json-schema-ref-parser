@@ -54,6 +54,105 @@ describe("Custom bundling roots", () => {
     });
   });
 
+  it("scoped references only", async () => {
+    let parser = new $RefParser();
+
+    const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/n"), {
+      properties: {
+        test: {
+          type: {
+            $ref: "#/definitions/Number"
+          }
+        }
+      },
+      definitions: {
+        Number: {
+          type: {
+            $ref: "./id.json#/type"
+          }
+        },
+        Name: {
+          type: "string",
+          example: {
+            $ref: "./id.json#/name"
+          }
+        }
+      }
+    }, {
+      bundle: getDefaultsForOAS2(),
+    });
+
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal({
+      properties: {
+        test: {
+          type: {
+            $ref: "#/definitions/Number"
+          }
+        }
+      },
+      definitions: {
+        Number: {
+          type: "number",
+        },
+        Name: {
+          example: "id",
+          type: "string"
+        }
+      }
+    });
+  });
+
+  it("scoped and full references", async () => {
+    let parser = new $RefParser();
+
+    const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/n"), {
+      properties: {
+        test: {
+          type: {
+            $ref: "#/definitions/Number"
+          }
+        }
+      },
+      definitions: {
+        Number: {
+          type: {
+            $ref: "./id.json#/type"
+          }
+        },
+        Id: {
+          $ref: "./id.json"
+        }
+      }
+    }, {
+      bundle: getDefaultsForOAS2(),
+    });
+
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal({
+      properties: {
+        test: {
+          type: {
+            $ref: "#/definitions/Number"
+          }
+        }
+      },
+      definitions: {
+        Number: {
+          type: {
+            $ref: "#/definitions/Id/type"
+          }
+        },
+        Id: {
+          type: "number",
+          name: "id",
+          in: "path",
+          required: true
+        }
+      }
+    });
+  });
+
   it("should handle $refs whose parents were remapped", async () => {
     setupHttpMocks({
       "http://localhost:8080/api/nodes.raw?srn=gh/stoplightio/test/Book.v1.yaml": {
