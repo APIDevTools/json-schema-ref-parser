@@ -103,6 +103,61 @@ describe("Custom bundling roots", () => {
     });
   });
 
+  it("duplicate scoped references only", async () => {
+    let parser = new $RefParser();
+
+    const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/n"), {
+      properties: {
+        test: {
+          type: {
+            $ref: "#/definitions/Number"
+          }
+        }
+      },
+      definitions: {
+        Number: {
+          type: {
+            $ref: "./id.json#/type"
+          },
+          type2: {
+            $ref: "./id.json#/type"
+          }
+        },
+        Name: {
+          type: "string",
+          example: {
+            $ref: "./id.json#/name"
+          }
+        }
+      }
+    }, {
+      bundle: getDefaultsForOAS2(),
+    });
+
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal({
+      properties: {
+        test: {
+          type: {
+            $ref: "#/definitions/Number"
+          }
+        }
+      },
+      definitions: {
+        Number: {
+          type: "number",
+          type2: {
+            $ref: "#/definitions/Number/type"
+          }
+        },
+        Name: {
+          example: "id",
+          type: "string"
+        }
+      }
+    });
+  });
+
   it("scoped and full references", async () => {
     let parser = new $RefParser();
 
