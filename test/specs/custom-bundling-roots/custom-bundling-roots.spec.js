@@ -5,7 +5,7 @@ const { expect } = require("chai");
 const $RefParser = require("../../..");
 const path = require("../../utils/path");
 const setupHttpMocks = require("../../utils/setup-http-mocks");
-const { getDefaultsForOldJsonSchema, getDefaultsForOAS2 } = require("../../../lib/bundle/defaults");
+const { getDefaultsForOldJsonSchema, getDefaultsForOAS2, getDefaultsForOAS3 } = require("../../../lib/bundle/defaults");
 
 describe("Custom bundling roots", () => {
   it("mixed inline", async () => {
@@ -418,6 +418,109 @@ describe("Custom bundling roots", () => {
           required: true
         }
       }
+    });
+  });
+
+  describe("OAS3 defaults", () => {
+    it("should not touch any other shared component different than schema", async () => {
+      setupHttpMocks({
+        "http://localhost:8080/test/Book.json": { name: "Book" },
+        "http://localhost:8080/test/Address.json": { title: "Address" },
+        "http://localhost:8080/test/Pets.json": { title: "Pets" },
+      });
+
+      let parser = new $RefParser();
+      const model = {
+        openapi: "3.0.0",
+        paths: {
+          "/pets": {
+            get: {
+              parameters: [
+                {
+                  $ref: "http://localhost:8080/test/Book.json"
+                },
+                {
+                  $ref: "http://localhost:8080/test/Book.json"
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "http://localhost:8080/test/Address.json",
+                      }
+                    },
+                    "application/yaml": {
+                      schema: {
+                        $ref: "http://localhost:8080/test/Address.json",
+                      }
+                    }
+                  }
+                },
+                400: {
+                  $ref: "http://localhost:8080/test/Pets.json",
+                },
+                500: {
+                  $ref: "http://localhost:8080/test/Pets.json",
+                },
+              }
+            }
+          },
+        },
+      };
+
+      const schema = await parser.bundle(model, {
+        bundle: getDefaultsForOAS3(),
+      });
+
+      expect(schema).to.equal(parser.schema);
+      expect(schema).to.deep.equal({
+        openapi: "3.0.0",
+        paths: {
+          "/pets": {
+            get: {
+              parameters: [
+                {
+                  name: "Book"
+                },
+                {
+                  $ref: "#/paths/~1pets/get/parameters/0"
+                }
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Address"
+                      }
+                    },
+                    "application/yaml": {
+                      schema: {
+                        $ref: "#/components/schemas/Address"
+                      }
+                    }
+                  }
+                },
+                400: {
+                  title: "Pets"
+                },
+                500: {
+                  $ref: "#/paths/~1pets/get/responses/400"
+                }
+              }
+            }
+          },
+        },
+        components: {
+          schemas: {
+            Address: {
+              title: "Address"
+            }
+          },
+        }
+      });
     });
   });
 });
