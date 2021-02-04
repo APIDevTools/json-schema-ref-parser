@@ -80,6 +80,7 @@ describe("json-schema-ref-parser package exports", () => {
       "dereference",
       "bundle",
       "JSONParserError",
+      "JSONParserErrorGroup",
       "InvalidPointerError",
       "MissingPointerError",
       "ResolverError",
