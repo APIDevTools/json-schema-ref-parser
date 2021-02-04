@@ -1,0 +1,13 @@
+{
+  "definitions": {
+    "foo": {
+      "title": "Foo"
+    },
+    "bar": {
+      "title": "Bar"
+    },
+    "baz": {
+      "title": "Baz"
+    }
+  }
+}

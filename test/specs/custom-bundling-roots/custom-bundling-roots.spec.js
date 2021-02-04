@@ -208,6 +208,57 @@ describe("Custom bundling roots", () => {
     });
   });
 
+  it("scoped comes before full first", async () => {
+    let parser = new $RefParser();
+
+    const schema = await parser.bundle(path.rel("specs/custom-bundling-roots/n"), {
+      properties: {
+        foo: {
+          $ref: "./shared.json#/definitions/foo"
+        },
+        all: {
+          $ref: "./shared.json#"
+        },
+        bar: {
+          $ref: "./shared.json#/definitions/bar"
+        }
+      }
+    }, {
+      bundle: getDefaultsForOldJsonSchema(),
+    });
+
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal({
+      definitions: {
+        Shared: {
+          definitions: {
+            baz: {
+              title: "Baz"
+            }
+          }
+        },
+        Shared_Bar: {
+          title: "Bar"
+        },
+        Shared_Foo: {
+          title: "Foo"
+        }
+      },
+      properties: {
+        foo: {
+          $ref: "#/definitions/Shared_Foo"
+        },
+        all: {
+          $ref: "#/definitions/Shared"
+        },
+        bar: {
+          $ref: "#/definitions/Shared_Bar"
+        }
+
+      }
+    });
+  });
+
   it("should handle $refs whose parents were remapped", async () => {
     setupHttpMocks({
       "http://localhost:8080/api/nodes.raw?srn=gh/stoplightio/test/Book.v1.yaml": {
