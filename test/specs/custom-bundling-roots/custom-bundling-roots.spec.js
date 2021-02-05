@@ -378,7 +378,7 @@ describe("Custom bundling roots", () => {
     });
   });
 
-  it("given arbitrary URL, should not attempt to generate pretty key", async () => {
+  it("given arbitrary URL with no clear filepath within, should not attempt to generate pretty key", async () => {
     setupHttpMocks({
       "http://baz.com": {
         foo: {
@@ -423,6 +423,58 @@ describe("Custom bundling roots", () => {
       },
       foo: {
         $ref: "#/baz/bar"
+      }
+    });
+  });
+
+  it("given arbitrary URL with filepath within, should attempt to generate pretty key", async () => {
+    setupHttpMocks({
+      "http://baz.com/api/nodes/test.json": {
+        definitions: {
+          foo: {
+            title: "foo"
+          },
+          bar: {
+            title: "bar",
+          }
+        }
+      }
+    });
+
+    const model = {
+      baz: {
+        $ref: "http://baz.com/api/nodes/test.json#"
+      },
+      bar: {
+        $ref: "http://baz.com/api/nodes/test.json#/definitions/bar"
+      },
+    };
+
+    let parser = new $RefParser();
+
+    const schema = await parser.bundle(__dirname, model, {
+      bundle: getDefaultsForOldJsonSchema(),
+    });
+
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep. equal({
+      baz: {
+        $ref: "#/definitions/Test"
+      },
+      bar: {
+        $ref: "#/definitions/Test_Bar"
+      },
+      definitions: {
+        Test: {
+          definitions: {
+            foo: {
+              title: "foo"
+            },
+          },
+        },
+        Test_Bar: {
+          title: "bar",
+        }
       }
     });
   });
