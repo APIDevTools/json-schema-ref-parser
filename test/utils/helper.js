@@ -78,6 +78,10 @@ const helper = module.exports = {
         value = { type: "Buffer", data: value };
       }
     }
+    else if (ArrayBuffer.isView(value)) {
+      value = { type: "Buffer", data: Array.from(value) };
+    }
+
     return value;
   },
 
