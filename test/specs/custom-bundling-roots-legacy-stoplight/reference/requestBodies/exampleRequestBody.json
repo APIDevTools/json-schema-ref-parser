@@ -1,0 +1,12 @@
+{
+  "description": "example request body",
+  "required": true,
+  "content": {
+    "application/json": {
+      "schema": {
+        "type": "string",
+        "name": "title"
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "description": "Example response",
+  "content": {
+    "application/json": {
+      "schema": {
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

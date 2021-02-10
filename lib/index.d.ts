@@ -248,7 +248,7 @@ declare namespace $RefParser {
       /**
        * The default root to optimize for.
        */
-      defaultRoot?: string;
+      defaultRoot?: string | ((pathToRoot: string) => string | null);
     };
   }
 

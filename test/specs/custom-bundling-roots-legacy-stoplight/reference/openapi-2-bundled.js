@@ -10,10 +10,7 @@ module.exports = {
     "/flight/{id}": {
       parameters: [
         {
-          in: "path",
-          name: "id",
-          required: true,
-          type: "number"
+          $ref: "#/parameters/Id"
         }
       ],
       get: {
@@ -44,7 +41,10 @@ module.exports = {
             schema: {
               $ref: "#/definitions/Flight"
             }
-          }
+          },
+          400: {
+            $ref: "#/responses/ExampleResponse"
+          },
         }
       }
     }
@@ -192,5 +192,29 @@ module.exports = {
       minLength: 2,
       maxLength: 50
     },
-  }
+  },
+  parameters: {
+    Id: {
+      in: "path",
+      name: "id",
+      required: true,
+      type: "number",
+    },
+  },
+  responses: {
+    ExampleResponse: {
+      content: {
+        "application/json": {
+          schema: {
+            properties: {
+              id: {
+                type: "string",
+              },
+            },
+          },
+        },
+      },
+      description: "Example response",
+    },
+  },
 };

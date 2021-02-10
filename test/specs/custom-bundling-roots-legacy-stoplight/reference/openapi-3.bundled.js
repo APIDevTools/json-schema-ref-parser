@@ -14,11 +14,8 @@ module.exports = {
     "/flight/{id}": {
       parameters: [
         {
-          in: "path",
-          name: "id",
-          required: true,
-          type: "number"
-        },
+          $ref: "#/components/parameters/Id"
+        }
       ],
       get: {
         operationId: "get-flights",
@@ -55,48 +52,92 @@ module.exports = {
                   $ref: "#/components/schemas/Flight"
                 }
               }
+            },
+            headers: {
+              "X-RateLimit-Remaining": {
+                $ref: "#/components/headers/X-RateLimit-Remaining",
+              },
             }
           }
         }
-      }
+      },
+      patch: {
+        operationId: "patch-flight-id",
+        requestBody: {
+          $ref: "#/components/requestBodies/ExampleRequestBody",
+        },
+      },
     }
   },
   components: {
+    parameters: {
+      Id: {
+        in: "path",
+        name: "id",
+        required: true,
+        type: "number",
+      },
+    },
+    requestBodies: {
+      ExampleRequestBody: {
+        content: {
+          "application/json": {
+            schema: {
+              name: "title",
+              type: "string",
+            },
+          },
+        },
+        description: "example request body",
+        required: true,
+      },
+    },
+    headers: {
+      "X-RateLimit-Remaining": {
+        description: "Request limit per hour",
+        example: 100,
+        schema: {
+          type: "integer",
+        },
+      },
+    },
     schemas: {
       Airport: {
-        definitions: {},
+        definitions: {
+          Name: {
+            example: "JFK",
+            maxLength: 50,
+            minLength: 2,
+            type: "string"
+          }
+        },
         properties: {
           id: {
             type: "number"
           },
           name: {
-            $ref: "#/components/schemas/Airport_Name"
+            $ref: "#/components/schemas/Airport/definitions/Name"
           }
         },
         title: "Airport",
         type: "object"
       },
       Airport_m123: {
-        definitions: {},
+        definitions: {
+          Name: {
+            example: "JFK",
+            maxLength: 50,
+            minLength: 2,
+            type: "string"
+          }
+        },
         properties: {
           name: {
-            $ref: "#/components/schemas/Airport_m123_Name"
+            $ref: "#/components/schemas/Airport_m123/definitions/Name"
           }
         },
         title: "Airport",
         type: "object"
-      },
-      Airport_Name: {
-        example: "JFK",
-        maxLength: 50,
-        minLength: 2,
-        type: "string"
-      },
-      Airport_m123_Name: {
-        example: "JFK",
-        maxLength: 50,
-        minLength: 2,
-        type: "string"
       },
       Flight: {
         title: "Flight",
@@ -130,30 +171,38 @@ module.exports = {
       },
 
       User: {
-        definitions: {},
+        definitions: {
+          Name: {
+            type: "string",
+            minLength: 2,
+            maxLength: 20
+          }
+        },
         title: "User",
         type: "object",
         properties: {
           firstName: {
-            $ref: "#/components/schemas/User_Name"
+            $ref: "#/components/schemas/User/definitions/Name"
           },
           lastName: {
-            $ref: "#/components/schemas/User_Name"
+            $ref: "#/components/schemas/User/definitions/Name"
           }
         }
       },
-      User_Name: {
-        type: "string",
-        minLength: 2,
-        maxLength: 20
-      },
       'Airplane.v1': {
-        definitions: {},
+        definitions: {
+          Name: {
+            example: "747",
+            maxLength: 100,
+            minLength: 1,
+            type: "string",
+          },
+        },
         title: "Airplane",
         type: "object",
         properties: {
           name: {
-            $ref: "#/components/schemas/Airplane.v1_Name"
+            $ref: "#/components/schemas/Airplane.v1/definitions/Name"
           },
           repairman: {
             $ref: "#/components/schemas/User"
@@ -163,49 +212,45 @@ module.exports = {
           }
         }
       },
-      'Airplane.v1_Name': {
-        type: "string",
-        minLength: 1,
-        maxLength: 100,
-        example: "747"
-      },
       Manufacturer: {
-        definitions: {},
+        definitions: {
+          Name: {
+            maxLength: 20,
+            minLength: 2,
+            type: "string",
+          }
+        },
         title: "Manufacturer",
         type: "object",
         properties: {
           name: {
-            $ref: "#/components/schemas/Manufacturer_Name"
+            $ref: "#/components/schemas/Manufacturer/definitions/Name"
           },
           owner: {
             $ref: "#/components/schemas/User_2"
           }
         }
       },
-      Manufacturer_Name: {
-        type: "string",
-        minLength: 2,
-        maxLength: 20
-      },
       User_2: {
-        definitions: {},
+        definitions: {
+          Name: {
+            type: "string",
+            minLength: 2,
+            maxLength: 50
+          }
+        },
         title: "Alt User",
         description: "Allows for a longer name than regular user",
         type: "object",
         properties: {
           firstName: {
-            $ref: "#/components/schemas/User_2_Name"
+            $ref: "#/components/schemas/User_2/definitions/Name"
           },
           lastName: {
-            $ref: "#/components/schemas/User_2_Name"
+            $ref: "#/components/schemas/User_2/definitions/Name"
           }
         }
-      },
-      User_2_Name: {
-        type: "string",
-        minLength: 2,
-        maxLength: 50
-      },
+      }
     }
   }
 };

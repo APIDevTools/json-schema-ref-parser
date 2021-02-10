@@ -1,0 +1,7 @@
+{
+  "description": "Request limit per hour",
+  "schema": {
+    "type": "integer"
+  },
+  "example": 100
+}

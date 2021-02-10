@@ -31,6 +31,12 @@
           }
         }
       },
+      "patch": {
+        "operationId": "patch-flight-id",
+        "requestBody": {
+          "$ref": "./requestBodies/exampleRequestBody.json"
+        }
+      },
       "post": {
         "operationId": "post-flight-id",
         "requestBody": {
@@ -50,6 +56,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/Flight"
                 }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Remaining": {
+                "$ref": "./headers/X-RateLimit-Remaining.json"
               }
             }
           }

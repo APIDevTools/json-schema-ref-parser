@@ -40,6 +40,9 @@
             "schema": {
               "$ref": "#/definitions/Flight"
             }
+          },
+          "400": {
+            "$ref": "./responses/exampleResponse.json"
           }
         }
       }
