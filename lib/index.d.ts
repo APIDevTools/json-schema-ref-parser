@@ -208,7 +208,7 @@ declare namespace $RefParser {
       file?: Partial<ResolverOptions> | boolean;
       http?: HTTPResolverOptions | boolean;
     } & {
-      [key: string]: Partial<ResolverOptions>;
+      [key: string]: Partial<ResolverOptions> | boolean;
     };
 
     /**

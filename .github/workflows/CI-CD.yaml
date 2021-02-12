@@ -2,6 +2,7 @@
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/contexts-and-expression-syntax-for-github-actions
+# https://www.npmjs.com/package/@amanda-mitchell/semantic-release-npm-multiple
 
 name: CI-CD
 
@@ -114,38 +115,29 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
 
-  deploy:
-    name: Publish to NPM
-    if: github.ref == 'refs/heads/master'
+  release:
+    name: Release
+    # removed to test beta branch.
+    # if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
       - node_tests
       - browser_tests
-
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v2
-
-      - name: Install Node
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare Unscoped Package
+        run: npm run build --if-present
+
       - name: Publish to NPM
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Prepare the non-scoped packaged
-        run: |
-          cp LICENSE *.md dist
-          VERSION=$(node -e "console.log(require('./package.json').version)")
-          sed -i "s/X.X.X/${VERSION}/g" dist/package.json
-
-      - name: Publish the non-scoped package to NPM
-        uses: JS-DevTools/npm-publish@v1
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
-          package: dist/package.json
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
