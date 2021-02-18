@@ -1,0 +1,35 @@
+{
+  "title": "Todo Full",
+  "allOf": [
+    {
+      "$ref": "./todo-partial.json"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "completed_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "user": {
+          "$ref": "./user.json"
+        }
+      },
+      "required": ["id", "user"]
+    }
+  ],
+  "x-tags": ["Todos"]
+}

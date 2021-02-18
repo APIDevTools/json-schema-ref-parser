@@ -1,0 +1,46 @@
+parameters:
+  skip:
+    in: query
+    type: string
+    name: skip
+  rate-limit:
+    name: Rate-Limit
+    in: header
+    type: string
+  limit:
+    name: limit
+    in: query
+    type: string
+responses:
+  "401":
+    description: Our shared 401 response.
+    schema:
+      "$ref": "./models/error.yaml"
+    examples:
+      application/json:
+        code: "401"
+        message: Not Authorized
+  "403":
+    description: Our shared 403 response.
+    schema:
+      "$ref": "./models/error.yaml"
+    examples:
+      application/json:
+        code: "403"
+        message: Forbbiden
+  "404":
+    description: Our shared 404 response.
+    schema:
+      "$ref": "./models/error.yaml"
+    examples:
+      application/json:
+        code: "404"
+        message: Not Found
+  "500":
+    description: Our shared 500 response.
+    schema:
+      "$ref": "./models/error.yaml"
+    examples:
+      application/json:
+        code: "500"
+        message: Server Error

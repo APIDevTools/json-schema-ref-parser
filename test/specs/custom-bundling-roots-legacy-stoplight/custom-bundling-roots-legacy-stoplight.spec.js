@@ -46,6 +46,17 @@ describe("Stoplight-specific (legacy) defaults", () => {
       expect(schema).to.equal(parser.schema);
       expect(schema).to.deep.equal(require("./reference/openapi-3.bundled.js"));
     });
+
+    it("should not dereference schema", async () => {
+      let parser = new $RefParser();
+
+      const schema = await parser.bundle(path.rel("specs/custom-bundling-roots-legacy-stoplight/todos-reference/openapi.json"), {
+        bundle: defaults.oas2,
+      });
+
+      expect(schema).to.equal(parser.schema);
+      expect(schema).to.deep.equal(require("./todos-reference/openapi.bundled.js"));
+    });
   });
 
   it("given no collision, should not append mid to the key", async () => {

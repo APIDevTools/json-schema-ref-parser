@@ -1,0 +1,25 @@
+{
+  "title": "User",
+  "type": "object",
+  "x-tags": [
+    "Todos"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The user's full name."
+    },
+    "age": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 150
+    },
+    "card": {
+      "$ref": "../folder with spaces/card.json"
+    }
+  },
+  "required": [
+    "name",
+    "age"
+  ]
+}
