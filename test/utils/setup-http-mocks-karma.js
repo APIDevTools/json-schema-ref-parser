@@ -22,9 +22,11 @@ afterEach(() => {
 module.exports = function (mocks) {
   fetchMock.config.warnOnFallback = true;
   for (const [url, body] of Object.entries(mocks)) {
-    fetchMock.mock(url.replace(/([^\/])\?/, "$1/?"), {
-      status: 200,
-      body,
-    });
+    for (const actualUrl of new Set([url.replace(/([^\/])\?/, "$1/?"), url.replace(/([^\/])\?/, "$1?")])) {
+      fetchMock.mock(actualUrl, {
+        status: 200,
+        body,
+      });
+    }
   }
 };

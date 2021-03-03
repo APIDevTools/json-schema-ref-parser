@@ -20,7 +20,10 @@ module.exports = function (mocks) {
       .persist(true);
 
     if (Object.keys(query).length > 0) {
-      scope = scope.get(pathname.replace(/\/$/, "") + "/").query(query);
+      scope = scope.get(
+        new RegExp(pathname.replace(/\/$/, "").replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&") + "\\/?$")
+      )
+        .query(query);
     }
     else {
       scope = scope.get(pathname);
