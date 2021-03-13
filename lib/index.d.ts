@@ -98,6 +98,28 @@ declare class $RefParser {
   public static bundle(baseUrl: string, schema: string | $RefParser.JSONSchema, options: $RefParser.Options): Promise<$RefParser.JSONSchema>;
 
   /**
+   * Rereferences all `$ref` pointers in the JSON Schema, replacing each JavaScript circular pointers with its new reference. This results in a schema object that does can contain `$ref` pointers. It can be again safely serialized using `JSON.stringify()`.
+   *
+   * This method is synchronous
+   *
+   * @param schema A JSON Schema object
+   * @param options (optional)
+   * @returns schema A JSON Schema object
+   */
+  public rereference(schema: $RefParser.JSONSchema, options?: $RefParser.Options): $RefParser.JSONSchema;
+
+  /**
+   * Rereferences all `$ref` pointers in the JSON Schema, replacing each JavaScript circular pointers with its new reference. This results in a schema object that does can contain `$ref` pointers. It can be again safely serialized using `JSON.stringify()`.
+   *
+   * This method is synchronous
+   *
+   * @param schema A JSON Schema object
+   * @param options (optional)
+   * @returns schema A JSON Schema object
+   */
+  public static rereference(schema: $RefParser.JSONSchema, options?: $RefParser.Options): $RefParser.JSONSchema;
+
+  /**
    * *This method is used internally by other methods, such as `bundle` and `dereference`. You probably won't need to call this method yourself.*
    *
    * Parses the given JSON Schema file (in JSON or YAML format), and returns it as a JavaScript object. This method `does not` resolve `$ref` pointers or dereference anything. It simply parses one file and returns it.

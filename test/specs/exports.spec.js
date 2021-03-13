@@ -24,6 +24,8 @@ describe("json-schema-ref-parser package exports", () => {
     expect(parser.prototype.resolve).to.be.a("function").with.property("name", "resolve");
     expect(parser.dereference).to.be.a("function").with.property("name", "dereference");
     expect(parser.prototype.dereference).to.be.a("function").with.property("name", "dereference");
+    expect(parser.rereference).to.be.a("function").with.property("name", "rereference");
+    expect(parser.prototype.rereference).to.be.a("function").with.property("name", "rereference");
     expect(parser.bundle).to.be.a("function").with.property("name", "bundle");
     expect(parser.prototype.bundle).to.be.a("function").with.property("name", "bundle");
     return true;
@@ -78,6 +80,7 @@ describe("json-schema-ref-parser package exports", () => {
       "parse",
       "resolve",
       "dereference",
+      "rereference",
       "bundle",
       "JSONParserError",
       "InvalidPointerError",
