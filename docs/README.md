@@ -16,6 +16,7 @@ Classes & Methods
 - [`$refs` property](ref-parser.md#refs)
 - [`dereference()` method](ref-parser.md#dereferenceschema-options-callback)
 - [`bundle()` method](ref-parser.md#bundleschema-options-callback)
+- [`rereference()` method](ref-parser.md#rereferenceschema-options)
 - [`parse()` method](ref-parser.md#parseschema-options-callback)
 - [`resolve()` method](ref-parser.md#resolveschema-options-callback)
 

@@ -102,6 +102,8 @@ declare class $RefParser {
    *
    * This method is synchronous
    *
+   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#rereferenceschema-options
+   *
    * @param schema A JSON Schema object
    * @param options (optional)
    * @returns schema A JSON Schema object
@@ -112,6 +114,8 @@ declare class $RefParser {
    * Rereferences all `$ref` pointers in the JSON Schema, replacing each JavaScript circular pointers with its new reference. This results in a schema object that does can contain `$ref` pointers. It can be again safely serialized using `JSON.stringify()`.
    *
    * This method is synchronous
+   *
+   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#rereferenceschema-options
    *
    * @param schema A JSON Schema object
    * @param options (optional)

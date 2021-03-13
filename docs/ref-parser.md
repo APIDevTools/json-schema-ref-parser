@@ -10,11 +10,12 @@ This is the default export of JSON Schema $Ref Parser.  You can creates instance
 ##### Methods
 - [`dereference()`](#dereferenceschema-options-callback)
 - [`bundle()`](#bundleschema-options-callback)
+- [`rereference()`](#rereferenceschema-options)
 - [`parse()`](#parseschema-options-callback)
 - [`resolve()`](#resolveschema-options-callback)
 
 ### `schema`
-The `schema` property is the parsed/bundled/dereferenced JSON Schema object.  This is the same value that is passed to the callback function (or Promise) when calling the [`parse`](#parseschema-options-callback), [`bundle`](#bundleschema-options-callback), or [`dereference`](#dereferenceschema-options-callback) methods.
+The `schema` property is the parsed/bundled/dereferenced/rereferenced JSON Schema object.  This is the same value that is passed to the callback function (or Promise) when calling the [`parse`](#parseschema-options-callback), [`bundle`](#bundleschema-options-callback), or [`dereference`](#dereferenceschema-options-callback) methods.
 
 ```javascript
 let parser = new $RefParser();
@@ -96,6 +97,29 @@ let schema = await $RefParser.bundle("my-schema.yaml");
 console.log(schema.definitions.person); // => {$ref: "#/definitions/schemas~1people~1Bruce-Wayne.json"}
 ```
 
+
+### `rereference(schema, [options])`
+
+- **schema** (_required_) - `object`<br>
+  A JSON Schema object.  See the [`parse`](#parseschema-options-callback) method for more info.
+
+- **options** (_optional_) - `object`<br>
+  See [options](options.md) for the full list of options
+
+- **Return Value:** `object`<br>
+  A JSON Schema object.
+
+Rereferences all `$ref` pointers in the JSON Schema, replacing each JavaScript circular pointers with its new reference. This results in a schema object that does can contain `$ref` pointers. It can be again safely serialized using `JSON.stringify()`.
+
+This method is synchronous
+
+```javascript
+let schemaDeref = await $RefParser.dereference("my-schema.yaml");
+let schema = $RefParser.rereference(schemaDeref);
+
+// The `schema` object is serializable,
+JSON.stringify(schema, null , 2);
+```
 
 ### `parse(schema, [options], [callback])`
 
