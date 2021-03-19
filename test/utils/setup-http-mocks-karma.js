@@ -20,7 +20,7 @@ afterEach(() => {
 });
 
 module.exports = function (mocks) {
-  fetchMock.config.warnOnFallback = true;
+  fetchMock.config.warnOnFallback = false;
   for (const [url, body] of Object.entries(mocks)) {
     for (const actualUrl of new Set([url.replace(/([^\/])\?/, "$1/?"), url.replace(/([^\/])\?/, "$1?")])) {
       fetchMock.mock(actualUrl, {

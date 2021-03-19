@@ -1,0 +1,10 @@
+{
+  "properties": {
+    "books": {
+      "$ref": "design-library.json#/definitions/Books"
+    },
+    "design-library": {
+      "$ref": "design-library.json"
+    }
+  }
+}
