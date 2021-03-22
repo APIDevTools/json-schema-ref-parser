@@ -1,0 +1,3 @@
+external2:
+  thing:
+    type: string
