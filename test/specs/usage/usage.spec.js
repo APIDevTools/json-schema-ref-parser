@@ -46,4 +46,30 @@ describe("Usage", () => {
       "#/properties/design-library/definitions/Books": "http://jakub.stoplight-local.com:8080/api/v1/projects/jakub/usage/nodes/reference/books.json"
     });
   });
+
+  it("bundle with no custom roots should track usage of $refs", async () => {
+    let parser = new $RefParser();
+    await parser.bundle({
+      properties: {
+        baz: {
+          $ref: "#/properties/bar/properties/id"
+        },
+        bar: {
+          $ref: "#/properties/foo"
+        },
+        foo: {
+          properties: {
+            id: {
+              type: "number"
+            }
+          }
+        }
+      }
+    });
+
+    expect(parser.$refs.propertyMap).to.deep.equal({
+      "#/properties/bar": path.abs("/") + "#/properties/foo",
+      "#/properties/baz": path.abs("/") + "#/properties/foo/properties/id"
+    });
+  });
 });
