@@ -479,6 +479,84 @@ describe("Custom bundling roots", () => {
     });
   });
 
+  it("should allow fields to be overridden", async () => {
+    setupHttpMocks({
+      "http://baz.com/api/nodes/test.json": {
+        definitions: {
+          foo: {
+            title: "foo",
+            summary: "Cool foo",
+            description: "I am very cool, yes"
+          },
+          bar: {
+            title: "bar",
+            summary: "Cool bar",
+            description: "I am even cooler",
+          }
+        }
+      }
+    });
+
+    const model = {
+      baz: {
+        $ref: "http://baz.com/api/nodes/test.json#",
+        summary: "Look ma. I got overridden"
+      },
+      pristineBaz: {
+        $ref: "http://baz.com/api/nodes/test.json#",
+      },
+      bar: {
+        $ref: "http://baz.com/api/nodes/test.json#/definitions/bar",
+        summary: "The coolest bar",
+        description: "I am the coolest overridden bar",
+      },
+      pristineBar: {
+        $ref: "http://baz.com/api/nodes/test.json#/definitions/bar",
+      }
+    };
+
+    let parser = new $RefParser();
+
+    const schema = await parser.bundle(__dirname, model, {
+      bundle: getDefaultsForOldJsonSchema(),
+    });
+
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal({
+      baz: {
+        $ref: "#/definitions/Test",
+        summary: "Look ma. I got overridden"
+      },
+      pristineBaz: {
+        $ref: "#/definitions/Test"
+      },
+      bar: {
+        $ref: "#/definitions/Test_Bar",
+        description: "I am the coolest overridden bar",
+        summary: "The coolest bar",
+      },
+      pristineBar: {
+        $ref: "#/definitions/Test_Bar"
+      },
+      definitions: {
+        Test: {
+          definitions: {
+            foo: {
+              title: "foo",
+              description: "I am very cool, yes",
+              summary: "Cool foo",
+            },
+          },
+        },
+        Test_Bar: {
+          title: "bar",
+          summary: "Cool bar",
+          description: "I am even cooler",
+        },
+      }
+    });
+  });
+
   it("should not create redundant roots", async () => {
     let parser = new $RefParser();
     const model = {

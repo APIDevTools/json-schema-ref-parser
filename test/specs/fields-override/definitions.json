@@ -1,0 +1,14 @@
+{
+  "User": {
+    "type": "object",
+    "summary": "Any project user",
+    "description": "Some rich markdown description",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "summary": "DB id",
+        "description": "Some description"
+      }
+    }
+  }
+}
