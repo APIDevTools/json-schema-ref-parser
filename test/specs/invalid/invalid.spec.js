@@ -242,7 +242,7 @@ describe("Invalid syntax", () => {
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
           expect(err.files.$refs._root$Ref.value).to.deep.equal({ foo: null });
-          expect(err.errors.length).to.equal(1);
+          expect(err.errors.length).to.equal(2);
           expect(err.errors).to.containSubset([
             {
               name: ResolverError.name,
@@ -263,7 +263,7 @@ describe("Invalid syntax", () => {
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
           expect(err.files.$refs._root$Ref.value).to.deep.equal({ foo: null });
-          expect(err.errors.length).to.equal(1);
+          expect(err.errors.length).to.equal(2);
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
@@ -286,7 +286,7 @@ describe("Invalid syntax", () => {
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
           expect(err.files.$refs._root$Ref.value).to.deep.equal({ foo: null });
-          expect(err.errors.length).to.equal(1);
+          expect(err.errors.length).to.equal(2);
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,
@@ -309,7 +309,7 @@ describe("Invalid syntax", () => {
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
           expect(err.files.$refs._root$Ref.value).to.deep.equal({ foo: null });
-          expect(err.errors.length).to.equal(1);
+          expect(err.errors.length).to.equal(2);
           expect(err.errors).to.containSubset([
             {
               name: ParserError.name,

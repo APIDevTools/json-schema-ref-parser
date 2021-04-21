@@ -1,0 +1,12 @@
+"$schema": http://json-schema.org/draft-07/schema#
+type: object
+definitions:
+  externalOne:
+    type: string
+    enum:
+      "$ref": "./external-one.yaml"
+  internalOne:
+    "$ref": "#/definitions/externalOne"
+properties:
+  pageOne:
+    "$ref": "./page-one.yaml"

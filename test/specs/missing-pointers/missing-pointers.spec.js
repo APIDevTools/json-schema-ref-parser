@@ -30,7 +30,7 @@ describe("Schema with missing pointers", () => {
       expect(err).to.be.instanceof(JSONParserErrorGroup);
       expect(err.files).to.equal(parser);
       expect(err.files.$refs._root$Ref.value).to.deep.equal({ foo: null });
-      expect(err.message).to.have.string("1 error occurred while reading '");
+      expect(err.message).to.have.string("2 errors occurred while reading '");
       expect(err.errors).to.containSubset([
         {
           name: MissingPointerError.name,
