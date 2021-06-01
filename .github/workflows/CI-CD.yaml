@@ -8,11 +8,6 @@ name: CI-CD
 
 on:
   push:
-    branches:
-      - "*"
-    tags-ignore:
-      - "*"
-
   schedule:
     - cron: "0 0 1 * *"
 
