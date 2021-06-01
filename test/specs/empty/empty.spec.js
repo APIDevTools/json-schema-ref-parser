@@ -10,7 +10,7 @@ describe("Empty schema", () => {
     let parser = new $RefParser();
     const schema = await parser.parse(path.rel("specs/empty/empty.json"));
     expect(schema).to.be.an("object");
-    expect(schema).to.be.empty;
+    expect(schema).to.be.empty;  // eslint-disable-line no-unused-expressions
     expect(parser.schema).to.equal(schema);
     expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/empty/empty.json")]);
   });
@@ -24,7 +24,7 @@ describe("Empty schema", () => {
     let parser = new $RefParser();
     const schema = await parser.dereference(path.rel("specs/empty/empty.json"));
     expect(schema).to.be.an("object");
-    expect(schema).to.be.empty;
+    expect(schema).to.be.empty;  // eslint-disable-line no-unused-expressions
     expect(parser.schema).to.equal(schema);
     expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/empty/empty.json")]);
     // The "circular" flag should NOT be set
@@ -35,7 +35,7 @@ describe("Empty schema", () => {
     let parser = new $RefParser();
     const schema = await parser.bundle(path.rel("specs/empty/empty.json"));
     expect(schema).to.be.an("object");
-    expect(schema).to.be.empty;
+    expect(schema).to.be.empty;  // eslint-disable-line no-unused-expressions
     expect(parser.schema).to.equal(schema);
     expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/empty/empty.json")]);
   });

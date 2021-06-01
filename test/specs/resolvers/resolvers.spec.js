@@ -50,7 +50,7 @@ describe("options.resolve", () => {
           // A custom resolver for "foo://" URLs
           foo: {
             canRead: /^foo\:\/\//i,
-            read (file) {
+            read (_file) {
               return { bar: { baz: "hello world" }};
             }
           }
@@ -66,7 +66,7 @@ describe("options.resolve", () => {
           // A custom resolver for "foo://" URLs
           foo: {
             canRead: /^foo\:\/\//i,
-            read (file, callback) {
+            read (_file, callback) {
               callback(null, { bar: { baz: "hello world" }});
             }
           }
@@ -83,7 +83,7 @@ describe("options.resolve", () => {
             // A custom resolver for "foo://" URLs
             foo: {
               canRead: /^foo\:\/\//i,
-              read (file) {
+              read (_file) {
                 return Promise.resolve({ bar: { baz: "hello world" }});
               }
             }
@@ -101,7 +101,7 @@ describe("options.resolve", () => {
           badResolver: {
             order: 1,
             canRead: true,
-            read (file) {
+            read (_file) {
               throw new Error("BOMB!!!");
             }
           },
@@ -159,7 +159,7 @@ describe("options.resolve", () => {
     }
   });
 
-  it("should throw a grouped error if no resolver can be matched and fastFail is false", async () => {
+  it("should throw a grouped error if no resolver can be matched and continueOnError is true", async () => {
     const parser = new $RefParser();
     try {
       await parser.dereference(path.abs("specs/resolvers/resolvers.yaml"), {

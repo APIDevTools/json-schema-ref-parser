@@ -230,7 +230,7 @@ describe("References to non-JSON files", () => {
     }
   });
 
-  it("should throw a grouped error if no parser can be matched and fastFail is false", async () => {
+  it("should throw a grouped error if no parser can be matched and continueOnError is true", async () => {
     try {
       const parser = new $RefParser();
       await parser.dereference(path.rel("specs/parsers/parsers.yaml"), {
