@@ -8,6 +8,7 @@ name: CI-CD
 
 on:
   push:
+  pull_request:
   schedule:
     - cron: "0 0 1 * *"
 
@@ -58,7 +59,7 @@ jobs:
   browser_tests:
     name: Browser Tests
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 15
     strategy:
       fail-fast: true
       matrix:
@@ -99,7 +100,7 @@ jobs:
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     needs:
       - node_tests
       - browser_tests
