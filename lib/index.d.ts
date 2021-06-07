@@ -1,4 +1,4 @@
-import { JSONSchema4, JSONSchema4Type, JSONSchema6, JSONSchema6Type } from "json-schema";
+import { JSONSchema4, JSONSchema4Type, JSONSchema6, JSONSchema6Type, JSONSchema7, JSONSchema7Type } from "json-schema";
 
 export = $RefParser;
 
@@ -173,7 +173,7 @@ declare class $RefParser {
 // eslint-disable-next-line no-redeclare
 declare namespace $RefParser {
 
-  export type JSONSchema = JSONSchema4 | JSONSchema6;
+  export type JSONSchema = JSONSchema4 | JSONSchema6 | JSONSchema7;
   export type SchemaCallback = (err: Error | null, schema?: JSONSchema) => any;
   export type $RefsCallback = (err: Error | null, $refs?: $Refs) => any;
 
@@ -208,7 +208,7 @@ declare namespace $RefParser {
       file?: Partial<ResolverOptions> | boolean;
       http?: HTTPResolverOptions | boolean;
     } & {
-      [key: string]: Partial<ResolverOptions> | boolean;
+      [key: string]: Partial<ResolverOptions> | HTTPResolverOptions | boolean | undefined;
     };
 
     /**
@@ -284,7 +284,7 @@ declare namespace $RefParser {
     read(
       file: FileInfo,
       callback?: (error: Error | null, data: string | null) => any
-    ): string | Buffer | Promise<string | Buffer>;
+    ): string | Buffer | JSONSchema | Promise<string | Buffer | JSONSchema>;
   }
 
   export interface ParserOptions {
@@ -395,7 +395,7 @@ declare namespace $RefParser {
      *
      * @param $ref The JSON Reference path, optionally with a JSON Pointer in the hash
      */
-    public get($ref: string): JSONSchema4Type | JSONSchema6Type
+    public get($ref: string): JSONSchema4Type | JSONSchema6Type | JSONSchema7Type
 
     /**
      * Sets the value at the given path in the schema. If the property, or any of its parents, don't exist, they will be created.
@@ -403,7 +403,7 @@ declare namespace $RefParser {
      * @param $ref The JSON Reference path, optionally with a JSON Pointer in the hash
      * @param value The value to assign. Can be anything (object, string, number, etc.)
      */
-    public set($ref: string, value: JSONSchema4Type | JSONSchema6Type): void
+    public set($ref: string, value: JSONSchema4Type | JSONSchema6Type | JSONSchema7Type): void
   }
 
   export type JSONParserErrorType = "EUNKNOWN" | "EPARSER" | "EUNMATCHEDPARSER" | "ERESOLVER" | "EUNMATCHEDRESOLVER" | "EMISSINGPOINTER" | "EINVALIDPOINTER";
