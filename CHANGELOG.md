@@ -1,9 +1,7 @@
 Change Log
-====================================================================================================
-All notable changes will be documented in this file.
-JSON Schema $Ref Parser adheres to [Semantic Versioning](http://semver.org/).
+==========
 
-
+See [GitHub Releases](https://github.com/APIDevTools/json-schema-ref-parser/releases) for more information on newer releases.
 
 [v9.0.0](https://github.com/APIDevTools/json-schema-ref-parser/tree/v9.0.0) (2020-04-21)
 ----------------------------------------------------------------------------------------------------
