@@ -59,31 +59,39 @@
     "@jsdevtools/eslint-config": "^1.0.7",
     "@jsdevtools/host-environment": "^2.1.2",
     "@jsdevtools/karma-config": "^3.1.7",
-    "@semantic-release/changelog": "^5.0.1",
-    "@semantic-release/git": "^9.0.0",
-    "@types/json-schema": "^7.0.6",
     "@types/node": "^14.14.21",
-    "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
+    "chai": "^4.2.0",
     "eslint": "^7.18.0",
-    "karma": "^5.0.2",
     "karma-cli": "^2.0.0",
+    "karma": "^5.0.2",
     "mocha": "^8.2.1",
     "npm-check": "^5.9.0",
     "nyc": "^15.0.1",
+    "semantic-release-plugin-update-version-in-files": "^1.1.0",
     "shx": "^0.3.2",
     "typescript": "^4.0.5"
   },
   "dependencies": {
     "@jsdevtools/ono": "^7.1.3",
+    "@types/json-schema": "^7.0.6",
     "call-me-maybe": "^1.0.1",
-    "js-yaml": "^3.13.1"
+    "js-yaml": "^4.1.0"
   },
   "release": {
+    "branches": ["main"],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      "@semantic-release/changelog",
+      [
+        "semantic-release-plugin-update-version-in-files",
+        {
+          "files": [
+            "dist/package.json"
+          ],
+          "placeholder": "X.X.X"
+        }
+      ],
       [
         "@amanda-mitchell/semantic-release-npm-multiple",
         {
@@ -95,16 +103,6 @@
               "pkgRoot": "dist"
             }
           }
-        }
-      ],
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "package.json",
-            "CHANGELOG.md",
-            "dist/**"
-          ]
         }
       ],
       "@semantic-release/github"

@@ -37,6 +37,18 @@ describe("Schema with circular (recursive) $refs", () => {
       expect(schema.definitions.child.properties.pet).to.equal(schema.definitions.pet);
     });
 
+    it("should double dereference successfully", async () => {
+      const firstPassSchema = await $RefParser.dereference(path.rel("specs/circular/circular-self.yaml"));
+      let parser = new $RefParser();
+      const schema = await parser.dereference(firstPassSchema);
+      expect(schema).to.equal(parser.schema);
+      expect(schema).to.deep.equal(dereferencedSchema.self);
+      // The "circular" flag should be set
+      expect(parser.$refs.circular).to.equal(true);
+      // Reference equality
+      expect(schema.definitions.child.properties.pet).to.equal(schema.definitions.pet);
+    });
+
     it('should produce the same results if "options.$refs.circular" is "ignore"', async () => {
       let parser = new $RefParser();
       const schema = await parser.dereference(path.rel("specs/circular/circular-self.yaml"), { dereference: { circular: "ignore" }});
@@ -105,6 +117,19 @@ describe("Schema with circular (recursive) $refs", () => {
     it("should dereference successfully", async () => {
       let parser = new $RefParser();
       const schema = await parser.dereference(path.rel("specs/circular/circular-ancestor.yaml"));
+      expect(schema).to.equal(parser.schema);
+      expect(schema).to.deep.equal(dereferencedSchema.ancestor.fullyDereferenced);
+      // The "circular" flag should be set
+      expect(parser.$refs.circular).to.equal(true);
+      // Reference equality
+      expect(schema.definitions.person.properties.spouse).to.equal(schema.definitions.person);
+      expect(schema.definitions.person.properties.pet).to.equal(schema.definitions.pet);
+    });
+
+    it("should double dereference successfully", async () => {
+      let parser = new $RefParser();
+      const firstPassSchema = await $RefParser.dereference(path.rel("specs/circular/circular-ancestor.yaml"));
+      const schema = await parser.dereference(firstPassSchema);
       expect(schema).to.equal(parser.schema);
       expect(schema).to.deep.equal(dereferencedSchema.ancestor.fullyDereferenced);
       // The "circular" flag should be set
@@ -195,6 +220,21 @@ describe("Schema with circular (recursive) $refs", () => {
         .to.equal(schema.definitions.parent);
     });
 
+    it("should double dereference successfully", async () => {
+      let parser = new $RefParser();
+      const firstPassSchema = await $RefParser.dereference(path.rel("specs/circular/circular-indirect.yaml"));
+      const schema = await parser.dereference(firstPassSchema);
+      expect(schema).to.equal(parser.schema);
+      expect(schema).to.deep.equal(dereferencedSchema.indirect.fullyDereferenced);
+      // The "circular" flag should be set
+      expect(parser.$refs.circular).to.equal(true);
+      // Reference equality
+      expect(schema.definitions.parent.properties.children.items)
+        .to.equal(schema.definitions.child);
+      expect(schema.definitions.child.properties.parents.items)
+        .to.equal(schema.definitions.parent);
+    });
+
     it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', async () => {
       let parser = new $RefParser();
       const schema = await parser.dereference(path.rel("specs/circular/circular-indirect.yaml"), { dereference: { circular: "ignore" }});
@@ -265,6 +305,21 @@ describe("Schema with circular (recursive) $refs", () => {
     it("should dereference successfully", async () => {
       let parser = new $RefParser();
       const schema = await parser.dereference(path.rel("specs/circular/circular-indirect-ancestor.yaml"));
+      expect(schema).to.equal(parser.schema);
+      expect(schema).to.deep.equal(dereferencedSchema.indirectAncestor.fullyDereferenced);
+      // The "circular" flag should be set
+      expect(parser.$refs.circular).to.equal(true);
+      // Reference equality
+      expect(schema.definitions.parent.properties.child)
+        .to.equal(schema.definitions.child);
+      expect(schema.definitions.child.properties.children.items)
+        .to.equal(schema.definitions.child);
+    });
+
+    it("should double dereference successfully", async () => {
+      let parser = new $RefParser();
+      const firstPassSchema = await parser.dereference(path.rel("specs/circular/circular-indirect-ancestor.yaml"));
+      const schema = await parser.dereference(firstPassSchema);
       expect(schema).to.equal(parser.schema);
       expect(schema).to.deep.equal(dereferencedSchema.indirectAncestor.fullyDereferenced);
       // The "circular" flag should be set
