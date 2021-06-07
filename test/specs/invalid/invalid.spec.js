@@ -112,7 +112,7 @@ describe("Invalid syntax", () => {
             {
               name: ParserError.name,
               message: message => (
-                message.includes("invalid.yaml: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 1:")
+                message.includes("invalid.yaml: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line (1:1)")
               ),
               path: [],
               source: message => message.endsWith("test/specs/invalid/invalid.yaml"),
@@ -136,7 +136,7 @@ describe("Invalid syntax", () => {
             {
               name: ParserError.name,
               message: message => (
-                message.includes("invalid.json: unexpected end of the stream within a flow collection at line 2, column 1:")
+                message.includes("invalid.json: unexpected end of the stream within a flow collection (2:1)")
               ),
               path: [],
               source: message => message.endsWith("test/specs/invalid/invalid.json"),
@@ -268,7 +268,7 @@ describe("Invalid syntax", () => {
             {
               name: ParserError.name,
               message: message => (
-                message.includes("invalid.yaml: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line at line 1, column 1:")
+                message.includes("invalid.yaml: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line (1:1)")
               ),
               path: ["foo"],
               source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
@@ -291,7 +291,7 @@ describe("Invalid syntax", () => {
             {
               name: ParserError.name,
               message: message => (
-                message.includes("invalid.json: unexpected end of the stream within a flow collection at line 2, column 1:")
+                message.includes("invalid.json: unexpected end of the stream within a flow collection (2:1)")
               ),
               path: ["foo"],
               source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
