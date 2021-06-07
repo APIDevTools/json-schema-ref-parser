@@ -409,6 +409,8 @@ declare namespace $RefParser {
   export type JSONParserErrorType = "EUNKNOWN" | "EPARSER" | "EUNMATCHEDPARSER" | "ERESOLVER" | "EUNMATCHEDRESOLVER" | "EMISSINGPOINTER" | "EINVALIDPOINTER";
 
   export class JSONParserError extends Error {
+    public constructor(message: string, source: string);
+
     public readonly name: string;
     public readonly message: string;
     public readonly source: string;
@@ -439,28 +441,40 @@ declare namespace $RefParser {
   }
 
   export class ParserError extends JSONParserError {
+    public constructor(message: string, source: string);
+
     public readonly name = "ParserError";
     public readonly code = "EPARSER";
   }
   export class UnmatchedParserError extends JSONParserError {
+    public constructor(source: string);
+
     public readonly name = "UnmatchedParserError";
-    public readonly code ="EUNMATCHEDPARSER";
+    public readonly code = "EUNMATCHEDPARSER";
   }
   export class ResolverError extends JSONParserError {
+    public constructor(ex: Error | NodeJS.ErrnoException, source: string);
+
     public readonly name = "ResolverError";
-    public readonly code ="ERESOLVER";
+    public readonly code = "ERESOLVER";
     public readonly ioErrorCode?: string;
   }
   export class UnmatchedResolverError extends JSONParserError {
+    public constructor(source: string);
+
     public readonly name = "UnmatchedResolverError";
-    public readonly code ="EUNMATCHEDRESOLVER";
+    public readonly code = "EUNMATCHEDRESOLVER";
   }
   export class MissingPointerError extends JSONParserError {
+    public constructor(token: string | number, source: string);
+
     public readonly name = "MissingPointerError";
-    public readonly code ="EMISSINGPOINTER";
+    public readonly code = "EMISSINGPOINTER";
   }
   export class InvalidPointerError extends JSONParserError {
+    public constructor(pointer: string, source: string);
+
     public readonly name = "InvalidPointerError";
-    public readonly code ="EINVALIDPOINTER";
+    public readonly code = "EINVALIDPOINTER";
   }
 }
