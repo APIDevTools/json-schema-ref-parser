@@ -1,15 +1,11 @@
 # GitHub Actions workflow
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions
 # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions
-# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/contexts-and-expression-syntax-for-github-actions
 # https://www.npmjs.com/package/@amanda-mitchell/semantic-release-npm-multiple
 
 name: CI-CD
 
-on:
-  push:
-  schedule:
-    - cron: "0 0 1 * *"
+on: [push, pull_request]
 
 jobs:
   node_tests:
@@ -58,7 +54,7 @@ jobs:
   browser_tests:
     name: Browser Tests
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 15
     strategy:
       fail-fast: true
       matrix:
@@ -99,7 +95,7 @@ jobs:
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     needs:
       - node_tests
       - browser_tests
