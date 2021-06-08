@@ -1,0 +1,6 @@
+{
+  "type": "object",
+  "properties": {
+    "some_value": { "oneOf": [{ "type": "string" }, { "type": "number" }] }
+  }
+}

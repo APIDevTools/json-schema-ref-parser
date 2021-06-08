@@ -8,11 +8,7 @@ name: CI-CD
 
 on:
   push:
-    branches:
-      - "*"
-    tags-ignore:
-      - "*"
-
+  pull_request:
   schedule:
     - cron: "0 0 1 * *"
 
@@ -63,7 +59,7 @@ jobs:
   browser_tests:
     name: Browser Tests
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 15
     strategy:
       fail-fast: true
       matrix:
@@ -104,7 +100,7 @@ jobs:
   coverage:
     name: Code Coverage
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     needs:
       - node_tests
       - browser_tests
@@ -117,8 +113,7 @@ jobs:
 
   release:
     name: Release
-    # removed to test beta branch.
-    # if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:

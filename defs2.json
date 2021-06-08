@@ -1,0 +1,20 @@
+{
+  "definitions": {
+    "bstring": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/cstring"
+        },
+        {
+          "$ref": "#/definitions/dstring"
+        }
+      ]
+    },
+    "cstring": {
+      "type": "string"
+    },
+    "dstring": {
+      "type": "number"
+    }
+  }
+}

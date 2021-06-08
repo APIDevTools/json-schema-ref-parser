@@ -1,0 +1,8 @@
+{
+  "definitions": {
+    "astring": {
+      "description": "astring",
+      "$ref": "defs2.json#/definitions/bstring"
+    }
+  }
+}
