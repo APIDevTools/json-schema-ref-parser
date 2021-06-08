@@ -1,6 +1,0 @@
-{
-  "type": "object",
-  "properties": {
-    "some_value": { "$ref": "defs.json#/definitions/astring" }
-  }
-}
