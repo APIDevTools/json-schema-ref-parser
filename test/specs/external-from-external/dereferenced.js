@@ -4,8 +4,8 @@ module.exports = {
   $schema: "http://json-schema.org/draft-07/schema#",
   type: "object",
   definitions: {
-    externalOne: { type: "string", enum: ["EXTERNAL", "ONE"] },
-    internalOne: { type: "string", enum: ["EXTERNAL", "ONE"] },
+    externalOne: { type: "string", enum: ["EXTERNAL", "ONE"]},
+    internalOne: { type: "string", enum: ["EXTERNAL", "ONE"]},
   },
   properties: {
     pageOne: {
@@ -19,7 +19,7 @@ module.exports = {
               on: ["GB", ["PROHIBITED", ["EXTERNAL", "TWO"]]],
             },
           },
-          not: { enum: ["EXTERNAL", "TWO"] },
+          not: { enum: ["EXTERNAL", "TWO"]},
           type: "string",
           enum: ["EXTERNAL", "ONE"],
         },
@@ -36,7 +36,7 @@ module.exports = {
           },
           then: {
             required: ["otherBooleanProperty"],
-            properties: { otherBooleanProperty: { type: "boolean" } },
+            properties: { otherBooleanProperty: { type: "boolean" }},
           },
         },
         {
@@ -59,7 +59,7 @@ module.exports = {
                     on: [["PROHIBITED", ["EXTERNAL", "TWO"]]],
                   },
                 },
-                not: { enum: ["EXTERNAL", "TWO"] },
+                not: { enum: ["EXTERNAL", "TWO"]},
                 type: "string",
                 enum: ["EXTERNAL", "ONE"],
               },

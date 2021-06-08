@@ -4,7 +4,7 @@ module.exports = {
   $schema: "http://json-schema.org/draft-07/schema#",
   type: "object",
   definitions: {
-    externalOne: { type: "string", enum: ["EXTERNAL", "ONE"] },
+    externalOne: { type: "string", enum: ["EXTERNAL", "ONE"]},
     internalOne: { $ref: "#/definitions/externalOne" },
   },
   properties: {
@@ -29,19 +29,19 @@ module.exports = {
               ],
             },
           },
-          not: { enum: ["EXTERNAL", "TWO"] },
+          not: { enum: ["EXTERNAL", "TWO"]},
         },
       },
       allOf: [
         {
           if: {
             properties: {
-              nestedProperty: { type: "string", enum: ["EXTERNAL", "THREE"] },
+              nestedProperty: { type: "string", enum: ["EXTERNAL", "THREE"]},
             },
           },
           then: {
             required: ["otherBooleanProperty"],
-            properties: { otherBooleanProperty: { type: "boolean" } },
+            properties: { otherBooleanProperty: { type: "boolean" }},
           },
         },
         {
