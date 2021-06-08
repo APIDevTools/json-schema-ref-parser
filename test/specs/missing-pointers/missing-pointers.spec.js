@@ -67,7 +67,9 @@ describe("Schema with missing pointers", () => {
         expect(err.files.$refs._root$Ref.value).to.deep.equal({
           foo: {
             internal1: null,
-            internal2: null,
+            internal2: {
+              $ref: "#/external"
+            },
           }
         });
         expect(err.message).to.have.string("1 error occurred while reading '");
