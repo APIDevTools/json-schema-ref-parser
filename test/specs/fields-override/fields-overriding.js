@@ -5,22 +5,26 @@ const $RefParser = require("../../..");
 const path = require("../../utils/path");
 
 describe("Fields override", () => {
-  const model = {
-    properties: {
-      users: {
-        type: "array",
-        items: {
-          $ref: "./definitions.json#/User",
-          summary: "My workspace user",
-          description: "A workspace user is -"
+  let model;
+
+  beforeEach(() => {
+    model = {
+      properties: {
+        users: {
+          type: "array",
+          items: {
+            $ref: "./definitions.json#/User",
+            summary: "My workspace user",
+            description: "A workspace user is -"
+          }
+        },
+        id: {
+          $ref: "./definitions.json#/User/properties/id",
+          summary: "Entry id",
         }
-      },
-      id: {
-        $ref: "./definitions.json#/User/properties/id",
-        summary: "Entry id",
       }
-    }
-  };
+    };
+  });
 
   it("dereference should allow fields override", async () => {
     let parser = new $RefParser();
