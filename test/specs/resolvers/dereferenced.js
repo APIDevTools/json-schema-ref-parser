@@ -8,6 +8,11 @@ module.exports =
         baz: "hello world"
       }
     },
+    bar: {
+      Foo: {
+        Baz: "hello world"
+      }
+    },
     name: {
       required: [
         "first",
