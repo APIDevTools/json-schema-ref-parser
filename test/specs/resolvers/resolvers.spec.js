@@ -218,9 +218,9 @@ describe("options.resolve", () => {
       await parser.dereference(path.abs("specs/resolvers/resolvers.yaml"), {
         resolve: {
           file: false,
-          http: false
+          http: false,
         },
-        continueOnError: true
+        continueOnError: true,
       });
       helper.shouldNotGetCalled();
     }
@@ -232,7 +232,7 @@ describe("options.resolve", () => {
           name: UnmatchedResolverError.name,
           message: message => message.startsWith("Could not find resolver for"),
           path: [],
-          source: message => message.endsWith("specs/resolvers/resolvers.yaml")
+          source: message => message.endsWith("specs/resolvers/resolvers.yaml"),
         }
       ]);
     }
