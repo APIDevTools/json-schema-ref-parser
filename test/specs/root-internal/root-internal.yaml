@@ -1,0 +1,13 @@
+definitions: 
+  name: 
+    title: name
+    type: object
+    required:
+      - first
+      - last
+    properties:
+      first:
+        type: string
+      last:
+        $ref: "#/definitions/name/properties/first"
+$ref: "#/definitions/name"
