@@ -26,7 +26,8 @@ $RefParser.dereference("my-schema.yaml", {
     http: {
       timeout: 2000,                // 2 second timeout
       withCredentials: true,        // Include auth credentials when resolving HTTP references
-    }
+    },
+    skipInternal: false             // Skip internal/local references while parsing the document
   },
   dereference: {
     circular: false                 // Don't allow circular $refs

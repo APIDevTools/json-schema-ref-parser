@@ -1,0 +1,10 @@
+title: name
+type: object
+required:
+  - first
+  - last
+properties:
+  first:
+    $ref: "#/properties/requiredString"
+  last:
+    $ref: "#/properties/requiredString"
