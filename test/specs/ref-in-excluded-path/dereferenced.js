@@ -1,105 +1,105 @@
 "use strict";
 
 module.exports = {
-  "components": {
-    "examples": {
+  components: {
+    examples: {
       "confirmation-failure": {
-        "value": {
-          "$ref": "#/literal-component-example"
+        value: {
+          $ref: "#/literal-component-example"
         }
       },
       "confirmation-success": {
-        "value": {
-          "abc": "def"
+        value: {
+          abc: "def"
         }
       },
       "query-example": {
-        "value": "abc"
+        value: "abc"
       }
     },
-    "parameters": {
-      "a": {
-        "example": {
-          "$ref": "#/literal-param-component-example"
+    parameters: {
+      a: {
+        example: {
+          $ref: "#/literal-param-component-example"
         }
       },
-      "b": {
-        "examples": {
-          "example1": {
-            "value": {
-              "$ref": "#/literal-param-component-examples1"
+      b: {
+        examples: {
+          example1: {
+            value: {
+              $ref: "#/literal-param-component-examples1"
             }
           }
         }
       }
     }
   },
-  "paths": {
+  paths: {
     "/x/{id}": {
-      "parameters": [
+      parameters: [
         {
-          "example": 123,
-          "in": "path",
-          "name": "id"
+          example: 123,
+          in: "path",
+          name: "id"
         },
         {
-          "examples": {
-            "e1": {
-              "value": {
-                "$ref": "#/literal-h1"
+          examples: {
+            e1: {
+              value: {
+                $ref: "#/literal-h1"
               }
             }
           },
-          "in": "header",
-          "name": "h1"
+          in: "header",
+          name: "h1"
         },
         {
-          "example": {
-            "$ref": "#/literal-q1"
+          example: {
+            $ref: "#/literal-q1"
           },
-          "in": "query",
-          "name": "q1"
+          in: "query",
+          name: "q1"
         },
         {
-          "examples": {
-            "q2": {
-              "value": "abc"
+          examples: {
+            q2: {
+              value: "abc"
             }
           },
-          "in": "query",
-          "name": "q2"
+          in: "query",
+          name: "q2"
         }
       ],
-      "responses": {
-        "200": {
-          "content": {
+      responses: {
+        200: {
+          content: {
             "application/json": {
-              "examples": {
+              examples: {
                 "confirmation-failure": {
-                  "value": {
-                    "$ref": "#/literal-component-example"
+                  value: {
+                    $ref: "#/literal-component-example"
                   }
                 },
                 "confirmation-in-progress": {
-                  "summary": "In progress response",
-                  "value": {
-                    "$ref": "#/abc"
+                  summary: "In progress response",
+                  value: {
+                    $ref: "#/abc"
                   }
                 },
                 "confirmation-success": {
-                  "value": {
-                    "abc": "def"
+                  value: {
+                    abc: "def"
                   }
                 }
               }
             }
           }
         },
-        "400": {
-          "content": {
+        400: {
+          content: {
             "application/json": {
-              "example": {
-                "$ref": "#/literal-example"
+              example: {
+                $ref: "#/literal-example"
               }
             }
           }

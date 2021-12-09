@@ -10,8 +10,8 @@ describe("Schema with literal $refs in examples", () => {
     let parser = new $RefParser();
     const schema = await parser.dereference(path.rel("specs/ref-in-excluded-path/ref-in-excluded-path.yaml"), {
       dereference: {
-        excludedPathMatcher: (path) => {
-          return /\/example(\/|$|s\/[^\/]+\/value(\/|$))/.test(path);
+        excludedPathMatcher: (schemaPath) => {
+          return /\/example(\/|$|s\/[^\/]+\/value(\/|$))/.test(schemaPath);
         }
       }
     });
