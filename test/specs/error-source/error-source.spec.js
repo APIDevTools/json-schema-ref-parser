@@ -8,7 +8,6 @@ const { expect } = chai;
 const $RefParser = require("../../..");
 const helper = require("../../utils/helper");
 const path = require("../../utils/path");
-const { host } = require("@jsdevtools/host-environment");
 const { InvalidPointerError, ResolverError, MissingPointerError } = require("../../../lib/util/errors");
 
 
@@ -30,12 +29,6 @@ describe("Report correct error source and path for", () => {
       ]);
     }
   });
-
-  if (host.node && host.os.windows && path.cwd().includes(" ")) {
-    // The tests below don't support Windows file paths that contain spaces.
-    // TODO: Fix the tests below, rather than skipping them
-    return;
-  }
 
   it("schema with a local reference pointing at property with broken external reference", async () => {
     const parser = new $RefParser();
