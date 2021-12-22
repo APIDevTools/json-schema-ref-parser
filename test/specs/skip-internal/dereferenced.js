@@ -17,10 +17,10 @@ module.exports =
       ],
       properties: {
         first: {
-          "$ref": "#/properties/requiredString"
+          $ref: "#/properties/requiredString"
         },
         last: {
-          "$ref": "#/properties/requiredString"
+          $ref: "#/properties/requiredString"
         }
       }
     },

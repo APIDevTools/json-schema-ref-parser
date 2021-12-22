@@ -11,7 +11,7 @@ const bundledSchema = require("./bundled");
 describe("Schema with $refs to parts of external files", () => {
   it("should parse successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.parse(path.rel("specs/skip-internal/skip-internal.yaml"), { resolve: { skipInternal: true } });
+    const schema = await parser.parse(path.rel("specs/skip-internal/skip-internal.yaml"), { resolve: { skipInternal: true }});
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(parsedSchema.schema);
     expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/skip-internal/skip-internal.yaml")]);
@@ -27,7 +27,7 @@ describe("Schema with $refs to parts of external files", () => {
 
   it("should dereference successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.dereference(path.rel("specs/skip-internal/skip-internal.yaml"), { resolve: { skipInternal: true } });
+    const schema = await parser.dereference(path.rel("specs/skip-internal/skip-internal.yaml"), { resolve: { skipInternal: true }});
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(dereferencedSchema);
     // The "circular" flag should NOT be set
@@ -36,7 +36,7 @@ describe("Schema with $refs to parts of external files", () => {
 
   it("should bundle successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.bundle(path.rel("specs/skip-internal/skip-internal.yaml"), { resolve: { skipInternal: true } });
+    const schema = await parser.bundle(path.rel("specs/skip-internal/skip-internal.yaml"), { resolve: { skipInternal: true }});
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(bundledSchema);
   });
