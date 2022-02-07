@@ -1,12 +1,12 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@3.0.0
+  node: circleci/node@4.7.0
 
 executors:
   linux:
     docker:
-      - image: cimg/base:2020.01
+      - image: cimg/base:2022.02
 
 commands:
   install:
@@ -46,7 +46,7 @@ jobs:
 
   test-browser:
     docker:
-      - image: circleci/node:latest-browsers
+      - image: cimg/node:16.13-browsers
     steps:
       - checkout
       - install
@@ -63,7 +63,7 @@ workflows:
               os:
                 - linux
               node-version:
-                - "10.18"
-                - "12.9"
-                - "14.9"
+                - "12.22"
+                - "14.19"
+                - "16.13"
       - test-browser
