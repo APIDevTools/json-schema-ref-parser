@@ -52,7 +52,7 @@ jobs:
       - install
       - run:
           name: Run browser tests
-          command: npm run test:browser
+          command: CHROME_BIN=/usr/bin/google-chrome npm run test:browser
 
 workflows:
   commit:
