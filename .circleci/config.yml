@@ -46,13 +46,13 @@ jobs:
 
   test-browser:
     docker:
-      - image: cimg/node:16.13-browsers
+      - image: circleci/node:latest-browsers
     steps:
       - checkout
       - install
       - run:
           name: Run browser tests
-          command: CHROME_BIN=/usr/bin/google-chrome npm run test:browser
+          command: npm run test:browser
 
 workflows:
   commit:
