@@ -76,9 +76,9 @@
     "@jsdevtools/ono": "^7.1.3",
     "@stoplight/path": "^1.3.2",
     "@stoplight/yaml": "^4.0.2",
-    "abort-controller": "^3.0.0",
     "call-me-maybe": "^1.0.1",
     "fastestsmallesttextencoderdecoder": "^1.0.22",
-    "isomorphic-fetch": "^3.0.0"
+    "isomorphic-fetch": "^3.0.0",
+    "node-abort-controller": "^3.0.1"
   }
 }
