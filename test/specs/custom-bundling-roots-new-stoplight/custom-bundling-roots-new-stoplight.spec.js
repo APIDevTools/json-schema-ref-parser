@@ -136,4 +136,130 @@ describe("Stoplight-specific defaults", () => {
       }
     });
   });
+
+  it("should handle external URLs", async () => {
+    setupHttpMocks({
+      "https://api.stoplight.io/v1/schema/user.json": {
+        definitions: {
+          status: {
+            type: "string",
+          }
+        },
+        type: "object",
+        properties: {
+          orders: {
+            type: "object",
+            properties: {
+              new: { $ref: "#/definitions/status" },
+              cancelled: { $ref: "#/definitions/status" },
+              error: { $ref: "#/definitions/status" }
+            },
+          }
+        },
+      },
+    });
+
+    let parser = new $RefParser();
+    let defaults = createStoplightDefaults({
+      cwd: __dirname,
+      endpointUrl: "http://jakub.stoplight-local.com:8080/api/v1/projects/jakub/my-project/nodes",
+    });
+
+    const document = {
+      swagger: "2.0",
+      paths: {
+        "/": {
+          get: {
+            responses: {
+              200: {
+                $ref: "#/responses/Address"
+              }
+            }
+          },
+          post: {
+            responses: {
+              200: {
+                $ref: "#/responses/Address"
+              }
+            },
+            parameters: [
+              {
+                in: "body",
+                schema: {
+                  $ref: "https://api.stoplight.io/v1/schema/user.json"
+                }
+              }
+            ]
+          }
+        }
+      },
+      responses: {
+        Address: {
+          title: "Address",
+        }
+      }
+    };
+
+    const schema = await parser.bundle(document, {
+      bundle: defaults.oas2,
+    });
+
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal({
+      swagger: "2.0",
+      definitions: {
+        User_Status: {
+          type: "string"
+        }
+      },
+      paths: {
+        "/": {
+          get: {
+            responses: {
+              200: {
+                $ref: "#/responses/Address"
+              }
+            }
+          },
+          post: {
+            parameters: [
+              {
+                in: "body",
+                schema: {
+                  type: "object",
+                  definitions: {},
+                  properties: {
+                    orders: {
+                      type: "object",
+                      properties: {
+                        cancelled: {
+                          $ref: "#/definitions/User_Status"
+                        },
+                        error: {
+                          $ref: "#/definitions/User_Status"
+                        },
+                        new: {
+                          $ref: "#/definitions/User_Status"
+                        }
+                      },
+                    }
+                  }
+                }
+              }
+            ],
+            responses: {
+              200: {
+                $ref: "#/responses/Address"
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        Address: {
+          title: "Address"
+        }
+      }
+    });
+  });
 });
