@@ -4,6 +4,8 @@
 
 root: true
 extends: "@jsdevtools"
+parserOptions:
+  sourceType: module
 env:
   node: true
   browser: true
