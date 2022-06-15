@@ -1,6 +1,4 @@
 /* eslint-disable require-await */
-"use strict";
-
 const { expect } = require("chai");
 const commonJSExport = require("../../");
 const { default: defaultExport } = require("../../");

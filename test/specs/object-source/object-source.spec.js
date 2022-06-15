@@ -1,5 +1,3 @@
-"use strict";
-
 const { expect } = require("chai");
 const $RefParser = require("../../..");
 const helper = require("../../utils/helper");

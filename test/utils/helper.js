@@ -1,5 +1,3 @@
-"use strict";
-
 const $RefParser = require("../../lib");
 const { host } = require("@jsdevtools/host-environment");
 const { expect } = require("chai");

@@ -1,5 +1,3 @@
-"use strict";
-
 const { host } = require("@jsdevtools/host-environment");
 
 if (host.node) {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { JSONSchema4, JSONSchema4Type, JSONSchema6, JSONSchema6Type, JSONSchema7, JSONSchema7Type } from "json-schema";
 
 export = $RefParser;

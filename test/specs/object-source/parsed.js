@@ -1,5 +1,3 @@
-"use strict";
-
 const path = require("../../utils/path");
 
 module.exports =

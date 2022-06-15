@@ -1,5 +1,3 @@
-"use strict";
-
 module.exports = {
   internal1: {
     $ref: "#/external1"

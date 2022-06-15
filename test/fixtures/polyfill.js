@@ -1,5 +1,3 @@
-"use strict";
-
 const { host } = require("@jsdevtools/host-environment");
 
 // Load the Babel Polyfills for old browsers.

@@ -1,5 +1,3 @@
-"use strict";
-
 const $RefParser = require("../../..");
 const helper = require("../../utils/helper");
 const path = require("../../utils/path");

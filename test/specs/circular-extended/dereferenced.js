@@ -1,5 +1,3 @@
-"use strict";
-
 const dereferencedSchema = module.exports =
 {
   self: {
