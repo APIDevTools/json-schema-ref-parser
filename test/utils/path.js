@@ -1,5 +1,3 @@
-"use strict";
-
 const { host } = require("@jsdevtools/host-environment");
 
 const isWindows = /^win/.test(globalThis.process?.platform);

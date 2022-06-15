@@ -1,5 +1,3 @@
-"use strict";
-
 module.exports = {
   type: "object",
   required: ["user", "token"],

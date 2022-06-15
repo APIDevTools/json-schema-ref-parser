@@ -1,5 +1,3 @@
-"use strict";
-
 module.exports =
 {
   title: "Deep Schema",

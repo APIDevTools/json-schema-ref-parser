@@ -1,5 +1,3 @@
-"use strict";
-
 module.exports = {
   schema: {
     title: "Date Strings",

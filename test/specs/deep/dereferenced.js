@@ -1,5 +1,3 @@
-"use strict";
-
 let name = {
   required: [
     "first",
