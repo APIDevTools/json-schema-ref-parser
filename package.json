@@ -24,6 +24,10 @@
     {
       "name": "Jakub Rożek",
       "email": "jakub@stoplight.io"
+    },
+    {
+      "name": "Phil Sturgeon",
+      "email": "phil@apisyouwonthate.com"
     }
   ],
   "homepage": "https://apitools.dev/json-schema-ref-parser/",
