@@ -1,3 +1,5 @@
+NOTE: This is a temporary fork of [APIDevTools/json-schema-ref-parser](https://github.com/APIDevTools/json-schema-ref-parser). Context [here](https://github.com/bcherny/json-schema-to-typescript/issues/469).
+
 JSON Schema $Ref Parser
 ============================
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
