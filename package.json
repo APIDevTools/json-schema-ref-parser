@@ -1,5 +1,5 @@
 {
-  "name": "@apidevtools/json-schema-ref-parser",
+  "name": "@bcherny/json-schema-ref-parser",
   "version": "0.0.0-dev",
   "description": "Parse, Resolve, and Dereference JSON Schema $ref pointers",
   "keywords": [
