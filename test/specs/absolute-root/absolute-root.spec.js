@@ -89,11 +89,12 @@ describe("When executed in the context of root directory", () => {
     expect(schema).to.deep.equal(dereferencedSchema);
     // Reference equality
     expect(schema.properties.name).to.equal(schema.definitions.name);
+
     expect(schema.definitions["required string"])
-      .to.equal(schema.definitions.name.properties.first)
-      .to.equal(schema.definitions.name.properties.last)
-      .to.equal(schema.properties.name.properties.first)
-      .to.equal(schema.properties.name.properties.last);
+      .to.eql(schema.definitions.name.properties.first)
+      .to.eql(schema.definitions.name.properties.last)
+      .to.eql(schema.properties.name.properties.first)
+      .to.eql(schema.properties.name.properties.last);
     // The "circular" flag should NOT be set
     expect(parser.$refs.circular).to.equal(false);
   });

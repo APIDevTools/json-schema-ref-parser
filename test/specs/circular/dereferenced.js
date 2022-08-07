@@ -61,6 +61,66 @@ const dereferencedSchema = module.exports =
     }
   },
 
+  selfWithIgnoreCircular: {
+    definitions: {
+      pet: {
+        type: "object",
+        properties: {
+          age: {
+            type: "number"
+          },
+          name: {
+            type: "string"
+          },
+          species: {
+            enum: [
+              "cat",
+              "dog",
+              "bird",
+              "fish"
+            ],
+            type: "string"
+          }
+        },
+        title: "pet"
+      },
+      thing: {
+        $circularRef: "#/definitions/thing",
+        $ref: "#/definitions/thing",
+      },
+      child: {
+        type: "object",
+        properties: {
+          pet: {
+            type: "object",
+            properties: {
+              age: {
+                type: "number"
+              },
+              name: {
+                type: "string"
+              },
+              species: {
+                enum: [
+                  "cat",
+                  "dog",
+                  "bird",
+                  "fish"
+                ],
+                type: "string"
+              }
+            },
+            title: "pet"
+          },
+          name: {
+            type: "string"
+          }
+        },
+        title: "child"
+      }
+    }
+  },
+
   ancestor: {
     fullyDereferenced: {
       definitions: {
@@ -107,6 +167,7 @@ const dereferencedSchema = module.exports =
           title: "person",
           properties: {
             spouse: {
+              $circularRef: "#/definitions/person",
               $ref: "#/definitions/person"
             },
             pet: null,
@@ -205,7 +266,40 @@ const dereferencedSchema = module.exports =
             },
             children: {
               items: {
-                $ref: "#/definitions/child"
+                properties: {
+                  name: {
+                    type: "string"
+                  },
+                  parents: {
+                    items: {
+                      $circularRef: "#/definitions/parent/properties/children/items/properties/parents/items",
+                      $ref: "#/definitions/parent"
+                    },
+                    type: "array"
+                  },
+                  pet: {
+                    properties: {
+                      age: {
+                        type: "number"
+                      },
+                      name: {
+                        type: "string"
+                      },
+                      species: {
+                        enum: [
+                          "cat",
+                          "dog",
+                          "bird",
+                          "fish"
+                        ],
+                        type: "string"
+                      }
+                    },
+                    title: "pet",
+                    type: "object"
+                  }
+                },
+                title: "child"
               },
               type: "array"
             }
@@ -216,6 +310,7 @@ const dereferencedSchema = module.exports =
           properties: {
             parents: {
               items: {
+                $circularRef: "#/definitions/parent/properties/children/items/properties/parents/items",
                 $ref: "#/definitions/parent"
               },
               type: "array"
@@ -310,7 +405,42 @@ const dereferencedSchema = module.exports =
               type: "string"
             },
             child: {
-              $ref: "#/definitions/child"
+              properties: {
+                children: {
+                  description: "children",
+                  items: {
+                    $circularRef: "#/definitions/parent/properties/child/properties/children/items",
+                    $ref: "#/definitions/child"
+                  },
+                  type: "array"
+                },
+                name: {
+                  type: "string"
+                },
+                pet: {
+                  properties: {
+                    age: {
+                      type: "number"
+                    },
+                    name: {
+                      type: "string"
+                    },
+                    species: {
+                      enum: [
+                        "cat",
+                        "dog",
+                        "bird",
+                        "fish"
+                      ],
+                      type: "string"
+                    }
+                  },
+                  title: "pet",
+                  type: "object"
+                }
+              },
+              title: "child"
+
             }
           },
         },
@@ -323,6 +453,7 @@ const dereferencedSchema = module.exports =
             pet: null,
             children: {
               items: {
+                $circularRef: "#/definitions/parent/properties/child/properties/children/items",
                 $ref: "#/definitions/child"
               },
               type: "array",

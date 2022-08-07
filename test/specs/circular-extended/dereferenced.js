@@ -12,6 +12,12 @@ const dereferencedSchema = module.exports =
     }
   },
 
+  circularSelfWithIgnore: {
+    definitions: {
+      thing: {}
+    }
+  },
+
   pet: {
     title: "pet",
     type: "object",
@@ -63,7 +69,39 @@ const dereferencedSchema = module.exports =
     ignoreCircular$Refs: {
       definitions: {
         person: {
-          $ref: "definitions/person-with-spouse.yaml"
+          title: "person",
+          properties: {
+            spouse: {
+              description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "person".\n',
+              $circularRef: "#/definitions/person",
+              $ref: "person-with-spouse.yaml"
+            },
+            pet: {
+              description: 'This JSON Reference has additional properties (other than $ref). This creates a new type that extends "pet".\n',
+              title: "pet",
+              type: "object",
+              properties: {
+                age: {
+                  type: "number"
+                },
+                name: {
+                  type: "string"
+                },
+                species: {
+                  enum: [
+                    "cat",
+                    "dog",
+                    "bird",
+                    "fish"
+                  ],
+                  type: "string"
+                }
+              },
+            },
+            name: {
+              type: "string"
+            }
+          }
         },
         pet: null
       }
@@ -118,12 +156,115 @@ const dereferencedSchema = module.exports =
     ignoreCircular$Refs: {
       definitions: {
         parent: {
-          $ref: "definitions/parent-with-children.yaml"
+          properties: {
+            children: {
+              items: {
+                description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"child\".\n",
+                properties: {
+                  name: {
+                    type: "string"
+                  },
+                  parents: {
+                    items: {
+                      $circularRef: "#/definitions/parent",
+                      $ref: "parent-with-children.yaml",
+                      description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"parent\".\n"
+                    },
+                    type: "array"
+                  },
+                  pet: {
+                    description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"pet\".\n",
+                    properties: {
+                      age: {
+                        type: "number"
+                      },
+                      name: {
+                        type: "string"
+                      },
+                      species: {
+                        enum: [
+                          "cat",
+                          "dog",
+                          "bird",
+                          "fish"
+                        ],
+                        type: "string"
+                      }
+                    },
+                    title: "pet",
+                    type: "object"
+                  }
+                },
+                title: "child"
+              },
+              type: "array"
+            },
+            name: {
+              type: "string"
+            }
+          },
+          title: "parent"
         },
         child: {
-          $ref: "definitions/child-with-parents.yaml"
+          properties: {
+            name: {
+              type: "string"
+            },
+            parents: {
+              items: {
+                description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"parent\".\n",
+                $circularRef: "#/definitions/parent",
+                $ref: "parent-with-children.yaml",
+              },
+              type: "array"
+            },
+            pet: {
+              description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"pet\".\n",
+              properties: {
+                age: {
+                  type: "number"
+                },
+                name: {
+                  type: "string"
+                },
+                species: {
+                  enum: [
+                    "cat",
+                    "dog",
+                    "bird",
+                    "fish",
+                  ],
+                  type: "string"
+                }
+              },
+              title: "pet",
+              type: "object"
+            }
+          },
+          title: "child"
         },
-        pet: null
+        pet: {
+          description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"pet\".\n",
+          properties: {
+            age: {
+              type: "number"
+            },
+            name: {
+              type: "string"
+            },
+            species: {
+              enum: [
+                "cat",
+                "dog",
+                "bird",
+                "fish"
+              ],
+              type: "string"
+            }
+          },
+          title: "pet",
+          type: "object"
+        }
       }
     }
   },
@@ -175,10 +316,91 @@ const dereferencedSchema = module.exports =
       definitions: {
         pet: null,
         parent: {
-          $ref: "definitions/parent-with-child.yaml"
+          properties: {
+            child: {
+              description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"child\".\n",
+              properties: {
+                children: {
+                  description: "children",
+                  items: {
+                    description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"child\".\n",
+                    $circularRef: "#/definitions/child",
+                    $ref: "child-with-children.yaml"
+                  },
+                  type: "array"
+                },
+                name: {
+                  type: "string"
+                },
+                pet: {
+                  description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"pet\".\n",
+                  properties: {
+                    age: {
+                      type: "number"
+                    },
+                    name: {
+                      type: "string"
+                    },
+                    species: {
+                      enum: [
+                        "cat",
+                        "dog",
+                        "bird",
+                        "fish"
+                      ],
+                      type: "string"
+                    }
+                  },
+                  title: "pet",
+                  type: "object"
+                }
+              },
+              title: "child"
+            },
+            name: {
+              type: "string"
+            }
+          },
+          title: "parent"
         },
         child: {
-          $ref: "definitions/child-with-children.yaml"
+          properties: {
+            children: {
+              description: "children",
+              items: {
+                description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"child\".\n",
+                $circularRef: "#/definitions/child",
+                $ref: "child-with-children.yaml"
+              },
+              type: "array",
+            },
+            name: {
+              type: "string",
+            },
+            pet: {
+              description: "This JSON Reference has additional properties (other than $ref). This creates a new type that extends \"pet\".\n",
+              properties: {
+                age: {
+                  type: "number",
+                },
+                name: {
+                  type: "string",
+                },
+                species: {
+                  enum: [
+                    "cat",
+                    "dog",
+                    "bird",
+                    "fish"
+                  ],
+                  type: "string"
+                }
+              },
+              title: "pet",
+              type: "object"
+            }
+          },
+          title: "child"
         }
       }
     }

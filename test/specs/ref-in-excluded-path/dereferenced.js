@@ -63,7 +63,7 @@ module.exports = {
         {
           examples: {
             q2: {
-              value: "abc"
+              $ref: "#/components/examples/query-example"
             }
           },
           in: "query",

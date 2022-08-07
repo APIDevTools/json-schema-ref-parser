@@ -52,7 +52,7 @@ describe("Schema with circular (recursive) $refs", () => {
       let parser = new $RefParser();
       const schema = await parser.dereference(path.rel("specs/circular/circular-self.yaml"), { dereference: { circular: "ignore" }});
       expect(schema).to.equal(parser.schema);
-      expect(schema).to.deep.equal(dereferencedSchema.self);
+      expect(schema).to.deep.equal(dereferencedSchema.selfWithIgnoreCircular);
       // The "circular" flag should be set
       expect(parser.$refs.circular).to.equal(true);
     });

@@ -128,7 +128,7 @@ describe("Schema with circular $refs that extend each other", () => {
         // A ReferenceError should have been thrown
         expect(err).to.be.an.instanceOf(ReferenceError);
         expect(err.message).to.contain("Circular $ref pointer found at ");
-        expect(err.message).to.contain("specs/circular-extended/definitions/person-with-spouse.yaml#/properties/spouse");
+        expect(err.message).to.contain("specs/circular-extended/definitions/person-with-spouse.yaml");
 
         // $Refs.circular should be true
         expect(parser.$refs.circular).to.equal(true);
@@ -203,7 +203,7 @@ describe("Schema with circular $refs that extend each other", () => {
         // A ReferenceError should have been thrown
         expect(err).to.be.an.instanceOf(ReferenceError);
         expect(err.message).to.contain("Circular $ref pointer found at ");
-        expect(err.message).to.contain("specs/circular-extended/definitions/child-with-parents.yaml#/properties/parents/items");
+        expect(err.message).to.contain("specs/circular-extended/definitions/parent-with-children.yaml");
 
         // $Refs.circular should be true
         expect(parser.$refs.circular).to.equal(true);
@@ -278,7 +278,7 @@ describe("Schema with circular $refs that extend each other", () => {
         // A ReferenceError should have been thrown
         expect(err).to.be.an.instanceOf(ReferenceError);
         expect(err.message).to.contain("Circular $ref pointer found at ");
-        expect(err.message).to.contain("specs/circular-extended/definitions/child-with-children.yaml#/properties");
+        expect(err.message).to.contain("specs/circular-extended/definitions/child-with-children.yaml");
 
         // $Refs.circular should be true
         expect(parser.$refs.circular).to.equal(true);
