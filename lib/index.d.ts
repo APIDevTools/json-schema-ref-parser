@@ -174,8 +174,8 @@ declare class $RefParser {
 declare namespace $RefParser {
 
   export type JSONSchema = JSONSchema4 | JSONSchema6 | JSONSchema7;
-  export type SchemaCallback = (err: Error | null, schema?: JSONSchema) => any;
-  export type $RefsCallback = (err: Error | null, $refs?: $Refs) => any;
+  export type SchemaCallback = (err: Error | null, schema?: JSONSchema) => unknown;
+  export type $RefsCallback = (err: Error | null, $refs?: $Refs) => unknown;
 
   /**
    * See https://apitools.dev/json-schema-ref-parser/docs/options.html
@@ -290,7 +290,7 @@ declare namespace $RefParser {
      */
     read(
       file: FileInfo,
-      callback?: (error: Error | null, data: string | null) => any
+      callback?: (error: Error | null, data: string | null) => unknown
     ): string | Buffer | JSONSchema | Promise<string | Buffer | JSONSchema>;
   }
 
@@ -324,7 +324,7 @@ declare namespace $RefParser {
      */
     parse(
       file: FileInfo,
-      callback?: (error: Error | null, data: string | null) => any
+      callback?: (error: Error | null, data: string | null) => unknown
     ): unknown | Promise<unknown>;
   }
 
