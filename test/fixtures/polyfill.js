@@ -8,3 +8,13 @@ const { host } = require("@jsdevtools/host-environment");
 if (host.browser.IE) {
   require("@babel/polyfill");
 }
+
+import("node-fetch").then(({ default: fetch }) => {
+  if (!globalThis.fetch) {
+    globalThis.fetch = fetch;
+  }
+});
+
+if (!globalThis.AbortController) {
+  globalThis.AbortController = require("node-abort-controller").AbortController;
+}

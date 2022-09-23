@@ -7,3 +7,4 @@ spec: test/specs/**/*.spec.js
 bail: true
 recursive: true
 async-only: true
+require: ./test/fixtures/polyfill.js
