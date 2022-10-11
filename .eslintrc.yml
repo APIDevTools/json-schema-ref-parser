@@ -7,3 +7,5 @@ extends: "@jsdevtools"
 env:
   node: true
   browser: true
+rules:
+  "@typescript-eslint/no-explicit-any": ["off"]
