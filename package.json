@@ -37,6 +37,9 @@
   "browser": {
     "fs": false
   },
+  "engines": {
+    "node": ">= 14"
+  },
   "files": [
     "lib"
   ],
