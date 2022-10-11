@@ -37,9 +37,14 @@ describe("options.resolve", () => {
           foo: {
             canRead: /^foo\:\/\//i,
             read: { bar: { baz: "hello world" }}
+          },
+          bar: {
+            canRead: /^bar\:\/\//i,
+            read: { Foo: { Baz: "hello world" }}
           }
         }
       });
+
     expect(schema).to.deep.equal(dereferencedSchema);
   });
 
@@ -53,9 +58,41 @@ describe("options.resolve", () => {
             read (_file) {
               return { bar: { baz: "hello world" }};
             }
+          },
+          bar: {
+            canRead: /^bar\:\/\//i,
+            read (_file) {
+              return { Foo: { Baz: "hello world" }};
+            }
           }
         }
       });
+    expect(schema).to.deep.equal(dereferencedSchema);
+  });
+
+  it("should return _file url as it's written", async () => {
+    const schema = await $RefParser
+      .dereference(path.abs("specs/resolvers/resolvers.yaml"), {
+        resolve: {
+          // A custom resolver for "foo://" URLs
+          foo: {
+            canRead: /^foo\:\/\//i,
+            read (_file) {
+              return { bar: { baz: "hello world" }};
+            }
+          },
+          // A custom resolver with uppercase symbols
+          bar: {
+            canRead: /^bar\:\/\//i,
+            read (_file) {
+              expect(_file.url).to.be.equal("bar://Foo.Baz");
+
+              return { Foo: { Baz: "hello world" }};
+            }
+          }
+        }
+      });
+
     expect(schema).to.deep.equal(dereferencedSchema);
   });
 
@@ -68,6 +105,12 @@ describe("options.resolve", () => {
             canRead: /^foo\:\/\//i,
             read (_file, callback) {
               callback(null, { bar: { baz: "hello world" }});
+            }
+          },
+          bar: {
+            canRead: /^bar\:\/\//i,
+            read (_file, callback) {
+              callback(null, { Foo: { Baz: "hello world" }});
             }
           }
         }
@@ -85,6 +128,12 @@ describe("options.resolve", () => {
               canRead: /^foo\:\/\//i,
               read (_file) {
                 return Promise.resolve({ bar: { baz: "hello world" }});
+              }
+            },
+            bar: {
+              canRead: /^bar\:\/\//i,
+              read (_file) {
+                return Promise.resolve({ Foo: { Baz: "hello world" }});
               }
             }
           }
@@ -109,6 +158,10 @@ describe("options.resolve", () => {
           foo: {
             canRead: /^foo\:\/\//i,
             read: { bar: { baz: "hello world" }}
+          },
+          bar: {
+            canRead: /^bar\:\/\//i,
+            read: { Foo: { Baz: "hello world" }}
           }
         }
       });
@@ -180,7 +233,7 @@ describe("options.resolve", () => {
           message: message => message.startsWith("Could not find resolver for"),
           path: [],
           source: message => message.endsWith("specs/resolvers/resolvers.yaml"),
-        },
+        }
       ]);
     }
   });

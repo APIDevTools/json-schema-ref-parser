@@ -6,6 +6,9 @@ module.exports =
     foo: {
       $ref: "foo://bar.baz"
     },
+    bar: {
+      $ref: "bar://Foo.Baz"
+    },
     pet: {
       $ref: "definitions/pet.yaml"
     },

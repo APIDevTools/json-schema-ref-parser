@@ -231,6 +231,13 @@ declare namespace $RefParser {
        * If set to `"ignore"`, then circular references will simply be ignored. No error will be thrown, but the `$Refs.circular` property will still be set to `true`.
        */
       circular?: boolean | "ignore";
+
+      /**
+       * A function, called for each path, which can return true to stop this path and all
+       * subpaths from being dereferenced further. This is useful in schemas where some
+       * subpaths contain literal $ref keys that should not be dereferenced.
+       */
+      excludedPathMatcher?(path: string): boolean;
     };
   }
 
