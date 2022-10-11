@@ -12,15 +12,15 @@ describe("Schema with a $ref", () => {
       path.rel("specs/dereference-callback/dereference-callback.yaml"),
       {
         dereference: {
-          onDereference(path, object) {
+          onDereference (path, object) {
             calls.push({ path, object });
           },
         },
       }
     );
     expect(calls).to.deep.equal([
-      { path: "#/definitions/b", object: { $ref: "#/definitions/a" } },
-      { path: "#/definitions/a", object: { $ref: "#/definitions/a" } },
+      { path: "#/definitions/b", object: { $ref: "#/definitions/a" }},
+      { path: "#/definitions/a", object: { $ref: "#/definitions/a" }},
     ]);
   });
 });
