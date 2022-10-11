@@ -2,14 +2,14 @@
 
 const { expect } = require("chai");
 const $RefParser = require("../../..");
-const path = require("../../utils/path");
+const { rel } = require("../../utils/path");
 
 describe("Schema with a $ref", () => {
   it("should call onDereference", async () => {
     let parser = new $RefParser();
     const calls = [];
-    const schema = await parser.dereference(
-      path.rel("specs/dereference-callback/dereference-callback.yaml"),
+    await parser.dereference(
+      rel("specs/dereference-callback/dereference-callback.yaml"),
       {
         dereference: {
           onDereference (path, object) {
