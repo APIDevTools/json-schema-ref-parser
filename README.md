@@ -111,6 +111,13 @@ When using a transpiler such as [Babel](https://babeljs.io/) or [TypeScript](htt
 import $RefParser from "@apidevtools/json-schema-ref-parser";
 ```
 
+If you are using Node.js < 18, you'll need a polyfill for `fetch`, like [node-fetch](https://github.com/node-fetch/node-fetch):
+```javascript
+import fetch from "node-fetch";
+
+globalThis.fetch = fetch;
+```
+
 
 
 Browser support

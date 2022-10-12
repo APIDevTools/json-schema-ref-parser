@@ -8,6 +8,8 @@ name: CI-CD
 
 on:
   push:
+    branches:
+      - main
   pull_request:
   schedule:
     - cron: "0 0 1 * *"
@@ -25,16 +27,16 @@ jobs:
           - macos-latest
           - windows-latest
         node:
-          - 10
-          - 12
           - 14
+          - lts/*
+          - current
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Node ${{ matrix.node }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
@@ -69,12 +71,12 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: lts/*
 
       - name: Install dependencies
         run: npm ci
@@ -120,10 +122,10 @@ jobs:
       - node_tests
       - browser_tests
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: lts/*
 
       - name: Install dependencies
         run: npm ci
