@@ -1,4 +1,4 @@
-import { JSONSchema4, JSONSchema4Type, JSONSchema6, JSONSchema6Type, JSONSchema7, JSONSchema7Type } from "json-schema";
+import { JSONSchema4, JSONSchema4Object, JSONSchema4Type, JSONSchema6, JSONSchema6Object, JSONSchema6Type, JSONSchema7, JSONSchema7Object, JSONSchema7Type } from "json-schema";
 
 export = $RefParser;
 
@@ -174,6 +174,7 @@ declare class $RefParser {
 declare namespace $RefParser {
 
   export type JSONSchema = JSONSchema4 | JSONSchema6 | JSONSchema7;
+  export type JSONSchemaObject = JSONSchema4Object | JSONSchema6Object | JSONSchema7Object;
   export type SchemaCallback = (err: Error | null, schema?: JSONSchema) => any;
   export type $RefsCallback = (err: Error | null, $refs?: $Refs) => any;
 
@@ -238,6 +239,14 @@ declare namespace $RefParser {
        * subpaths contain literal $ref keys that should not be dereferenced.
        */
       excludedPathMatcher?(path: string): boolean;
+
+      /**
+       * Callback invoked during dereferencing.
+       *
+       * @argument {string} path The path being dereferenced (ie. the `$ref` string).
+       * @argument {JSONSchemaObject} object The JSON-Schema that the `$ref` resolved to.
+       */
+      onDereference(path: string, value: JSONSchemaObject): void;
     };
   }
 

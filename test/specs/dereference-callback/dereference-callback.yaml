@@ -1,0 +1,12 @@
+title: test
+type: object
+definitions:
+  a:
+    $ref: "#/definitions/b"
+  b:
+    $ref: "#/definitions/a"
+properties:
+  c:
+    type: string
+  d:
+    $ref: "#/definitions/a"
