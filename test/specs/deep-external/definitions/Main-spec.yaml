@@ -23,4 +23,4 @@ components:
         test3:
           $ref: '#/components/schemas/Common.Test3'
     Common.Test3:
-      $ref: 'shared.yaml#/components/schemas/Test4'
+      $ref: '../definitions/shared.yaml#/components/schemas/Test4'
