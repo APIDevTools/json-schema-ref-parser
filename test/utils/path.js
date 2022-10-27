@@ -2,12 +2,8 @@
 
 const { host } = require("@jsdevtools/host-environment");
 
-const nodePath = require("path");
-
 const isWindows = /^win/.test(globalThis.process?.platform);
-const testsDir = nodePath.resolve(__dirname, "..");
-
-const getOsPath = (isWindows, path) => isWindows ? path.replace(/\\/g, "/") : path;
+const getPathFromOs = filePath => isWindows ? filePath.replace(/\\/g, "/") : filePath;
 
 if (host.node) {
   module.exports = filesystemPathHelpers();
@@ -23,6 +19,8 @@ function filesystemPathHelpers () {
   const nodePath = require("path");
   const nodeUrl = require("url");
 
+  const testsDir = nodePath.resolve(__dirname, "..");
+
   // Run all tests from the "test" directory
   process.chdir(testsDir);
 
@@ -32,7 +30,8 @@ function filesystemPathHelpers () {
      */
     rel (file) {
       const relativePath = nodePath.normalize(nodePath.join(file));
-      return getOsPath(isWindows, relativePath);
+      const filePath = isWindows ? nodePath.resolve(relativePath) : relativePath;
+      return getPathFromOs(filePath);
     },
 
     /**
@@ -40,7 +39,7 @@ function filesystemPathHelpers () {
      */
     abs (file) {
       const absolutePath = nodePath.resolve(nodePath.join(file || nodePath.sep));
-      return getOsPath(isWindows, absolutePath);
+      return getPathFromOs(absolutePath);
     },
 
     /**
