@@ -73,7 +73,7 @@ function filesystemPathHelpers () {
      * Returns the absolute path of the current working directory.
      */
     cwd () {
-      return nodePath.join(process.cwd(), nodePath.sep);
+      return getPathFromOs(nodePath.join(process.cwd(), nodePath.sep));
     }
   };
 
