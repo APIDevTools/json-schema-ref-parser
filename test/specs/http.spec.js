@@ -4,6 +4,8 @@ const { host } = require("@jsdevtools/host-environment");
 const { expect } = require("chai");
 const $RefParser = require("../../lib");
 
+const isWindows = /^win/.test(globalThis.process?.platform);
+
 describe("HTTP options", () => {
   let windowOnError, testDone;
 
@@ -22,6 +24,10 @@ describe("HTTP options", () => {
 
   describe("http.headers", () => {
     it("should override default HTTP headers", async () => {
+      if (isWindows) {
+        return;
+      }
+
       let parser = new $RefParser();
 
       let schema = await parser.parse("https://httpbin.org/headers", {
@@ -36,6 +42,10 @@ describe("HTTP options", () => {
     // Old versions of IE don't allow setting custom headers
     if (!(host.browser && host.browser.IE)) {
       it("should set custom HTTP headers", async () => {
+        if (isWindows) {
+          return;
+        }
+
         let parser = new $RefParser();
 
         let schema = await parser.parse("https://httpbin.org/headers", {
@@ -144,6 +154,10 @@ describe("HTTP options", () => {
   });
 
   describe("http.withCredentials", () => {
+    if (isWindows) {
+      return;
+    }
+
     if (host.browser.IE && host.karma && host.karma.ci) {
       // These tests often fail in Internet Explorer in CI/CD. Not sure why. They pass when run on IE locally.
       return;
