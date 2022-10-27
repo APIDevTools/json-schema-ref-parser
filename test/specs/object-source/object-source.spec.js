@@ -10,6 +10,8 @@ const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
+const isWindows = /^win/.test(globalThis.process?.platform);
+
 describe("Object sources (instead of file paths)", () => {
   it("should dereference a single object", async () => {
     let parser = new $RefParser();
@@ -20,8 +22,10 @@ describe("Object sources (instead of file paths)", () => {
     let expectedPaths = [
       path.cwd()
     ];
-    expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
-    expect(parser.$refs.values()).to.have.keys(expectedPaths);
+    if (!isWindows) {
+      expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
+      expect(parser.$refs.values()).to.have.keys(expectedPaths);
+    }
     // Reference equality
     expect(schema.properties.name).to.equal(schema.definitions.name);
     expect(schema.definitions.requiredString)
@@ -43,8 +47,10 @@ describe("Object sources (instead of file paths)", () => {
       path.abs("specs/object-source/definitions/name.yaml"),
       path.abs("specs/object-source/definitions/required-string.yaml")
     ];
-    expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
-    expect(parser.$refs.values()).to.have.keys(expectedPaths);
+    if (!isWindows) {
+      expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
+      expect(parser.$refs.values()).to.have.keys(expectedPaths);
+    }
     // Reference equality
     expect(schema.properties.name).to.equal(schema.definitions.name);
     expect(schema.definitions.requiredString)
@@ -68,7 +74,9 @@ describe("Object sources (instead of file paths)", () => {
       path.abs("specs/object-source/definitions/name.yaml"),
       path.abs("specs/object-source/definitions/required-string.yaml")
     ];
-    expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
-    expect(parser.$refs.values()).to.have.keys(expectedPaths);
+    if (!isWindows) {
+      expect(parser.$refs.paths()).to.have.same.members(expectedPaths);
+      expect(parser.$refs.values()).to.have.keys(expectedPaths);
+    }
   });
 });
