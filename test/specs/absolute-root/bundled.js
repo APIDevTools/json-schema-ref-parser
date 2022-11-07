@@ -1,5 +1,4 @@
-module.exports =
-{
+export default {
   title: "Person",
   type: "object",
   required: [

@@ -1,34 +1,37 @@
-const { host } = require("@jsdevtools/host-environment");
+import { host } from "@jsdevtools/host-environment";
 
 const isWindows = /^win/.test(globalThis.process?.platform);
 const getPathFromOs = filePath => isWindows ? filePath.replace(/\\/g, "/") : filePath;
 
-if (host.node) {
-  module.exports = filesystemPathHelpers();
-}
-else {
-  module.exports = urlPathHelpers();
-}
+const { rel, abs, unixify, url, cwd } = host.node ? filesystemPathHelpers() : urlPathHelpers();
+
+export { rel, abs, unixify, url, cwd };
 
 /**
  * Helper functions for getting local filesystem paths in various formats
  */
 function filesystemPathHelpers () {
-  const nodePath = require("path");
-  const nodeUrl = require("url");
+  // TODO should be using this syntax but that has to go at top of the file?
+  // import { normalize, join, resolve, sep } from "path";
+  // import { format } from "url";
 
-  const testsDir = nodePath.resolve(__dirname, "..");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { normalize, join, resolve, sep } = require("path");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { format } = require("url");
+
+  const testsDir = resolve(__dirname, "..");
 
   // Run all tests from the "test" directory
   process.chdir(testsDir);
 
-  const path = {
+  return {
     /**
      * Returns the relative path of a file in the "test" directory
      */
     rel (file) {
-      const relativePath = nodePath.normalize(nodePath.join(file));
-      const filePath = isWindows ? nodePath.resolve(relativePath) : relativePath;
+      const relativePath = normalize(join(file));
+      const filePath = isWindows ? resolve(relativePath) : relativePath;
       return getPathFromOs(filePath);
     },
 
@@ -36,7 +39,7 @@ function filesystemPathHelpers () {
      * Returns the absolute path of a file in the "test" directory
      */
     abs (file) {
-      const absolutePath = nodePath.resolve(nodePath.join(file || nodePath.sep));
+      const absolutePath = resolve(join(file || sep));
       return getPathFromOs(absolutePath);
     },
 
@@ -58,7 +61,7 @@ function filesystemPathHelpers () {
         pathname = pathname.replace(/\\/g, "/");  // Convert Windows separators to URL separators
       }
 
-      let url = nodeUrl.format({
+      let url = format({
         protocol: "file:",
         slashes: true,
         pathname
@@ -71,11 +74,9 @@ function filesystemPathHelpers () {
      * Returns the absolute path of the current working directory.
      */
     cwd () {
-      return getPathFromOs(nodePath.join(process.cwd(), nodePath.sep));
+      return getPathFromOs(join(process.cwd(), sep));
     }
   };
-
-  return path;
 }
 
 /**
@@ -93,7 +94,7 @@ function urlPathHelpers () {
     return encodeURIComponent(file).split("%2F").join("/");
   }
 
-  const path = {
+  return {
     /**
      * Returns the relative path of a file in the "test" directory
      *
@@ -143,6 +144,4 @@ function urlPathHelpers () {
       return location.href;
     }
   };
-
-  return path;
 }

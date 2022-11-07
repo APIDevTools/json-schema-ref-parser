@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import $RefParser from "../../..";
+import $RefParser from "../../../lib/index.js";
 import { testResolve } from "../../utils/helper";
 import { rel, abs } from "../../utils/path";
 import { schema as _schema, name, requiredString } from "./parsed";

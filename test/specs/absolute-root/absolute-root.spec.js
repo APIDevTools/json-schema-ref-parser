@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { resolve } from "path";
-import $RefParser from "../../..";
+import $RefParser from "../../../lib/index.js";
 import { abs, url as _url } from "../../utils/path.js";
 import { testResolve } from "../../utils/helper.js";
 import { cwd } from "../../../lib/util/url.js";

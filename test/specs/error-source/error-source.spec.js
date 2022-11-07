@@ -3,7 +3,7 @@ import chaiSubset from "chai-subset";
 use(chaiSubset);
 
 const { expect } = chai;
-import $RefParser from "../../..";
+import $RefParser from "../../../lib/index.js";
 import { shouldNotGetCalled } from "../../utils/helper";
 import { abs, unixify } from "../../utils/path";
 import { InvalidPointerError, ResolverError, MissingPointerError } from "../../../lib/util/errors";
