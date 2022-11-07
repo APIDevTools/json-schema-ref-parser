@@ -1,8 +1,6 @@
-"use strict";
-
-const { expect } = require("chai");
-const $RefParser = require("../../..");
-const { rel } = require("../../utils/path");
+import { expect } from "chai";
+import $RefParser from "../../..";
+import { rel } from "../../utils/path";
 
 describe("Schema with a $ref", () => {
   it("should call onDereference", async () => {

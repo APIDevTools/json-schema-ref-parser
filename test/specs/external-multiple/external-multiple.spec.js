@@ -1,29 +1,29 @@
-const { expect } = require("chai");
-const $RefParser = require("../../..");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const parsedSchema = require("./parsed");
-const dereferencedSchema = require("./dereferenced");
-const bundledSchema = require("./bundled");
+import { expect } from "chai";
+import $RefParser from "../../..";
+import { testResolve } from "../../utils/helper";
+import { abs, rel } from "../../utils/path";
+import { schema as _schema, definitions } from "./parsed";
+import dereferencedSchema from "./dereferenced";
+import bundledSchema from "./bundled";
 
 describe("Schema with multiple external $refs to different parts of a file", () => {
   it("should parse successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.parse(path.abs("specs/external-multiple/external-multiple.yaml"));
+    const schema = await parser.parse(abs("specs/external-multiple/external-multiple.yaml"));
     expect(schema).to.equal(parser.schema);
-    expect(schema).to.deep.equal(parsedSchema.schema);
-    expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/external-multiple/external-multiple.yaml")]);
+    expect(schema).to.deep.equal(_schema);
+    expect(parser.$refs.paths()).to.deep.equal([abs("specs/external-multiple/external-multiple.yaml")]);
   });
 
-  it("should resolve successfully", helper.testResolve(
-    path.rel("specs/external-multiple/external-multiple.yaml"),
-    path.abs("specs/external-multiple/external-multiple.yaml"), parsedSchema.schema,
-    path.abs("specs/external-multiple/definitions.yaml"), parsedSchema.definitions
+  it("should resolve successfully", testResolve(
+    rel("specs/external-multiple/external-multiple.yaml"),
+    abs("specs/external-multiple/external-multiple.yaml"), _schema,
+    abs("specs/external-multiple/definitions.yaml"), definitions
   ));
 
   it("should dereference successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.dereference(path.rel("specs/external-multiple/external-multiple.yaml"));
+    const schema = await parser.dereference(rel("specs/external-multiple/external-multiple.yaml"));
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(dereferencedSchema);
     // Reference equality
@@ -34,7 +34,7 @@ describe("Schema with multiple external $refs to different parts of a file", () 
 
   it("should bundle successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.bundle(path.rel("specs/external-multiple/external-multiple.yaml"));
+    const schema = await parser.bundle(rel("specs/external-multiple/external-multiple.yaml"));
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(bundledSchema);
   });

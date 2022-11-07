@@ -1,20 +1,20 @@
-const { expect } = require("chai");
-const $RefParser = require("../../..");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const parsedSchema = require("./parsed");
+import { expect } from "chai";
+import $RefParser from "../../..";
+import { testResolve } from "../../utils/helper";
+import { rel, abs } from "../../utils/path";
+import { schema as _schema } from "./parsed";
 
 describe("Schema with date strings", () => {
   it("should parse successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.parse(path.rel("specs/date-strings/date-strings.yaml"));
+    const schema = await parser.parse(rel("specs/date-strings/date-strings.yaml"));
     expect(schema).to.equal(parser.schema);
-    expect(schema).to.deep.equal(parsedSchema.schema);
-    expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/date-strings/date-strings.yaml")]);
+    expect(schema).to.deep.equal(_schema);
+    expect(parser.$refs.paths()).to.deep.equal([abs("specs/date-strings/date-strings.yaml")]);
   });
 
-  it("should resolve successfully", helper.testResolve(
-    path.rel("specs/date-strings/date-strings.yaml"),
-    path.abs("specs/date-strings/date-strings.yaml"), parsedSchema.schema,
+  it("should resolve successfully", testResolve(
+    rel("specs/date-strings/date-strings.yaml"),
+    abs("specs/date-strings/date-strings.yaml"), _schema,
   ));
 });

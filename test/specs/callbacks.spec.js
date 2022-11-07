@@ -1,8 +1,8 @@
-const { expect } = require("chai");
-const $RefParser = require("../../lib");
-const helper = require("../utils/helper");
-const path = require("../utils/path");
-const { ParserError } = require("../../lib/util/errors");
+import { expect } from "chai";
+import $RefParser from "../../lib";
+import { shouldNotGetCalled } from "../utils/helper";
+import { rel } from "../utils/path";
+import { ParserError } from "../../lib/util/errors";
 
 describe("Callback & Promise syntax", () => {
   for (let method of ["parse", "resolve", "dereference", "bundle"]) {
@@ -17,7 +17,7 @@ describe("Callback & Promise syntax", () => {
   function testCallbackSuccess (method) {
     return function (done) {
       let parser = new $RefParser();
-      parser[method](path.rel("specs/internal/internal.yaml"), (err, result) => {
+      parser[method](rel("specs/internal/internal.yaml"), (err, result) => {
         try {
           expect(err).to.equal(null);
           expect(result).to.be.an("object");
@@ -39,7 +39,7 @@ describe("Callback & Promise syntax", () => {
 
   function testCallbackError (method) {
     return function (done) {
-      $RefParser[method](path.rel("specs/invalid/invalid.yaml"), (err, result) => {
+      $RefParser[method](rel("specs/invalid/invalid.yaml"), (err, result) => {
         try {
           expect(err).to.be.an.instanceOf(ParserError);
           expect(result).to.equal(undefined);
@@ -55,7 +55,7 @@ describe("Callback & Promise syntax", () => {
   function testPromiseSuccess (method) {
     return function () {
       let parser = new $RefParser();
-      return parser[method](path.rel("specs/internal/internal.yaml"))
+      return parser[method](rel("specs/internal/internal.yaml"))
         .then((result) => {
           expect(result).to.be.an("object");
 
@@ -71,8 +71,8 @@ describe("Callback & Promise syntax", () => {
 
   function testPromiseError (method) {
     return function () {
-      return $RefParser[method](path.rel("specs/invalid/invalid.yaml"))
-        .then(helper.shouldNotGetCalled)
+      return $RefParser[method](rel("specs/invalid/invalid.yaml"))
+        .then(shouldNotGetCalled)
         .catch((err) => {
           expect(err).to.be.an.instanceOf(ParserError);
         });

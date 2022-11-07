@@ -1,51 +1,49 @@
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
-chai.use(chaiSubset);
+import chai, { use } from "chai";
+import chaiSubset from "chai-subset";
+use(chaiSubset);
 const { expect } = chai;
-const $RefParser = require("../../..");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const parsedSchema = require("./parsed");
-const dereferencedSchema = require("./dereferenced");
-const { JSONParserErrorGroup, ParserError, UnmatchedParserError } = require("../../../lib/util/errors");
+import $RefParser, { parse as _parse, bundle, dereference } from "../../..";
+import { testResolve, convertNodeBuffersToPOJOs, shouldNotGetCalled } from "../../utils/helper";
+import { rel, abs } from "../../utils/path";
+import { schema as _schema } from "./parsed";
+import { defaultParsers, binaryParser, staticParser as _staticParser, customParser } from "./dereferenced";
+import { JSONParserErrorGroup, ParserError, UnmatchedParserError } from "../../../lib/util/errors";
 
 describe("References to non-JSON files", () => {
   it("should parse successfully", async () => {
-    const schema = await $RefParser
-      .parse(path.rel("specs/parsers/parsers.yaml"));
-    expect(schema).to.deep.equal(parsedSchema.schema);
+    const schema = await _parse(rel("specs/parsers/parsers.yaml"));
+    expect(schema).to.deep.equal(_schema);
   });
 
-  it("should resolve successfully", helper.testResolve(
-    path.rel("specs/parsers/parsers.yaml"),
-    path.abs("specs/parsers/parsers.yaml"), parsedSchema.schema,
-    path.abs("specs/parsers/files/README.md"), dereferencedSchema.defaultParsers.definitions.markdown,
-    path.abs("specs/parsers/files/page.html"), dereferencedSchema.defaultParsers.definitions.html,
-    path.abs("specs/parsers/files/style.css"), dereferencedSchema.defaultParsers.definitions.css,
-    path.abs("specs/parsers/files/binary.png"), dereferencedSchema.defaultParsers.definitions.binary,
-    path.abs("specs/parsers/files/unknown.foo"), dereferencedSchema.defaultParsers.definitions.unknown,
-    path.abs("specs/parsers/files/empty"), dereferencedSchema.defaultParsers.definitions.empty
+  it("should resolve successfully", testResolve(
+    rel("specs/parsers/parsers.yaml"),
+    abs("specs/parsers/parsers.yaml"), _schema,
+    abs("specs/parsers/files/README.md"), defaultParsers.definitions.markdown,
+    abs("specs/parsers/files/page.html"), defaultParsers.definitions.html,
+    abs("specs/parsers/files/style.css"), defaultParsers.definitions.css,
+    abs("specs/parsers/files/binary.png"), defaultParsers.definitions.binary,
+    abs("specs/parsers/files/unknown.foo"), defaultParsers.definitions.unknown,
+    abs("specs/parsers/files/empty"), defaultParsers.definitions.empty
   ));
 
   it("should dereference successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.dereference(path.rel("specs/parsers/parsers.yaml"));
+    const schema = await parser.dereference(rel("specs/parsers/parsers.yaml"));
     expect(schema).to.equal(parser.schema);
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-    expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
+    schema.definitions.binary = convertNodeBuffersToPOJOs(schema.definitions.binary);
+    expect(schema).to.deep.equal(defaultParsers);
     // The "circular" flag should NOT be set
     expect(parser.$refs.circular).to.equal(false);
   });
 
   it("should bundle successfully", async () => {
-    const schema = await $RefParser
-      .bundle(path.rel("specs/parsers/parsers.yaml"));
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-    expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
+    const schema = await bundle(rel("specs/parsers/parsers.yaml"));
+    schema.definitions.binary = convertNodeBuffersToPOJOs(schema.definitions.binary);
+    expect(schema).to.deep.equal(defaultParsers);
   });
 
   it('should parse text as binary if "parse.text" is disabled', async () => {
-    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+    const schema = await dereference(rel("specs/parsers/parsers.yaml"), {
       parse: {
         // Disable the text parser
         text: false,
@@ -57,18 +55,18 @@ describe("References to non-JSON files", () => {
         }
       }
     });
-    schema.definitions.markdown = helper.convertNodeBuffersToPOJOs(schema.definitions.markdown);
-    schema.definitions.html = helper.convertNodeBuffersToPOJOs(schema.definitions.html);
-    schema.definitions.css = helper.convertNodeBuffersToPOJOs(schema.definitions.css);
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-    schema.definitions.unknown = helper.convertNodeBuffersToPOJOs(schema.definitions.unknown);
-    schema.definitions.empty = helper.convertNodeBuffersToPOJOs(schema.definitions.empty);
-    expect(schema).to.deep.equal(dereferencedSchema.binaryParser);
+    schema.definitions.markdown = convertNodeBuffersToPOJOs(schema.definitions.markdown);
+    schema.definitions.html = convertNodeBuffersToPOJOs(schema.definitions.html);
+    schema.definitions.css = convertNodeBuffersToPOJOs(schema.definitions.css);
+    schema.definitions.binary = convertNodeBuffersToPOJOs(schema.definitions.binary);
+    schema.definitions.unknown = convertNodeBuffersToPOJOs(schema.definitions.unknown);
+    schema.definitions.empty = convertNodeBuffersToPOJOs(schema.definitions.empty);
+    expect(schema).to.deep.equal(binaryParser);
   });
 
   it("should throw an error if no parser can be matched", async () => {
     try {
-      await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      await dereference(rel("specs/parsers/parsers.yaml"), {
         parse: {
           yaml: false,
           json: false,
@@ -76,7 +74,7 @@ describe("References to non-JSON files", () => {
           binary: false,
         },
       });
-      helper.shouldNotGetCalled();
+      shouldNotGetCalled();
     }
     catch (err) {
       expect(err).to.be.an.instanceOf(SyntaxError);
@@ -87,7 +85,7 @@ describe("References to non-JSON files", () => {
 
   it("should throw an error if no parser returned a result", async () => {
     try {
-      await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      await dereference(rel("specs/parsers/parsers.yaml"), {
         parse: {
           yaml: {
             canParse: true,
@@ -99,7 +97,7 @@ describe("References to non-JSON files", () => {
           binary: false,
         },
       });
-      helper.shouldNotGetCalled();
+      shouldNotGetCalled();
     }
     catch (err) {
       // would time out otherwise
@@ -110,8 +108,8 @@ describe("References to non-JSON files", () => {
 
   it('should throw an error if "parse.text" and "parse.binary" are disabled', async () => {
     try {
-      await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), { parse: { text: false, binary: false }});
-      helper.shouldNotGetCalled();
+      await dereference(rel("specs/parsers/parsers.yaml"), { parse: { text: false, binary: false }});
+      shouldNotGetCalled();
     }
     catch (err) {
       expect(err).to.be.an.instanceOf(ParserError);
@@ -120,7 +118,7 @@ describe("References to non-JSON files", () => {
   });
 
   it("should use a custom parser with static values", async () => {
-    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+    const schema = await dereference(rel("specs/parsers/parsers.yaml"), {
       parse: {
         // A custom parser that always returns the same value
         staticParser: {
@@ -130,11 +128,11 @@ describe("References to non-JSON files", () => {
         }
       }
     });
-    expect(schema).to.deep.equal(dereferencedSchema.staticParser);
+    expect(schema).to.deep.equal(_staticParser);
   });
 
   it("should use a custom parser that returns a value", async () => {
-    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+    const schema = await dereference(rel("specs/parsers/parsers.yaml"), {
       parse: {
         // A custom parser that returns the contents of ".foo" files, in reverse
         reverseFooParser: {
@@ -147,12 +145,12 @@ describe("References to non-JSON files", () => {
         }
       }
     });
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-    expect(schema).to.deep.equal(dereferencedSchema.customParser);
+    schema.definitions.binary = convertNodeBuffersToPOJOs(schema.definitions.binary);
+    expect(schema).to.deep.equal(customParser);
   });
 
   it("should use a custom parser that calls a callback", async () => {
-    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+    const schema = await dereference(rel("specs/parsers/parsers.yaml"), {
       parse: {
         // A custom parser that returns the contents of ".foo" files, in reverse
         reverseFooParser: {
@@ -164,12 +162,12 @@ describe("References to non-JSON files", () => {
         }
       }
     });
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-    expect(schema).to.deep.equal(dereferencedSchema.customParser);
+    schema.definitions.binary = convertNodeBuffersToPOJOs(schema.definitions.binary);
+    expect(schema).to.deep.equal(customParser);
   });
 
   it("should use a custom parser that returns a promise", async () => {
-    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+    const schema = await dereference(rel("specs/parsers/parsers.yaml"), {
       parse: {
         // A custom parser that returns the contents of ".foo" files, in reverse
         reverseFooParser: {
@@ -183,12 +181,12 @@ describe("References to non-JSON files", () => {
         }
       }
     });
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-    expect(schema).to.deep.equal(dereferencedSchema.customParser);
+    schema.definitions.binary = convertNodeBuffersToPOJOs(schema.definitions.binary);
+    expect(schema).to.deep.equal(customParser);
   });
 
   it("should continue parsing if a custom parser fails", async () => {
-    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+    const schema = await dereference(rel("specs/parsers/parsers.yaml"), {
       parse: {
         // A custom parser that always fails,
         // so the built-in parsers will be used as a fallback
@@ -201,13 +199,13 @@ describe("References to non-JSON files", () => {
         }
       }
     });
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-    expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
+    schema.definitions.binary = convertNodeBuffersToPOJOs(schema.definitions.binary);
+    expect(schema).to.deep.equal(defaultParsers);
   });
 
   it("should normalize errors thrown by parsers", async () => {
     try {
-      await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      await dereference(rel("specs/parsers/parsers.yaml"), {
         parse: {
           // A custom parser that always fails,
           // so the built-in parsers will be used as a fallback
@@ -219,7 +217,7 @@ describe("References to non-JSON files", () => {
           }
         }
       });
-      helper.shouldNotGetCalled();
+      shouldNotGetCalled();
     }
     catch (err) {
       expect(err).to.be.instanceof(ParserError);
@@ -231,7 +229,7 @@ describe("References to non-JSON files", () => {
   it("should throw a grouped error if no parser can be matched and continueOnError is true", async () => {
     try {
       const parser = new $RefParser();
-      await parser.dereference(path.rel("specs/parsers/parsers.yaml"), {
+      await parser.dereference(rel("specs/parsers/parsers.yaml"), {
         parse: {
           yaml: false,
           json: false,
@@ -240,7 +238,7 @@ describe("References to non-JSON files", () => {
         },
         continueOnError: true,
       });
-      helper.shouldNotGetCalled();
+      shouldNotGetCalled();
     }
     catch (err) {
       expect(err).to.be.instanceof(JSONParserErrorGroup);

@@ -1,4 +1,4 @@
-const { host } = require("@jsdevtools/host-environment");
+import { host } from "@jsdevtools/host-environment";
 
 // Mocha configuration
 if (host.browser) {

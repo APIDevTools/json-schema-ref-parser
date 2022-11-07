@@ -1,17 +1,17 @@
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
-chai.use(chaiSubset);
+import chai, { use } from "chai";
+import chaiSubset from "chai-subset";
+use(chaiSubset);
 const { expect } = chai;
-const $RefParser = require("../../../lib");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const { JSONParserErrorGroup, InvalidPointerError } = require("../../../lib/util/errors");
+import $RefParser, { dereference } from "../../../lib";
+import { shouldNotGetCalled } from "../../utils/helper";
+import { rel, abs, unixify } from "../../utils/path";
+import { JSONParserErrorGroup, InvalidPointerError } from "../../../lib/util/errors";
 
 describe("Schema with invalid pointers", () => {
   it("should throw an error for an invalid pointer", async () => {
     try {
-      await $RefParser.dereference(path.rel("specs/invalid-pointers/invalid.json"));
-      helper.shouldNotGetCalled();
+      await dereference(rel("specs/invalid-pointers/invalid.json"));
+      shouldNotGetCalled();
     }
     catch (err) {
       expect(err).to.be.an.instanceOf(InvalidPointerError);
@@ -22,19 +22,19 @@ describe("Schema with invalid pointers", () => {
   it("should throw a grouped error for an invalid pointer if continueOnError is true", async () => {
     const parser = new $RefParser();
     try {
-      await parser.dereference(path.rel("specs/invalid-pointers/invalid.json"), { continueOnError: true });
-      helper.shouldNotGetCalled();
+      await parser.dereference(rel("specs/invalid-pointers/invalid.json"), { continueOnError: true });
+      shouldNotGetCalled();
     }
     catch (err) {
       expect(err).to.be.instanceof(JSONParserErrorGroup);
       expect(err.files).to.equal(parser);
-      expect(err.message).to.equal(`1 error occurred while reading '${path.abs("specs/invalid-pointers/invalid.json")}'`);
+      expect(err.message).to.equal(`1 error occurred while reading '${abs("specs/invalid-pointers/invalid.json")}'`);
       expect(err.errors).to.containSubset([
         {
           name: InvalidPointerError.name,
           message: "Invalid $ref pointer \"f\". Pointers must begin with \"#/\"",
           path: ["foo"],
-          source: path.unixify(path.abs("specs/invalid-pointers/invalid.json")),
+          source: unixify(abs("specs/invalid-pointers/invalid.json")),
         }
       ]);
     }

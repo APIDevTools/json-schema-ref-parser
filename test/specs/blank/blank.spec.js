@@ -1,10 +1,10 @@
-const { host } = require("@jsdevtools/host-environment");
-const { expect } = require("chai");
-const $RefParser = require("../../..");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const parsedSchema = require("./parsed");
-const dereferencedSchema = require("./dereferenced");
+import { host } from "@jsdevtools/host-environment";
+import { expect } from "chai";
+import { parse as _parse, dereference, bundle } from "../../..";
+import { shouldNotGetCalled, testResolve, convertNodeBuffersToPOJOs } from "../../utils/helper";
+import { rel, abs } from "../../utils/path";
+import { schema as _schema, yaml as _yaml, json as _json, text, binary as _binary, unknown } from "./parsed";
+import dereferencedSchema from "./dereferenced";
 
 describe("Blank files", () => {
   let windowOnError, testDone;
@@ -25,8 +25,8 @@ describe("Blank files", () => {
   describe("main file", () => {
     it("should throw an error for a blank YAML file", async () => {
       try {
-        await $RefParser.parse(path.rel("specs/blank/files/blank.yaml"));
-        helper.shouldNotGetCalled();
+        await _parse(rel("specs/blank/files/blank.yaml"));
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(SyntaxError);
@@ -37,8 +37,8 @@ describe("Blank files", () => {
 
     it('should throw a different error if "parse.yaml.allowEmpty" is disabled', async () => {
       try {
-        await $RefParser.parse(path.rel("specs/blank/files/blank.yaml"), { parse: { yaml: { allowEmpty: false }}});
-        helper.shouldNotGetCalled();
+        await _parse(rel("specs/blank/files/blank.yaml"), { parse: { yaml: { allowEmpty: false }}});
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(SyntaxError);
@@ -50,8 +50,8 @@ describe("Blank files", () => {
 
     it("should throw an error for a blank JSON file", async () => {
       try {
-        await $RefParser.parse(path.rel("specs/blank/files/blank.json"), { parse: { json: { allowEmpty: false }}});
-        helper.shouldNotGetCalled();
+        await _parse(rel("specs/blank/files/blank.json"), { parse: { json: { allowEmpty: false }}});
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(SyntaxError);
@@ -63,36 +63,36 @@ describe("Blank files", () => {
 
   describe("referenced files", () => {
     it("should parse successfully", async () => {
-      let schema = await $RefParser.parse(path.rel("specs/blank/blank.yaml"));
-      expect(schema).to.deep.equal(parsedSchema.schema);
+      let schema = await _parse(rel("specs/blank/blank.yaml"));
+      expect(schema).to.deep.equal(_schema);
     });
 
-    it("should resolve successfully", helper.testResolve(
-      path.rel("specs/blank/blank.yaml"),
-      path.abs("specs/blank/blank.yaml"), parsedSchema.schema,
-      path.abs("specs/blank/files/blank.yaml"), parsedSchema.yaml,
-      path.abs("specs/blank/files/blank.json"), parsedSchema.json,
-      path.abs("specs/blank/files/blank.txt"), parsedSchema.text,
-      path.abs("specs/blank/files/blank.png"), parsedSchema.binary,
-      path.abs("specs/blank/files/blank.foo"), parsedSchema.unknown
+    it("should resolve successfully", testResolve(
+      rel("specs/blank/blank.yaml"),
+      abs("specs/blank/blank.yaml"), _schema,
+      abs("specs/blank/files/blank.yaml"), _yaml,
+      abs("specs/blank/files/blank.json"), _json,
+      abs("specs/blank/files/blank.txt"), text,
+      abs("specs/blank/files/blank.png"), _binary,
+      abs("specs/blank/files/blank.foo"), unknown
     ));
 
     it("should dereference successfully", async () => {
-      let schema = await $RefParser.dereference(path.rel("specs/blank/blank.yaml"));
-      schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
+      let schema = await dereference(rel("specs/blank/blank.yaml"));
+      schema.binary = convertNodeBuffersToPOJOs(schema.binary);
       expect(schema).to.deep.equal(dereferencedSchema);
     });
 
     it("should bundle successfully", async () => {
-      let schema = await $RefParser.bundle(path.rel("specs/blank/blank.yaml"));
-      schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
+      let schema = await bundle(rel("specs/blank/blank.yaml"));
+      schema.binary = convertNodeBuffersToPOJOs(schema.binary);
       expect(schema).to.deep.equal(dereferencedSchema);
     });
 
     it('should throw an error if "allowEmpty" is disabled', async () => {
       try {
-        await $RefParser.dereference(path.rel("specs/blank/blank.yaml"), { parse: { binary: { allowEmpty: false }}});
-        helper.shouldNotGetCalled();
+        await dereference(rel("specs/blank/blank.yaml"), { parse: { binary: { allowEmpty: false }}});
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(SyntaxError);

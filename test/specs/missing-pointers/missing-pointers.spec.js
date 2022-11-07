@@ -1,17 +1,17 @@
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
-chai.use(chaiSubset);
+import chai, { use } from "chai";
+import chaiSubset from "chai-subset";
+use(chaiSubset);
 const { expect } = chai;
-const $RefParser = require("../../../lib");
-const { JSONParserErrorGroup, MissingPointerError } = require("../../../lib/util/errors");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
+import $RefParser, { dereference } from "../../../lib";
+import { JSONParserErrorGroup, MissingPointerError } from "../../../lib/util/errors";
+import { shouldNotGetCalled } from "../../utils/helper";
+import { abs } from "../../utils/path";
 
 describe("Schema with missing pointers", () => {
   it("should throw an error for missing pointer", async () => {
     try {
-      await $RefParser.dereference({ foo: { $ref: "#/baz" }});
-      helper.shouldNotGetCalled();
+      await dereference({ foo: { $ref: "#/baz" }});
+      shouldNotGetCalled();
     }
     catch (err) {
       expect(err).to.be.an.instanceOf(MissingPointerError);
@@ -21,8 +21,8 @@ describe("Schema with missing pointers", () => {
 
   it("should throw an error for missing pointer in external file", async () => {
     try {
-      await $RefParser.dereference({ foo: { $ref: path.abs("specs/missing-pointers/external-from-internal.yaml") }});
-      helper.shouldNotGetCalled();
+      await dereference({ foo: { $ref: abs("specs/missing-pointers/external-from-internal.yaml") }});
+      shouldNotGetCalled();
     }
     catch (err) {
       expect(err).to.be.an.instanceOf(MissingPointerError);
@@ -35,7 +35,7 @@ describe("Schema with missing pointers", () => {
       const parser = new $RefParser();
       try {
         await parser.dereference({ foo: { $ref: "#/baz" }}, { continueOnError: true });
-        helper.shouldNotGetCalled();
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.instanceof(JSONParserErrorGroup);
@@ -56,8 +56,8 @@ describe("Schema with missing pointers", () => {
     it("should throw an error for missing pointer in external file", async () => {
       const parser = new $RefParser();
       try {
-        await parser.dereference({ foo: { $ref: path.abs("specs/missing-pointers/external-from-internal.yaml") }}, { continueOnError: true });
-        helper.shouldNotGetCalled();
+        await parser.dereference({ foo: { $ref: abs("specs/missing-pointers/external-from-internal.yaml") }}, { continueOnError: true });
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.instanceof(JSONParserErrorGroup);

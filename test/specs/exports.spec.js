@@ -1,16 +1,8 @@
 /* eslint-disable require-await */
-const { expect } = require("chai");
-const commonJSExport = require("../../");
-const { default: defaultExport } = require("../../");
-const {
-  JSONParserError,
-  InvalidPointerError,
-  MissingPointerError,
-  ResolverError,
-  ParserError,
-  UnmatchedParserError,
-  UnmatchedResolverError,
-} = require("../../");
+import { expect } from "chai";
+import commonJSExport from "../../";
+import { default as defaultExport } from "../../";
+import { JSONParserError, InvalidPointerError, MissingPointerError, ResolverError, ParserError, UnmatchedParserError, UnmatchedResolverError } from "../../";
 
 describe("json-schema-ref-parser package exports", () => {
 

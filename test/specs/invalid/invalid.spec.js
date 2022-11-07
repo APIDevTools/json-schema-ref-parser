@@ -1,12 +1,12 @@
-const { host } = require("@jsdevtools/host-environment");
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
-chai.use(chaiSubset);
+import { host } from "@jsdevtools/host-environment";
+import chai, { use } from "chai";
+import chaiSubset from "chai-subset";
+use(chaiSubset);
 const { expect } = chai;
-const $RefParser = require("../../../lib");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const { JSONParserErrorGroup, ParserError, ResolverError } = require("../../../lib/util/errors");
+import $RefParser, { dereference } from "../../../lib";
+import { shouldNotGetCalled } from "../../utils/helper";
+import { rel, abs } from "../../utils/path";
+import { JSONParserErrorGroup, ParserError, ResolverError } from "../../../lib/util/errors";
 
 const isWindows = /^win/.test(globalThis.process?.platform);
 const getPathFromOs = filePath => isWindows ? filePath.replace(/\\/g, "/") : filePath;
@@ -15,8 +15,8 @@ describe("Invalid syntax", () => {
   describe("in main file", () => {
     it("should throw an error for an invalid file path", async () => {
       try {
-        await $RefParser.dereference("this file does not exist");
-        helper.shouldNotGetCalled();
+        await dereference("this file does not exist");
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(ResolverError);
@@ -29,8 +29,8 @@ describe("Invalid syntax", () => {
 
     it("should throw an error for an invalid YAML file", async () => {
       try {
-        await $RefParser.dereference(path.rel("specs/invalid/invalid.yaml"));
-        helper.shouldNotGetCalled();
+        await dereference(rel("specs/invalid/invalid.yaml"));
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(ParserError);
@@ -41,8 +41,8 @@ describe("Invalid syntax", () => {
 
     it("should throw an error for an invalid JSON file", async () => {
       try {
-        await $RefParser.dereference(path.rel("specs/invalid/invalid.json"));
-        helper.shouldNotGetCalled();
+        await dereference(rel("specs/invalid/invalid.json"));
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(ParserError);
@@ -53,8 +53,8 @@ describe("Invalid syntax", () => {
 
     it("should throw an error for an invalid JSON file with YAML disabled", async () => {
       try {
-        await $RefParser.dereference(path.rel("specs/invalid/invalid.json"), { parse: { yaml: false }});
-        helper.shouldNotGetCalled();
+        await dereference(rel("specs/invalid/invalid.json"), { parse: { yaml: false }});
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(ParserError);
@@ -65,8 +65,8 @@ describe("Invalid syntax", () => {
 
     it("should throw an error for an invalid YAML file with JSON and YAML disabled", async () => {
       try {
-        await $RefParser.dereference(path.rel("specs/invalid/invalid.yaml"), { parse: { yaml: false, json: false }});
-        helper.shouldNotGetCalled();
+        await dereference(rel("specs/invalid/invalid.yaml"), { parse: { yaml: false, json: false }});
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(SyntaxError);
@@ -79,7 +79,7 @@ describe("Invalid syntax", () => {
         const parser = new $RefParser();
         try {
           await parser.dereference("this file does not exist", { continueOnError: true });
-          helper.shouldNotGetCalled();
+          shouldNotGetCalled();
         }
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
@@ -101,13 +101,13 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid YAML file", async () => {
         const parser = new $RefParser();
         try {
-          await parser.dereference(path.rel("specs/invalid/invalid.yaml"), { continueOnError: true });
-          helper.shouldNotGetCalled();
+          await parser.dereference(rel("specs/invalid/invalid.yaml"), { continueOnError: true });
+          shouldNotGetCalled();
         }
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
           expect(err.files).to.equal(parser);
-          expect(getPathFromOs(err.message)).to.equal(`1 error occurred while reading '${path.abs("specs/invalid/invalid.yaml")}'`);
+          expect(getPathFromOs(err.message)).to.equal(`1 error occurred while reading '${abs("specs/invalid/invalid.yaml")}'`);
           expect(err.errors.length).to.equal(1);
           expect(err.errors).to.containSubset([
             {
@@ -125,13 +125,13 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid JSON file", async () => {
         const parser = new $RefParser();
         try {
-          await parser.dereference(path.rel("specs/invalid/invalid.json"), { continueOnError: true });
-          helper.shouldNotGetCalled();
+          await parser.dereference(rel("specs/invalid/invalid.json"), { continueOnError: true });
+          shouldNotGetCalled();
         }
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
           expect(err.files).to.equal(parser);
-          expect(getPathFromOs(err.message)).to.equal(`1 error occurred while reading '${path.abs("specs/invalid/invalid.json")}'`);
+          expect(getPathFromOs(err.message)).to.equal(`1 error occurred while reading '${abs("specs/invalid/invalid.json")}'`);
           expect(err.errors.length).to.equal(1);
           expect(err.errors).to.containSubset([
             {
@@ -149,13 +149,13 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid JSON file with YAML disabled", async () => {
         const parser = new $RefParser();
         try {
-          await parser.dereference(path.rel("specs/invalid/invalid.json"), { continueOnError: true, parse: { yaml: false }});
-          helper.shouldNotGetCalled();
+          await parser.dereference(rel("specs/invalid/invalid.json"), { continueOnError: true, parse: { yaml: false }});
+          shouldNotGetCalled();
         }
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
           expect(err.files).to.equal(parser);
-          expect(getPathFromOs(err.message)).to.equal(`1 error occurred while reading '${path.abs("specs/invalid/invalid.json")}'`);
+          expect(getPathFromOs(err.message)).to.equal(`1 error occurred while reading '${abs("specs/invalid/invalid.json")}'`);
           expect(err.errors.length).to.equal(1);
           expect(err.errors).to.containSubset([
             {
@@ -177,7 +177,7 @@ describe("Invalid syntax", () => {
 
       it("should not throw an error for an invalid YAML file with JSON and YAML disabled", async () => {
         const parser = new $RefParser();
-        const result = await parser.dereference(path.rel("specs/invalid/invalid.yaml"), { continueOnError: true, parse: { yaml: false, json: false }});
+        const result = await parser.dereference(rel("specs/invalid/invalid.yaml"), { continueOnError: true, parse: { yaml: false, json: false }});
         expect(result).to.equal(null);
       });
     });
@@ -186,8 +186,8 @@ describe("Invalid syntax", () => {
   describe("in referenced files", () => {
     it("should throw an error for an invalid YAML file", async () => {
       try {
-        await $RefParser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }});
-        helper.shouldNotGetCalled();
+        await dereference({ foo: { $ref: rel("specs/invalid/invalid.yaml") }});
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(ParserError);
@@ -198,8 +198,8 @@ describe("Invalid syntax", () => {
 
     it("should throw an error for an invalid JSON file", async () => {
       try {
-        await $RefParser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }});
-        helper.shouldNotGetCalled();
+        await dereference({ foo: { $ref: rel("specs/invalid/invalid.json") }});
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(ParserError);
@@ -210,10 +210,10 @@ describe("Invalid syntax", () => {
 
     it("should throw an error for an invalid JSON file with YAML disabled", async () => {
       try {
-        await $RefParser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, {
+        await dereference({ foo: { $ref: rel("specs/invalid/invalid.json") }}, {
           parse: { yaml: false }
         });
-        helper.shouldNotGetCalled();
+        shouldNotGetCalled();
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(ParserError);
@@ -223,10 +223,9 @@ describe("Invalid syntax", () => {
     });
 
     it("should throw a grouped error for an invalid YAML file with JSON and YAML disabled", async () => {
-      const schema = await $RefParser
-        .dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, {
-          parse: { yaml: false, json: false }
-        });
+      const schema = await dereference({ foo: { $ref: rel("specs/invalid/invalid.yaml") }}, {
+        parse: { yaml: false, json: false }
+      });
 
       // Because the JSON and YAML parsers were disabled, the invalid YAML file got parsed as plain text
       expect(schema).to.deep.equal({
@@ -239,7 +238,7 @@ describe("Invalid syntax", () => {
         try {
           const parser = new $RefParser();
           await parser.dereference({ foo: { $ref: "this file does not exist" }}, { continueOnError: true });
-          helper.shouldNotGetCalled();
+          shouldNotGetCalled();
         }
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
@@ -259,8 +258,8 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid YAML file", async () => {
         try {
           const parser = new $RefParser();
-          await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, { continueOnError: true });
-          helper.shouldNotGetCalled();
+          await parser.dereference({ foo: { $ref: rel("specs/invalid/invalid.yaml") }}, { continueOnError: true });
+          shouldNotGetCalled();
         }
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
@@ -282,8 +281,8 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid JSON file", async () => {
         try {
           const parser = new $RefParser();
-          await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, { continueOnError: true });
-          helper.shouldNotGetCalled();
+          await parser.dereference({ foo: { $ref: rel("specs/invalid/invalid.json") }}, { continueOnError: true });
+          shouldNotGetCalled();
         }
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
@@ -305,8 +304,8 @@ describe("Invalid syntax", () => {
       it("should throw a grouped error for an invalid JSON file with YAML disabled", async () => {
         try {
           const parser = new $RefParser();
-          await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.json") }}, { continueOnError: true, parse: { yaml: false }});
-          helper.shouldNotGetCalled();
+          await parser.dereference({ foo: { $ref: rel("specs/invalid/invalid.json") }}, { continueOnError: true, parse: { yaml: false }});
+          shouldNotGetCalled();
         }
         catch (err) {
           expect(err).to.be.instanceof(JSONParserErrorGroup);
@@ -332,7 +331,7 @@ describe("Invalid syntax", () => {
 
       it("should not throw an error for an invalid YAML file with JSON and YAML disabled", async () => {
         const parser = new $RefParser();
-        const result = await parser.dereference({ foo: { $ref: path.rel("specs/invalid/invalid.yaml") }}, { continueOnError: true, parse: { yaml: false, json: false }});
+        const result = await parser.dereference({ foo: { $ref: rel("specs/invalid/invalid.yaml") }}, { continueOnError: true, parse: { yaml: false, json: false }});
         expect(result).to.deep.equal({ foo: ":\n" });
       });
     });

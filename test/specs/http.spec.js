@@ -1,6 +1,6 @@
-const { host } = require("@jsdevtools/host-environment");
-const { expect } = require("chai");
-const $RefParser = require("../../lib");
+import { host } from "@jsdevtools/host-environment";
+import { expect } from "chai";
+import $RefParser from "../../lib";
 
 const isWindows = /^win/.test(globalThis.process?.platform);
 

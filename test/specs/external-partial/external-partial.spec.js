@@ -1,31 +1,31 @@
-const { expect } = require("chai");
-const $RefParser = require("../../..");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const parsedSchema = require("./parsed");
-const dereferencedSchema = require("./dereferenced");
-const bundledSchema = require("./bundled");
+import { expect } from "chai";
+import $RefParser from "../../..";
+import { testResolve } from "../../utils/helper";
+import { rel, abs } from "../../utils/path";
+import { schema as _schema, definitions, name, requiredString } from "./parsed";
+import dereferencedSchema from "./dereferenced";
+import bundledSchema from "./bundled";
 
 describe("Schema with $refs to parts of external files", () => {
   it("should parse successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.parse(path.rel("specs/external-partial/external-partial.yaml"));
+    const schema = await parser.parse(rel("specs/external-partial/external-partial.yaml"));
     expect(schema).to.equal(parser.schema);
-    expect(schema).to.deep.equal(parsedSchema.schema);
-    expect(parser.$refs.paths()).to.deep.equal([path.abs("specs/external-partial/external-partial.yaml")]);
+    expect(schema).to.deep.equal(_schema);
+    expect(parser.$refs.paths()).to.deep.equal([abs("specs/external-partial/external-partial.yaml")]);
   });
 
-  it("should resolve successfully", helper.testResolve(
-    path.rel("specs/external-partial/external-partial.yaml"),
-    path.abs("specs/external-partial/external-partial.yaml"), parsedSchema.schema,
-    path.abs("specs/external-partial/definitions/definitions.json"), parsedSchema.definitions,
-    path.abs("specs/external-partial/definitions/name.yaml"), parsedSchema.name,
-    path.abs("specs/external-partial/definitions/required-string.yaml"), parsedSchema.requiredString
+  it("should resolve successfully", testResolve(
+    rel("specs/external-partial/external-partial.yaml"),
+    abs("specs/external-partial/external-partial.yaml"), _schema,
+    abs("specs/external-partial/definitions/definitions.json"), definitions,
+    abs("specs/external-partial/definitions/name.yaml"), name,
+    abs("specs/external-partial/definitions/required-string.yaml"), requiredString
   ));
 
   it("should dereference successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.dereference(path.rel("specs/external-partial/external-partial.yaml"));
+    const schema = await parser.dereference(rel("specs/external-partial/external-partial.yaml"));
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(dereferencedSchema);
     // Reference equality
@@ -37,7 +37,7 @@ describe("Schema with $refs to parts of external files", () => {
 
   it("should bundle successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.bundle(path.rel("specs/external-partial/external-partial.yaml"));
+    const schema = await parser.bundle(rel("specs/external-partial/external-partial.yaml"));
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(bundledSchema);
   });

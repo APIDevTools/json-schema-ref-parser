@@ -1,12 +1,12 @@
-const { expect } = require("chai");
-const $RefParser = require("../../..");
-const path = require("../../utils/path");
-const dereferencedSchema = require("./dereferenced");
+import { expect } from "chai";
+import $RefParser from "../../..";
+import { rel } from "../../utils/path";
+import dereferencedSchema from "./dereferenced";
 
 describe("Schema with literal $refs in examples", () => {
   it("should exclude the given paths from dereferencing", async () => {
     let parser = new $RefParser();
-    const schema = await parser.dereference(path.rel("specs/ref-in-excluded-path/ref-in-excluded-path.yaml"), {
+    const schema = await parser.dereference(rel("specs/ref-in-excluded-path/ref-in-excluded-path.yaml"), {
       dereference: {
         excludedPathMatcher: (schemaPath) => {
           return /\/example(\/|$|s\/[^\/]+\/value(\/|$))/.test(schemaPath);

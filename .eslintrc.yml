@@ -3,11 +3,15 @@
 # https://jstools.dev/eslint-config/
 
 root: true
-extends: "@jsdevtools"
-parserOptions:
-  sourceType: module
 env:
   node: true
   browser: true
+parserOptions:
+  sourceType: module
+extends: "@jsdevtools"
 rules:
-  "@typescript-eslint/no-explicit-any": ["off"]
+  # Added to help with ESMification
+  '@typescript-eslint/no-require-imports': 2
+
+  # TODO Remove this hack, I was just desperate to get this 'working'. -Phil
+  '@typescript-eslint/no-explicit-any': 'off'

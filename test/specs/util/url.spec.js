@@ -1,22 +1,22 @@
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
-chai.use(chaiSubset);
+import chai, { use } from "chai";
+import chaiSubset from "chai-subset";
+use(chaiSubset);
 const { expect } = chai;
-const $url = require("../../../lib/util/url");
+import { getExtension } from "../../../lib/util/url";
 
 describe("Return the extension of a URL", () => {
   it("should return an empty string if there isn't any extension", async () => {
-    const extension = $url.getExtension("/file");
+    const extension = getExtension("/file");
     expect(extension).to.equal("");
   });
 
   it("should return the extension in lowercase", async () => {
-    const extension = $url.getExtension("/file.YML");
+    const extension = getExtension("/file.YML");
     expect(extension).to.equal(".yml");
   });
 
   it("should return the extension without the query", async () => {
-    const extension = $url.getExtension("/file.yml?foo=bar");
+    const extension = getExtension("/file.yml?foo=bar");
     expect(extension).to.equal(".yml");
   });
 });
