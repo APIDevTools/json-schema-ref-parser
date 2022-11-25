@@ -33,6 +33,10 @@
   },
   "license": "MIT",
   "main": "lib/index.js",
+  "exports": {
+    "import": "./lib/index.mjs",
+    "require": "./lib/index.js"
+  },
   "typings": "lib/index.d.ts",
   "browser": {
     "fs": false
