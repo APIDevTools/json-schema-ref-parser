@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import $RefParser from "../../../lib/index.js";
+import $RefParser from "../../../lib/index";
 import { rel } from "../../utils/path";
 import bundledSchema from "./bundled";
 

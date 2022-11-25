@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import $RefParser from "../../../lib/index.js";
+import $RefParser from "../../../lib/index";
 import { cloneDeep } from "../../utils/helper";
 import { abs, rel } from "../../utils/path";
 import internalRefsParsedSchema from "../internal/parsed";

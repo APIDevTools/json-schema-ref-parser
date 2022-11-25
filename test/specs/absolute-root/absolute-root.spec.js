@@ -1,12 +1,12 @@
 import { expect } from "chai";
 import { resolve } from "path";
-import $RefParser from "../../../lib/index.js";
-import { abs, url as _url } from "../../utils/path.js";
-import { testResolve } from "../../utils/helper.js";
-import { cwd } from "../../../lib/util/url.js";
-import { schema as _schema, definitions, name, requiredString } from "./parsed.js";
-import dereferencedSchema from "./dereferenced.js";
-import bundledSchema from "./bundled.js";
+import $RefParser from "../../../lib/index.mjs";
+import { abs, url as _url } from "../../utils/path";
+import { testResolve } from "../../utils/helper";
+import { cwd } from "../../../lib/util/url";
+import { schema as _schema, definitions, name, requiredString } from "./parsed";
+import dereferencedSchema from "./dereferenced";
+import bundledSchema from "./bundled";
 
 describe("When executed in the context of root directory", () => {
   // Store the OS root directory
