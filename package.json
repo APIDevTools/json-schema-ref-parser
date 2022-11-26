@@ -54,17 +54,16 @@
     "upgrade": "npm-check -u && npm audit fix"
   },
   "devDependencies": {
-    "@amanda-mitchell/semantic-release-npm-multiple": "^2.5.0",
     "@babel/polyfill": "^7.12.1",
     "@jsdevtools/eslint-config": "^1.0.7",
     "@jsdevtools/host-environment": "^2.1.2",
     "@jsdevtools/karma-config": "^3.1.7",
     "@types/node": "^14.14.21",
-    "chai-subset": "^1.6.0",
     "chai": "^4.2.0",
+    "chai-subset": "^1.6.0",
     "eslint": "^7.18.0",
-    "karma-cli": "^2.0.0",
     "karma": "^5.0.2",
+    "karma-cli": "^2.0.0",
     "mocha": "^8.2.1",
     "npm-check": "^5.9.0",
     "nyc": "^15.0.1",
@@ -79,7 +78,10 @@
     "js-yaml": "^4.1.0"
   },
   "release": {
-    "branches": ["main", "v9"],
+    "branches": [
+      "main",
+      "v9"
+    ],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
@@ -92,19 +94,7 @@
           "placeholder": "X.X.X"
         }
       ],
-      [
-        "@amanda-mitchell/semantic-release-npm-multiple",
-        {
-          "registries": {
-            "scoped": {
-              "pkgRoot": "."
-            },
-            "unscoped": {
-              "pkgRoot": "dist"
-            }
-          }
-        }
-      ],
+      "@semantic-release/npm",
       "@semantic-release/github"
     ]
   }
