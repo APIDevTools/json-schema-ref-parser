@@ -79,6 +79,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run tests
+        run: npm run coverage:browser
+        env:
+          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
+          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
+
       - name: Combine code coverage data into a single file
         shell: bash
         run: |
@@ -112,7 +118,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - node_tests
-      - browser_tests
+      # - browser_tests
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
