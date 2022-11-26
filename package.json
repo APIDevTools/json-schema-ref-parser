@@ -79,7 +79,7 @@
     "js-yaml": "^4.1.0"
   },
   "release": {
-    "branches": ["main"],
+    "branches": ["main", "v9"],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
