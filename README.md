@@ -1,5 +1,7 @@
-JSON Schema $Ref Parser
-============================
+# JSON Schema $Ref Parser
+
+_**This package needs [a new maintainer](https://github.com/APIDevTools/json-schema-ref-parser/issues/285) or at least some contributors, or a decent number of sponsors so I can hire contractors to do the work. For more information [please read this article](https://phil.tech/2022/bundling-openapi-with-javascript/). I'll mark the repo as read-only and unmaintained on January 15th 2023 along with a bunch of other @apidevtools packages like swagger-parser, so I can focus on scaling up my [reforestation charity](https://protect.earth/) instead of burning myself out trying to maintain a whole load of OSS projects I don't use in my vanishingly small spare time.**_
+
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
 
 [![Build Status](https://github.com/APIDevTools/json-schema-ref-parser/workflows/CI-CD/badge.svg?branch=master)](https://github.com/APIDevTools/json-schema-ref-parser/actions)
