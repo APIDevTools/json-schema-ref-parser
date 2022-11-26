@@ -36,6 +36,7 @@
     "url": "https://github.com/APIDevTools/json-schema-ref-parser.git"
   },
   "license": "MIT",
+  "funding": "https://github.com/sponsors/philsturgeon",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "browser": {
