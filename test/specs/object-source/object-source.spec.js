@@ -10,7 +10,7 @@ const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");
 const bundledSchema = require("./bundled");
 
-const isWindows = /^win/.test(globalThis.process?.platform);
+const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : undefined);
 
 describe("Object sources (instead of file paths)", () => {
   it("should dereference a single object", async () => {

@@ -10,7 +10,7 @@ const helper = require("../../utils/helper");
 const path = require("../../utils/path");
 const { JSONParserErrorGroup, ParserError, ResolverError } = require("../../../lib/util/errors");
 
-const isWindows = /^win/.test(globalThis.process?.platform);
+const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : undefined);
 const getPathFromOs = filePath => isWindows ? filePath.replace(/\\/g, "/") : filePath;
 
 describe("Invalid syntax", () => {

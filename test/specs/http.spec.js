@@ -4,7 +4,7 @@ const { host } = require("@jsdevtools/host-environment");
 const { expect } = require("chai");
 const $RefParser = require("../../lib");
 
-const isWindows = /^win/.test(globalThis.process?.platform);
+const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : undefined);
 
 describe("HTTP options", () => {
   let windowOnError, testDone;

@@ -2,7 +2,7 @@
 
 const { host } = require("@jsdevtools/host-environment");
 
-const isWindows = /^win/.test(globalThis.process?.platform);
+const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : undefined);
 const getPathFromOs = filePath => isWindows ? filePath.replace(/\\/g, "/") : filePath;
 
 if (host.node) {
