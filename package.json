@@ -43,7 +43,7 @@
     "fs": false
   },
   "engines": {
-    "node": ">= 14"
+    "node": ">= 17"
   },
   "files": [
     "lib"
