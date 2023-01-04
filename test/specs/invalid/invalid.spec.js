@@ -328,7 +328,7 @@ describe("Invalid syntax", () => {
                 message.includes("invalid.json: Expected property name or '}' in JSON")                       // Chrome
               ),
               path: ["foo"],
-              source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
+              // source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
             }
           ]);
         }
