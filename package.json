@@ -48,6 +48,7 @@
   "files": [
     "lib"
   ],
+  "type": "module",
   "scripts": {
     "build": "cp LICENSE *.md dist",
     "clean": "shx rm -rf .nyc_output coverage",
