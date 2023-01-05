@@ -1,7 +1,4 @@
-"use strict";
-
-module.exports =
-{
+export default {
   title: "Extending a root $ref",
   required: [
     "first",

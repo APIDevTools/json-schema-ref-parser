@@ -1,7 +1,4 @@
-"use strict";
-
-const dereferencedSchema = module.exports =
-{
+const dereferencedSchema = {
   self: {
     definitions: {
       pet: {
@@ -388,3 +385,5 @@ dereferencedSchema.indirectAncestor.fullyDereferenced.definitions.child.properti
 
 dereferencedSchema.indirectAncestor.ignoreCircular$Refs.definitions.child.properties.pet =
   dereferencedSchema.indirectAncestor.ignoreCircular$Refs.definitions.pet;
+
+export default dereferencedSchema;

@@ -1,7 +1,4 @@
-"use strict";
-
-const dereferencedSchema = module.exports =
-{
+const dereferencedSchema = {
   self: {
     definitions: {
       thing: {
@@ -211,3 +208,5 @@ dereferencedSchema.indirectAncestor.fullyDereferenced.definitions.parent.propert
 
 dereferencedSchema.indirectAncestor.fullyDereferenced.definitions.child.properties.children.items.properties =
   dereferencedSchema.indirectAncestor.fullyDereferenced.definitions.child.properties;
+
+export default dereferencedSchema;

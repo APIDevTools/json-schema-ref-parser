@@ -1,14 +1,14 @@
-"use strict";
+import chai from "chai";
+import $RefParser from "../../../lib/index.js";
+import helper from "../../utils/helper.js";
+import path from "../../utils/path.js";
+import internalRefsParsedSchema from "../internal/parsed.js";
+import internalRefsDereferencedSchema from "../internal/dereferenced.js";
+import parsedSchema from "./parsed.js";
+import dereferencedSchema from "./dereferenced.js";
+import bundledSchema from "./bundled.js";
 
-const { expect } = require("chai");
-const $RefParser = require("../../..");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const internalRefsParsedSchema = require("../internal/parsed");
-const internalRefsDereferencedSchema = require("../internal/dereferenced");
-const parsedSchema = require("./parsed");
-const dereferencedSchema = require("./dereferenced");
-const bundledSchema = require("./bundled");
+const { expect } = chai;
 
 const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : undefined);
 

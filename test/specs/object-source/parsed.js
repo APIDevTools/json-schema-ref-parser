@@ -1,9 +1,6 @@
-"use strict";
+import path from "../../utils/path.js";
 
-const path = require("../../utils/path");
-
-module.exports =
-{
+export default {
   schema: {
     definitions: {
       // Because we're not specifying a path, the current directory (the "test" directory)

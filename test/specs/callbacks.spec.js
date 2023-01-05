@@ -1,10 +1,10 @@
-"use strict";
+import chai from "chai";
+import $RefParser from "../../lib/index.js";
+import helper from "../utils/helper.js";
+import path from "../utils/path.js";
+import { ParserError } from "../../lib/util/errors.js";
 
-const { expect } = require("chai");
-const $RefParser = require("../../lib");
-const helper = require("../utils/helper");
-const path = require("../utils/path");
-const { ParserError } = require("../../lib/util/errors");
+const { expect } = chai;
 
 describe("Callback & Promise syntax", () => {
   for (let method of ["parse", "resolve", "dereference", "bundle"]) {

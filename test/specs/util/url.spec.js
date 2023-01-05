@@ -1,10 +1,8 @@
-"use strict";
-
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
+import chai from "chai";
+import chaiSubset from "chai-subset";
 chai.use(chaiSubset);
 const { expect } = chai;
-const $url = require("../../../lib/util/url");
+import * as $url from "../../../lib/util/url.js";
 
 describe("Return the extension of a URL", () => {
   it("should return an empty string if there isn't any extension", async () => {

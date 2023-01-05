@@ -1,7 +1,4 @@
-"use strict";
-
-module.exports =
-{
+export default {
   title: "Deep Schema",
   type: "object",
   definitions: {

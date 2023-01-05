@@ -1,5 +1,3 @@
-"use strict";
-
 let name = {
   required: [
     "first",
@@ -36,8 +34,7 @@ let name = {
   title: "name"
 };
 
-module.exports =
-{
+export default {
   type: "object",
   properties: {
     "level 1": {

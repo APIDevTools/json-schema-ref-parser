@@ -1,6 +1,4 @@
-"use strict";
-
-module.exports = {
+export default {
   schema: {
     title: "Date Strings",
     type: "object",

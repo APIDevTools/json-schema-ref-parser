@@ -1,15 +1,13 @@
-"use strict";
-
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
+import chai from "chai";
+import chaiSubset from "chai-subset";
 chai.use(chaiSubset);
 const { expect } = chai;
-const $RefParser = require("../../..");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const parsedSchema = require("./parsed");
-const dereferencedSchema = require("./dereferenced");
-const { ResolverError, UnmatchedResolverError, JSONParserErrorGroup } = require("../../../lib/util/errors");
+import $RefParser from "../../../lib/index.js";
+import helper from "../../utils/helper.js";
+import path from "../../utils/path.js";
+import parsedSchema from "./parsed.js";
+import dereferencedSchema from "./dereferenced.js";
+import { ResolverError, UnmatchedResolverError, JSONParserErrorGroup } from "../../../lib/util/errors.js";
 
 describe("options.resolve", () => {
   it('should not resolve external links if "resolve.external" is disabled', async () => {

@@ -1,15 +1,13 @@
-"use strict";
-
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
+import chai from "chai";
+import chaiSubset from "chai-subset";
 chai.use(chaiSubset);
 const { expect } = chai;
-const $RefParser = require("../../..");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const parsedSchema = require("./parsed");
-const dereferencedSchema = require("./dereferenced");
-const { JSONParserErrorGroup, ParserError, UnmatchedParserError } = require("../../../lib/util/errors");
+import $RefParser from "../../../lib/index.js";
+import helper from "../../utils/helper.js";
+import path from "../../utils/path.js";
+import parsedSchema from "./parsed.js";
+import dereferencedSchema from "./dereferenced.js";
+import { JSONParserErrorGroup, ParserError, UnmatchedParserError } from "../../../lib/util/errors.js";
 
 describe("References to non-JSON files", () => {
   it("should parse successfully", async () => {

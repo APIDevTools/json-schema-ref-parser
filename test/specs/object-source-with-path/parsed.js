@@ -1,7 +1,4 @@
-"use strict";
-
-module.exports =
-{
+export default {
   schema: {
     definitions: {
       // Because we've specified the full path to this directory,

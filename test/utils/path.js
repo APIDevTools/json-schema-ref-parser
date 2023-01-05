@@ -1,25 +1,26 @@
-"use strict";
-
-const { host } = require("@jsdevtools/host-environment");
+import { fileURLToPath } from "url";
+import { host } from "@jsdevtools/host-environment";
 
 const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : undefined);
 const getPathFromOs = filePath => isWindows ? filePath.replace(/\\/g, "/") : filePath;
 
+let helpers;
 if (host.node) {
-  module.exports = filesystemPathHelpers();
+  helpers = await filesystemPathHelpers();;
 }
 else {
-  module.exports = urlPathHelpers();
+  helpers = urlPathHelpers();
 }
+export default helpers;
 
 /**
  * Helper functions for getting local filesystem paths in various formats
  */
-function filesystemPathHelpers () {
-  const nodePath = require("path");
-  const nodeUrl = require("url");
+async function filesystemPathHelpers () {
+  const nodePath = await import("path");
+  const nodeUrl = await import("url");
 
-  const testsDir = nodePath.resolve(__dirname, "..");
+  const testsDir = nodePath.resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
 
   // Run all tests from the "test" directory
   process.chdir(testsDir);

@@ -1,6 +1,4 @@
-"use strict";
-
-module.exports = {
+export default {
   schema: {
     type: "object",
     required: ["user", "token"],

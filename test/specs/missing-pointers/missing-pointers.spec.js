@@ -1,13 +1,11 @@
-"use strict";
-
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
+import chai from "chai";
+import chaiSubset from "chai-subset";
 chai.use(chaiSubset);
 const { expect } = chai;
-const $RefParser = require("../../../lib");
-const { JSONParserErrorGroup, MissingPointerError } = require("../../../lib/util/errors");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
+import $RefParser from "../../../lib/index.js";
+import { JSONParserErrorGroup, MissingPointerError } from "../../../lib/util/errors.js";
+import helper from "../../utils/helper.js";
+import path from "../../utils/path.js";
 
 describe("Schema with missing pointers", () => {
   it("should throw an error for missing pointer", async () => {

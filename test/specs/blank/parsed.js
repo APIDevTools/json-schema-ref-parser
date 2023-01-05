@@ -1,7 +1,4 @@
-"use strict";
-
-module.exports =
-{
+export default {
   schema: {
     yaml: {
       $ref: "files/blank.yaml"
