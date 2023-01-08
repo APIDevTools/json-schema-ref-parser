@@ -1,7 +1,7 @@
-import { fileURLToPath } from "url";
 import nodePath from "path";
 import nodeUrl from "url";
 import { host } from "@jsdevtools/host-environment";
+import projectDir from "../../lib/util/projectDir.cjs";
 
 const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : undefined);
 const getPathFromOs = filePath => isWindows ? filePath.replace(/\\/g, "/") : filePath;
@@ -17,7 +17,7 @@ const pathHelpers = {
 function filesystemPathHelpers () {
 
   if (host.node) {
-    const testsDir = nodePath.resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
+    const testsDir = nodePath.resolve(projectDir, "test")
 
     // Run all tests from the "test" directory
     process.chdir(testsDir);
