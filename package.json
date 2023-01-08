@@ -55,7 +55,7 @@
     "lint": "eslint lib test/fixtures test/specs",
     "test": "npm run test:node && npm run test:typescript && npm run test:browser && npm run lint",
     "test:node": "mocha",
-    "test:browser": "cross-env NODE_OPTIONS=--openssl-legacy-provider karma start --single-run",
+    "test:browser": "cross-env NODE_OPTIONS=--openssl-legacy-provider karma start karma.conf.cjs --single-run",
     "test:typescript": "tsc --noEmit --strict --lib esnext,dom test/specs/typescript-definition.spec.ts",
     "coverage": "npm run coverage:node && npm run coverage:browser",
     "coverage:node": "nyc node_modules/mocha/bin/mocha",
