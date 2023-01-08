@@ -1,29 +1,27 @@
 import { fileURLToPath } from "url";
+import nodePath from "path";
+import nodeUrl from "url";
 import { host } from "@jsdevtools/host-environment";
 
 const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : undefined);
 const getPathFromOs = filePath => isWindows ? filePath.replace(/\\/g, "/") : filePath;
 
-let helpers;
-if (host.node) {
-  helpers = await filesystemPathHelpers();;
-}
-else {
-  helpers = urlPathHelpers();
-}
-export default helpers;
+const pathHelpers = {
+  filesystem: filesystemPathHelpers(),
+  url: urlPathHelpers()
+};
 
 /**
  * Helper functions for getting local filesystem paths in various formats
  */
-async function filesystemPathHelpers () {
-  const nodePath = await import("path");
-  const nodeUrl = await import("url");
+function filesystemPathHelpers () {
 
-  const testsDir = nodePath.resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
+  if (host.node) {
+    const testsDir = nodePath.resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
 
-  // Run all tests from the "test" directory
-  process.chdir(testsDir);
+    // Run all tests from the "test" directory
+    process.chdir(testsDir);
+  }
 
   const path = {
     /**
@@ -85,6 +83,10 @@ async function filesystemPathHelpers () {
  * Helper functions for getting URLs in various formats
  */
 function urlPathHelpers () {
+  if (host.node) {
+    return
+  }
+
   // Get the URL of the "test" directory
   let filename = document.querySelector('script[src*="/fixtures/"]').src;
   let testsDir = filename.substr(0, filename.indexOf("/fixtures/")) + "/";
@@ -148,4 +150,26 @@ function urlPathHelpers () {
   };
 
   return path;
+}
+
+export default {
+  rel (file) {
+    return host.node ? pathHelpers.filesystem.rel(...arguments) : pathHelpers.url.rel(...arguments)
+  },
+
+  abs (file) {
+    return host.node ? pathHelpers.filesystem.abs(...arguments) : pathHelpers.url.abs(...arguments)
+  },
+
+  unixify (file) {
+    return host.node ? pathHelpers.filesystem.unixify(...arguments) : pathHelpers.url.unixify(...arguments)
+  },
+
+  url (file) {
+    return host.node ? pathHelpers.filesystem.url(...arguments) : pathHelpers.url.url(...arguments)
+  },
+
+  cwd () {
+    return host.node ? pathHelpers.filesystem.cwd(...arguments) : pathHelpers.url.cwd(...arguments)
+  }
 }
