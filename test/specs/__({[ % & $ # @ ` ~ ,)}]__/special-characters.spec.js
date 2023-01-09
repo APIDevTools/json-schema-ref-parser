@@ -4,9 +4,8 @@ import path from "../../utils/path.js";
 import chai from "chai";
 import parsedSchema from "./parsed.js";
 import dereferencedSchema from "./dereferenced.js";
-import { doesNotMatch } from "assert";
 
-const { expect } = chai
+const { expect } = chai;
 
 describe("File names with special characters", () => {
   it("should parse successfully", async () => {

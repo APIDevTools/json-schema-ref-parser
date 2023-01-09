@@ -9,7 +9,7 @@ import dereferencedSchema from "./dereferenced.js";
 import bundledSchema from "./bundled.js";
 
 const { expect } = chai;
-const url = { cwd: urlModule.cwd }
+const url = { cwd: urlModule.cwd };
 
 describe("When executed in the context of root directory", () => {
   // Store the OS root directory

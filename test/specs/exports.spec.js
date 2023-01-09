@@ -2,7 +2,7 @@
 import chai from "chai";
 import defaultExport from "../../lib/index.js";
 import * as namespaceExport from "../../lib/index.js";
-import { default as namedDefaultExport} from "../../lib/index.js";
+import { default as namedDefaultExport } from "../../lib/index.js";
 import {
   JSONParserError,
   InvalidPointerError,
@@ -10,8 +10,7 @@ import {
   ResolverError,
   ParserError,
   UnmatchedParserError,
-  UnmatchedResolverError,
-  dereference,
+  UnmatchedResolverError
 } from "../../lib/index.js";
 
 const { expect } = chai;

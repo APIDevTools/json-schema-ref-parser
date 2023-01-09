@@ -1,6 +1,6 @@
 import chai from "chai";
 import $RefParser from "../../../lib/index.js";
-import path from "../../utils/path.js";
+import pathUtils from "../../utils/path.js";
 
 const { expect } = chai;
 
@@ -9,7 +9,7 @@ describe("Schema with a $ref", () => {
     let parser = new $RefParser();
     const calls = [];
     await parser.dereference(
-      path.rel("specs/dereference-callback/dereference-callback.yaml"),
+      pathUtils.rel("specs/dereference-callback/dereference-callback.yaml"),
       {
         dereference: {
           onDereference (path, object) {
