@@ -9,7 +9,7 @@ if (host.browser.IE) {
   require("@babel/polyfill");
 }
 
-import("node-fetch").then(({ default: fetch }) => {
+import("isomorphic-fetch").then(({ default: fetch }) => {
   if (!globalThis.fetch) {
     globalThis.fetch = fetch;
   }

@@ -4,18 +4,70 @@
 
 "use strict";
 
-const { karmaConfig } = require("@jsdevtools/karma-config");
+const nodeUtil = require("util");
+const { buildConfig } = require("@jsdevtools/karma-config");
 const { host } = require("@jsdevtools/host-environment");
 
-module.exports = karmaConfig({
-  sourceDir: "lib",
-  fixtures: "test/fixtures/**/*.js",
-  browsers: {
-    chrome: host.ci ? host.os.linux : true,
-    firefox: host.ci ? host.os.linux : true,
-    // TODO these were disabled as unstable. should we remove saucelabs or what?
-    // safari: host.ci ? host.os.linux : host.os.mac,    // SauceLabs in CI
-    edge: host.ci ? host.os.linux : host.os.windows,  // SauceLabs in CI
-    // ie: host.ci ? host.os.windows : false,  // IE needs to run by itself, due to Babel transforms
-  },
-});
+module.exports = (karma) => {
+
+  const browsers = [];
+  const CI = isCI();
+  browsers.push(CI ? "ChromeHeadless" : "Chrome");
+  browsers.push(CI ? "FirefoxHeadless" : "Firefox");
+  host.os.mac && browsers.push("Safari");
+  host.os.windows && browsers.push("Edge");
+
+  const plugins = [
+    require("@jsdevtools/karma-host-environment"),
+    require("karma-verbose-reporter"),
+    require("karma-mocha"),
+    require("karma-webpack"), 
+  ]
+  plugins.push(require("karma-chrome-launcher"))
+  plugins.push(require("karma-firefox-launcher"))
+  host.os.mac && plugins.push(require("karma-safari-launcher"))
+  host.os.windows && plugins.push(require("@chiragrupani/karma-chromium-edge-launcher"))
+  plugins.push(require("karma-coverage-istanbul-reporter"))
+  
+  const config = buildConfig({
+    sourceDir: "lib",
+    fixtures: "test/fixtures/**/*.js",
+    browsers: {
+      chrome: true,
+      firefox: true,
+      safari: host.os.mac,
+      edge: host.os.windows,
+      ie: false
+    },
+    config: {
+      browsers: browsers,
+      plugins: plugins
+    }
+  });
+
+  if (config.logLevel !== karma.LOG_DISABLE) {
+    console.debug("Karma Config:\n", nodeUtil.inspect(config, {
+      depth: 10,
+      colors: true,
+      compact: false,
+    }));
+  }
+
+  karma.set(config);
+};
+
+function isCI() {
+  let CI = environmentFlag("CI");
+  let karmaCI = environmentFlag("KARMA_CI");
+
+  return Boolean(CI || karmaCI || host.ci);
+};
+
+function environmentFlag(name) {
+  let value = environmentVariable(name);
+  return !["", "false", "off", "no"].includes(value);
+}
+
+function environmentVariable(name) {
+  return (process.env[name] || "").trim().toLowerCase();
+}
