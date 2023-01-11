@@ -26,7 +26,7 @@ module.exports = (karma) => {
   plugins.push(require("karma-chrome-launcher"))
   plugins.push(require("karma-firefox-launcher"))
   host.os.mac && plugins.push(require("karma-safari-launcher"))
-  host.os.windows && plugins.push(require("karma-edge-launcher"))
+  host.os.windows && plugins.push(require("@chiragrupani/karma-chromium-edge-launcher"))
   plugins.push(require("karma-coverage-istanbul-reporter"))
   
   const config = buildConfig({

@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "@babel/polyfill": "^7.12.1",
+    "@chiragrupani/karma-chromium-edge-launcher": "^2.2.2",
     "@jsdevtools/eslint-config": "^1.0.7",
     "@jsdevtools/host-environment": "^2.1.2",
     "@jsdevtools/karma-config": "^3.1.7",
