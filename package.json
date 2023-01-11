@@ -39,6 +39,11 @@
   "funding": "https://github.com/sponsors/philsturgeon",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
+  "exports": {
+    "types": "./lib/index.d.ts",
+    "require": "./cjs/index.js",
+    "default": "./lib/index.js"
+  },
   "browser": {
     "fs": false
   },
@@ -46,12 +51,15 @@
     "node": ">= 17"
   },
   "files": [
-    "lib"
+    "lib",
+    "cjs"
   ],
   "type": "module",
   "scripts": {
-    "build": "cp LICENSE *.md dist",
-    "clean": "shx rm -rf coverage",
+    "build": "npm run build:cjs && npm run build:dist",
+    "build:cjs": "swc ./lib/*.js -d ./cjs && swc ./lib/**/*.js -d ./cjs && copyfiles ./lib/**/*.cjs -u 1 ./cjs && node ./scripts/writeCJSPackageJSON.cjs",
+    "build:dist": "cp LICENSE *.md dist",
+    "clean": "shx rm -rf coverage cjs",
     "lint": "eslint lib test/fixtures test/specs",
     "test": "npm run test:node && npm run test:typescript && npm run test:browser && npm run lint",
     "test:node": "mocha",
@@ -68,11 +76,14 @@
     "@jsdevtools/eslint-config": "^1.0.7",
     "@jsdevtools/host-environment": "^2.1.2",
     "@jsdevtools/karma-config": "^3.1.7",
+    "@swc/cli": "^0.1.59",
+    "@swc/core": "^1.3.25",
     "@types/node": "^14.14.21",
     "c8": "^7.12.0",
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
     "chokidar": "^3.5.3",
+    "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",
     "eslint": "^7.18.0",
     "isomorphic-fetch": "^3.0.0",
