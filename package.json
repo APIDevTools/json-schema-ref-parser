@@ -56,9 +56,7 @@
   ],
   "type": "module",
   "scripts": {
-    "build": "npm run build:cjs && npm run build:dist",
-    "build:cjs": "swc ./lib/*.js -d ./cjs && swc ./lib/**/*.js -d ./cjs && copyfiles ./lib/**/*.cjs -u 1 ./cjs && node ./scripts/writeCJSPackageJSON.cjs",
-    "build:dist": "cp LICENSE *.md dist",
+    "build": "swc ./lib/*.js -d ./cjs && swc ./lib/**/*.js -d ./cjs && copyfiles ./lib/**/*.cjs -u 1 ./cjs && node ./scripts/writeCJSPackageJSON.cjs",
     "clean": "shx rm -rf coverage cjs",
     "lint": "eslint lib test/fixtures test/specs",
     "test": "npm run test:node && npm run test:typescript && npm run test:browser && npm run lint",
