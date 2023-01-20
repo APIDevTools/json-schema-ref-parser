@@ -246,7 +246,7 @@ declare namespace $RefParser {
        * @argument {string} path The path being dereferenced (ie. the `$ref` string).
        * @argument {JSONSchemaObject} object The JSON-Schema that the `$ref` resolved to.
        */
-      onDereference(path: string, value: JSONSchemaObject): void;
+      onDereference?(path: string, value: JSONSchemaObject): void;
     };
   }
 
