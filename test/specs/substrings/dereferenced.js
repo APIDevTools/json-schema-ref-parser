@@ -1,7 +1,4 @@
-"use strict";
-
-module.exports =
-{
+export default {
   title: "Person",
   definitions: {
     "name-with-min-length": {

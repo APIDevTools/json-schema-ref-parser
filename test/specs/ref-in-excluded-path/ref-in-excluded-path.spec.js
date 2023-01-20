@@ -1,9 +1,9 @@
-"use strict";
+import chai from "chai";
+import $RefParser from "../../../lib/index.js";
+import path from "../../utils/path.js";
+import dereferencedSchema from "./dereferenced.js";
 
-const { expect } = require("chai");
-const $RefParser = require("../../..");
-const path = require("../../utils/path");
-const dereferencedSchema = require("./dereferenced");
+const { expect } = chai;
 
 describe("Schema with literal $refs in examples", () => {
   it("should exclude the given paths from dereferencing", async () => {

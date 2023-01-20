@@ -1,18 +1,19 @@
 /* eslint-disable require-await */
-"use strict";
-
-const { expect } = require("chai");
-const commonJSExport = require("../../");
-const { default: defaultExport } = require("../../");
-const {
+import chai from "chai";
+import defaultExport from "../../lib/index.js";
+import * as namespaceExport from "../../lib/index.js";
+import { default as namedDefaultExport } from "../../lib/index.js";
+import {
   JSONParserError,
   InvalidPointerError,
   MissingPointerError,
   ResolverError,
   ParserError,
   UnmatchedParserError,
-  UnmatchedResolverError,
-} = require("../../");
+  UnmatchedResolverError
+} from "../../lib/index.js";
+
+const { expect } = chai;
 
 describe("json-schema-ref-parser package exports", () => {
 
@@ -29,12 +30,16 @@ describe("json-schema-ref-parser package exports", () => {
     return true;
   }
 
-  it("should export the $RefParser class as the default CommonJS export", async () => {
-    expect(commonJSExport).to.satisfy(is$RefParser);
-  });
+  // it("should export the $RefParser class as the default CommonJS export", async () => {
+  //   expect(commonJSExport).to.satisfy(is$RefParser);
+  // });
 
   it("should export the $RefParser class as the default ESM export", async () => {
     expect(defaultExport).to.satisfy(is$RefParser);
+  });
+
+  it("should export the $RefParser class as the named default ESM export", async () => {
+    expect(namedDefaultExport).to.satisfy(is$RefParser);
   });
 
   it("should export the JSONParserError class as a named ESM export", async () => {
@@ -73,7 +78,7 @@ describe("json-schema-ref-parser package exports", () => {
   });
 
   it("should not export anything else", async () => {
-    expect(commonJSExport).to.have.same.keys(
+    expect(namespaceExport).to.have.same.keys(
       "default",
       "parse",
       "resolve",

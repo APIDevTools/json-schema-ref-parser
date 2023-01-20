@@ -1,10 +1,10 @@
-"use strict";
+import $RefParser from "../../lib/index.js";
+import { host } from "@jsdevtools/host-environment";
+import chai from "chai";
 
-const $RefParser = require("../../lib");
-const { host } = require("@jsdevtools/host-environment");
-const { expect } = require("chai");
+const { expect } = chai;
 
-const helper = module.exports = {
+const helper = {
   /**
    * Throws an error if called.
    */
@@ -96,3 +96,5 @@ const helper = module.exports = {
     return clone;
   },
 };
+
+export default helper;

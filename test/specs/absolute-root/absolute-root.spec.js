@@ -1,14 +1,15 @@
-"use strict";
+import chai from "chai";
+import { resolve } from "path";
+import $RefParser from "../../../lib/index.js";
+import path from "../../utils/path.js";
+import helper from "../../utils/helper.js";
+import * as urlModule from "../../../lib/util/url.js";
+import parsedSchema from "./parsed.js";
+import dereferencedSchema from "./dereferenced.js";
+import bundledSchema from "./bundled.js";
 
-const { expect } = require("chai");
-const { resolve } = require("path");
-const $RefParser = require("../../..");
-const path = require("../../utils/path");
-const helper = require("../../utils/helper");
-const url = require("../../../lib/util/url");
-const parsedSchema = require("./parsed");
-const dereferencedSchema = require("./dereferenced");
-const bundledSchema = require("./bundled");
+const { expect } = chai;
+const url = { cwd: urlModule.cwd };
 
 describe("When executed in the context of root directory", () => {
   // Store the OS root directory

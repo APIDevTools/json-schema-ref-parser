@@ -1,6 +1,3 @@
-"use strict";
-
-module.exports =
-  {
-    $ref: "./circular-external-direct-root.yaml#/foo",
-  };
+export default {
+  $ref: "./circular-external-direct-root.yaml#/foo",
+};

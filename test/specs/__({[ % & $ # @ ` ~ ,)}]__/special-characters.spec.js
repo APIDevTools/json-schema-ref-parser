@@ -1,11 +1,11 @@
-"use strict";
+import $RefParser from "../../../lib/index.js";
+import helper from "../../utils/helper.js";
+import path from "../../utils/path.js";
+import chai from "chai";
+import parsedSchema from "./parsed.js";
+import dereferencedSchema from "./dereferenced.js";
 
-const $RefParser = require("../../..");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const { expect } = require("chai");
-const parsedSchema = require("./parsed");
-const dereferencedSchema = require("./dereferenced");
+const { expect } = chai;
 
 describe("File names with special characters", () => {
   it("should parse successfully", async () => {

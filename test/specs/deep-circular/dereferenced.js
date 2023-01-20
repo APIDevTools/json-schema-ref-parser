@@ -1,5 +1,3 @@
-"use strict";
-
 let name = {
   required: [
     "first",
@@ -36,8 +34,7 @@ let name = {
   title: "name"
 };
 
-const dereferencedSchema = module.exports =
-{
+const dereferencedSchema = {
   title: "Deep Schema",
   type: "object",
   definitions: {
@@ -340,3 +337,5 @@ dereferencedSchema
   .properties.level28
   .properties.level29
   .properties.level30 = dereferencedSchema;
+
+export default dereferencedSchema;

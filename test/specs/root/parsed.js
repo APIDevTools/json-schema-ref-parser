@@ -1,7 +1,4 @@
-"use strict";
-
-module.exports =
-{
+export default {
   schema: {
     $ref: "definitions/root.json"
   },

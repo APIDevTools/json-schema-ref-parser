@@ -1,14 +1,12 @@
-"use strict";
-
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
+import chai from "chai";
+import chaiSubset from "chai-subset";
 chai.use(chaiSubset);
 
 const { expect } = chai;
-const $RefParser = require("../../..");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const { InvalidPointerError, ResolverError, MissingPointerError } = require("../../../lib/util/errors");
+import $RefParser from "../../../lib/index.js";
+import helper from "../../utils/helper.js";
+import path from "../../utils/path.js";
+import { InvalidPointerError, ResolverError, MissingPointerError } from "../../../lib/util/errors.js";
 
 
 describe("Report correct error source and path for", () => {

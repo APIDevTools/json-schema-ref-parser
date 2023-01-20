@@ -1,7 +1,4 @@
-"use strict";
-
-const dereferencedSchema = module.exports =
-{
+const dereferencedSchema = {
   definitions: {
     pet: {
       title: "pet",
@@ -69,3 +66,5 @@ const dereferencedSchema = module.exports =
 dereferencedSchema.definitions.person.properties.spouse = dereferencedSchema.definitions.person;
 dereferencedSchema.definitions.parent.properties.children.items = dereferencedSchema.definitions.child;
 dereferencedSchema.definitions.child.properties.parents.items = dereferencedSchema.definitions.parent;
+
+export default dereferencedSchema;

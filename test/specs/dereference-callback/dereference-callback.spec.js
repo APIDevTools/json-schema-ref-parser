@@ -1,15 +1,15 @@
-"use strict";
+import chai from "chai";
+import $RefParser from "../../../lib/index.js";
+import pathUtils from "../../utils/path.js";
 
-const { expect } = require("chai");
-const $RefParser = require("../../..");
-const { rel } = require("../../utils/path");
+const { expect } = chai;
 
 describe("Schema with a $ref", () => {
   it("should call onDereference", async () => {
     let parser = new $RefParser();
     const calls = [];
     await parser.dereference(
-      rel("specs/dereference-callback/dereference-callback.yaml"),
+      pathUtils.rel("specs/dereference-callback/dereference-callback.yaml"),
       {
         dereference: {
           onDereference (path, object) {

@@ -1,7 +1,4 @@
-"use strict";
-
-const bundledSchema = module.exports =
-{
+const bundledSchema = {
   self: {
     definitions: {
       thing: {
@@ -139,3 +136,5 @@ bundledSchema.ancestor.definitions.pet =
   bundledSchema.indirect.definitions.pet =
   bundledSchema.indirectAncestor.definitions.pet =
   bundledSchema.pet;
+
+export default bundledSchema;

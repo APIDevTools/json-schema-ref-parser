@@ -1,9 +1,9 @@
-"use strict";
+import chai from "chai";
+import $RefParser from "../../../lib/index.js";
+import helper from "../../utils/helper.js";
+import path from "../../utils/path.js";
 
-const { expect } = require("chai");
-const $RefParser = require("../../../lib");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
+const { expect } = chai;
 
 describe("Empty schema", () => {
   it("should parse successfully", async () => {

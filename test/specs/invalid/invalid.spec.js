@@ -1,14 +1,12 @@
-"use strict";
-
-const { host } = require("@jsdevtools/host-environment");
-const chai = require("chai");
-const chaiSubset = require("chai-subset");
+import { host } from "@jsdevtools/host-environment";
+import chai from "chai";
+import chaiSubset from "chai-subset";
 chai.use(chaiSubset);
 const { expect } = chai;
-const $RefParser = require("../../../lib");
-const helper = require("../../utils/helper");
-const path = require("../../utils/path");
-const { JSONParserErrorGroup, ParserError, ResolverError } = require("../../../lib/util/errors");
+import $RefParser from "../../../lib/index.js";
+import helper from "../../utils/helper.js";
+import path from "../../utils/path.js";
+import { JSONParserErrorGroup, ParserError, ResolverError } from "../../../lib/util/errors.js";
 
 const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : undefined);
 const getPathFromOs = filePath => isWindows ? filePath.replace(/\\/g, "/") : filePath;

@@ -1,13 +1,13 @@
-"use strict";
+import { host } from "@jsdevtools/host-environment";
+import chai from "chai";
+import $RefParser from "../../lib/index.js";
+import helper from "../utils/helper.js";
+import path from "../utils/path.js";
+import parsedSchema from "./external/parsed.js";
+import dereferencedSchema from "./external/dereferenced.js";
+import bundledSchema from "./external/bundled.js";
 
-const { host } = require("@jsdevtools/host-environment");
-const { expect } = require("chai");
-const $RefParser = require("../../lib");
-const helper = require("../utils/helper");
-const path = require("../utils/path");
-const parsedSchema = require("./external/parsed");
-const dereferencedSchema = require("./external/dereferenced");
-const bundledSchema = require("./external/bundled");
+const { expect } = chai;
 
 describe("$Refs object", () => {
   describe("paths", () => {

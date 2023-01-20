@@ -1,9 +1,9 @@
-"use strict";
+import chai from "chai";
+import $RefParser from "../../../lib/index.js";
+import path from "../../utils/path.js";
+import bundledSchema from "./bundled.js";
 
-const { expect } = require("chai");
-const $RefParser = require("../../..");
-const path = require("../../utils/path");
-const bundledSchema = require("./bundled");
+const { expect } = chai;
 
 describe("multiple circular $refs at the same depth in the schema", () => {
   it("should bundle successfully", async () => {

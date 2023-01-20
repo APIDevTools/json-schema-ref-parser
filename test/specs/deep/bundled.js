@@ -1,7 +1,4 @@
-"use strict";
-
-module.exports =
-{
+export default {
   type: "object",
   properties: {
     "level 1": {

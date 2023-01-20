@@ -45,6 +45,11 @@ module.exports = (karma) => {
     }
   });
 
+  config.files.push({
+    pattern: "test/**/*.js",
+    type: "module"
+  });
+
   if (config.logLevel !== karma.LOG_DISABLE) {
     console.debug("Karma Config:\n", nodeUtil.inspect(config, {
       depth: 10,

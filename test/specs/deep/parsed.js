@@ -1,7 +1,4 @@
-"use strict";
-
-module.exports =
-{
+export default {
   schema: {
     type: "object",
     properties: {
