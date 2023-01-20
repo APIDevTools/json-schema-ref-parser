@@ -92,7 +92,6 @@
     "mocha": "^8.2.1",
     "node-abort-controller": "^3.0.1",
     "npm-check": "^5.9.0",
-    "semantic-release-plugin-update-version-in-files": "^1.1.0",
     "shx": "^0.3.2",
     "typescript": "^4.0.5"
   },
@@ -109,15 +108,6 @@
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      [
-        "semantic-release-plugin-update-version-in-files",
-        {
-          "files": [
-            "dist/package.json"
-          ],
-          "placeholder": "X.X.X"
-        }
-      ],
       "@semantic-release/npm",
       "@semantic-release/github"
     ]
