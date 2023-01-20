@@ -1,6 +1,6 @@
 # JSON Schema $Ref Parser
 
-_**This package needs [a new maintainer](https://github.com/APIDevTools/json-schema-ref-parser/issues/285) or at least some contributors, or a decent number of sponsors so I can hire contractors to do the work. For more information [please read this article](https://phil.tech/2022/bundling-openapi-with-javascript/). I'll mark the repo as read-only and unmaintained on January 15th 2023 along with a bunch of other @apidevtools packages like swagger-parser, so I can focus on scaling up my [reforestation charity](https://protect.earth/) instead of burning myself out trying to maintain a whole load of OSS projects I don't use in my vanishingly small spare time.** - [Phil Sturgeon](https://github.com/philsturgeon)_
+_**This package needs [a new maintainer](https://github.com/APIDevTools/json-schema-ref-parser/issues/285) or at least some contributors. For more information [please read this article](https://phil.tech/2022/bundling-openapi-with-javascript/). As of v10.0.0 I am no longer spending any time working on this tool, so I can focus on scaling up my [reforestation charity](https://protect.earth/) instead of burning myself out trying to maintain a whole load of OSS projects I don't use in my vanishingly small spare time. Get in touch if you'd like to take over.** - [Phil Sturgeon](https://github.com/philsturgeon)_
 
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
 
@@ -8,13 +8,8 @@ _**This package needs [a new maintainer](https://github.com/APIDevTools/json-sch
 [![Coverage Status](https://coveralls.io/repos/github/APIDevTools/json-schema-ref-parser/badge.svg?branch=master)](https://coveralls.io/github/APIDevTools/json-schema-ref-parser)
 
 [![npm](https://img.shields.io/npm/v/@apidevtools/json-schema-ref-parser.svg)](https://www.npmjs.com/package/@apidevtools/json-schema-ref-parser)
-[![Dependencies](https://david-dm.org/APIDevTools/json-schema-ref-parser.svg)](https://david-dm.org/APIDevTools/json-schema-ref-parser)
 [![License](https://img.shields.io/npm/l/@apidevtools/json-schema-ref-parser.svg)](LICENSE)
 [![Buy us a tree](https://img.shields.io/badge/Treeware-%F0%9F%8C%B3-lightgreen)](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser)
-
-
-[![OS and Browser Compatibility](https://apitools.dev/img/badges/ci-badges-with-ie.svg)](https://github.com/APIDevTools/json-schema-ref-parser/actions)
-
 
 The Problem:
 --------------------------
