@@ -80,7 +80,8 @@
   "release": {
     "branches": [
       "main",
-      "v9"
+      "v9",
+      { "name": "v9.1.x", "range": "9.1.x" }
     ],
     "plugins": [
       "@semantic-release/commit-analyzer",
