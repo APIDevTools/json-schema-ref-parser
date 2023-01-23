@@ -5,7 +5,7 @@ definitions:
       name:
         type: string
       child:
-        $ref: '#/definitions/child'           # <--- indirect circular reference
+        $ref: "#/definitions/child" # <--- indirect circular reference
 
   child:
     title: child
@@ -13,12 +13,12 @@ definitions:
       name:
         type: string
       pet:
-        $ref: '#/definitions/pet'
+        $ref: "#/definitions/pet"
       children:
         description: children
         type: array
         items:
-          $ref: '#/definitions/child'         # <--- circular reference to ancestor
+          $ref: "#/definitions/child" # <--- circular reference to ancestor
 
   pet:
     title: pet

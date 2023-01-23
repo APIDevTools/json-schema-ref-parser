@@ -1,5 +1,5 @@
 info:
-  title: Main 
+  title: Main
 paths:
   /test/add-test:
     post:
@@ -9,7 +9,7 @@ paths:
             schema:
               $ref: "#/components/schemas/Test1"
       responses:
-        '204':
+        "204":
           description: No Content
 
 components:
@@ -21,6 +21,6 @@ components:
     Test2:
       properties:
         test3:
-          $ref: '#/components/schemas/Common.Test3'
+          $ref: "#/components/schemas/Common.Test3"
     Common.Test3:
-      $ref: '../definitions/Shared.yaml#/components/schemas/Test4'
+      $ref: "../definitions/Shared.yaml#/components/schemas/Test4"

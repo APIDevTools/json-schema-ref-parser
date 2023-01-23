@@ -2,7 +2,7 @@ title: Deep Schema
 type: object
 properties:
   name:
-    $ref: '#/definitions/name'
+    $ref: "#/definitions/name"
   level1:
     type: object
     required:
@@ -23,7 +23,7 @@ properties:
               - name
             properties:
               name:
-                $ref: '#/definitions/name'
+                $ref: "#/definitions/name"
               level4:
                 type: object
                 required:
@@ -44,7 +44,7 @@ properties:
                           - name
                         properties:
                           name:
-                            $ref: '#/definitions/name'
+                            $ref: "#/definitions/name"
                           level7:
                             type: object
                             required:
@@ -86,14 +86,14 @@ properties:
                                                   - name
                                                 properties:
                                                   name:
-                                                    $ref: '#/definitions/name'
+                                                    $ref: "#/definitions/name"
                                                   level13:
                                                     type: object
                                                     required:
                                                       - name
                                                     properties:
                                                       name:
-                                                        $ref: '#/definitions/name'
+                                                        $ref: "#/definitions/name"
                                                       level14:
                                                         type: object
                                                         required:
@@ -184,7 +184,7 @@ properties:
                                                                                                           - name
                                                                                                         properties:
                                                                                                           name:
-                                                                                                            $ref: '#/definitions/name'
+                                                                                                            $ref: "#/definitions/name"
                                                                                                           level27:
                                                                                                             type: object
                                                                                                             required:

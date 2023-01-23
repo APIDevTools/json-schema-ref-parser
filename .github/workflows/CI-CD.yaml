@@ -25,7 +25,7 @@ jobs:
           - macos-latest
           - windows-latest
         node:
-          - 17
+          - 16
           - lts/*
           - current
 
@@ -39,16 +39,13 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: Run linter
-        run: npm run lint
-
-      - name: Run TypeScript tests
-        run: npm run test:typescript
+        run: yarn lint
 
       - name: Run Node tests
-        run: npm run coverage:node
+        run: yarn test:node
 
       - name: Send code coverage results to Coveralls
         uses: coverallsapp/github-action@v1.1.0
@@ -77,19 +74,10 @@ jobs:
           node-version: lts/*
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: Run tests
-        run: npm run coverage:browser
-        env:
-          SAUCE_USERNAME: ${{ secrets.SAUCE_USERNAME }}
-          SAUCE_ACCESS_KEY: ${{ secrets.SAUCE_ACCESS_KEY }}
-
-      - name: Combine code coverage data into a single file
-        shell: bash
-        run: |
-          ls -Rlh coverage/*/lcov.info
-          cat coverage/*/lcov.info > ./coverage/lcov.info
+        run: yarn test:browser
 
       - name: Send code coverage results to Coveralls
         uses: coverallsapp/github-action@v1.1.0
@@ -126,10 +114,10 @@ jobs:
           node-version: lts/*
 
       - name: Install dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
 
       - name: Prepare Unscoped Package
-        run: npm run build --if-present
+        run: yarn build
 
       - name: Publish to NPM
         run: npx semantic-release

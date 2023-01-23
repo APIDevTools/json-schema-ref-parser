@@ -4,8 +4,8 @@ properties:
   token:
     type: string
   user:
-    $ref: 'definitions.yaml#/User'
+    $ref: "definitions.yaml#/User"
 example:
-  token: '11111111'
+  token: "11111111"
   user:
-    $ref: 'definitions.yaml#/User/example'
+    $ref: "definitions.yaml#/User/example"

@@ -5,4 +5,4 @@ User:
     name:
       type: string
   example:
-    name: 'Homer'
+    name: "Homer"
