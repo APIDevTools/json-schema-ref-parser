@@ -107,7 +107,7 @@ jobs:
 
   release:
     name: Release
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v9'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/v9' || github.ref == 'refs/heads/v9.1.x'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs:
