@@ -4,7 +4,7 @@ import { InvalidPointerError, isHandledError, normalizeError } from "./util/erro
 import { safePointerToPath, stripHash, getHash } from "./util/url.js";
 import type $Refs from "./refs.js";
 import type $RefParserOptions from "./options.js";
-import type { JSONSchema } from "./types/index.js";
+import type { JSONSchema } from "./types";
 
 type $RefError = JSONParserError | ResolverError | ParserError | MissingPointerError;
 
@@ -158,7 +158,7 @@ class $Ref {
    * @returns
    */
   static is$Ref(value: any): value is { $ref: string; length?: number } {
-    return value && typeof value === "object" && typeof value.$ref === "string";
+    return value && typeof value === "object" && typeof value.$ref === "string" && value.$ref.length > 0;
   }
 
   /**

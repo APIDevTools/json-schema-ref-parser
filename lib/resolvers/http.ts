@@ -119,6 +119,7 @@ async function get(u: RequestInfo | URL, httpOptions: HTTPResolverOptions) {
     global.fetch = fetch;
     // @ts-ignore
     global.Request = Request;
+    // @ts-ignore
     global.Headers = Headers;
   }
   const response = await fetch(u, {
