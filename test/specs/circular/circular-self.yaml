@@ -6,10 +6,10 @@ definitions:
       name:
         type: string
       pet:
-        $ref: '#/definitions/pet'
+        $ref: "#/definitions/pet"
 
   thing:
-    $ref: "#/definitions/thing"         # <--- circular reference to self
+    $ref: "#/definitions/thing" # <--- circular reference to self
 
   pet:
     title: pet

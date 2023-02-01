@@ -1,4 +1,0 @@
-{
-  "extension": [".js", ".cjs", ".mjs", ".ts"],
-  "reporter": ["text", "lcov"]
-}

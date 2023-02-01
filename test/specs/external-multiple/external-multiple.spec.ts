@@ -1,0 +1,50 @@
+import { describe, it } from "vitest";
+import $RefParser from "../../../lib/index.js";
+import helper from "../../utils/helper.js";
+import path from "../../utils/path.js";
+import parsedSchema from "./parsed.js";
+import dereferencedSchema from "./dereferenced.js";
+import bundledSchema from "./bundled.js";
+
+import { expect } from "vitest";
+
+describe("Schema with multiple external $refs to different parts of a file", () => {
+  it("should parse successfully", async () => {
+    const parser = new $RefParser();
+    const schema = await parser.parse(path.abs("test/specs/external-multiple/external-multiple.yaml"));
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal(parsedSchema.schema);
+    expect(parser.$refs.paths()).to.deep.equal([path.abs("test/specs/external-multiple/external-multiple.yaml")]);
+  });
+
+  it(
+    "should resolve successfully",
+    helper.testResolve(
+      path.rel("test/specs/external-multiple/external-multiple.yaml"),
+      path.abs("test/specs/external-multiple/external-multiple.yaml"),
+      // @ts-expect-error TS(2554): Expected 2 arguments, but got 5.
+      parsedSchema.schema,
+      path.abs("test/specs/external-multiple/definitions.yaml"),
+      parsedSchema.definitions,
+    ),
+  );
+
+  it("should dereference successfully", async () => {
+    const parser = new $RefParser();
+    const schema = await parser.dereference(path.rel("test/specs/external-multiple/external-multiple.yaml"));
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal(dereferencedSchema);
+    // Reference equality
+    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+    expect(schema.properties.user.example).to.equal(schema.example.user);
+    // The "circular" flag should NOT be set
+    expect(parser.$refs.circular).to.equal(false);
+  });
+
+  it("should bundle successfully", async () => {
+    const parser = new $RefParser();
+    const schema = await parser.bundle(path.rel("test/specs/external-multiple/external-multiple.yaml"));
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal(bundledSchema);
+  });
+});
