@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "AccountList",
+  "$id": "accountList.json",
+  "type": "object",
+  "description": "An account list result.",
+  "additionalProperties": false,
+  "required": [
+    "data",
+    "total",
+    "pages"
+  ],
+  "properties": {
+    "data": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "account.json"
+      }
+    },
+    "total": {
+      "type": "integer",
+      "description": "The number of total items found."
+    },
+    "pages": {
+      "type": "integer",
+      "description": "The number of pages found"
+    }
+  }
+}

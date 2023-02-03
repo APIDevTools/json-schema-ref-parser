@@ -83,6 +83,15 @@ interface $RefParserOptions {
      * @argument {JSONSchemaObject} object The JSON-Schema that the `$ref` resolved to.
      */
     onDereference?(path: string, value: JSONSchemaObject): void;
+
+    /**
+     * Whether a reference should resolve relative to its directory/path, or from the cwd
+     *
+     * Setting the argument to smart will try and resolve it based on the path even if its not in the cwd or relative
+     *
+     * Default: `relative`
+     */
+    externalReferenceResolution?: "relative" | "root";
   };
 }
 
@@ -149,8 +158,9 @@ const getDefaults = () => {
        * @type {function}
        */
       excludedPathMatcher: () => false,
+      referenceResolution: "relative",
     },
-  };
+  } as $RefParserOptions;
   return cloneDeep(defaults);
 };
 

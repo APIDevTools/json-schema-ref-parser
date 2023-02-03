@@ -12,15 +12,16 @@ const urlEncodePatterns = [/\?/g, "%3F", /#/g, "%23"];
 // RegExp patterns to URL-decode special characters for local filesystem paths
 const urlDecodePatterns = [/%23/g, "#", /%24/g, "$", /%26/g, "&", /%2C/g, ",", /%40/g, "@"];
 
-export const parse = (u: any) => new URL(u);
+export const parse = (u: string | URL) => new URL(u);
 
 /**
  * Returns resolved target URL relative to a base URL in a manner similar to that of a Web browser resolving an anchor tag HREF.
  *
  * @returns
  */
-export function resolve(from: any, to: any) {
-  const resolvedUrl = new URL(to, new URL(from, "resolve://"));
+export function resolve(from: string, to: string) {
+  const fromUrl = new URL(from, "resolve://");
+  const resolvedUrl = new URL(to, fromUrl);
   if (resolvedUrl.protocol === "resolve:") {
     // `from` is a relative URL.
     const { pathname, search, hash } = resolvedUrl;

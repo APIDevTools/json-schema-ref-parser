@@ -169,7 +169,9 @@ function dereference$Ref(
 ) {
   // console.log('Dereferencing $ref pointer "%s" at %s', $ref.$ref, path);
 
-  const $refPath = url.resolve(path, $ref.$ref);
+  const isExternalRef = $Ref.isExternal$Ref($ref);
+  const shouldResolveOnCwd = isExternalRef && options?.dereference.externalReferenceResolution === "root";
+  const $refPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref);
 
   const cache = dereferencedCache.get($refPath);
   if (cache) {
