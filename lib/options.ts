@@ -87,8 +87,6 @@ interface $RefParserOptions {
     /**
      * Whether a reference should resolve relative to its directory/path, or from the cwd
      *
-     * Setting the argument to smart will try and resolve it based on the path even if its not in the cwd or relative
-     *
      * Default: `relative`
      */
     externalReferenceResolution?: "relative" | "root";
