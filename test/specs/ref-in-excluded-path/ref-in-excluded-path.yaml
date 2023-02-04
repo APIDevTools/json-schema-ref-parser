@@ -1,0 +1,59 @@
+# Minimal parts of an OpenAPI 3.1.0 document, including various examples that should be literal:
+paths:
+  "/x/{id}":
+    parameters:
+      - name: id
+        in: path
+        example: 123
+      - name: h1
+        in: header
+        examples:
+          e1:
+            value: # Literal value
+              $ref: "#/literal-h1"
+      - name: q1
+        in: query
+        example:
+          $ref: "#/literal-q1"
+      - name: q2
+        in: query
+        examples:
+          q2:
+            $ref: "#/components/examples/query-example"
+    responses:
+      "200":
+        content:
+          application/json:
+            examples:
+              confirmation-success: # Real ref
+                $ref: "#/components/examples/confirmation-success"
+              confirmation-in-progress:
+                summary: In progress response
+                value: # Literal ref! The $ref should not be dereferenced
+                  $ref: "#/abc"
+              confirmation-failure: # Real ref to example with literal $ref
+                $ref: "#/components/examples/confirmation-failure"
+      "400":
+        content:
+          application/json:
+            example:
+              $ref: "#/literal-example"
+components:
+  examples:
+    query-example:
+      value: abc
+    confirmation-success:
+      value:
+        abc: def
+    confirmation-failure:
+      value: # Literal value! The $ref should not be dereferenced
+        $ref: "#/literal-component-example"
+  parameters:
+    a:
+      example:
+        $ref: "#/literal-param-component-example"
+    b:
+      examples:
+        example1:
+          value:
+            $ref: "#/literal-param-component-examples1"

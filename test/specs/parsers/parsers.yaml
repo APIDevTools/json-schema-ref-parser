@@ -11,4 +11,3 @@ definitions:
     $ref: files/unknown.foo
   empty:
     $ref: files/empty
-

@@ -1,0 +1,26 @@
+info:
+  title: Main
+paths:
+  /test/add-test:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Test1"
+      responses:
+        "204":
+          description: No Content
+
+components:
+  schemas:
+    Test1:
+      properties:
+        test2:
+          $ref: "#/components/schemas/Test2"
+    Test2:
+      properties:
+        test3:
+          $ref: "#/components/schemas/Common.Test3"
+    Common.Test3:
+      $ref: "../definitions/Shared.yaml#/components/schemas/Test4"

@@ -29,7 +29,11 @@ $RefParser.dereference("my-schema.yaml", {
     }
   },
   dereference: {
-    circular: false                 // Don't allow circular $refs
+    circular: false,                // Don't allow circular $refs
+    excludedPathMatcher: (path) =>  // Skip dereferencing content under any 'example' key
+      path.includes("/example/"),
+    onDereference: (path, value) => // Callback invoked during dereferencing
+      console.log(path, value)
   }
 });
 ```
@@ -75,3 +79,5 @@ The `dereference` options control how JSON Schema $Ref Parser will dereference `
 |Option(s)             |Type                |Description
 |:---------------------|:-------------------|:------------
 |`circular`|`boolean` or `"ignore"`|Determines whether [circular `$ref` pointers](README.md#circular-refs) are handled.<br><br>If set to `false`, then a `ReferenceError` will be thrown if the schema contains any circular references.<br><br> If set to `"ignore"`, then circular references will simply be ignored.  No error will be thrown, but the [`$Refs.circular`](refs.md#circular) property will still be set to `true`.
+|`excludedPathMatcher`|`(string) => boolean`|A function, called for each path, which can return true to stop this path and all subpaths from being dereferenced further. This is useful in schemas where some subpaths contain literal `$ref` keys that should not be dereferenced.
+|`onDereference`|`(string, JSONSchemaObjectType) => void`|A function, called immediately after dereferencing, with the resolved JSON Schema value and the `$ref` being dereferenced.

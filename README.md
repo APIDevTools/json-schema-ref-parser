@@ -1,18 +1,15 @@
-JSON Schema $Ref Parser
-============================
+# JSON Schema $Ref Parser
+
+_**This package needs [a new maintainer](https://github.com/APIDevTools/json-schema-ref-parser/issues/285) or at least some contributors. For more information [please read this article](https://phil.tech/2022/bundling-openapi-with-javascript/). As of v10.0.0 I am no longer spending any time working on this tool, so I can focus on scaling up my [reforestation charity](https://protect.earth/) instead of burning myself out trying to maintain a whole load of OSS projects I don't use in my vanishingly small spare time. Get in touch if you'd like to take over.** - [Phil Sturgeon](https://github.com/philsturgeon)_
+
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
 
 [![Build Status](https://github.com/APIDevTools/json-schema-ref-parser/workflows/CI-CD/badge.svg?branch=master)](https://github.com/APIDevTools/json-schema-ref-parser/actions)
 [![Coverage Status](https://coveralls.io/repos/github/APIDevTools/json-schema-ref-parser/badge.svg?branch=master)](https://coveralls.io/github/APIDevTools/json-schema-ref-parser)
 
 [![npm](https://img.shields.io/npm/v/@apidevtools/json-schema-ref-parser.svg)](https://www.npmjs.com/package/@apidevtools/json-schema-ref-parser)
-[![Dependencies](https://david-dm.org/APIDevTools/json-schema-ref-parser.svg)](https://david-dm.org/APIDevTools/json-schema-ref-parser)
 [![License](https://img.shields.io/npm/l/@apidevtools/json-schema-ref-parser.svg)](LICENSE)
 [![Buy us a tree](https://img.shields.io/badge/Treeware-%F0%9F%8C%B3-lightgreen)](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser)
-
-
-[![OS and Browser Compatibility](https://apitools.dev/img/badges/ci-badges-with-ie.svg)](https://github.com/APIDevTools/json-schema-ref-parser/actions)
-
 
 The Problem:
 --------------------------
@@ -109,6 +106,13 @@ When using a transpiler such as [Babel](https://babeljs.io/) or [TypeScript](htt
 
 ```javascript
 import $RefParser from "@apidevtools/json-schema-ref-parser";
+```
+
+If you are using Node.js < 18, you'll need a polyfill for `fetch`, like [node-fetch](https://github.com/node-fetch/node-fetch):
+```javascript
+import fetch from "node-fetch";
+
+globalThis.fetch = fetch;
 ```
 
 
