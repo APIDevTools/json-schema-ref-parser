@@ -78,6 +78,7 @@ class Pointer {
    */
   resolve(obj: any, options: any, pathFromRoot: any) {
     const tokens = Pointer.parse(this.path, this.originalPath);
+    let found: any = [];
 
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
@@ -93,12 +94,26 @@ class Pointer {
       }
 
       const token = tokens[i];
+
       if (this.value[token] === undefined || this.value[token] === null) {
         this.value = null;
-        throw new MissingPointerError(token, decodeURI(this.originalPath));
+
+        let path: any = '';
+        
+        if (path !== undefined) {
+          path = this.$ref.path;
+        }
+
+        let targetRef = this.path.replace(path, '');
+        let targetFound = Pointer.join('', found);
+        let parentPath = pathFromRoot.replace(path, '');
+
+        throw new MissingPointerError(token, decodeURI(this.originalPath), targetRef, targetFound, parentPath);
       } else {
         this.value = this.value[token];
       }
+
+      found.push(token)
     }
 
     // Resolve the final value
