@@ -1,0 +1,16 @@
+paths:
+  /pet:
+    post:
+      tags:
+        - pet
+      parameters:
+        - $ref: '#/components/parameters/ThisIsMissing'
+components:
+  parameters:
+    petId:
+      name: petId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64

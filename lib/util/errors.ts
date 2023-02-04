@@ -115,8 +115,17 @@ export class UnmatchedResolverError extends JSONParserError {
 export class MissingPointerError extends JSONParserError {
   code = "EUNMATCHEDRESOLVER" as JSONParserErrorType;
   name = "MissingPointerError";
-  constructor(token: any, path: any) {
+  public targetToken: any;
+  public targetRef: string;
+  public targetFound: string;
+  public parentPath: string;
+  constructor(token: any, path: any, targetRef: any, targetFound: any, parentPath: any) {
     super(`Token "${token}" does not exist.`, stripHash(path));
+
+    this.targetToken = token;
+    this.targetRef = targetRef;
+    this.targetFound = targetFound;
+    this.parentPath = parentPath;
   }
 }
 
