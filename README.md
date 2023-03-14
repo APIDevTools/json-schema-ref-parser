@@ -124,6 +124,27 @@ JSON Schema $Ref Parser supports recent versions of every major web browser.  Ol
 To use JSON Schema $Ref Parser in a browser, you'll need to use a bundling tool such as [Webpack](https://webpack.js.org/), [Rollup](https://rollupjs.org/), [Parcel](https://parceljs.org/), or [Browserify](http://browserify.org/). Some bundlers may require a bit of configuration, such as setting `browser: true` in [rollup-plugin-resolve](https://github.com/rollup/rollup-plugin-node-resolve).
 
 
+#### Webpack 5
+Webpack 5 has dropped the default export of node core modules in favour of polyfills, you'll need to set them up yourself ( after npm-installing them )
+Edit your `webpack.config.js` :
+```js
+  config.resolve.fallback = {
+    "path": require.resolve("path-browserify"),
+    'util': require.resolve('util/'),
+    'fs': require.resolve('browserify-fs'),
+    "Buffer": require.resolve("buffer/"),
+    "http": require.resolve("stream-http"),
+    "https": require.resolve("https-browserify"),
+    "url": require.resolve("url")
+  };
+
+  config.plugins.push(
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    })
+  );
+
+```
 
 API Documentation
 --------------------------
