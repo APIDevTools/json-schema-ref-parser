@@ -132,17 +132,17 @@ Edit your `webpack.config.js` :
     "path": require.resolve("path-browserify"),
     'util': require.resolve('util/'),
     'fs': require.resolve('browserify-fs'),
-    "Buffer": require.resolve("buffer/"),
+    "buffer": require.resolve("buffer/"),
     "http": require.resolve("stream-http"),
     "https": require.resolve("https-browserify"),
-    "url": require.resolve("url")
-  };
-
+    "url": require.resolve("url"),
+  }
+  
   config.plugins.push(
     new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer'],
+      Buffer: [ 'buffer', 'Buffer']
     })
-  );
+  )
 
 ```
 
