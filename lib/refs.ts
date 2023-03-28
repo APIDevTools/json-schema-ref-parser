@@ -1,12 +1,13 @@
 import { ono } from "@jsdevtools/ono";
 import $Ref from "./ref.js";
 import * as url from "./util/url.js";
+import { isWindows } from "./util/is-windows.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 import type { JSONSchema } from "./types/index.js";
 import type $RefParserOptions from "./options.js";
 
-const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : "");
-const getPathFromOs = (filePath: string): string => (isWindows ? filePath.replace(/\\/g, "/") : filePath);
+
+const getPathFromOs = (filePath: string): string => (isWindows() ? filePath.replace(/\\/g, "/") : filePath);
 
 interface $RefsMap {
   [url: string]: $Ref;
