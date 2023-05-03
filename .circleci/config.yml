@@ -49,8 +49,8 @@ jobs:
     docker:
       - image: cimg/node:16.13-browsers
     steps:
-      - browser-tools/install-browser-tools
       - checkout
+      - browser-tools/install-browser-tools
       - install
       - run:
           name: Run browser tests
@@ -65,7 +65,6 @@ workflows:
               os:
                 - linux
               node-version:
-                - "12.22"
                 - "14.19"
                 - "16.13"
       - test-browser
