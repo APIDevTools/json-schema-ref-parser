@@ -216,7 +216,7 @@ describe("$Refs object", () => {
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(Error);
-        expect(err.message).to.equal('Token "" does not exist.');
+        expect(err.message).to.equal('at "#", token "" in "#/" does not exist');
       }
     });
 
@@ -254,7 +254,7 @@ describe("$Refs object", () => {
       }
       catch (err) {
         expect(err).to.be.an.instanceOf(Error);
-        expect(err.message).to.equal('Token "foo" does not exist.');
+        expect(err.message).to.equal('at "#", token "foo" in "#/foo/bar" does not exist');
       }
     });
   });
