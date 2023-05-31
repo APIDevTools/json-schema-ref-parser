@@ -490,7 +490,7 @@ declare namespace $RefParser {
     public readonly code ="EUNMATCHEDRESOLVER";
   }
   export class MissingPointerError extends JSONParserError {
-    public constructor(token: string | number, source: string);
+    public constructor(token: string | number, source: string, unresolvableRefValue?: string, pathToUnresolvableRef?: string);
 
     public readonly name = "MissingPointerError";
     public readonly code ="EMISSINGPOINTER";
