@@ -7,23 +7,34 @@
 // ${cwd}: the current working directory of the spawned process
 
 {
-  "version": "0.1.0",
+  "version": "2.0.0",
   "command": "npm",
-  "isShellCommand": true,
-  "suppressTaskName": true,
   "tasks": [
     {
-      "taskName": "lint",
-      "args": ["run", "lint"],
-      "showOutput": "always",
+      "label": "lint",
+      "type": "shell",
+      "args": [
+        "run",
+        "lint"
+      ],
       "problemMatcher": "$eslint-stylish",
-      "isBuildCommand": true
+      "group": {
+        "_id": "build",
+        "isDefault": false
+      }
     },
     {
-      "taskName": "test",
-      "args": ["run", "mocha"],
-      "showOutput": "always",
-      "isTestCommand": true
+      "label": "test",
+      "type": "shell",
+      "args": [
+        "run",
+        "mocha"
+      ],
+      "problemMatcher": [],
+      "group": {
+        "_id": "test",
+        "isDefault": false
+      }
     }
   ]
 }
