@@ -66,19 +66,13 @@ function crawl(
     seen.add(obj); // Track previously seen objects to avoid infinite recursion
     if ($Ref.isExternal$Ref(obj)) {
       promises.push(resolve$Ref(obj, path, $refs, options));
-    } else {
-      if (external && $Ref.is$Ref(obj)) {
-        /* Correct the reference in the external document so we can resolve it */
-        const withoutHash = url.stripHash(path);
-        // obj.$ref = withoutHash + obj.$ref;
-      }
-      const keys = Object.keys(obj) as (keyof typeof obj)[];
-      for (const key of keys) {
-        const keyPath = Pointer.join(path, key);
-        const value = obj[key] as string | JSONSchema | Buffer | undefined;
+    }
 
-        promises = promises.concat(crawl(value, keyPath, $refs, options, seen, external));
-      }
+    const keys = Object.keys(obj) as (keyof typeof obj)[];
+    for (const key of keys) {
+      const keyPath = Pointer.join(path, key);
+      const value = obj[key] as string | JSONSchema | Buffer | undefined;
+      promises = promises.concat(crawl(value, keyPath, $refs, options, seen, external));
     }
   }
 
