@@ -4,9 +4,7 @@ import * as url from "./util/url.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 import type { JSONSchema } from "./types/index.js";
 import type $RefParserOptions from "./options.js";
-
-const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : "");
-const getPathFromOs = (filePath: string): string => (isWindows ? filePath.replace(/\\/g, "/") : filePath);
+import convertPathToPosix from "./util/convert-path-to-posix";
 
 interface $RefsMap {
   [url: string]: $Ref;
@@ -36,7 +34,7 @@ export default class $Refs {
   paths(...types: string[]): string[] {
     const paths = getPaths(this._$refs, types);
     return paths.map((path) => {
-      return getPathFromOs(path.decoded);
+      return convertPathToPosix(path.decoded);
     });
   }
 
@@ -51,7 +49,7 @@ export default class $Refs {
     const $refs = this._$refs;
     const paths = getPaths($refs, types);
     return paths.reduce<Record<string, any>>((obj, path) => {
-      obj[getPathFromOs(path.decoded)] = $refs[path.encoded].value;
+      obj[convertPathToPosix(path.decoded)] = $refs[path.encoded].value;
       return obj;
     }, {});
   }
