@@ -4,7 +4,6 @@ import { InvalidPointerError, isHandledError, normalizeError } from "./util/erro
 import { safePointerToPath, stripHash, getHash } from "./util/url.js";
 import type $Refs from "./refs.js";
 import type $RefParserOptions from "./options.js";
-import type { JSONSchema } from "./types";
 
 type $RefError = JSONParserError | ResolverError | ParserError | MissingPointerError;
 
@@ -167,7 +166,7 @@ class $Ref {
    * @param value - The value to inspect
    * @returns
    */
-  static isExternal$Ref(value: any): value is JSONSchema {
+  static isExternal$Ref(value: any): boolean {
     return $Ref.is$Ref(value) && value.$ref![0] !== "#";
   }
 

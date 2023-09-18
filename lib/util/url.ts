@@ -1,5 +1,5 @@
 import convertPathToPosix from "./convert-path-to-posix";
-import { win32 } from "path";
+import path, { win32 } from "path";
 
 const forwardSlashPattern = /\//g;
 const protocolPattern = /^(\w{2,}):\/\//i;
@@ -59,8 +59,8 @@ export function cwd() {
  * @param path
  * @returns
  */
-export function getProtocol(path: any) {
-  const match = protocolPattern.exec(path);
+export function getProtocol(path: string | undefined) {
+  const match = protocolPattern.exec(path || "");
   if (match) {
     return match[1].toLowerCase();
   }
@@ -150,7 +150,7 @@ export function isHttp(path: any) {
  * @param path
  * @returns
  */
-export function isFileSystemPath(path: any) {
+export function isFileSystemPath(path: string | undefined) {
   // @ts-ignore
   if (typeof window !== "undefined" || process.browser) {
     // We're running in a browser, so assume that all paths are URLs.
@@ -277,4 +277,16 @@ export function safePointerToPath(pointer: any) {
     .map((value: any) => {
       return decodeURIComponent(value).replace(jsonPointerSlash, "/").replace(jsonPointerTilde, "~");
     });
+}
+
+export function relative(from: string | undefined, to: string | undefined) {
+  if (!isFileSystemPath(from) || !isFileSystemPath(to)) {
+    return resolve(from, to);
+  }
+
+  const fromDir = path.dirname(stripHash(from));
+  const toPath = stripHash(to);
+
+  const result = path.relative(fromDir, toPath);
+  return result + getHash(to);
 }
