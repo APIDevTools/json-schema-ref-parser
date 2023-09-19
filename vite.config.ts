@@ -14,9 +14,5 @@ export default defineConfig({
     passWithNoTests: true,
     reporters: ["verbose"],
     coverage: { reporter: ["lcov", "html", "text"] },
-    deps: {
-      fallbackCJS: true,
-      registerNodeLoader: true,
-    },
   },
 });

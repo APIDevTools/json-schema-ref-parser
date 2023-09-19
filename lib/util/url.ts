@@ -1,9 +1,13 @@
-const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : ""),
-  forwardSlashPattern = /\//g,
-  protocolPattern = /^(\w{2,}):\/\//i,
-  jsonPointerSlash = /~1/g,
-  jsonPointerTilde = /~0/g;
+import convertPathToPosix from "./convert-path-to-posix";
+import path, { win32 } from "path";
+
+const forwardSlashPattern = /\//g;
+const protocolPattern = /^(\w{2,}):\/\//i;
+const jsonPointerSlash = /~1/g;
+const jsonPointerTilde = /~0/g;
+
 import { join } from "path";
+import { isWindows } from "./is-windows";
 
 const projectDir = join(__dirname, "..", "..");
 // RegExp patterns to URL-encode special characters in local filesystem paths
@@ -55,8 +59,8 @@ export function cwd() {
  * @param path
  * @returns
  */
-export function getProtocol(path: any) {
-  const match = protocolPattern.exec(path);
+export function getProtocol(path: string | undefined) {
+  const match = protocolPattern.exec(path || "");
   if (match) {
     return match[1].toLowerCase();
   }
@@ -146,7 +150,7 @@ export function isHttp(path: any) {
  * @param path
  * @returns
  */
-export function isFileSystemPath(path: any) {
+export function isFileSystemPath(path: string | undefined) {
   // @ts-ignore
   if (typeof window !== "undefined" || process.browser) {
     // We're running in a browser, so assume that all paths are URLs.
@@ -177,14 +181,18 @@ export function isFileSystemPath(path: any) {
 export function fromFileSystemPath(path: any) {
   // Step 1: On Windows, replace backslashes with forward slashes,
   // rather than encoding them as "%5C"
-  if (isWindows) {
-    const hasProjectDir = path.toUpperCase().includes(projectDir.replace(/\\/g, "\\").toUpperCase());
-    const hasProjectUri = path.toUpperCase().includes(projectDir.replace(/\\/g, "/").toUpperCase());
-    if (hasProjectDir || hasProjectUri) {
-      path = path.replace(/\\/g, "/");
-    } else {
-      path = `${projectDir}/${path}`.replace(/\\/g, "/");
+  if (isWindows()) {
+    const upperPath = path.toUpperCase();
+    const projectDirPosixPath = convertPathToPosix(projectDir);
+    const posixUpper = projectDirPosixPath.toUpperCase();
+    const hasProjectDir = upperPath.includes(posixUpper);
+    const hasProjectUri = upperPath.includes(posixUpper);
+    const isAbsolutePath = win32.isAbsolute(path);
+
+    if (!(hasProjectDir || hasProjectUri || isAbsolutePath)) {
+      path = join(projectDir, path);
     }
+    path = convertPathToPosix(path);
   }
 
   // Step 2: `encodeURI` will take care of MOST characters
@@ -222,7 +230,7 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
     path = path[7] === "/" ? path.substr(8) : path.substr(7);
 
     // insert a colon (":") after the drive letter on Windows
-    if (isWindows && path[1] === "/") {
+    if (isWindows() && path[1] === "/") {
       path = path[0] + ":" + path.substr(1);
     }
 
@@ -234,12 +242,12 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
       // On Windows, it will start with something like "C:/".
       // On Posix, it will start with "/"
       isFileUrl = false;
-      path = isWindows ? path : "/" + path;
+      path = isWindows() ? path : "/" + path;
     }
   }
 
   // Step 4: Normalize Windows paths (unless it's a "file://" URL)
-  if (isWindows && !isFileUrl) {
+  if (isWindows() && !isFileUrl) {
     // Replace forward slashes with backslashes
     path = path.replace(forwardSlashPattern, "\\");
 
@@ -269,4 +277,16 @@ export function safePointerToPath(pointer: any) {
     .map((value: any) => {
       return decodeURIComponent(value).replace(jsonPointerSlash, "/").replace(jsonPointerTilde, "~");
     });
+}
+
+export function relative(from: string | undefined, to: string | undefined) {
+  if (!isFileSystemPath(from) || !isFileSystemPath(to)) {
+    return resolve(from, to);
+  }
+
+  const fromDir = path.dirname(stripHash(from));
+  const toPath = stripHash(to);
+
+  const result = path.relative(fromDir, toPath);
+  return result + getHash(to);
 }

@@ -94,6 +94,7 @@ function crawl(
  * @param $refParent - The object that contains a JSON Reference as one of its keys
  * @param $refKey - The key in `$refParent` that is a JSON Reference
  * @param path - The full path of the JSON Reference at `$refKey`, possibly with a JSON Pointer in the hash
+ * @param indirections - unknown
  * @param pathFromRoot - The path of the JSON Reference at `$refKey`, from the schema root
  * @param inventory - An array of already-inventoried $ref pointers
  * @param $refs

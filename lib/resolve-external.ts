@@ -40,6 +40,7 @@ function resolveExternal(parser: $RefParser, options: Options) {
  *
  * @param obj - The value to crawl. If it's not an object or array, it will be ignored.
  * @param path - The full path of `obj`, possibly with a JSON Pointer in the hash
+ * @param {boolean} external - Whether `obj` was found in an external document.
  * @param $refs
  * @param options
  * @param seen - Internal.
@@ -56,6 +57,7 @@ function crawl(
   $refs: $Refs,
   options: Options,
   seen?: Set<any>,
+  external?: boolean,
 ) {
   seen ||= new Set();
   let promises: any = [];
@@ -64,17 +66,13 @@ function crawl(
     seen.add(obj); // Track previously seen objects to avoid infinite recursion
     if ($Ref.isExternal$Ref(obj)) {
       promises.push(resolve$Ref(obj, path, $refs, options));
-    } else {
-      for (const key of Object.keys(obj)) {
-        const keyPath = Pointer.join(path, key);
-        const value = obj[key] as string | JSONSchema | Buffer | undefined;
+    }
 
-        if ($Ref.isExternal$Ref(value)) {
-          promises.push(resolve$Ref(value, keyPath, $refs, options));
-        } else {
-          promises = promises.concat(crawl(value, keyPath, $refs, options, seen));
-        }
-      }
+    const keys = Object.keys(obj) as (keyof typeof obj)[];
+    for (const key of keys) {
+      const keyPath = Pointer.join(path, key);
+      const value = obj[key] as string | JSONSchema | Buffer | undefined;
+      promises = promises.concat(crawl(value, keyPath, $refs, options, seen, external));
     }
   }
 
@@ -99,6 +97,8 @@ async function resolve$Ref($ref: JSONSchema, path: string, $refs: $Refs, options
   const resolvedPath = url.resolve(path, $ref.$ref);
   const withoutHash = url.stripHash(resolvedPath);
 
+  // $ref.$ref = url.relative($refs._root$Ref.path, resolvedPath);
+
   // Do we already have this $ref?
   $ref = $refs._$refs[withoutHash];
   if ($ref) {
@@ -112,7 +112,7 @@ async function resolve$Ref($ref: JSONSchema, path: string, $refs: $Refs, options
 
     // Crawl the parsed value
     // console.log('Resolving $ref pointers in %s', withoutHash);
-    const promises = crawl(result, withoutHash + "#", $refs, options);
+    const promises = crawl(result, withoutHash + "#", $refs, options, new Set(), true);
 
     return Promise.all(promises);
   } catch (err) {

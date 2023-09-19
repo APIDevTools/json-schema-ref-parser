@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import { promises as fs } from "fs";
 import { ono } from "@jsdevtools/ono";
 import * as url from "../util/url.js";
 import { ResolverError } from "../util/errors.js";

@@ -10,7 +10,7 @@
     "declaration": true,
     "esModuleInterop": true,
     "inlineSourceMap": false,
-    "lib": ["esnext", "dom"],
+    "lib": ["esnext", "dom", "DOM"],
     "listEmittedFiles": false,
     "listFiles": false,
     "moduleResolution": "node16",

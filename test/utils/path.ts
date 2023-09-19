@@ -1,8 +1,10 @@
+/// <reference lib="dom" />
+
 import nodePath from "path";
 import nodeUrl from "url";
+import { isWindows } from "../../lib/util/is-windows";
+import convertPathToPosix from "../../lib/util/convert-path-to-posix";
 
-const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : "");
-const getPathFromOs = (filePath: any) => (isWindows ? filePath.replace(/\\/g, "/") : filePath);
 const isDom = typeof window !== "undefined" && typeof window.document !== "undefined";
 
 const pathHelpers = {
@@ -21,8 +23,8 @@ function filesystemPathHelpers() {
      */
     rel(file: any) {
       const relativePath = nodePath.normalize(nodePath.join(file));
-      const filePath = isWindows ? nodePath.resolve(relativePath) : relativePath;
-      return getPathFromOs(filePath);
+      const filePath = isWindows() ? nodePath.resolve(relativePath) : relativePath;
+      return convertPathToPosix(filePath);
     },
 
     /**
@@ -30,14 +32,14 @@ function filesystemPathHelpers() {
      */
     abs(file: any) {
       const absolutePath = nodePath.resolve(nodePath.join(file || nodePath.sep));
-      return getPathFromOs(absolutePath);
+      return convertPathToPosix(absolutePath);
     },
 
     /**
      * Returns the path with normalized, UNIX-like, slashes. Disk letter is lower-cased, if present.
      */
     unixify(file: any) {
-      return file.replace(/\\/g, "/").replace(/^[A-Z](?=:\/)/, (letter: any) => letter.toLowerCase());
+      return convertPathToPosix(file).replace(/^[A-Z](?=:\/)/, (letter: any) => letter.toLowerCase());
     },
 
     /**
@@ -47,8 +49,8 @@ function filesystemPathHelpers() {
     url(file: any) {
       let pathname = path.abs(file);
 
-      if (isWindows) {
-        pathname = pathname.replace(/\\/g, "/"); // Convert Windows separators to URL separators
+      if (isWindows()) {
+        pathname = convertPathToPosix(pathname);
       }
 
       const url = nodeUrl.format({
@@ -64,7 +66,7 @@ function filesystemPathHelpers() {
      * Returns the absolute path of the current working directory.
      */
     cwd() {
-      return getPathFromOs(nodePath.join(process.cwd(), nodePath.sep));
+      return convertPathToPosix(nodePath.join(process.cwd(), nodePath.sep));
     },
   };
 
