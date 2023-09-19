@@ -42,6 +42,7 @@ function resolveExternal(parser: $RefParser, options: Options) {
  * @param path - The full path of `obj`, possibly with a JSON Pointer in the hash
  * @param $refs
  * @param options
+ * @param external - Whether `obj` was found in an external document.
  * @param seen - Internal.
  *
  * @returns
@@ -55,7 +56,8 @@ function crawl(
   path: string,
   $refs: $Refs,
   options: Options,
-  seen?: Set<any>,
+  external: boolean,
+  seen?: Set<any>
 ) {
   seen ||= new Set();
   let promises: any = [];
@@ -65,15 +67,17 @@ function crawl(
     if ($Ref.isExternal$Ref(obj)) {
       promises.push(resolve$Ref(obj, path, $refs, options));
     } else {
+      if (external && $Ref.is$Ref(obj)) {
+        /* Correct the reference in the external document so we can resolve it */
+        const withoutHash = url.stripHash(path);
+        obj.$ref = withoutHash + obj.$ref;
+      }
+
       for (const key of Object.keys(obj)) {
         const keyPath = Pointer.join(path, key);
         const value = obj[key] as string | JSONSchema | Buffer | undefined;
 
-        if ($Ref.isExternal$Ref(value)) {
-          promises.push(resolve$Ref(value, keyPath, $refs, options));
-        } else {
-          promises = promises.concat(crawl(value, keyPath, $refs, options, seen));
-        }
+        promises = promises.concat(crawl(value, keyPath, $refs, options, external, seen));
       }
     }
   }
@@ -99,6 +103,13 @@ async function resolve$Ref($ref: JSONSchema, path: string, $refs: $Refs, options
   const resolvedPath = url.resolve(path, $ref.$ref);
   const withoutHash = url.stripHash(resolvedPath);
 
+  /** 
+     Correct the $ref to use a path relative to the root, so that $Refs._resolve can resolve it,
+     otherwise transitive relative external references will be incorrect if the second external
+     relative ref doesn't work relative to the root document.
+   */
+  $ref.$ref = url.relative($refs._root$Ref.path, resolvedPath);
+
   // Do we already have this $ref?
   $ref = $refs._$refs[withoutHash];
   if ($ref) {
@@ -112,7 +123,7 @@ async function resolve$Ref($ref: JSONSchema, path: string, $refs: $Refs, options
 
     // Crawl the parsed value
     // console.log('Resolving $ref pointers in %s', withoutHash);
-    const promises = crawl(result, withoutHash + "#", $refs, options);
+    const promises = crawl(result, withoutHash + "#", $refs, options, true);
 
     return Promise.all(promises);
   } catch (err) {

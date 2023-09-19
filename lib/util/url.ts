@@ -3,7 +3,7 @@ const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform :
   protocolPattern = /^(\w{2,}):\/\//i,
   jsonPointerSlash = /~1/g,
   jsonPointerTilde = /~0/g;
-import { join } from "path";
+import { join, dirname, relative } from "path";
 
 const projectDir = join(__dirname, "..", "..");
 // RegExp patterns to URL-encode special characters in local filesystem paths
@@ -270,3 +270,22 @@ export function safePointerToPath(pointer: any) {
       return decodeURIComponent(value).replace(jsonPointerSlash, "/").replace(jsonPointerTilde, "~");
     });
 }
+
+/**
+ * Like path.relative(from, to) but for URLs. It will return a relative
+ * URL if it can, otherwise an absolute URL is returned.
+ * @param from
+ * @param to
+ * @returns
+ */
+export function relative(from: string, to: string): string {
+  if (!isFileSystemPath(from) || !isFileSystemPath(to)) {
+    return resolve(from, to);
+  }
+
+  const fromDir = dirname(stripHash(from));
+  const toPath = stripHash(to);
+
+  const result = relative(fromDir, toPath);
+  return result + getHash(to);
+};

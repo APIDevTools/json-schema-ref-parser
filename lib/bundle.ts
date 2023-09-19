@@ -110,7 +110,7 @@ function inventory$Ref(
   options: $RefParserOptions,
 ) {
   const $ref = $refKey === null ? $refParent : $refParent[$refKey];
-  const $refPath = url.resolve(path, $ref.$ref);
+  const $refPath = url.resolve(pathFromRoot, $ref.$ref);
   const pointer = $refs._resolve($refPath, pathFromRoot, options);
   if (pointer === null) {
     return;
