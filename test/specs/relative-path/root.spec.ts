@@ -5,7 +5,7 @@ import path from "../../utils/path.js";
 import { expect, vi } from "vitest";
 import helper from "../../utils/helper";
 
-describe("Schemas with imports in relative and absolute locations work", () => {
+describe.skipIf(process.env.BROWSER)("Schemas with imports in relative and absolute locations work", () => {
   describe("Schemas with relative imports that should be resolved from the root", () => {
     beforeAll(() => {
       vi.spyOn(process, "cwd").mockImplementation(() => {
