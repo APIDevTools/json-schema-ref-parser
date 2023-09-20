@@ -24,8 +24,8 @@ export const parse = (u: string | URL) => new URL(u);
  * @returns
  */
 export function resolve(from: string, to: string) {
-  const fromUrl = new URL(from, "resolve://");
-  const resolvedUrl = new URL(to, fromUrl);
+  const fromUrl = new URL(convertPathToPosix(from), "resolve://");
+  const resolvedUrl = new URL(convertPathToPosix(to), fromUrl);
   if (resolvedUrl.protocol === "resolve:") {
     // `from` is a relative URL.
     const { pathname, search, hash } = resolvedUrl;
@@ -280,7 +280,7 @@ export function safePointerToPath(pointer: any) {
     });
 }
 
-export function relative(from: string | undefined, to: string | undefined) {
+export function relative(from: string, to: string) {
   if (!isFileSystemPath(from) || !isFileSystemPath(to)) {
     return resolve(from, to);
   }
