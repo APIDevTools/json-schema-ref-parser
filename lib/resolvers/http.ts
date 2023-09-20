@@ -86,7 +86,7 @@ async function download(u: URL | string, httpOptions: HTTPResolverOptions, _redi
       } else if (!("location" in res.headers) || !res.headers.location) {
         throw ono({ status: res.status }, `HTTP ${res.status} redirect with no location header`);
       } else {
-        const redirectTo = url.resolve(u, res.headers.location);
+        const redirectTo = url.resolve(u.href, res.headers.location as string);
         return download(redirectTo, httpOptions, redirects);
       }
     } else {
