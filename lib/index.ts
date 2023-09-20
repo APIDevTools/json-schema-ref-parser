@@ -100,6 +100,13 @@ export class $RefParser {
     if (url.isFileSystemPath(args.path)) {
       args.path = url.fromFileSystemPath(args.path);
       pathType = "file";
+    } else if (!args.path && args.schema && args.schema.$id) {
+      // when schema id has defined an URL should use that hostname to request the references,
+      // instead of using the current page URL
+      const params = url.parse(args.schema.$id);
+      const port = params.protocol === "https:" ? 443 : 80;
+
+      args.path = `${params.protocol}//${params.hostname}:${port}`;
     }
 
     // Resolve the absolute path of the schema

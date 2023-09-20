@@ -73,7 +73,7 @@ describe("Callback & Promise syntax", () => {
     return async function () {
       try {
         await $RefParser[method](path.rel("test/specs/invalid/invalid.yaml"));
-        helper.shouldNotGetCalled;
+        helper.shouldNotGetCalled();
       } catch (err: any) {
         expect(err).to.be.an.instanceOf(ParserError);
       }

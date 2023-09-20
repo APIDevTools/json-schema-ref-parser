@@ -92,9 +92,8 @@ function crawl(
  * including nested references that are contained in externally-referenced files.
  */
 async function resolve$Ref($ref: JSONSchema, path: string, $refs: $Refs, options: Options) {
-  // console.log('Resolving $ref pointer "%s" at %s', $ref.$ref, path);
-
-  const resolvedPath = url.resolve(path, $ref.$ref);
+  const shouldResolveOnCwd = options.dereference.externalReferenceResolution === "root";
+  const resolvedPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref!);
   const withoutHash = url.stripHash(resolvedPath);
 
   // $ref.$ref = url.relative($refs._root$Ref.path, resolvedPath);

@@ -1,3 +1,4 @@
+/// <reference lib="dom" />
 import { describe, it, beforeEach } from "vitest";
 import $RefParser from "../../lib/index.js";
 

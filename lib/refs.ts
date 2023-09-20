@@ -95,7 +95,7 @@ export default class $Refs {
    * @param value The value to assign. Can be anything (object, string, number, etc.)
    */
   set(path: any, value: JSONSchema4Type | JSONSchema6Type | JSONSchema7Type) {
-    const absPath = url.resolve(this._root$Ref.path, path);
+    const absPath = url.resolve(this._root$Ref.path!, path);
     const withoutHash = url.stripHash(absPath);
     const $ref = this._$refs[withoutHash];
 
@@ -113,7 +113,7 @@ export default class $Refs {
    * @protected
    */
   _get$Ref(path: any) {
-    path = url.resolve(this._root$Ref.path, path);
+    path = url.resolve(this._root$Ref.path!, path);
     const withoutHash = url.stripHash(path);
     return this._$refs[withoutHash];
   }
@@ -145,7 +145,7 @@ export default class $Refs {
    * @protected
    */
   _resolve(path: string, pathFromRoot: string, options?: any) {
-    const absPath = url.resolve(this._root$Ref.path, path);
+    const absPath = url.resolve(this._root$Ref.path!, path);
     const withoutHash = url.stripHash(absPath);
     const $ref = this._$refs[withoutHash];
 
