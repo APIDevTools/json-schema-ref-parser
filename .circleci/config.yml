@@ -42,6 +42,7 @@ jobs:
           node-version: << parameters.node-version >>.0
           install-yarn: false
           install-npm: true
+          npm-version: "9.7.1"
       - install
       - test-node
 
