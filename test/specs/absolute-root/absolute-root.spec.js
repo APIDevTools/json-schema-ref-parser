@@ -21,19 +21,18 @@ describe("When executed in the context of root directory", () => {
   /**
    * A mock `process.cwd()` implementation that always returns the root diretory
    */
-  function mockProcessCwd () {
+  function mockProcessCwd() {
     return root;
   }
 
   /**
    * Temporarily mocks `process.cwd()` while calling the real `url.cwd()` implemenation
    */
-  function mockUrlCwd () {
+  function mockUrlCwd() {
     try {
       process.cwd = mockProcessCwd;
       return originalUrlCwd.apply(null, arguments);
-    }
-    finally {
+    } finally {
       process.cwd = originalProcessCwd;
     }
   }
@@ -47,44 +46,65 @@ describe("When executed in the context of root directory", () => {
     process.cwd = originalProcessCwd; // already restored by the finally block above, but just in case
   });
 
-
   it("should parse successfully from an absolute path", async () => {
     let parser = new $RefParser();
-    const schema = await parser.parse(path.abs("specs/absolute-root/absolute-root.yaml"));
+    const schema = await parser.parse(
+      path.abs("specs/absolute-root/absolute-root.yaml")
+    );
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(parsedSchema.schema);
     expect(parser.$refs.paths()).to.deep.equal([
-      path.abs("specs/absolute-root/absolute-root.yaml")
+      path.abs("specs/absolute-root/absolute-root.yaml"),
     ]);
   });
 
   it("should parse successfully from a url", async () => {
     let parser = new $RefParser();
-    const schema = await parser.parse(path.url("specs/absolute-root/absolute-root.yaml"));
+    const schema = await parser.parse(
+      path.url("specs/absolute-root/absolute-root.yaml")
+    );
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(parsedSchema.schema);
-    expect(parser.$refs.paths()).to.deep.equal([path.url("specs/absolute-root/absolute-root.yaml")]);
+    expect(parser.$refs.paths()).to.deep.equal([
+      path.url("specs/absolute-root/absolute-root.yaml"),
+    ]);
   });
 
-  it("should resolve successfully from an absolute path", helper.testResolve(
-    path.abs("specs/absolute-root/absolute-root.yaml"),
-    path.abs("specs/absolute-root/absolute-root.yaml"), parsedSchema.schema,
-    path.abs("specs/absolute-root/definitions/definitions.json"), parsedSchema.definitions,
-    path.abs("specs/absolute-root/definitions/name.yaml"), parsedSchema.name,
-    path.abs("specs/absolute-root/definitions/required-string.yaml"), parsedSchema.requiredString
-  ));
+  it(
+    "should resolve successfully from an absolute path",
+    helper.testResolve(
+      path.abs("specs/absolute-root/absolute-root.yaml"),
+      path.abs("specs/absolute-root/absolute-root.yaml"),
+      parsedSchema.schema,
+      path.abs("specs/absolute-root/definitions/definitions.json"),
+      parsedSchema.definitions,
+      path.abs("specs/absolute-root/definitions/name.yaml"),
+      parsedSchema.name,
+      path.abs("specs/absolute-root/definitions/required-string.yaml"),
+      parsedSchema.requiredString
+    )
+  );
 
-  it("should resolve successfully from a url", helper.testResolve(
-    path.url("specs/absolute-root/absolute-root.yaml"),
-    path.url("specs/absolute-root/absolute-root.yaml"), parsedSchema.schema,
-    path.url("specs/absolute-root/definitions/definitions.json"), parsedSchema.definitions,
-    path.url("specs/absolute-root/definitions/name.yaml"), parsedSchema.name,
-    path.url("specs/absolute-root/definitions/required-string.yaml"), parsedSchema.requiredString
-  ));
+  it(
+    "should resolve successfully from a url",
+    helper.testResolve(
+      path.url("specs/absolute-root/absolute-root.yaml"),
+      path.url("specs/absolute-root/absolute-root.yaml"),
+      parsedSchema.schema,
+      path.url("specs/absolute-root/definitions/definitions.json"),
+      parsedSchema.definitions,
+      path.url("specs/absolute-root/definitions/name.yaml"),
+      parsedSchema.name,
+      path.url("specs/absolute-root/definitions/required-string.yaml"),
+      parsedSchema.requiredString
+    )
+  );
 
   it("should dereference successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.dereference(path.abs("specs/absolute-root/absolute-root.yaml"));
+    const schema = await parser.dereference(
+      path.abs("specs/absolute-root/absolute-root.yaml")
+    );
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(dereferencedSchema);
     // Reference equality
@@ -100,7 +120,9 @@ describe("When executed in the context of root directory", () => {
 
   it("should bundle successfully", async () => {
     let parser = new $RefParser();
-    const schema = await parser.bundle(path.abs("specs/absolute-root/absolute-root.yaml"));
+    const schema = await parser.bundle(
+      path.abs("specs/absolute-root/absolute-root.yaml")
+    );
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(bundledSchema);
   });
