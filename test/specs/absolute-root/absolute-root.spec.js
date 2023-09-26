@@ -21,18 +21,19 @@ describe("When executed in the context of root directory", () => {
   /**
    * A mock `process.cwd()` implementation that always returns the root diretory
    */
-  function mockProcessCwd() {
+  function mockProcessCwd () {
     return root;
   }
 
   /**
    * Temporarily mocks `process.cwd()` while calling the real `url.cwd()` implemenation
    */
-  function mockUrlCwd() {
+  function mockUrlCwd () {
     try {
       process.cwd = mockProcessCwd;
       return originalUrlCwd.apply(null, arguments);
-    } finally {
+    }
+    finally {
       process.cwd = originalProcessCwd;
     }
   }

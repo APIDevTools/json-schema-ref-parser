@@ -3,6 +3,7 @@
 const $RefParser = require("../../lib");
 const { host } = require("@jsdevtools/host-environment");
 const { expect } = require("chai");
+const url = require("../../lib/util/url");
 
 const helper = (module.exports = {
   /**
@@ -67,7 +68,7 @@ const helper = (module.exports = {
         let actual = helper.convertNodeBuffersToPOJOs(values[file]);
         let expected = messages[i];
         if (file !== filePath && !file.endsWith(filePath)) {
-          this.addAbsolutePathToRefs(file, expected);
+          expected = this.addAbsolutePathToRefs(file, expected);
         }
         expect(actual).to.deep.equal(expected, file);
       }
@@ -75,21 +76,23 @@ const helper = (module.exports = {
   },
 
   addAbsolutePathToRefs(filePath, expected) {
+    const clonedExpected = this.cloneDeep(expected);
     if (typeof expected === "object") {
-      for (let [i, entry] of Object.entries(expected)) {
+      for (let [i, entry] of Object.entries(clonedExpected)) {
         if (typeof entry === "object") {
           if (typeof entry.$ref === "string") {
             if (entry.$ref.startsWith("#")) {
-              expected[i].$ref = filePath + entry.$ref;
+              clonedExpected[i].$ref =
+                url.toFileSystemPath(filePath) + entry.$ref;
             }
             continue;
           } else {
-            expected[i] = this.addAbsolutePathToRefs(filePath, entry);
+            clonedExpected[i] = this.addAbsolutePathToRefs(filePath, entry);
           }
         }
       }
     }
-    return expected;
+    return clonedExpected;
   },
 
   /**
