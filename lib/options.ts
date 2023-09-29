@@ -79,12 +79,12 @@ interface $RefParserOptions {
     /**
      * Callback invoked during dereferencing.
      *
-     * @argument {string} path The path being dereferenced (ie. the `$ref` string).
-     * @argument {JSONSchemaObject} object The JSON-Schema that the `$ref` resolved to.
-     * @argument {JSONSchemaObject} object The JSON-Schema object that holds the dereferenced prop.
-     * @argument {string} object The dereferenced prop name.
+     * @argument {string} path - The path being dereferenced (ie. the `$ref` string)
+     * @argument {JSONSchemaObject} value - The JSON-Schema that the `$ref` resolved to
+     * @argument {JSONSchemaObject} parent - The parent of the dereferenced object
+     * @argument {string} parentPropName - The prop name of the parent object whose value was dereferenced
      */
-    onDereference?(path: string, value: JSONSchemaObject, object?: JSONSchemaObject, propName?: string): void;
+    onDereference?(path: string, value: JSONSchemaObject, parent?: JSONSchemaObject, parentPropName?: string): void;
 
     /**
      * Whether a reference should resolve relative to its directory/path, or from the cwd
