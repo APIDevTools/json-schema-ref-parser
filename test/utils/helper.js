@@ -83,7 +83,7 @@ const helper = (module.exports = {
           if (typeof entry.$ref === "string") {
             if (entry.$ref.startsWith("#")) {
               clonedExpected[i].$ref =
-                url.removeFileProtocol(filePath) + entry.$ref;
+                url.toFileSystemPath(filePath) + entry.$ref;
             }
             continue;
           } else {
