@@ -83,12 +83,12 @@ class Pointer {
     this.value = unwrapOrThrow(obj);
 
     for (let i = 0; i < tokens.length; i++) {
-      if (resolveIf$Ref(this, options)) {
+      if (resolveIf$Ref(this, options, pathFromRoot)) {
         // The $ref path has changed, so append the remaining tokens to the path
         this.path = Pointer.join(this.path, tokens.slice(i));
       }
 
-      if (typeof this.value === "object" && this.value !== null && "$ref" in this.value) {
+      if (typeof this.value === "object" && this.value !== null && !isRootPath(pathFromRoot) && "$ref" in this.value) {
         return this;
       }
 
@@ -103,7 +103,7 @@ class Pointer {
 
     // Resolve the final value
     if (!this.value || (this.value.$ref && url.resolve(this.path, this.value.$ref) !== pathFromRoot)) {
-      resolveIf$Ref(this, options);
+      resolveIf$Ref(this, options, pathFromRoot);
     }
 
     return this;
@@ -224,15 +224,16 @@ class Pointer {
  *
  * @param pointer
  * @param options
+ * @param [pathFromRoot] - the path of place that initiated resolving
  * @returns - Returns `true` if the resolution path changed
  */
-function resolveIf$Ref(pointer: any, options: any) {
+function resolveIf$Ref(pointer: any, options: any, pathFromRoot?: any) {
   // Is the value a JSON reference? (and allowed?)
 
   if ($Ref.isAllowed$Ref(pointer.value, options)) {
     const $refPath = url.resolve(pointer.path, pointer.value.$ref);
 
-    if ($refPath === pointer.path) {
+    if ($refPath === pointer.path && !isRootPath(pathFromRoot)) {
       // The value is a reference to itself, so there's nothing to do.
       pointer.circular = true;
     } else {
@@ -293,4 +294,8 @@ function unwrapOrThrow(value: any) {
   }
 
   return value;
+}
+
+function isRootPath(pathFromRoot: any): boolean {
+  return typeof pathFromRoot == "string" && Pointer.parse(pathFromRoot).length == 0;
 }
