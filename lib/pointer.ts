@@ -95,7 +95,11 @@ class Pointer {
       const token = tokens[i];
       if (this.value[token] === undefined || this.value[token] === null) {
         this.value = null;
-        throw new MissingPointerError(token, decodeURI(this.originalPath));
+        throw new MissingPointerError(
+          token,
+          decodeURI(this.originalPath),
+          `In the following schema: ${JSON.stringify(this.value, null, 2)}`,
+        );
       } else {
         this.value = this.value[token];
       }

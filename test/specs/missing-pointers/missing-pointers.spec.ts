@@ -45,10 +45,11 @@ describe("Schema with missing pointers", () => {
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
         expect(err.message).to.have.string("1 error occurred while reading '");
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
+        expect(err.errors.map(({ message }) => message).join()).toContain('Token "baz" does not exist.');
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         expect(err.errors).to.containSubset([
           {
             name: MissingPointerError.name,
-            message: 'Token "baz" does not exist.',
             path: ["foo"],
             // source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
           },
@@ -78,10 +79,11 @@ describe("Schema with missing pointers", () => {
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
         expect(err.message).to.have.string("1 error occurred while reading '");
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
+        expect(err.errors.map(({ message }) => message).join()).toContain('Token "external" does not exist.');
+        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         expect(err.errors).to.containSubset([
           {
             name: MissingPointerError.name,
-            message: 'Token "external" does not exist.',
             path: ["internal2"],
             source: (message: any) =>
               message.endsWith("missing-pointers/external-from-internal.yaml") ||

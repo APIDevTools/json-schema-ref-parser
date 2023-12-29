@@ -115,16 +115,21 @@ export class UnmatchedResolverError extends JSONParserError {
 export class MissingPointerError extends JSONParserError {
   code = "EUNMATCHEDRESOLVER" as JSONParserErrorType;
   name = "MissingPointerError";
-  constructor(token: any, path: any) {
-    super(`Token "${token}" does not exist.`, stripHash(path));
+  constructor(token: any, path: any, additionalMessage?: any) {
+    super(`Token "${token}" does not exist.${additionalMessage ? `\n\n${additionalMessage}\n` : ""}`, stripHash(path));
   }
 }
 
 export class InvalidPointerError extends JSONParserError {
   code = "EUNMATCHEDRESOLVER" as JSONParserErrorType;
   name = "InvalidPointerError";
-  constructor(pointer: any, path: any) {
-    super(`Invalid $ref pointer "${pointer}". Pointers must begin with "#/"`, stripHash(path));
+  constructor(pointer: any, path: any, additionalMessage?: any) {
+    super(
+      `Invalid $ref pointer "${pointer}". Pointers must begin with "#/"${
+        additionalMessage ? `\n\n${additionalMessage}\n` : ""
+      }`,
+      stripHash(path),
+    );
   }
 }
 
