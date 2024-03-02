@@ -18,7 +18,7 @@
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "plugins": ["prettier", "unused-imports", "@typescript-eslint"],
+  "plugins": ["prettier", "@typescript-eslint"],
   "rules": {
     "prefer-rest-params": "off",
     "prefer-const": "error",
@@ -40,7 +40,6 @@
     "@typescript-eslint/no-unused-vars": [
       "warn",
       { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_", "ignoreRestSiblings": true }
-    ],
-    "unused-imports/no-unused-imports-ts": "error"
+    ]
   }
 }
