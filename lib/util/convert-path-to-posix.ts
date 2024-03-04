@@ -7,5 +7,5 @@ export default function convertPathToPosix(filePath: string) {
     return filePath;
   }
 
-  return filePath.split(path.win32.sep).join(path.posix.sep);
+  return filePath.split(path?.win32?.sep).join(path.posix.sep);
 }
