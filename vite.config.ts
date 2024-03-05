@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     environment: isBrowser ? "jsdom" : "node",
     dir: "test",
+    exclude: ["**/__IGNORED__/**"],
     watch: false,
     globalSetup: isBrowser ? ["./test/fixtures/server.ts"] : undefined,
     testTimeout: 5000,
