@@ -33,7 +33,6 @@ export default {
    * @returns
    */
   async parse(file: FileInfo) {
-    // eslint-disable-line require-await
     let data = file.data;
     if (Buffer.isBuffer(data)) {
       data = data.toString();

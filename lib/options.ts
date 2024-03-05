@@ -4,7 +4,6 @@ import textParser from "./parsers/text.js";
 import binaryParser from "./parsers/binary.js";
 import fileResolver from "./resolvers/file.js";
 import httpResolver from "./resolvers/http.js";
-import cloneDeep from "lodash.clonedeep";
 
 import type { HTTPResolverOptions, JSONSchemaObject, Plugin, ResolverOptions } from "./types/index.js";
 
@@ -104,10 +103,10 @@ const getDefaults = () => {
      * your own implementation, or disable any parser by setting it to false.
      */
     parse: {
-      json: jsonParser,
-      yaml: yamlParser,
-      text: textParser,
-      binary: binaryParser,
+      json: { ...jsonParser },
+      yaml: { ...yamlParser },
+      text: { ...textParser },
+      binary: { ...binaryParser },
     },
 
     /**
@@ -117,8 +116,8 @@ const getDefaults = () => {
      * your own implementation, or disable any resolver by setting it to false.
      */
     resolve: {
-      file: fileResolver,
-      http: httpResolver,
+      file: { ...fileResolver },
+      http: { ...httpResolver },
 
       /**
        * Determines whether external $ref pointers will be resolved.
@@ -161,7 +160,7 @@ const getDefaults = () => {
       referenceResolution: "relative",
     },
   } as $RefParserOptions;
-  return cloneDeep(defaults);
+  return defaults;
 };
 
 export const getNewOptions = (options: DeepPartial<$RefParserOptions>): $RefParserOptions => {

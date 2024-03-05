@@ -33,7 +33,11 @@ function normalizeArgs(_args: Partial<IArguments>) {
     options = args[1];
   }
 
-  options = getNewOptions(options);
+  try {
+    options = getNewOptions(options);
+  } catch (e) {
+    console.log(e);
+  }
 
   return {
     path,
