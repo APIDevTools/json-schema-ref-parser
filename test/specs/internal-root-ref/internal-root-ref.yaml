@@ -1,0 +1,9 @@
+$ref: "#/definitions/user"
+definitions:
+  user:
+    type: object
+    properties:
+      userId:
+        type: integer
+    required:
+      - userId
