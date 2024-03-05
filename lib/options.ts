@@ -182,7 +182,8 @@ export type ParserOptions = DeepPartial<$RefParserOptions>;
  */
 function merge(target: any, source: any) {
   if (isMergeable(source)) {
-    const keys = Object.keys(source);
+    // prevent prototype pollution
+    const keys = Object.keys(source).filter((key) => !["__proto__", "constructor", "prototype"].includes(key));
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       const sourceSetting = source[key];
