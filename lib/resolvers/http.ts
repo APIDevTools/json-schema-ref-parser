@@ -113,15 +113,6 @@ async function get(u: RequestInfo | URL, httpOptions: HTTPResolverOptions) {
     timeoutId = setTimeout(() => controller.abort(), httpOptions.timeout);
   }
 
-  if (!global.fetch) {
-    const { default: fetch, Request, Headers } = await import("node-fetch");
-    // @ts-ignore
-    global.fetch = fetch;
-    // @ts-ignore
-    global.Request = Request;
-    // @ts-ignore
-    global.Headers = Headers;
-  }
   const response = await fetch(u, {
     method: "GET",
     headers: httpOptions.headers || {},
