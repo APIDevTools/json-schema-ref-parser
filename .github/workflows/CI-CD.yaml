@@ -48,7 +48,7 @@ jobs:
         run: yarn test:node
 
       - name: Send code coverage results to Coveralls
-        uses: coverallsapp/github-action@v1.1.0
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel: true
@@ -80,7 +80,7 @@ jobs:
         run: yarn test:browser
 
       - name: Send code coverage results to Coveralls
-        uses: coverallsapp/github-action@v1.1.0
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel: true
@@ -94,7 +94,7 @@ jobs:
       - browser_tests
     steps:
       - name: Let Coveralls know that all tests have finished
-        uses: coverallsapp/github-action@v1.1.0
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
