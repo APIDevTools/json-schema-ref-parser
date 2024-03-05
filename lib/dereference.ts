@@ -107,7 +107,7 @@ function crawl(
             if (obj[key] !== dereferenced.value) {
               obj[key] = dereferenced.value;
               if (options.dereference.onDereference) {
-                options.dereference.onDereference(value.$ref, obj[key]);
+                options.dereference.onDereference(value.$ref, obj[key], obj, key);
               }
             }
           } else {

@@ -12,15 +12,40 @@ describe("Schema with a $ref", () => {
     const schema = pathUtils.rel("test/specs/dereference-callback/dereference-callback.yaml");
     const options = {
       dereference: {
-        onDereference(path: any, object: any) {
-          calls.push({ path, object });
+        onDereference(path, value, parent, parentPropName) {
+          calls.push({ path, value, parent, parentPropName });
         },
       },
     } as Options;
     await parser.dereference(schema, options);
+
     expect(calls).to.deep.equal([
-      { path: "#/definitions/b", object: { $ref: "#/definitions/a" } },
-      { path: "#/definitions/a", object: { $ref: "#/definitions/a" } },
+      {
+        path: "#/definitions/b",
+        value: { $ref: "#/definitions/a" },
+        parent: {
+          a: {
+            $ref: "#/definitions/a",
+          },
+          b: {
+            $ref: "#/definitions/a",
+          },
+        },
+        parentPropName: "a",
+      },
+      {
+        path: "#/definitions/a",
+        value: { $ref: "#/definitions/a" },
+        parent: {
+          c: {
+            type: "string",
+          },
+          d: {
+            $ref: "#/definitions/a",
+          },
+        },
+        parentPropName: "d",
+      },
     ]);
   });
 });
