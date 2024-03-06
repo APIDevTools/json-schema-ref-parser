@@ -39,6 +39,11 @@ function normalizeArgs(_args: Partial<IArguments>) {
     console.log(e);
   }
 
+  if (!options.mutateInputSchema) {
+    // Make a deep clone of the schema, so that we don't alter the original object
+    schema = JSON.parse(JSON.stringify(schema));
+  }
+
   return {
     path,
     schema,

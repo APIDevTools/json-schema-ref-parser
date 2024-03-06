@@ -91,6 +91,13 @@ interface $RefParserOptions {
      * Default: `relative`
      */
     externalReferenceResolution?: "relative" | "root";
+
+    /**
+     * Whether to clone the schema before dereferencing it.
+     * This is useful when you want to dereference the same schema multiple times, but you don't want to modify the original schema.
+     * Default: `true` due to mutating the input being the default behavior historically
+     */
+    mutateInputSchema?: boolean;
   };
 }
 
@@ -159,6 +166,8 @@ const getDefaults = () => {
       excludedPathMatcher: () => false,
       referenceResolution: "relative",
     },
+
+    mutateInputSchema: true,
   } as $RefParserOptions;
   return defaults;
 };

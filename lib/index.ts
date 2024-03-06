@@ -19,37 +19,17 @@ import {
 import { ono } from "@jsdevtools/ono";
 import maybe from "./util/maybe.js";
 import type { ParserOptions } from "./options.js";
-import type {
-  Plugin,
-  $RefsCallback,
-  JSONSchema,
-  SchemaCallback,
-  HTTPResolverOptions,
-  FileInfo,
-  ResolverOptions,
-  JSONSchemaObject,
-} from "./types/index.js";
+import type { $RefsCallback, JSONSchema, SchemaCallback } from "./types/index.js";
 
-export {
-  JSONSchemaObject,
-  ResolverOptions,
-  ParserError,
-  UnmatchedResolverError,
-  ResolverError,
-  HTTPResolverOptions,
-  FileInfo,
-  UnmatchedParserError,
-  ParserOptions,
-  MissingPointerError,
-  InvalidPointerError,
-  JSONParserError,
-  Plugin,
-  JSONSchema,
-  $RefsCallback,
-  SchemaCallback,
-};
+export { JSONParserError };
+export { InvalidPointerError };
+export { MissingPointerError };
+export { ResolverError };
+export { ParserError };
+export { UnmatchedParserError };
+export { UnmatchedResolverError };
 
-export type RefParserSchema = string | JSONSchema;
+type RefParserSchema = string | JSONSchema;
 
 /**
  * This class parses a JSON schema, builds a map of its JSON references and their resolved values,
