@@ -2,7 +2,7 @@ import fs from "fs";
 import { ono } from "@jsdevtools/ono";
 import * as url from "../util/url.js";
 import { ResolverError } from "../util/errors.js";
-import type { ResolverOptions } from "../types/index.js";
+import type { JSONSchema, ResolverOptions } from "../types/index.js";
 import type { FileInfo } from "../types/index.js";
 
 export default {
@@ -36,4 +36,4 @@ export default {
       throw new ResolverError(ono(err, `Error opening file "${path}"`), path);
     }
   },
-} as ResolverOptions;
+} as ResolverOptions<JSONSchema>;

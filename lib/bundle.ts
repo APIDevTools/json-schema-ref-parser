@@ -1,10 +1,10 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
-import type $RefParserOptions from "./options.js";
 import type $Refs from "./refs.js";
-
-export default bundle;
+import type $RefParser from "./index";
+import type { ParserOptions } from "./index";
+import type { JSONSchema } from "./index";
 
 /**
  * Bundles all external JSON references into the main JSON schema, thus resulting in a schema that
@@ -14,12 +14,15 @@ export default bundle;
  * @param parser
  * @param options
  */
-function bundle(parser: any, options: any) {
+function bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+  parser: $RefParser<S, O>,
+  options: O,
+) {
   // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
 
   // Build an inventory of all $ref pointers in the JSON Schema
   const inventory: any = [];
-  crawl(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
+  crawl<S, O>(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
 
   // Remap all $ref pointers
   remap(inventory);
@@ -32,19 +35,20 @@ function bundle(parser: any, options: any) {
  * @param key - The property key of `parent` to be crawled
  * @param path - The full path of the property being crawled, possibly with a JSON Pointer in the hash
  * @param pathFromRoot - The path of the property being crawled, from the schema root
+ * @param indirections
  * @param inventory - An array of already-inventoried $ref pointers
  * @param $refs
  * @param options
  */
-function crawl(
+function crawl<S, O>(
   parent: any,
-  key: any,
-  path: any,
-  pathFromRoot: any,
-  indirections: any,
-  inventory: any,
-  $refs: any,
-  options: any,
+  key: string | null,
+  path: string,
+  pathFromRoot: string,
+  indirections: number,
+  inventory: unknown[],
+  $refs: $Refs<S>,
+  options: O,
 ) {
   const obj = key === null ? parent : parent[key];
 
@@ -98,15 +102,15 @@ function crawl(
  * @param $refs
  * @param options
  */
-function inventory$Ref(
+function inventory$Ref<S, O>(
   $refParent: any,
   $refKey: any,
   path: string,
   pathFromRoot: any,
   indirections: any,
   inventory: any,
-  $refs: $Refs,
-  options: $RefParserOptions,
+  $refs: $Refs<S>,
+  options: O,
 ) {
   const $ref = $refKey === null ? $refParent : $refParent[$refKey];
   const $refPath = url.resolve(path, $ref.$ref);
@@ -248,9 +252,8 @@ function remap(inventory: any) {
  * TODO
  */
 function findInInventory(inventory: any, $refParent: any, $refKey: any) {
-  for (let i = 0; i < inventory.length; i++) {
-    const existingEntry = inventory[i];
-    if (existingEntry.parent === $refParent && existingEntry.key === $refKey) {
+  for (const existingEntry of inventory) {
+    if (existingEntry && existingEntry.parent === $refParent && existingEntry.key === $refKey) {
       return existingEntry;
     }
   }
@@ -260,3 +263,4 @@ function removeFromInventory(inventory: any, entry: any) {
   const index = inventory.indexOf(entry);
   inventory.splice(index, 1);
 }
+export default bundle;

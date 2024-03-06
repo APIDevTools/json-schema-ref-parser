@@ -4,11 +4,9 @@ import parse from "./parse.js";
 import * as url from "./util/url.js";
 import { isHandledError } from "./util/errors.js";
 import type $Refs from "./refs.js";
-import type { Options } from "./options.js";
+import type { Options, ParserOptions } from "./options.js";
 import type { JSONSchema } from "./types/index.js";
 import type $RefParser from "./index.js";
-
-export default resolveExternal;
 
 /**
  * Crawls the JSON schema, finds all external JSON references, and resolves their values.
@@ -20,7 +18,10 @@ export default resolveExternal;
  * The promise resolves once all JSON references in the schema have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-function resolveExternal(parser: $RefParser, options: Options) {
+function resolveExternal<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+  parser: $RefParser<S, O>,
+  options: Options,
+) {
   if (!options.resolve.external) {
     // Nothing to resolve, so exit early
     return Promise.resolve();
@@ -51,10 +52,10 @@ function resolveExternal(parser: $RefParser, options: Options) {
  * If any of the JSON references point to files that contain additional JSON references,
  * then the corresponding promise will internally reference an array of promises.
  */
-function crawl(
-  obj: string | Buffer | JSONSchema | undefined | null,
+function crawl<S extends JSONSchema = JSONSchema>(
+  obj: string | Buffer | S | undefined | null,
   path: string,
-  $refs: $Refs,
+  $refs: $Refs<S>,
   options: Options,
   seen?: Set<any>,
   external?: boolean,
@@ -65,13 +66,13 @@ function crawl(
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
     seen.add(obj); // Track previously seen objects to avoid infinite recursion
     if ($Ref.isExternal$Ref(obj)) {
-      promises.push(resolve$Ref(obj, path, $refs, options));
+      promises.push(resolve$Ref<S>(obj, path, $refs, options));
     }
 
-    const keys = Object.keys(obj) as (keyof typeof obj)[];
+    const keys = Object.keys(obj) as string[];
     for (const key of keys) {
       const keyPath = Pointer.join(path, key);
-      const value = obj[key] as string | JSONSchema | Buffer | undefined;
+      const value = obj[key as keyof typeof obj] as string | JSONSchema | Buffer | undefined;
       promises = promises.concat(crawl(value, keyPath, $refs, options, seen, external));
     }
   }
@@ -91,7 +92,12 @@ function crawl(
  * The promise resolves once all JSON references in the object have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-async function resolve$Ref($ref: JSONSchema, path: string, $refs: $Refs, options: Options) {
+async function resolve$Ref<S extends JSONSchema = JSONSchema>(
+  $ref: S,
+  path: string,
+  $refs: $Refs<S>,
+  options: Options,
+) {
   const shouldResolveOnCwd = options.dereference.externalReferenceResolution === "root";
   const resolvedPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref!);
   const withoutHash = url.stripHash(resolvedPath);
@@ -99,10 +105,10 @@ async function resolve$Ref($ref: JSONSchema, path: string, $refs: $Refs, options
   // $ref.$ref = url.relative($refs._root$Ref.path, resolvedPath);
 
   // Do we already have this $ref?
-  $ref = $refs._$refs[withoutHash];
-  if ($ref) {
+  const ref = $refs._$refs[withoutHash];
+  if (ref) {
     // We've already parsed this $ref, so use the existing value
-    return Promise.resolve($ref.value);
+    return Promise.resolve(ref.value);
   }
 
   // Parse the $referenced file/url
@@ -127,3 +133,4 @@ async function resolve$Ref($ref: JSONSchema, path: string, $refs: $Refs, options
     return [];
   }
 }
+export default resolveExternal;

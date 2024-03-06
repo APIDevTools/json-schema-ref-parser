@@ -1,20 +1,25 @@
+import type { Options, ParserOptions } from "./options.js";
 import { getNewOptions } from "./options.js";
 import type { JSONSchema, SchemaCallback } from "./types";
-import type $RefParserOptions from "./options";
 
 // I really dislike this function and the way it's written. It's not clear what it's doing, and it's way too flexible
 // In the future, I'd like to deprecate the api and accept only named parameters in index.ts
-export interface NormalizedArguments<T = $RefParserOptions> {
+export interface NormalizedArguments<S, O> {
   path: string;
-  schema: JSONSchema;
-  options: T;
-  callback: SchemaCallback;
+  schema: S;
+  options: O & Options;
+  callback: SchemaCallback<S>;
 }
 /**
  * Normalizes the given arguments, accounting for optional args.
  */
-export function normalizeArgs<T = $RefParserOptions>(_args: Partial<IArguments>): NormalizedArguments<T> {
-  let path, schema, options, callback;
+export function normalizeArgs<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+  _args: Partial<IArguments>,
+): NormalizedArguments<S, O> {
+  let path;
+  let schema;
+  let options: Options & O;
+  let callback;
   const args = Array.prototype.slice.call(_args) as any[];
 
   if (typeof args[args.length - 1] === "function") {
@@ -42,7 +47,7 @@ export function normalizeArgs<T = $RefParserOptions>(_args: Partial<IArguments>)
   }
 
   try {
-    options = getNewOptions(options);
+    options = getNewOptions<S, O>(options);
   } catch (e) {
     console.error(`JSON Schema Ref Parser: Error normalizing options: ${e}`);
   }

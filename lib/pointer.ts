@@ -3,6 +3,7 @@ import type $RefParserOptions from "./options.js";
 import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import { JSONParserError, InvalidPointerError, MissingPointerError, isHandledError } from "./util/errors.js";
+import type { JSONSchema } from "./types";
 
 const slashes = /\//g;
 const tildes = /~/g;
@@ -25,11 +26,11 @@ const safeDecodeURIComponent = (encodedURIComponent: string): string => {
  * @param [friendlyPath] - The original user-specified path (used for error messages)
  * @class
  */
-class Pointer {
+class Pointer<S = JSONSchema> {
   /**
    * The {@link $Ref} object that contains this {@link Pointer} object.
    */
-  $ref: $Ref;
+  $ref: $Ref<S>;
 
   /**
    * The file path or URL, containing the JSON pointer in the hash.
@@ -58,7 +59,7 @@ class Pointer {
    */
   indirections: number;
 
-  constructor($ref: $Ref, path: string, friendlyPath?: string) {
+  constructor($ref: $Ref<S>, path: string, friendlyPath?: string) {
     this.$ref = $ref;
 
     this.path = path;
@@ -85,7 +86,7 @@ class Pointer {
    * the {@link Pointer#$ref} and {@link Pointer#path} will reflect the resolution path
    * of the resolved value.
    */
-  resolve(obj: any, options?: $RefParserOptions, pathFromRoot?: string) {
+  resolve(obj: any, options?: $RefParserOptions<S>, pathFromRoot?: string) {
     const tokens = Pointer.parse(this.path, this.originalPath);
 
     // Crawl the object, one token at a time
@@ -143,7 +144,7 @@ class Pointer {
    * @returns
    * Returns the modified object, or an entirely new object if the entire object is overwritten.
    */
-  set(obj: any, value: any, options?: $RefParserOptions) {
+  set(obj: any, value: any, options?: $RefParserOptions<S>) {
     const tokens = Pointer.parse(this.path);
     let token;
 

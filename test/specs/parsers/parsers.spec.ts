@@ -163,7 +163,6 @@ describe("References to non-JSON files", () => {
         },
       },
     });
-    // @ts-expect-error TS(2339): Property 'definitions' does not exist on type 'voi... Remove this comment to see the full error message
     schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.customParser);
   });
@@ -181,7 +180,6 @@ describe("References to non-JSON files", () => {
         },
       },
     });
-    // @ts-expect-error TS(2339): Property 'definitions' does not exist on type 'voi... Remove this comment to see the full error message
     schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.customParser);
   });
@@ -201,7 +199,6 @@ describe("References to non-JSON files", () => {
         },
       },
     });
-    // @ts-expect-error TS(2339): Property 'definitions' does not exist on type 'voi... Remove this comment to see the full error message
     schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.customParser);
   });
@@ -220,7 +217,6 @@ describe("References to non-JSON files", () => {
         },
       },
     });
-    // @ts-expect-error TS(2339): Property 'definitions' does not exist on type 'voi... Remove this comment to see the full error message
     schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
   });

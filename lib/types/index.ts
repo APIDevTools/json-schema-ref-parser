@@ -10,14 +10,14 @@ import type $Refs from "../refs.js";
 
 export type JSONSchema = JSONSchema4 | JSONSchema6 | JSONSchema7;
 export type JSONSchemaObject = JSONSchema4Object | JSONSchema6Object | JSONSchema7Object;
-export type SchemaCallback = (err: Error | null, schema?: JSONSchema | object | null) => any;
-export type $RefsCallback = (err: Error | null, $refs?: $Refs) => any;
+export type SchemaCallback<S = JSONSchema> = (err: Error | null, schema?: S | object | null) => any;
+export type $RefsCallback<S = JSONSchema> = (err: Error | null, $refs?: $Refs<S>) => any;
 
 /**
  * See https://apitools.dev/json-schema-ref-parser/docs/options.html
  */
 
-export interface HTTPResolverOptions extends Partial<ResolverOptions> {
+export interface HTTPResolverOptions<S = JSONSchema> extends Partial<ResolverOptions<S>> {
   /**
    * You can specify any HTTP headers that should be sent when downloading files. For example, some servers may require you to set the `Accept` or `Referrer` header.
    */
@@ -44,7 +44,7 @@ export interface HTTPResolverOptions extends Partial<ResolverOptions> {
  *
  * See https://apitools.dev/json-schema-ref-parser/docs/plugins/resolvers.html
  */
-export interface ResolverOptions {
+export interface ResolverOptions<S = JSONSchema> {
   name?: string;
   /**
    * All resolvers have an order property, even the built-in resolvers. If you don't specify an order property, then your resolver will run last. Specifying `order: 1`, like we did in this example, will make your resolver run first. Or you can squeeze your resolver in-between some of the built-in resolvers. For example, `order: 101` would make it run after the file resolver, but before the HTTP resolver. You can see the order of all the built-in resolvers by looking at their source code.
@@ -69,7 +69,7 @@ export interface ResolverOptions {
     | ((
         file: FileInfo,
         callback?: (error: Error | null, data: string | null) => any,
-      ) => string | Buffer | JSONSchema | Promise<string | Buffer | JSONSchema>);
+      ) => string | Buffer | S | Promise<string | Buffer | S>);
 }
 
 export interface Plugin {

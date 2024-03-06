@@ -10,14 +10,16 @@ import {
 } from "./util/errors.js";
 import type $Refs from "./refs.js";
 import type { Options } from "./options.js";
-import type { FileInfo } from "./types/index.js";
-
-export default parse;
+import type { FileInfo, JSONSchema } from "./types/index.js";
 
 /**
  * Reads and parses the specified file path or URL.
  */
-async function parse(path: string, $refs: $Refs, options: Options) {
+async function parse<S extends JSONSchema = JSONSchema, O extends Options = Options>(
+  path: string,
+  $refs: $Refs<S>,
+  options: O,
+) {
   // Remove the URL fragment, if any
   const hashIndex = path.indexOf("#");
   let hash = "";
@@ -40,11 +42,11 @@ async function parse(path: string, $refs: $Refs, options: Options) {
 
   // Read the file and then parse the data
   try {
-    const resolver = await readFile(file, options, $refs);
+    const resolver = await readFile<S, O>(file, options, $refs);
     $ref.pathType = resolver.plugin.name;
     file.data = resolver.result;
 
-    const parser = await parseFile(file, options, $refs);
+    const parser = await parseFile<S, O>(file, options, $refs);
     $ref.value = parser.result;
 
     return parser.result;
@@ -64,11 +66,15 @@ async function parse(path: string, $refs: $Refs, options: Options) {
  * @param file.url       - The full URL of the referenced file
  * @param file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
  * @param options
- *
+ * @param $refs
  * @returns
  * The promise resolves with the raw file contents and the resolver that was used.
  */
-async function readFile(file: FileInfo, options: Options, $refs: $Refs): Promise<any> {
+async function readFile<S extends JSONSchema = JSONSchema, O extends Options = Options>(
+  file: FileInfo,
+  options: O,
+  $refs: $Refs<S>,
+): Promise<any> {
   // console.log('Reading %s', file.url);
 
   // Find the resolvers that can read this file
@@ -105,11 +111,16 @@ async function readFile(file: FileInfo, options: Options, $refs: $Refs): Promise
  * @param file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
  * @param file.data      - The file contents. This will be whatever data type was returned by the resolver
  * @param options
+ * @param $refs
  *
  * @returns
  * The promise resolves with the parsed file contents and the parser that was used.
  */
-async function parseFile(file: FileInfo, options: Options, $refs: $Refs) {
+async function parseFile<S extends JSONSchema = JSONSchema, O extends Options = Options>(
+  file: FileInfo,
+  options: O,
+  $refs: $Refs<S>,
+) {
   // Find the parsers that can read this file type.
   // If none of the parsers are an exact match for this file, then we'll try ALL of them.
   // This handles situations where the file IS a supported type, just with an unknown extension.
@@ -120,7 +131,7 @@ async function parseFile(file: FileInfo, options: Options, $refs: $Refs) {
   // Run the parsers, in order, until one of them succeeds
   plugins.sort(parsers);
   try {
-    const parser = await plugins.run(parsers, "parse", file, $refs);
+    const parser = await plugins.run<S>(parsers, "parse", file, $refs);
     if (!parser.plugin.allowEmpty && isEmpty(parser.result)) {
       throw ono.syntax(`Error parsing "${file.url}" as ${parser.plugin.name}. \nParsed value is empty`);
     } else {
@@ -156,3 +167,4 @@ function isEmpty(value: any) {
     (Buffer.isBuffer(value) && value.length === 0)
   );
 }
+export default parse;

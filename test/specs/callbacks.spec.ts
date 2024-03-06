@@ -42,6 +42,7 @@ describe("Callback & Promise syntax", () => {
   function testCallbackError(method: typeof methods[number]) {
     return () =>
       new Promise<void>((resolve, reject) => {
+        // @ts-ignore
         $RefParser[method](path.rel("test/specs/invalid/invalid.yaml"), (err: any, result: any) => {
           try {
             expect(err).to.be.an.instanceOf(ParserError);
@@ -72,6 +73,7 @@ describe("Callback & Promise syntax", () => {
   function testPromiseError(method: typeof methods[number]) {
     return async function () {
       try {
+        // @ts-ignore
         await $RefParser[method](path.rel("test/specs/invalid/invalid.yaml"));
         helper.shouldNotGetCalled();
       } catch (err: any) {

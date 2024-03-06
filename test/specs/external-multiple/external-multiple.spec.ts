@@ -22,7 +22,6 @@ describe("Schema with multiple external $refs to different parts of a file", () 
     helper.testResolve(
       path.rel("test/specs/external-multiple/external-multiple.yaml"),
       path.abs("test/specs/external-multiple/external-multiple.yaml"),
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 5.
       parsedSchema.schema,
       path.abs("test/specs/external-multiple/definitions.yaml"),
       parsedSchema.definitions,

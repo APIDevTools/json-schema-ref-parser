@@ -19,7 +19,15 @@ import {
 import { ono } from "@jsdevtools/ono";
 import maybe from "./util/maybe.js";
 import type { ParserOptions } from "./options.js";
-import type { $RefsCallback, JSONSchema, SchemaCallback } from "./types/index.js";
+import type {
+  $RefsCallback,
+  JSONSchema,
+  SchemaCallback,
+  FileInfo,
+  Plugin,
+  ResolverOptions,
+  HTTPResolverOptions,
+} from "./types/index.js";
 
 export type RefParserSchema = string | JSONSchema;
 
@@ -29,14 +37,14 @@ export type RefParserSchema = string | JSONSchema;
  *
  * @class
  */
-export class $RefParser {
+export class $RefParser<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions> {
   /**
    * The parsed (and possibly dereferenced) JSON schema object
    *
    * @type {object}
    * @readonly
    */
-  public schema: JSONSchema | null = null;
+  public schema: S | null = null;
 
   /**
    * The resolved JSON references
@@ -44,7 +52,7 @@ export class $RefParser {
    * @type {$Refs}
    * @readonly
    */
-  $refs = new $Refs();
+  $refs = new $Refs<S>();
 
   /**
    * Parses the given JSON schema.
@@ -57,19 +65,14 @@ export class $RefParser {
    * @param [callback] - An error-first callback. The second parameter is the parsed JSON schema object.
    * @returns - The returned promise resolves with the parsed JSON schema object.
    */
-  public parse(schema: RefParserSchema): Promise<JSONSchema>;
-  public parse(schema: RefParserSchema, callback: SchemaCallback): Promise<void>;
-  public parse(schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public parse(schema: RefParserSchema, options: ParserOptions, callback: SchemaCallback): Promise<void>;
-  public parse(baseUrl: string, schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public parse(
-    baseUrl: string,
-    schema: RefParserSchema,
-    options: ParserOptions,
-    callback: SchemaCallback,
-  ): Promise<void>;
+  public parse(schema: S | string): Promise<S>;
+  public parse(schema: S | string, callback: SchemaCallback<S>): Promise<void>;
+  public parse(schema: S | string, options: O): Promise<S>;
+  public parse(schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public parse(baseUrl: string, schema: S | string, options: O): Promise<S>;
+  public parse(baseUrl: string, schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
   async parse() {
-    const args = normalizeArgs(arguments as any);
+    const args = normalizeArgs<S, O>(arguments as any);
     let promise;
 
     if (!args.path && !args.schema) {
@@ -112,7 +115,7 @@ export class $RefParser {
       promise = Promise.resolve(args.schema);
     } else {
       // Parse the schema file/url
-      promise = _parse(args.path, this.$refs, args.options);
+      promise = _parse<S, typeof args.options>(args.path, this.$refs, args.options);
     }
 
     try {
@@ -140,19 +143,35 @@ export class $RefParser {
     }
   }
 
-  public static parse(schema: RefParserSchema): Promise<JSONSchema>;
-  public static parse(schema: RefParserSchema, callback: SchemaCallback): Promise<void>;
-  public static parse(schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public static parse(schema: RefParserSchema, options: ParserOptions, callback: SchemaCallback): Promise<void>;
-  public static parse(baseUrl: string, schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public static parse(
-    baseUrl: string,
-    schema: RefParserSchema,
-    options: ParserOptions,
-    callback: SchemaCallback,
+  public static parse<S extends JSONSchema = JSONSchema>(schema: S | string): Promise<S>;
+  public static parse<S extends JSONSchema = JSONSchema>(
+    schema: S | string,
+    callback: SchemaCallback<S>,
   ): Promise<void>;
-  public static parse(): Promise<JSONSchema> | Promise<void> {
-    const parser = new $RefParser();
+  public static parse<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+    options: O,
+  ): Promise<S>;
+  public static parse<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+    options: O,
+    callback: SchemaCallback<S>,
+  ): Promise<void>;
+  public static parse<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    baseUrl: string,
+    schema: S | string,
+    options: O,
+  ): Promise<S>;
+  public static parse<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    baseUrl: string,
+    schema: S | string,
+    options: O,
+    callback: SchemaCallback<S>,
+  ): Promise<void>;
+  public static parse<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>():
+    | Promise<S>
+    | Promise<void> {
+    const parser = new $RefParser<S, O>();
     return parser.parse.apply(parser, arguments as any);
   }
 
@@ -167,19 +186,14 @@ export class $RefParser {
    * @param options (optional)
    * @param callback (optional) A callback that will receive a `$Refs` object
    */
-  public resolve(schema: RefParserSchema): Promise<$Refs>;
-  public resolve(schema: RefParserSchema, callback: $RefsCallback): Promise<void>;
-  public resolve(schema: RefParserSchema, options: ParserOptions): Promise<$Refs>;
-  public resolve(schema: RefParserSchema, options: ParserOptions, callback: $RefsCallback): Promise<void>;
-  public resolve(baseUrl: string, schema: RefParserSchema, options: ParserOptions): Promise<$Refs>;
-  public resolve(
-    baseUrl: string,
-    schema: RefParserSchema,
-    options: ParserOptions,
-    callback: $RefsCallback,
-  ): Promise<void>;
+  public resolve(schema: S | string): Promise<$Refs<S>>;
+  public resolve(schema: S | string, callback: $RefsCallback<S>): Promise<void>;
+  public resolve(schema: S | string, options: O): Promise<$Refs<S>>;
+  public resolve(schema: S | string, options: O, callback: $RefsCallback<S>): Promise<void>;
+  public resolve(baseUrl: string, schema: S | string, options: O): Promise<$Refs<S>>;
+  public resolve(baseUrl: string, schema: S | string, options: O, callback: $RefsCallback<S>): Promise<void>;
   async resolve() {
-    const args = normalizeArgs(arguments);
+    const args = normalizeArgs<S, O>(arguments);
 
     try {
       await this.parse(args.path, args.schema, args.options);
@@ -202,19 +216,35 @@ export class $RefParser {
    * @param options (optional)
    * @param callback (optional) A callback that will receive a `$Refs` object
    */
-  public static resolve(schema: RefParserSchema): Promise<$Refs>;
-  public static resolve(schema: RefParserSchema, callback: $RefsCallback): Promise<void>;
-  public static resolve(schema: RefParserSchema, options: ParserOptions): Promise<$Refs>;
-  public static resolve(schema: RefParserSchema, options: ParserOptions, callback: $RefsCallback): Promise<void>;
-  public static resolve(baseUrl: string, schema: RefParserSchema, options: ParserOptions): Promise<$Refs>;
-  public static resolve(
-    baseUrl: string,
-    schema: RefParserSchema,
-    options: ParserOptions,
-    callback: $RefsCallback,
+  public static resolve<S extends JSONSchema = JSONSchema>(schema: S | string): Promise<$Refs<S>>;
+  public static resolve<S extends JSONSchema = JSONSchema>(
+    schema: S | string,
+    callback: $RefsCallback<S>,
   ): Promise<void>;
-  static resolve(): Promise<JSONSchema> | Promise<void> {
-    const instance = new $RefParser();
+  public static resolve<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+    options: O,
+  ): Promise<$Refs<S>>;
+  public static resolve<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+    options: O,
+    callback: $RefsCallback<S>,
+  ): Promise<void>;
+  public static resolve<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    baseUrl: string,
+    schema: S | string,
+    options: O,
+  ): Promise<$Refs<S>>;
+  public static resolve<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    baseUrl: string,
+    schema: S | string,
+    options: O,
+    callback: $RefsCallback<S>,
+  ): Promise<void>;
+  static resolve<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>():
+    | Promise<S>
+    | Promise<void> {
+    const instance = new $RefParser<S, O>();
     return instance.resolve.apply(instance, arguments as any);
   }
 
@@ -229,19 +259,37 @@ export class $RefParser {
    * @param options (optional)
    * @param callback (optional) A callback that will receive the bundled schema object
    */
-  public static bundle(schema: RefParserSchema): Promise<JSONSchema>;
-  public static bundle(schema: RefParserSchema, callback: SchemaCallback): Promise<void>;
-  public static bundle(schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public static bundle(schema: RefParserSchema, options: ParserOptions, callback: SchemaCallback): Promise<void>;
-  public static bundle(baseUrl: string, schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public static bundle(
+  public static bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+  ): Promise<S>;
+  public static bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+    callback: SchemaCallback<S>,
+  ): Promise<void>;
+  public static bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+    options: O,
+  ): Promise<S>;
+  public static bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+    options: O,
+    callback: SchemaCallback<S>,
+  ): Promise<void>;
+  public static bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
     baseUrl: string,
-    schema: RefParserSchema,
-    options: ParserOptions,
-    callback: SchemaCallback,
-  ): Promise<JSONSchema>;
-  static bundle(): Promise<JSONSchema> | Promise<void> {
-    const instance = new $RefParser();
+    schema: S | string,
+    options: O,
+  ): Promise<S>;
+  public static bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    baseUrl: string,
+    schema: S | string,
+    options: O,
+    callback: SchemaCallback<S>,
+  ): Promise<S>;
+  static bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>():
+    | Promise<S>
+    | Promise<void> {
+    const instance = new $RefParser<S, O>();
     return instance.bundle.apply(instance, arguments as any);
   }
 
@@ -256,22 +304,17 @@ export class $RefParser {
    * @param options (optional)
    * @param callback (optional) A callback that will receive the bundled schema object
    */
-  public bundle(schema: RefParserSchema): Promise<JSONSchema>;
-  public bundle(schema: RefParserSchema, callback: SchemaCallback): Promise<void>;
-  public bundle(schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public bundle(schema: RefParserSchema, options: ParserOptions, callback: SchemaCallback): Promise<void>;
-  public bundle(baseUrl: string, schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public bundle(
-    baseUrl: string,
-    schema: RefParserSchema,
-    options: ParserOptions,
-    callback: SchemaCallback,
-  ): Promise<void>;
+  public bundle(schema: S | string): Promise<S>;
+  public bundle(schema: S | string, callback: SchemaCallback<S>): Promise<void>;
+  public bundle(schema: S | string, options: O): Promise<S>;
+  public bundle(schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public bundle(baseUrl: string, schema: S | string, options: O): Promise<S>;
+  public bundle(baseUrl: string, schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
   async bundle() {
-    const args = normalizeArgs(arguments);
+    const args = normalizeArgs<S, O>(arguments);
     try {
       await this.resolve(args.path, args.schema, args.options);
-      _bundle(this, args.options);
+      _bundle<S, O>(this, args.options);
       finalize(this);
       return maybe(args.callback, Promise.resolve(this.schema!));
     } catch (err) {
@@ -290,19 +333,37 @@ export class $RefParser {
    * @param options (optional)
    * @param callback (optional) A callback that will receive the dereferenced schema object
    */
-  public static dereference(schema: RefParserSchema): Promise<JSONSchema>;
-  public static dereference(schema: RefParserSchema, callback: SchemaCallback): Promise<void>;
-  public static dereference(schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public static dereference(schema: RefParserSchema, options: ParserOptions, callback: SchemaCallback): Promise<void>;
-  public static dereference(baseUrl: string, schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public static dereference(
-    baseUrl: string,
-    schema: RefParserSchema,
-    options: ParserOptions,
-    callback: SchemaCallback,
+  public static dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+  ): Promise<S>;
+  public static dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+    callback: SchemaCallback<S>,
   ): Promise<void>;
-  static dereference(): Promise<JSONSchema> | Promise<void> {
-    const instance = new $RefParser();
+  public static dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+    options: O,
+  ): Promise<S>;
+  public static dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    schema: S | string,
+    options: O,
+    callback: SchemaCallback<S>,
+  ): Promise<void>;
+  public static dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    baseUrl: string,
+    schema: S | string,
+    options: O,
+  ): Promise<S>;
+  public static dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    baseUrl: string,
+    schema: S | string,
+    options: O,
+    callback: SchemaCallback<S>,
+  ): Promise<void>;
+  static dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>():
+    | Promise<S>
+    | Promise<void> {
+    const instance = new $RefParser<S, O>();
     return instance.dereference.apply(instance, arguments as any);
   }
 
@@ -313,37 +374,35 @@ export class $RefParser {
    *
    * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferenceschema-options-callback
    *
+   * @param baseUrl
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
    * @param options (optional)
    * @param callback (optional) A callback that will receive the dereferenced schema object
    */
-  public dereference(
-    baseUrl: string,
-    schema: RefParserSchema,
-    options: ParserOptions,
-    callback: SchemaCallback,
-  ): Promise<void>;
-  public dereference(schema: RefParserSchema, options: ParserOptions, callback: SchemaCallback): Promise<void>;
-  public dereference(schema: RefParserSchema, callback: SchemaCallback): Promise<void>;
-  public dereference(baseUrl: string, schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public dereference(schema: RefParserSchema, options: ParserOptions): Promise<JSONSchema>;
-  public dereference(schema: RefParserSchema): Promise<JSONSchema>;
+  public dereference(baseUrl: string, schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public dereference(schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public dereference(schema: S | string, callback: SchemaCallback<S>): Promise<void>;
+  public dereference(baseUrl: string, schema: S | string, options: O): Promise<S>;
+  public dereference(schema: S | string, options: O): Promise<S>;
+  public dereference(schema: S | string): Promise<S>;
   async dereference() {
-    const args = normalizeArgs(arguments);
+    const args = normalizeArgs<S, O>(arguments);
 
     try {
       await this.resolve(args.path, args.schema, args.options);
       _dereference(this, args.options);
       finalize(this);
-      return maybe(args.callback, Promise.resolve(this.schema));
+      return maybe<S>(args.callback, Promise.resolve(this.schema!) as Promise<S>);
     } catch (err) {
-      return maybe(args.callback, Promise.reject(err));
+      return maybe<S>(args.callback, Promise.reject(err));
     }
   }
 }
 export default $RefParser;
 
-function finalize(parser: any) {
+function finalize<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+  parser: $RefParser<S, O>,
+) {
   const errors = JSONParserErrorGroup.getParserErrors(parser);
   if (errors.length > 0) {
     throw new JSONParserErrorGroup(parser);
@@ -369,4 +428,8 @@ export {
   isHandledError,
   JSONParserErrorGroup,
   SchemaCallback,
+  FileInfo,
+  Plugin,
+  ResolverOptions,
+  HTTPResolverOptions,
 };

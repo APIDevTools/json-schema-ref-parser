@@ -22,7 +22,6 @@ describe("Schema with deeply-nested $refs", () => {
     helper.testResolve(
       path.rel("test/specs/deep/deep.yaml"),
       path.abs("test/specs/deep/deep.yaml"),
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 7.
       parsedSchema.schema,
       path.abs("test/specs/deep/definitions/name.yaml"),
       parsedSchema.name,

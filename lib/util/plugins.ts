@@ -3,7 +3,6 @@ import type $RefParserOptions from "../options.js";
 import type { ResolverOptions } from "../types/index.js";
 import type $Refs from "../refs.js";
 import type { Plugin } from "../types/index.js";
-import type { JSONSchema } from "../types/index.js";
 
 /**
  * Returns the given plugins as an array, rather than an object map.
@@ -11,13 +10,13 @@ import type { JSONSchema } from "../types/index.js";
  *
  * @returns
  */
-export function all(plugins: $RefParserOptions["resolve"]): Plugin[] {
+export function all<S>(plugins: $RefParserOptions<S>["resolve"]): Plugin[] {
   return Object.keys(plugins)
     .filter((key) => {
       return typeof plugins[key] === "object";
     })
     .map((key) => {
-      (plugins[key] as ResolverOptions)!.name = key;
+      (plugins[key] as ResolverOptions<S>)!.name = key;
       return plugins[key] as Plugin;
     });
 }
@@ -44,9 +43,9 @@ export function sort(plugins: Plugin[]) {
   });
 }
 
-export interface PluginResult {
+export interface PluginResult<S> {
   plugin: Plugin;
-  result?: string | Buffer | JSONSchema;
+  result?: string | Buffer | S;
   error?: any;
 }
 
@@ -58,17 +57,17 @@ export interface PluginResult {
  * If the promise rejects, or the callback is called with an error, then the next plugin is called.
  * If ALL plugins fail, then the last error is thrown.
  */
-export async function run(
+export async function run<S>(
   plugins: Plugin[],
-  method: keyof Plugin | keyof ResolverOptions,
+  method: keyof Plugin | keyof ResolverOptions<S>,
   file: FileInfo,
-  $refs: $Refs,
+  $refs: $Refs<S>,
 ) {
   let plugin: Plugin;
-  let lastError: PluginResult;
+  let lastError: PluginResult<S>;
   let index = 0;
 
-  return new Promise<PluginResult>((resolve, reject) => {
+  return new Promise<PluginResult<S>>((resolve, reject) => {
     runNextPlugin();
 
     function runNextPlugin() {
@@ -95,7 +94,7 @@ export async function run(
       }
     }
 
-    function callback(err: PluginResult["error"], result: PluginResult["result"]) {
+    function callback(err: PluginResult<S>["error"], result: PluginResult<S>["result"]) {
       if (err) {
         onError(err);
       } else {
@@ -103,7 +102,7 @@ export async function run(
       }
     }
 
-    function onSuccess(result: PluginResult["result"]) {
+    function onSuccess(result: PluginResult<S>["result"]) {
       // console.log('    success');
       resolve({
         plugin,
@@ -111,7 +110,7 @@ export async function run(
       });
     }
 
-    function onError(error: PluginResult["error"]) {
+    function onError(error: PluginResult<S>["error"]) {
       // console.log('    %s', err.message || err);
       lastError = {
         plugin,
@@ -128,9 +127,9 @@ export async function run(
  * If the value is a RegExp, then it will be tested against the file URL.
  * If the value is an array, then it will be compared against the file extension.
  */
-function getResult(
+function getResult<S>(
   obj: Plugin,
-  prop: keyof Plugin | keyof ResolverOptions,
+  prop: keyof Plugin | keyof ResolverOptions<S>,
   file: FileInfo,
   callback?: (err?: Error, result?: any) => void,
   $refs?: any,

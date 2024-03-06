@@ -82,14 +82,12 @@ describe("Blank files", () => {
 
     it("should dereference successfully", async () => {
       const schema = await $RefParser.dereference(path.rel("test/specs/blank/blank.yaml"));
-      // @ts-expect-error TS(2339): Property 'binary' does not exist on type 'JSONSche... Remove this comment to see the full error message
       schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
       expect(schema).to.deep.equal(dereferencedSchema);
     });
 
     it("should bundle successfully", async () => {
       const schema = await $RefParser.bundle(path.rel("test/specs/blank/blank.yaml"));
-      // @ts-expect-error TS(2339): Property 'binary' does not exist on type 'JSONSche... Remove this comment to see the full error message
       schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
       expect(schema).to.deep.equal(dereferencedSchema);
     });

@@ -1,7 +1,7 @@
 import { ono } from "@jsdevtools/ono";
 import * as url from "../util/url.js";
 import { ResolverError } from "../util/errors.js";
-import type { FileInfo, HTTPResolverOptions } from "../types/index.js";
+import type { FileInfo, HTTPResolverOptions, JSONSchema } from "../types/index.js";
 
 export default {
   /**
@@ -59,14 +59,18 @@ export default {
 
     return download(u, this);
   },
-} as HTTPResolverOptions;
+} as HTTPResolverOptions<JSONSchema>;
 
 /**
  * Downloads the given file.
  * @returns
  * The promise resolves with the raw downloaded data, or rejects if there is an HTTP error.
  */
-async function download(u: URL | string, httpOptions: HTTPResolverOptions, _redirects?: string[]): Promise<Buffer> {
+async function download<S>(
+  u: URL | string,
+  httpOptions: HTTPResolverOptions<S>,
+  _redirects?: string[],
+): Promise<Buffer> {
   u = url.parse(u);
   const redirects = _redirects || [];
   redirects.push(u.href);
@@ -105,7 +109,7 @@ async function download(u: URL | string, httpOptions: HTTPResolverOptions, _redi
  * Sends an HTTP GET request.
  * The promise resolves with the HTTP Response object.
  */
-async function get(u: RequestInfo | URL, httpOptions: HTTPResolverOptions) {
+async function get<S>(u: RequestInfo | URL, httpOptions: HTTPResolverOptions<S>) {
   let controller: any;
   let timeoutId: any;
   if (httpOptions.timeout) {

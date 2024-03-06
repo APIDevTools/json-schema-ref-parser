@@ -3,7 +3,9 @@ import Pointer from "./pointer.js";
 import { ono } from "@jsdevtools/ono";
 import * as url from "./util/url.js";
 import type $Refs from "./refs.js";
-import type $RefParserOptions from "./options.js";
+import type { DereferenceOptions, ParserOptions } from "./options.js";
+import type { JSONSchema } from "./types";
+import type $RefParser from "./index";
 
 export default dereference;
 
@@ -14,11 +16,14 @@ export default dereference;
  * @param parser
  * @param options
  */
-function dereference(parser: any, options: any) {
+function dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+  parser: $RefParser<S, O>,
+  options: O,
+) {
   // console.log('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
-  const dereferenced = crawl(
+  const dereferenced = crawl<S, O>(
     parser.schema,
-    parser.$refs._root$Ref.path,
+    parser.$refs._root$Ref.path!,
     "#",
     new Set(),
     new Set(),
@@ -43,15 +48,15 @@ function dereference(parser: any, options: any) {
  * @param options
  * @returns
  */
-function crawl(
+function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
   obj: any,
   path: string,
   pathFromRoot: string,
   parents: Set<any>,
   processedObjects: Set<any>,
   dereferencedCache: any,
-  $refs: $Refs,
-  options: $RefParserOptions,
+  $refs: $Refs<S>,
+  options: O,
 ) {
   let dereferenced;
   const result = {
@@ -59,9 +64,10 @@ function crawl(
     circular: false,
   };
 
-  const isExcludedPath = options.dereference.excludedPathMatcher || (() => false);
+  const derefOptions = (options.dereference || {}) as DereferenceOptions;
+  const isExcludedPath = derefOptions.excludedPathMatcher || (() => false);
 
-  if (options.dereference.circular === "ignore" || !processedObjects.has(obj)) {
+  if (derefOptions?.circular === "ignore" || !processedObjects.has(obj)) {
     if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
       parents.add(obj);
       processedObjects.add(obj);
@@ -106,9 +112,7 @@ function crawl(
             // Avoid pointless mutations; breaks frozen objects to no profit
             if (obj[key] !== dereferenced.value) {
               obj[key] = dereferenced.value;
-              if (options.dereference.onDereference) {
-                options.dereference.onDereference(value.$ref, obj[key], obj, key);
-              }
+              derefOptions?.onDereference?.(value.$ref, obj[key], obj, key);
             }
           } else {
             if (!parents.has(value)) {
@@ -157,18 +161,18 @@ function crawl(
  * @param options
  * @returns
  */
-function dereference$Ref(
+function dereference$Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
   $ref: any,
   path: string,
   pathFromRoot: string,
   parents: Set<any>,
   processedObjects: any,
   dereferencedCache: any,
-  $refs: $Refs,
-  options: $RefParserOptions,
+  $refs: $Refs<S>,
+  options: O,
 ) {
   const isExternalRef = $Ref.isExternal$Ref($ref);
-  const shouldResolveOnCwd = isExternalRef && options?.dereference.externalReferenceResolution === "root";
+  const shouldResolveOnCwd = isExternalRef && options?.dereference?.externalReferenceResolution === "root";
   const $refPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref);
 
   const cache = dereferencedCache.get($refPath);
@@ -225,7 +229,7 @@ function dereference$Ref(
     dereferencedValue = dereferenced.value;
   }
 
-  if (circular && !directCircular && options.dereference.circular === "ignore") {
+  if (circular && !directCircular && options.dereference?.circular === "ignore") {
     // The user has chosen to "ignore" circular references, so don't change the value
     dereferencedValue = $ref;
   }

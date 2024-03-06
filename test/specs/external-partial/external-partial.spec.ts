@@ -22,7 +22,6 @@ describe("Schema with $refs to parts of external files", () => {
     helper.testResolve(
       path.rel("test/specs/external-partial/external-partial.yaml"),
       path.abs("test/specs/external-partial/external-partial.yaml"),
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 9.
       parsedSchema.schema,
       path.abs("test/specs/external-partial/definitions/definitions.json"),
       parsedSchema.definitions,

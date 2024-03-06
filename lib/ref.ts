@@ -4,6 +4,7 @@ import { InvalidPointerError, isHandledError, normalizeError } from "./util/erro
 import { safePointerToPath, stripHash, getHash } from "./util/url.js";
 import type $Refs from "./refs.js";
 import type $RefParserOptions from "./options.js";
+import type { ParserOptions } from "./options.js";
 import type { JSONSchema } from "./types";
 
 export type $RefError = JSONParserError | ResolverError | ParserError | MissingPointerError;
@@ -13,7 +14,7 @@ export type $RefError = JSONParserError | ResolverError | ParserError | MissingP
  *
  * @class
  */
-class $Ref {
+class $Ref<S = JSONSchema> {
   /**
    * The file path or URL of the referenced file.
    * This path is relative to the path of the main JSON schema file.
@@ -39,7 +40,7 @@ class $Ref {
    *
    * @type {$Refs}
    */
-  $refs: $Refs;
+  $refs: $Refs<S>;
 
   /**
    * Indicates the type of {@link $Ref#path} (e.g. "file", "http", etc.)
@@ -51,7 +52,7 @@ class $Ref {
    */
   errors: Array<$RefError> = [];
 
-  constructor($refs: $Refs) {
+  constructor($refs: $Refs<S>) {
     this.$refs = $refs;
   }
 
@@ -87,7 +88,7 @@ class $Ref {
    * @param options
    * @returns
    */
-  exists(path: string, options?: $RefParserOptions) {
+  exists(path: string, options?: $RefParserOptions<S>) {
     try {
       this.resolve(path, options);
       return true;
@@ -103,7 +104,7 @@ class $Ref {
    * @param options
    * @returns - Returns the resolved value
    */
-  get(path: any, options: $RefParserOptions) {
+  get(path: string, options?: $RefParserOptions<S>) {
     return this.resolve(path, options)?.value;
   }
 
@@ -116,8 +117,8 @@ class $Ref {
    * @param pathFromRoot - The path of `obj` from the schema root
    * @returns
    */
-  resolve(path: any, options?: $RefParserOptions, friendlyPath?: string, pathFromRoot?: string) {
-    const pointer = new Pointer(this, path, friendlyPath);
+  resolve(path: string, options?: $RefParserOptions<S>, friendlyPath?: string, pathFromRoot?: string) {
+    const pointer = new Pointer<S>(this, path, friendlyPath);
     try {
       return pointer.resolve(this.value, options, pathFromRoot);
     } catch (err: any) {
@@ -185,12 +186,12 @@ class $Ref {
    * @param options
    * @returns
    */
-  static isAllowed$Ref(value: unknown, options?: $RefParserOptions) {
+  static isAllowed$Ref(value: unknown, options?: ParserOptions) {
     if (this.is$Ref(value)) {
       if (value.$ref.substring(0, 2) === "#/" || value.$ref === "#") {
         // It's a JSON Pointer reference, which is always allowed
         return true;
-      } else if (value.$ref[0] !== "#" && (!options || options.resolve.external)) {
+      } else if (value.$ref[0] !== "#" && (!options || options.resolve?.external)) {
         // It's an external reference, which is allowed by the options
         return true;
       }
@@ -266,7 +267,7 @@ class $Ref {
    * @param resolvedValue - The resolved value, which can be any type
    * @returns - Returns the dereferenced value
    */
-  static dereference($ref: $Ref, resolvedValue: JSONSchema): JSONSchema {
+  static dereference<S>($ref: $Ref<S>, resolvedValue: S): S {
     if (resolvedValue && typeof resolvedValue === "object" && $Ref.isExtended$Ref($ref)) {
       const merged = {};
       for (const key of Object.keys($ref)) {
@@ -283,7 +284,7 @@ class $Ref {
         }
       }
 
-      return merged;
+      return merged as S;
     } else {
       // Completely replace the original reference with the resolved value
       return resolvedValue;

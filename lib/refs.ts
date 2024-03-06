@@ -2,12 +2,12 @@ import { ono } from "@jsdevtools/ono";
 import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
-import type { JSONSchema } from "./types/index.js";
 import type $RefParserOptions from "./options.js";
 import convertPathToPosix from "./util/convert-path-to-posix";
+import type { JSONSchema } from "./types";
 
-interface $RefsMap {
-  [url: string]: $Ref;
+interface $RefsMap<S> {
+  [url: string]: $Ref<S>;
 }
 /**
  * When you call the resolve method, the value that gets passed to the callback function (or Promise) is a $Refs object. This same object is accessible via the parser.$refs property of $RefParser objects.
@@ -16,7 +16,7 @@ interface $RefsMap {
  *
  * See https://apitools.dev/json-schema-ref-parser/docs/refs.html
  */
-export default class $Refs {
+export default class $Refs<S = JSONSchema> {
   /**
    * This property is true if the schema contains any circular references. You may want to check this property before serializing the dereferenced schema as JSON, since JSON.stringify() does not support circular references by default.
    *
@@ -45,13 +45,13 @@ export default class $Refs {
    *
    * @param types (optional) Optionally only return values from certain locations ("file", "http", etc.)
    */
-  values(...types: string[]): JSONSchema {
+  values(...types: string[]): S {
     const $refs = this._$refs;
     const paths = getPaths($refs, types);
     return paths.reduce<Record<string, any>>((obj, path) => {
       obj[convertPathToPosix(path.decoded)] = $refs[path.encoded].value;
       return obj;
-    }, {});
+    }, {}) as S;
   }
 
   /**
@@ -84,17 +84,17 @@ export default class $Refs {
    * @param [options]
    * @returns - Returns the resolved value
    */
-  get(path: string, options?: $RefParserOptions): JSONSchema4Type | JSONSchema6Type | JSONSchema7Type {
+  get(path: string, options?: $RefParserOptions<S>): JSONSchema4Type | JSONSchema6Type | JSONSchema7Type {
     return this._resolve(path, "", options)!.value;
   }
 
   /**
    * Sets the value at the given path in the schema. If the property, or any of its parents, don't exist, they will be created.
    *
-   * @param $ref The JSON Reference path, optionally with a JSON Pointer in the hash
+   * @param path The JSON Reference path, optionally with a JSON Pointer in the hash
    * @param value The value to assign. Can be anything (object, string, number, etc.)
    */
-  set(path: any, value: JSONSchema4Type | JSONSchema6Type | JSONSchema7Type) {
+  set(path: string, value: JSONSchema4Type | JSONSchema6Type | JSONSchema7Type) {
     const absPath = url.resolve(this._root$Ref.path!, path);
     const withoutHash = url.stripHash(absPath);
     const $ref = this._$refs[withoutHash];
@@ -126,7 +126,7 @@ export default class $Refs {
   _add(path: string) {
     const withoutHash = url.stripHash(path);
 
-    const $ref = new $Ref(this);
+    const $ref = new $Ref<S>(this);
     $ref.path = withoutHash;
 
     this._$refs[withoutHash] = $ref;
@@ -162,7 +162,7 @@ export default class $Refs {
    * @type {object}
    * @protected
    */
-  _$refs: $RefsMap = {};
+  _$refs: $RefsMap<S> = {};
 
   /**
    * The {@link $Ref} object that is the root of the JSON schema.
@@ -170,7 +170,7 @@ export default class $Refs {
    * @type {$Ref}
    * @protected
    */
-  _root$Ref: $Ref;
+  _root$Ref: $Ref<S>;
 
   constructor() {
     /**
@@ -215,7 +215,7 @@ export default class $Refs {
  * @param [types] - Only return paths of the given types ("file", "http", etc.)
  * @returns
  */
-function getPaths($refs: $RefsMap, types: string[]) {
+function getPaths<S>($refs: $RefsMap<S>, types: string[]) {
   let paths = Object.keys($refs);
 
   // Filter the paths by type

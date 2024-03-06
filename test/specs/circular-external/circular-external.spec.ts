@@ -25,7 +25,6 @@ describe("Schema with circular (recursive) external $refs", () => {
     helper.testResolve(
       path.rel("test/specs/circular-external/circular-external.yaml"),
       path.abs("test/specs/circular-external/circular-external.yaml"),
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 11.
       parsedSchema.schema,
       path.abs("test/specs/circular-external/definitions/pet.yaml"),
       parsedSchema.pet,

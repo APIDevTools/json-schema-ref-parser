@@ -5,20 +5,55 @@ import binaryParser from "./parsers/binary.js";
 import fileResolver from "./resolvers/file.js";
 import httpResolver from "./resolvers/http.js";
 
-import type { HTTPResolverOptions, JSONSchemaObject, Plugin, ResolverOptions } from "./types/index.js";
+import type { HTTPResolverOptions, JSONSchema, JSONSchemaObject, Plugin, ResolverOptions } from "./types/index.js";
 
 export type DeepPartial<T> = T extends object
   ? {
       [P in keyof T]?: DeepPartial<T[P]>;
     }
   : T;
+export interface DereferenceOptions {
+  /**
+   * Determines whether circular `$ref` pointers are handled.
+   *
+   * If set to `false`, then a `ReferenceError` will be thrown if the schema contains any circular references.
+   *
+   * If set to `"ignore"`, then circular references will simply be ignored. No error will be thrown, but the `$Refs.circular` property will still be set to `true`.
+   */
+  circular?: boolean | "ignore";
+
+  /**
+   * A function, called for each path, which can return true to stop this path and all
+   * subpaths from being dereferenced further. This is useful in schemas where some
+   * subpaths contain literal $ref keys that should not be dereferenced.
+   */
+  excludedPathMatcher?(path: string): boolean;
+
+  /**
+   * Callback invoked during dereferencing.
+   *
+   * @argument {string} path - The path being dereferenced (ie. the `$ref` string)
+   * @argument {JSONSchemaObject} value - The JSON-Schema that the `$ref` resolved to
+   * @argument {JSONSchemaObject} parent - The parent of the dereferenced object
+   * @argument {string} parentPropName - The prop name of the parent object whose value was dereferenced
+   */
+  onDereference?(path: string, value: JSONSchemaObject, parent?: JSONSchemaObject, parentPropName?: string): void;
+
+  /**
+   * Whether a reference should resolve relative to its directory/path, or from the cwd
+   *
+   * Default: `relative`
+   */
+  externalReferenceResolution?: "relative" | "root";
+}
+
 /**
  * Options that determine how JSON schemas are parsed, resolved, and dereferenced.
  *
  * @param [options] - Overridden options
  * @class
  */
-export interface $RefParserOptions {
+export interface $RefParserOptions<S> {
   /**
    * The `parse` options determine how different types of files will be parsed.
    *
@@ -42,10 +77,10 @@ export interface $RefParserOptions {
      * Determines whether external $ref pointers will be resolved. If this option is disabled, then external `$ref` pointers will simply be ignored.
      */
     external?: boolean;
-    file?: Partial<ResolverOptions> | boolean;
-    http?: HTTPResolverOptions | boolean;
+    file?: Partial<ResolverOptions<S>> | boolean;
+    http?: HTTPResolverOptions<S> | boolean;
   } & {
-    [key: string]: Partial<ResolverOptions> | HTTPResolverOptions | boolean | undefined;
+    [key: string]: Partial<ResolverOptions<S>> | HTTPResolverOptions<S> | boolean | undefined;
   };
 
   /**
@@ -58,47 +93,14 @@ export interface $RefParserOptions {
   /**
    * The `dereference` options control how JSON Schema `$Ref` Parser will dereference `$ref` pointers within the JSON schema.
    */
-  dereference: {
-    /**
-     * Determines whether circular `$ref` pointers are handled.
-     *
-     * If set to `false`, then a `ReferenceError` will be thrown if the schema contains any circular references.
-     *
-     * If set to `"ignore"`, then circular references will simply be ignored. No error will be thrown, but the `$Refs.circular` property will still be set to `true`.
-     */
-    circular?: boolean | "ignore";
+  dereference: DereferenceOptions;
 
-    /**
-     * A function, called for each path, which can return true to stop this path and all
-     * subpaths from being dereferenced further. This is useful in schemas where some
-     * subpaths contain literal $ref keys that should not be dereferenced.
-     */
-    excludedPathMatcher?(path: string): boolean;
-
-    /**
-     * Callback invoked during dereferencing.
-     *
-     * @argument {string} path - The path being dereferenced (ie. the `$ref` string)
-     * @argument {JSONSchemaObject} value - The JSON-Schema that the `$ref` resolved to
-     * @argument {JSONSchemaObject} parent - The parent of the dereferenced object
-     * @argument {string} parentPropName - The prop name of the parent object whose value was dereferenced
-     */
-    onDereference?(path: string, value: JSONSchemaObject, parent?: JSONSchemaObject, parentPropName?: string): void;
-
-    /**
-     * Whether a reference should resolve relative to its directory/path, or from the cwd
-     *
-     * Default: `relative`
-     */
-    externalReferenceResolution?: "relative" | "root";
-
-    /**
-     * Whether to clone the schema before dereferencing it.
-     * This is useful when you want to dereference the same schema multiple times, but you don't want to modify the original schema.
-     * Default: `true` due to mutating the input being the default behavior historically
-     */
-    mutateInputSchema?: boolean;
-  };
+  /**
+   * Whether to clone the schema before dereferencing it.
+   * This is useful when you want to dereference the same schema multiple times, but you don't want to modify the original schema.
+   * Default: `true` due to mutating the input being the default behavior historically
+   */
+  mutateInputSchema?: boolean;
 }
 
 export const getJsonSchemaRefParserDefaultOptions = () => {
@@ -168,19 +170,19 @@ export const getJsonSchemaRefParserDefaultOptions = () => {
     },
 
     mutateInputSchema: true,
-  } as $RefParserOptions;
+  } as $RefParserOptions<JSONSchema>;
   return defaults;
 };
 
-export const getNewOptions = (options: DeepPartial<$RefParserOptions> | undefined): $RefParserOptions => {
+export const getNewOptions = <S, O>(options: O | undefined): O & $RefParserOptions<S> => {
   const newOptions = getJsonSchemaRefParserDefaultOptions();
   if (options) {
     merge(newOptions, options);
   }
-  return newOptions;
+  return newOptions as O & $RefParserOptions<S>;
 };
-export type Options = $RefParserOptions;
-export type ParserOptions = DeepPartial<$RefParserOptions>;
+export type Options = $RefParserOptions<JSONSchema>;
+export type ParserOptions = DeepPartial<$RefParserOptions<JSONSchema>>;
 /**
  * Merges the properties of the source object into the target object.
  *

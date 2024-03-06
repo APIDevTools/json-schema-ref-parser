@@ -1,6 +1,8 @@
 import { Ono } from "@jsdevtools/ono";
 import { stripHash, toFileSystemPath } from "./url.js";
 import type $RefParser from "../index.js";
+import type { ParserOptions } from "../index.js";
+import type { JSONSchema } from "../index.js";
 import type $Ref from "../ref";
 
 export type JSONParserErrorType =
@@ -11,6 +13,7 @@ export type JSONParserErrorType =
   | "EUNMATCHEDRESOLVER"
   | "EMISSINGPOINTER"
   | "EINVALIDPOINTER";
+
 export class JSONParserError extends Error {
   public readonly name: string;
   public readonly message: string;
@@ -34,10 +37,13 @@ export class JSONParserError extends Error {
   }
 }
 
-export class JSONParserErrorGroup extends Error {
-  files: $RefParser;
+export class JSONParserErrorGroup<
+  S extends JSONSchema = JSONSchema,
+  O extends ParserOptions = ParserOptions,
+> extends Error {
+  files: $RefParser<S, O>;
 
-  constructor(parser: $RefParser) {
+  constructor(parser: $RefParser<S, O>) {
     super();
 
     this.files = parser;
@@ -49,10 +55,12 @@ export class JSONParserErrorGroup extends Error {
     Ono.extend(this);
   }
 
-  static getParserErrors(parser: any) {
+  static getParserErrors<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+    parser: $RefParser<S, O>,
+  ) {
     const errors = [];
 
-    for (const $ref of Object.values(parser.$refs._$refs) as $Ref[]) {
+    for (const $ref of Object.values(parser.$refs._$refs) as $Ref<unknown>[]) {
       if ($ref.errors) {
         errors.push(...$ref.errors);
       }
@@ -70,7 +78,7 @@ export class JSONParserErrorGroup extends Error {
     | UnmatchedParserError
     | UnmatchedResolverError
   > {
-    return JSONParserErrorGroup.getParserErrors(this.files);
+    return JSONParserErrorGroup.getParserErrors<S>(this.files);
   }
 }
 
