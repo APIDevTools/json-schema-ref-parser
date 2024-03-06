@@ -31,8 +31,8 @@ export default class $Refs<S extends JSONSchema = JSONSchema> {
    *
    * @param types (optional) Optionally only return certain types of paths ("file", "http", etc.)
    */
-  paths(...types: string[]): string[] {
-    const paths = getPaths(this._$refs, types);
+  paths(...types: (string | string[])[]): string[] {
+    const paths = getPaths(this._$refs, types.flat());
     return paths.map((path) => {
       return convertPathToPosix(path.decoded);
     });
@@ -45,9 +45,9 @@ export default class $Refs<S extends JSONSchema = JSONSchema> {
    *
    * @param types (optional) Optionally only return values from certain locations ("file", "http", etc.)
    */
-  values(...types: string[]): S {
+  values(...types: (string | string[])[]): S {
     const $refs = this._$refs;
-    const paths = getPaths($refs, types);
+    const paths = getPaths($refs, types.flat());
     return paths.reduce<Record<string, any>>((obj, path) => {
       obj[convertPathToPosix(path.decoded)] = $refs[path.encoded].value;
       return obj;
