@@ -76,7 +76,7 @@ class Pointer {
    * the {@link Pointer#$ref} and {@link Pointer#path} will reflect the resolution path
    * of the resolved value.
    */
-  resolve(obj: any, options: any, pathFromRoot: any) {
+  resolve(obj: any, options?: $RefParserOptions, pathFromRoot?: string) {
     const tokens = Pointer.parse(this.path, this.originalPath);
 
     // Crawl the object, one token at a time
