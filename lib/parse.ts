@@ -19,7 +19,13 @@ export default parse;
  */
 async function parse(path: string, $refs: $Refs, options: Options) {
   // Remove the URL fragment, if any
-  path = url.stripHash(path);
+  const hashIndex = path.indexOf("#");
+  let hash = "";
+  if (hashIndex >= 0) {
+    hash = path.substring(hashIndex);
+    // Remove the URL fragment, if any
+    path = path.substring(0, hashIndex);
+  }
 
   // Add a new $Ref for this file, even though we don't have the value yet.
   // This ensures that we don't simultaneously read & parse the same file multiple times
@@ -28,6 +34,7 @@ async function parse(path: string, $refs: $Refs, options: Options) {
   // This "file object" will be passed to all resolvers and parsers.
   const file = {
     url: path,
+    hash,
     extension: url.getExtension(path),
   } as FileInfo;
 
@@ -103,8 +110,6 @@ async function readFile(file: FileInfo, options: Options, $refs: $Refs): Promise
  * The promise resolves with the parsed file contents and the parser that was used.
  */
 async function parseFile(file: FileInfo, options: Options, $refs: $Refs) {
-  // console.log('Parsing %s', file.url);
-
   // Find the parsers that can read this file type.
   // If none of the parsers are an exact match for this file, then we'll try ALL of them.
   // This handles situations where the file IS a supported type, just with an unknown extension.

@@ -131,6 +131,11 @@ export interface FileInfo {
   url: string;
 
   /**
+   * The hash (URL fragment) of the file URL, including the # symbol. If the URL doesn't have a hash, then this will be an empty string.
+   */
+  hash: string;
+
+  /**
    * The lowercase file extension, such as ".json", ".yaml", ".txt", etc.
    */
   extension: string;

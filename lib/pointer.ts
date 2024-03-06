@@ -190,9 +190,9 @@ class Pointer {
    * @param [originalPath]
    * @returns
    */
-  static parse(path: string, originalPath?: string) {
+  static parse(path: string, originalPath?: string): string[] {
     // Get the JSON pointer from the path's hash
-    let pointer = url.getHash(path).substr(1);
+    const pointer = url.getHash(path).substring(1);
 
     // If there's no pointer, then there are no tokens,
     // so return an empty array
@@ -201,18 +201,18 @@ class Pointer {
     }
 
     // Split into an array
-    pointer = pointer.split("/");
+    const split = pointer.split("/");
 
     // Decode each part, according to RFC 6901
-    for (let i = 0; i < pointer.length; i++) {
-      pointer[i] = safeDecodeURIComponent(pointer[i].replace(escapedSlash, "/").replace(escapedTilde, "~"));
+    for (let i = 0; i < split.length; i++) {
+      split[i] = safeDecodeURIComponent(split[i].replace(escapedSlash, "/").replace(escapedTilde, "~"));
     }
 
-    if (pointer[0] !== "") {
-      throw new InvalidPointerError(pointer, originalPath === undefined ? path : originalPath);
+    if (split[0] !== "") {
+      throw new InvalidPointerError(split, originalPath === undefined ? path : originalPath);
     }
 
-    return pointer.slice(1);
+    return split.slice(1);
   }
 
   /**

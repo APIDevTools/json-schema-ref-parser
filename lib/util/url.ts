@@ -105,10 +105,10 @@ export function stripQuery(path: any) {
  * @param path
  * @returns
  */
-export function getHash(path: any) {
+export function getHash(path: string) {
   const hashIndex = path.indexOf("#");
   if (hashIndex >= 0) {
-    return path.substr(hashIndex);
+    return path.substring(hashIndex);
   }
   return "#";
 }
@@ -119,10 +119,10 @@ export function getHash(path: any) {
  * @param path
  * @returns
  */
-export function stripHash(path: any) {
+export function stripHash(path: string) {
   const hashIndex = path.indexOf("#");
   if (hashIndex >= 0) {
-    path = path.substr(0, hashIndex);
+    path = path.substring(0, hashIndex);
   }
   return path;
 }
@@ -133,7 +133,7 @@ export function stripHash(path: any) {
  * @param path
  * @returns
  */
-export function isHttp(path: any) {
+export function isHttp(path: string) {
   const protocol = getProtocol(path);
   if (protocol === "http" || protocol === "https") {
     return true;
