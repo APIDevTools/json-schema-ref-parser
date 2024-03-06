@@ -28,14 +28,13 @@ export const parse = (u: string | URL) => new URL(u);
 export function resolve(from: string, to: string) {
   const fromUrl = new URL(convertPathToPosix(from), "resolve://");
   const resolvedUrl = new URL(convertPathToPosix(to), fromUrl);
+  const endSpaces = to.match(/(\s*)$/)?.[1] || "";
   if (resolvedUrl.protocol === "resolve:") {
     // `from` is a relative URL.
     const { pathname, search, hash } = resolvedUrl;
-    const endSpaces = to.match(/(\s*)$/)?.[1] || "";
-
     return pathname + search + hash + endSpaces;
   }
-  return resolvedUrl.toString();
+  return resolvedUrl.toString() + endSpaces;
 }
 
 /**
