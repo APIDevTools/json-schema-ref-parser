@@ -106,7 +106,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - node_tests
-      # - browser_tests
+      - browser_tests
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

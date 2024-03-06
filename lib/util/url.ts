@@ -191,9 +191,13 @@ export function fromFileSystemPath(path: string) {
     const posixUpper = projectDirPosixPath.toUpperCase();
     const hasProjectDir = upperPath.includes(posixUpper);
     const hasProjectUri = upperPath.includes(posixUpper);
-    const isAbsolutePath = win32?.isAbsolute(path);
+    const isAbsolutePath =
+      win32?.isAbsolute(path) ||
+      path.startsWith("http://") ||
+      path.startsWith("https://") ||
+      path.startsWith("file://");
 
-    if (!(hasProjectDir || hasProjectUri || isAbsolutePath)) {
+    if (!(hasProjectDir || hasProjectUri || isAbsolutePath) && !projectDir.startsWith("http")) {
       path = join(projectDir, path);
     }
     path = convertPathToPosix(path);
