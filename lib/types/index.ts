@@ -89,6 +89,13 @@ export interface Plugin {
   allowEmpty?: boolean;
 
   /**
+   * Specifies whether a Byte Order Mark (BOM) is allowed or not. Only applies to JSON parsing
+   *
+   * @type {boolean} @default true
+   */
+  allowBOM?: boolean;
+
+  /**
    * The encoding that the text is expected to be in.
    */
   encoding?: BufferEncoding;

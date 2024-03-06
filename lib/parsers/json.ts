@@ -22,6 +22,11 @@ export default {
   canParse: ".json",
 
   /**
+   * Allow JSON files with byte order marks (BOM)
+   */
+  allowBOM: true,
+
+  /**
    * Parses the given file as JSON
    */
   async parse(file: FileInfo): Promise<object | undefined> {
@@ -37,6 +42,17 @@ export default {
         try {
           return JSON.parse(data);
         } catch (e: any) {
+          if (this.allowBOM) {
+            try {
+              // find the first curly brace
+              const firstCurlyBrace = data.indexOf("{");
+              // remove any characters before the first curly brace
+              data = data.slice(firstCurlyBrace);
+              return JSON.parse(data);
+            } catch (e: any) {
+              throw new ParserError(e.message, file.url);
+            }
+          }
           throw new ParserError(e.message, file.url);
         }
       }
