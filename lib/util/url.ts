@@ -31,7 +31,9 @@ export function resolve(from: string, to: string) {
   if (resolvedUrl.protocol === "resolve:") {
     // `from` is a relative URL.
     const { pathname, search, hash } = resolvedUrl;
-    return pathname + search + hash;
+    const endSpaces = to.match(/(\s*)$/)?.[1] || "";
+
+    return pathname + search + hash + endSpaces;
   }
   return resolvedUrl.toString();
 }
@@ -105,7 +107,10 @@ export function stripQuery(path: any) {
  * @param path
  * @returns
  */
-export function getHash(path: string) {
+export function getHash(path: undefined | string) {
+  if (!path) {
+    return "#";
+  }
   const hashIndex = path.indexOf("#");
   if (hashIndex >= 0) {
     return path.substring(hashIndex);
@@ -119,7 +124,10 @@ export function getHash(path: string) {
  * @param path
  * @returns
  */
-export function stripHash(path: string) {
+export function stripHash(path?: string | undefined) {
+  if (!path) {
+    return "";
+  }
   const hashIndex = path.indexOf("#");
   if (hashIndex >= 0) {
     path = path.substring(0, hashIndex);

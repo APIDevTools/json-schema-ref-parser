@@ -21,4 +21,57 @@ describe("$refs that include slashes", () => {
       },
     });
   });
+
+  it("should parse trailing spaces successfully", async () => {
+    const parser = new $RefParser();
+    const derefed = await parser.dereference({
+      swagger: "2.0",
+      paths: {
+        somepath: {
+          post: {
+            $ref: "#/definitions/ABC ",
+          },
+        },
+      },
+      definitions: {
+        "ABC ": {
+          // tested removing space at the end of "ABC "
+          type: "object",
+          properties: {
+            abc: {
+              type: "string",
+            },
+          },
+          title: "ABC ",
+        },
+      },
+    });
+    expect(derefed).to.deep.equal({
+      swagger: "2.0",
+      paths: {
+        somepath: {
+          post: {
+            type: "object",
+            properties: {
+              abc: {
+                type: "string",
+              },
+            },
+            title: "ABC ",
+          },
+        },
+      },
+      definitions: {
+        "ABC ": {
+          type: "object",
+          properties: {
+            abc: {
+              type: "string",
+            },
+          },
+          title: "ABC ",
+        },
+      },
+    });
+  });
 });
