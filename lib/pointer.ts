@@ -26,7 +26,7 @@ const safeDecodeURIComponent = (encodedURIComponent: string): string => {
  * @param [friendlyPath] - The original user-specified path (used for error messages)
  * @class
  */
-class Pointer<S = JSONSchema> {
+class Pointer<S extends JSONSchema = JSONSchema> {
   /**
    * The {@link $Ref} object that contains this {@link Pointer} object.
    */

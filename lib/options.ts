@@ -53,7 +53,7 @@ export interface DereferenceOptions {
  * @param [options] - Overridden options
  * @class
  */
-export interface $RefParserOptions<S> {
+export interface $RefParserOptions<S extends JSONSchema = JSONSchema> {
   /**
    * The `parse` options determine how different types of files will be parsed.
    *
@@ -174,7 +174,9 @@ export const getJsonSchemaRefParserDefaultOptions = () => {
   return defaults;
 };
 
-export const getNewOptions = <S, O>(options: O | undefined): O & $RefParserOptions<S> => {
+export const getNewOptions = <S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+  options: O | undefined,
+): O & $RefParserOptions<S> => {
   const newOptions = getJsonSchemaRefParserDefaultOptions();
   if (options) {
     merge(newOptions, options);

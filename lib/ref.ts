@@ -14,7 +14,7 @@ export type $RefError = JSONParserError | ResolverError | ParserError | MissingP
  *
  * @class
  */
-class $Ref<S = JSONSchema> {
+class $Ref<S extends JSONSchema = JSONSchema> {
   /**
    * The file path or URL of the referenced file.
    * This path is relative to the path of the main JSON schema file.
@@ -267,7 +267,7 @@ class $Ref<S = JSONSchema> {
    * @param resolvedValue - The resolved value, which can be any type
    * @returns - Returns the dereferenced value
    */
-  static dereference<S>($ref: $Ref<S>, resolvedValue: S): S {
+  static dereference<S extends JSONSchema = JSONSchema>($ref: $Ref<S>, resolvedValue: S): S {
     if (resolvedValue && typeof resolvedValue === "object" && $Ref.isExtended$Ref($ref)) {
       const merged = {};
       for (const key of Object.keys($ref)) {

@@ -60,7 +60,7 @@ export class JSONParserErrorGroup<
   ) {
     const errors = [];
 
-    for (const $ref of Object.values(parser.$refs._$refs) as $Ref<unknown>[]) {
+    for (const $ref of Object.values(parser.$refs._$refs) as $Ref<S>[]) {
       if ($ref.errors) {
         errors.push(...$ref.errors);
       }

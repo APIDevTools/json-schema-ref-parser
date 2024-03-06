@@ -66,7 +66,7 @@ export default {
  * @returns
  * The promise resolves with the raw downloaded data, or rejects if there is an HTTP error.
  */
-async function download<S>(
+async function download<S extends JSONSchema = JSONSchema>(
   u: URL | string,
   httpOptions: HTTPResolverOptions<S>,
   _redirects?: string[],
@@ -109,7 +109,7 @@ async function download<S>(
  * Sends an HTTP GET request.
  * The promise resolves with the HTTP Response object.
  */
-async function get<S>(u: RequestInfo | URL, httpOptions: HTTPResolverOptions<S>) {
+async function get<S extends JSONSchema = JSONSchema>(u: RequestInfo | URL, httpOptions: HTTPResolverOptions<S>) {
   let controller: any;
   let timeoutId: any;
   if (httpOptions.timeout) {

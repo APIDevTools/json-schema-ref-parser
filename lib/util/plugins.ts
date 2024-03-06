@@ -1,4 +1,4 @@
-import type { FileInfo } from "../types/index.js";
+import type { FileInfo, JSONSchema } from "../types/index.js";
 import type $RefParserOptions from "../options.js";
 import type { ResolverOptions } from "../types/index.js";
 import type $Refs from "../refs.js";
@@ -10,7 +10,7 @@ import type { Plugin } from "../types/index.js";
  *
  * @returns
  */
-export function all<S>(plugins: $RefParserOptions<S>["resolve"]): Plugin[] {
+export function all<S extends JSONSchema = JSONSchema>(plugins: $RefParserOptions<S>["resolve"]): Plugin[] {
   return Object.keys(plugins)
     .filter((key) => {
       return typeof plugins[key] === "object";
@@ -43,7 +43,7 @@ export function sort(plugins: Plugin[]) {
   });
 }
 
-export interface PluginResult<S> {
+export interface PluginResult<S extends JSONSchema = JSONSchema> {
   plugin: Plugin;
   result?: string | Buffer | S;
   error?: any;
@@ -57,7 +57,7 @@ export interface PluginResult<S> {
  * If the promise rejects, or the callback is called with an error, then the next plugin is called.
  * If ALL plugins fail, then the last error is thrown.
  */
-export async function run<S>(
+export async function run<S extends JSONSchema = JSONSchema>(
   plugins: Plugin[],
   method: keyof Plugin | keyof ResolverOptions<S>,
   file: FileInfo,
@@ -127,7 +127,7 @@ export async function run<S>(
  * If the value is a RegExp, then it will be tested against the file URL.
  * If the value is an array, then it will be compared against the file extension.
  */
-function getResult<S>(
+function getResult<S extends JSONSchema = JSONSchema>(
   obj: Plugin,
   prop: keyof Plugin | keyof ResolverOptions<S>,
   file: FileInfo,

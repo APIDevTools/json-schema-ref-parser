@@ -40,7 +40,7 @@ function bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = Par
  * @param $refs
  * @param options
  */
-function crawl<S, O>(
+function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
   parent: any,
   key: string | null,
   path: string,
@@ -102,7 +102,7 @@ function crawl<S, O>(
  * @param $refs
  * @param options
  */
-function inventory$Ref<S, O>(
+function inventory$Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
   $refParent: any,
   $refKey: any,
   path: string,
