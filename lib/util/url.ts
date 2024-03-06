@@ -1,6 +1,5 @@
 import convertPathToPosix from "./convert-path-to-posix";
-import path, { win32 } from "path";
-
+import path from "path";
 const forwardSlashPattern = /\//g;
 const protocolPattern = /^(\w{2,}):\/\//i;
 const jsonPointerSlash = /~1/g;
@@ -9,7 +8,6 @@ const jsonPointerTilde = /~0/g;
 import { join } from "path";
 import { isWindows } from "./is-windows";
 
-const projectDir = join(__dirname, "..", "..");
 // RegExp patterns to URL-encode special characters in local filesystem paths
 const urlEncodePatterns = [/\?/g, "%3F", /#/g, "%23"];
 
@@ -183,12 +181,13 @@ export function fromFileSystemPath(path: any) {
   // Step 1: On Windows, replace backslashes with forward slashes,
   // rather than encoding them as "%5C"
   if (isWindows()) {
+    const projectDir = join(__dirname, "..", "..");
     const upperPath = path.toUpperCase();
     const projectDirPosixPath = convertPathToPosix(projectDir);
     const posixUpper = projectDirPosixPath.toUpperCase();
     const hasProjectDir = upperPath.includes(posixUpper);
     const hasProjectUri = upperPath.includes(posixUpper);
-    const isAbsolutePath = win32.isAbsolute(path);
+    const isAbsolutePath = path?.win32?.isAbsolute(path);
 
     if (!(hasProjectDir || hasProjectUri || isAbsolutePath)) {
       path = join(projectDir, path);
