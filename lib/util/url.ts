@@ -1,5 +1,6 @@
 import convertPathToPosix from "./convert-path-to-posix";
-import path from "path";
+import path, { win32 } from "path";
+
 const forwardSlashPattern = /\//g;
 const protocolPattern = /^(\w{2,}):\/\//i;
 const jsonPointerSlash = /~1/g;
@@ -9,7 +10,10 @@ import { join } from "path";
 import { isWindows } from "./is-windows";
 
 // RegExp patterns to URL-encode special characters in local filesystem paths
-const urlEncodePatterns = [/\?/g, "%3F", /#/g, "%23"];
+const urlEncodePatterns = [
+  [/\?/g, "%3F"],
+  [/#/g, "%23"],
+] as [RegExp, string][];
 
 // RegExp patterns to URL-decode special characters for local filesystem paths
 const urlDecodePatterns = [/%23/g, "#", /%24/g, "$", /%26/g, "&", /%2C/g, ",", /%40/g, "@"];
@@ -177,17 +181,17 @@ export function isFileSystemPath(path: string | undefined) {
  * @param path
  * @returns
  */
-export function fromFileSystemPath(path: any) {
+export function fromFileSystemPath(path: string) {
   // Step 1: On Windows, replace backslashes with forward slashes,
   // rather than encoding them as "%5C"
   if (isWindows()) {
-    const projectDir = join(__dirname, "..", "..");
+    const projectDir = cwd();
     const upperPath = path.toUpperCase();
     const projectDirPosixPath = convertPathToPosix(projectDir);
     const posixUpper = projectDirPosixPath.toUpperCase();
     const hasProjectDir = upperPath.includes(posixUpper);
     const hasProjectUri = upperPath.includes(posixUpper);
-    const isAbsolutePath = path?.win32?.isAbsolute(path);
+    const isAbsolutePath = win32?.isAbsolute(path);
 
     if (!(hasProjectDir || hasProjectUri || isAbsolutePath)) {
       path = join(projectDir, path);
@@ -201,8 +205,8 @@ export function fromFileSystemPath(path: any) {
   // Step 3: Manually encode characters that are not encoded by `encodeURI`.
   // This includes characters such as "#" and "?", which have special meaning in URLs,
   // but are just normal characters in a filesystem path.
-  for (let i = 0; i < urlEncodePatterns.length; i += 2) {
-    path = path.replace(urlEncodePatterns[i], urlEncodePatterns[i + 1]);
+  for (const pattern of urlEncodePatterns) {
+    path = path.replace(pattern[0], pattern[1]);
   }
 
   return path;

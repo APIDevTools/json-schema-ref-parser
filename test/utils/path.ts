@@ -38,7 +38,7 @@ function filesystemPathHelpers() {
     /**
      * Returns the path with normalized, UNIX-like, slashes. Disk letter is lower-cased, if present.
      */
-    unixify(file: any) {
+    unixify(file: string) {
       return convertPathToPosix(file).replace(/^[A-Z](?=:\/)/, (letter: any) => letter.toLowerCase());
     },
 
@@ -46,7 +46,7 @@ function filesystemPathHelpers() {
      * Returns the path of a file in the "test" directory as a URL.
      * (e.g. "file://path/to/json-schema-ref-parser/test/files...")
      */
-    url(file: any) {
+    url(file: string) {
       let pathname = path.abs(file);
 
       if (isWindows()) {
