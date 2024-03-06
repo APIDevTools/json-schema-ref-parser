@@ -13,7 +13,7 @@ export type $RefError = JSONParserError | ResolverError | ParserError | MissingP
  *
  * @class
  */
-class $Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
+class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   /**
    * The file path or URL of the referenced file.
    * This path is relative to the path of the main JSON schema file.
@@ -185,7 +185,7 @@ class $Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = Parse
    * @param options
    * @returns
    */
-  static isAllowed$Ref<S extends JSONSchema = JSONSchema>(value: unknown, options?: ParserOptions<S>) {
+  static isAllowed$Ref<S extends object = JSONSchema>(value: unknown, options?: ParserOptions<S>) {
     if (this.is$Ref(value)) {
       if (value.$ref.substring(0, 2) === "#/" || value.$ref === "#") {
         // It's a JSON Pointer reference, which is always allowed
@@ -266,7 +266,7 @@ class $Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = Parse
    * @param resolvedValue - The resolved value, which can be any type
    * @returns - Returns the dereferenced value
    */
-  static dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     $ref: $Ref<S, O>,
     resolvedValue: S,
   ): S {

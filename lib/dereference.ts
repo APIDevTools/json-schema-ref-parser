@@ -16,7 +16,7 @@ export default dereference;
  * @param parser
  * @param options
  */
-function dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   parser: $RefParser<S, O>,
   options: O,
 ) {
@@ -48,7 +48,7 @@ function dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions<
  * @param options
  * @returns
  */
-function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   obj: any,
   path: string,
   pathFromRoot: string,
@@ -161,7 +161,7 @@ function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = P
  * @param options
  * @returns
  */
-function dereference$Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   $ref: any,
   path: string,
   pathFromRoot: string,

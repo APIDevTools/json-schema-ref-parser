@@ -15,7 +15,7 @@ import type { FileInfo, JSONSchema } from "./types/index.js";
 /**
  * Reads and parses the specified file path or URL.
  */
-async function parse<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+async function parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   path: string,
   $refs: $Refs<S, O>,
   options: O,
@@ -70,7 +70,7 @@ async function parse<S extends JSONSchema = JSONSchema, O extends ParserOptions<
  * @returns
  * The promise resolves with the raw file contents and the resolver that was used.
  */
-async function readFile<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+async function readFile<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   file: FileInfo,
   options: O,
   $refs: $Refs<S, O>,
@@ -116,7 +116,7 @@ async function readFile<S extends JSONSchema = JSONSchema, O extends ParserOptio
  * @returns
  * The promise resolves with the parsed file contents and the parser that was used.
  */
-async function parseFile<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+async function parseFile<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   file: FileInfo,
   options: O,
   $refs: $Refs<S, O>,

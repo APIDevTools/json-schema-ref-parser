@@ -14,7 +14,7 @@ import type { JSONSchema } from "./index";
  * @param parser
  * @param options
  */
-function bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   parser: $RefParser<S, O>,
   options: O,
 ) {
@@ -40,7 +40,7 @@ function bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = 
  * @param $refs
  * @param options
  */
-function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   parent: any,
   key: string | null,
   path: string,
@@ -102,7 +102,7 @@ function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = P
  * @param $refs
  * @param options
  */
-function inventory$Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   $refParent: any,
   $refKey: any,
   path: string,

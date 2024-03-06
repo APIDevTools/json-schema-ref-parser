@@ -26,7 +26,7 @@ const safeDecodeURIComponent = (encodedURIComponent: string): string => {
  * @param [friendlyPath] - The original user-specified path (used for error messages)
  * @class
  */
-class Pointer<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
+class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   /**
    * The {@link $Ref} object that contains this {@link Pointer} object.
    */
@@ -86,7 +86,7 @@ class Pointer<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = Pa
    * the {@link Pointer#$ref} and {@link Pointer#path} will reflect the resolution path
    * of the resolved value.
    */
-  resolve(obj: any, options?: O, pathFromRoot?: string) {
+  resolve(obj: S, options?: O, pathFromRoot?: string) {
     const tokens = Pointer.parse(this.path, this.originalPath);
 
     // Crawl the object, one token at a time
@@ -144,7 +144,7 @@ class Pointer<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = Pa
    * @returns
    * Returns the modified object, or an entirely new object if the entire object is overwritten.
    */
-  set(obj: any, value: any, options?: O) {
+  set(obj: S, value: any, options?: O) {
     const tokens = Pointer.parse(this.path);
     let token;
 

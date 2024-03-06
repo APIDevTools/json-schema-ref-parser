@@ -18,7 +18,7 @@ import type $RefParser from "./index.js";
  * The promise resolves once all JSON references in the schema have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-function resolveExternal<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   parser: $RefParser<S, O>,
   options: O,
 ) {
@@ -52,7 +52,7 @@ function resolveExternal<S extends JSONSchema = JSONSchema, O extends ParserOpti
  * If any of the JSON references point to files that contain additional JSON references,
  * then the corresponding promise will internally reference an array of promises.
  */
-function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   obj: string | Buffer | S | undefined | null,
   path: string,
   $refs: $Refs<S, O>,
@@ -92,14 +92,14 @@ function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = P
  * The promise resolves once all JSON references in the object have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-async function resolve$Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+async function resolve$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   $ref: S,
   path: string,
   $refs: $Refs<S, O>,
   options: O,
 ) {
   const shouldResolveOnCwd = options.dereference?.externalReferenceResolution === "root";
-  const resolvedPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref!);
+  const resolvedPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, ($ref as JSONSchema).$ref!);
   const withoutHash = url.stripHash(resolvedPath);
 
   // $ref.$ref = url.relative($refs._root$Ref.path, resolvedPath);

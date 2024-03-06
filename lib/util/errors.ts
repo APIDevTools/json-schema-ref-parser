@@ -38,7 +38,7 @@ export class JSONParserError extends Error {
 }
 
 export class JSONParserErrorGroup<
-  S extends JSONSchema = JSONSchema,
+  S extends object = JSONSchema,
   O extends ParserOptions<S> = ParserOptions<S>,
 > extends Error {
   files: $RefParser<S, O>;
@@ -55,7 +55,7 @@ export class JSONParserErrorGroup<
     Ono.extend(this);
   }
 
-  static getParserErrors<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  static getParserErrors<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     parser: $RefParser<S, O>,
   ) {
     const errors = [];

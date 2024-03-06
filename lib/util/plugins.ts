@@ -10,7 +10,7 @@ import type { Plugin } from "../types/index.js";
  *
  * @returns
  */
-export function all<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+export function all<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   plugins: O["resolve"],
 ): Plugin[] {
   return (Object.keys(plugins || {}) as (keyof ResolverOptions<S>)[])
@@ -45,7 +45,7 @@ export function sort(plugins: Plugin[]) {
   });
 }
 
-export interface PluginResult<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
+export interface PluginResult<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   plugin: Plugin;
   result?: string | Buffer | S;
   error?: any;
@@ -59,7 +59,7 @@ export interface PluginResult<S extends JSONSchema = JSONSchema, O extends Parse
  * If the promise rejects, or the callback is called with an error, then the next plugin is called.
  * If ALL plugins fail, then the last error is thrown.
  */
-export async function run<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+export async function run<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   plugins: Plugin[],
   method: keyof Plugin | keyof ResolverOptions<S>,
   file: FileInfo,
@@ -129,7 +129,7 @@ export async function run<S extends JSONSchema = JSONSchema, O extends ParserOpt
  * If the value is a RegExp, then it will be tested against the file URL.
  * If the value is an array, then it will be compared against the file extension.
  */
-function getResult<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function getResult<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   obj: Plugin,
   prop: keyof Plugin | keyof ResolverOptions<S>,
   file: FileInfo,

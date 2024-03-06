@@ -40,11 +40,9 @@ const helper = {
       try {
         expect((actualFiles = $refs.paths())).to.have.same.members(expectedFiles);
         if (typeof window === "undefined") {
-          // @ts-expect-error TS(2345): Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
           expect((actualFiles = $refs.paths(["file"]))).to.have.same.members(expectedFiles);
           expect($refs.paths("http")).to.be.an("array").with.lengthOf(0);
         } else {
-          // @ts-expect-error TS(2345): Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
           expect((actualFiles = $refs.paths(["http"]))).to.have.same.members(expectedFiles);
           expect($refs.paths("file")).to.be.an("array").with.lengthOf(0);
         }

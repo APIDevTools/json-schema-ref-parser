@@ -6,7 +6,7 @@ import type { ParserOptions } from "./options.js";
 import convertPathToPosix from "./util/convert-path-to-posix";
 import type { JSONSchema } from "./types";
 
-interface $RefsMap<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
+interface $RefsMap<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   [url: string]: $Ref<S, O>;
 }
 /**
@@ -16,7 +16,7 @@ interface $RefsMap<S extends JSONSchema = JSONSchema, O extends ParserOptions<S>
  *
  * See https://apitools.dev/json-schema-ref-parser/docs/refs.html
  */
-export default class $Refs<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
+export default class $Refs<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   /**
    * This property is true if the schema contains any circular references. You may want to check this property before serializing the dereferenced schema as JSON, since JSON.stringify() does not support circular references by default.
    *
@@ -215,7 +215,7 @@ export default class $Refs<S extends JSONSchema = JSONSchema, O extends ParserOp
  * @param [types] - Only return paths of the given types ("file", "http", etc.)
  * @returns
  */
-function getPaths<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function getPaths<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   $refs: $RefsMap<S, O>,
   types: string[],
 ) {

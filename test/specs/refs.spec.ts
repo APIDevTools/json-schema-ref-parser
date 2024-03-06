@@ -48,7 +48,6 @@ describe("$Refs object", () => {
 
     it("should return only URLs", async () => {
       const $refs = await $RefParser.resolve(path.abs("test/specs/external/external.yaml"));
-      // @ts-expect-error TS(2345): Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
       const paths = $refs.paths(["http"]);
 
       if (isBrowser) {
@@ -141,7 +140,6 @@ describe("$Refs object", () => {
 
     it("should return only URLs and values", async () => {
       const $refs = await $RefParser.resolve(path.abs("test/specs/external/external.yaml"));
-      // @ts-expect-error TS(2345): Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
       let values = $refs.values(["http"]);
       if (isBrowser) {
         const expected = {};

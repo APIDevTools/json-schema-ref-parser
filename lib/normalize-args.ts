@@ -4,7 +4,7 @@ import type { JSONSchema, SchemaCallback } from "./types";
 
 // I really dislike this function and the way it's written. It's not clear what it's doing, and it's way too flexible
 // In the future, I'd like to deprecate the api and accept only named parameters in index.ts
-export interface NormalizedArguments<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
+export interface NormalizedArguments<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   path: string;
   schema: S;
   options: O & Options<S>;
@@ -13,7 +13,7 @@ export interface NormalizedArguments<S extends JSONSchema = JSONSchema, O extend
 /**
  * Normalizes the given arguments, accounting for optional args.
  */
-export function normalizeArgs<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+export function normalizeArgs<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   _args: Partial<IArguments>,
 ): NormalizedArguments<S, O> {
   let path;

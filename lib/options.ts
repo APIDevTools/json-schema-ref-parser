@@ -53,7 +53,7 @@ export interface DereferenceOptions {
  * @param [options] - Overridden options
  * @class
  */
-export interface $RefParserOptions<S extends JSONSchema = JSONSchema> {
+export interface $RefParserOptions<S extends object = JSONSchema> {
   /**
    * The `parse` options determine how different types of files will be parsed.
    *
@@ -174,7 +174,7 @@ export const getJsonSchemaRefParserDefaultOptions = () => {
   return defaults;
 };
 
-export const getNewOptions = <S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+export const getNewOptions = <S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   options: O | undefined,
 ): O & $RefParserOptions<S> => {
   const newOptions = getJsonSchemaRefParserDefaultOptions();
@@ -184,8 +184,8 @@ export const getNewOptions = <S extends JSONSchema = JSONSchema, O extends Parse
   return newOptions as O & $RefParserOptions<S>;
 };
 
-export type Options<S extends JSONSchema = JSONSchema> = $RefParserOptions<S>;
-export type ParserOptions<S extends JSONSchema = JSONSchema> = DeepPartial<$RefParserOptions<S>>;
+export type Options<S extends object = JSONSchema> = $RefParserOptions<S>;
+export type ParserOptions<S extends object = JSONSchema> = DeepPartial<$RefParserOptions<S>>;
 /**
  * Merges the properties of the source object into the target object.
  *
