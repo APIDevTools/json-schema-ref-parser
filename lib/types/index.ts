@@ -10,7 +10,7 @@ import type $Refs from "../refs.js";
 
 export type JSONSchema = JSONSchema4 | JSONSchema6 | JSONSchema7;
 export type JSONSchemaObject = JSONSchema4Object | JSONSchema6Object | JSONSchema7Object;
-export type SchemaCallback = (err: Error | null, schema?: JSONSchema | object) => any;
+export type SchemaCallback = (err: Error | null, schema?: JSONSchema | object | null) => any;
 export type $RefsCallback = (err: Error | null, $refs?: $Refs) => any;
 
 /**

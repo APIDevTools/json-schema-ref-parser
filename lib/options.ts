@@ -7,7 +7,7 @@ import httpResolver from "./resolvers/http.js";
 
 import type { HTTPResolverOptions, JSONSchemaObject, Plugin, ResolverOptions } from "./types/index.js";
 
-type DeepPartial<T> = T extends object
+export type DeepPartial<T> = T extends object
   ? {
       [P in keyof T]?: DeepPartial<T[P]>;
     }
@@ -18,7 +18,7 @@ type DeepPartial<T> = T extends object
  * @param [options] - Overridden options
  * @class
  */
-interface $RefParserOptions {
+export interface $RefParserOptions {
   /**
    * The `parse` options determine how different types of files will be parsed.
    *
@@ -101,7 +101,7 @@ interface $RefParserOptions {
   };
 }
 
-const getDefaults = () => {
+export const getJsonSchemaRefParserDefaultOptions = () => {
   const defaults = {
     /**
      * Determines how different types of files will be parsed.
@@ -172,8 +172,8 @@ const getDefaults = () => {
   return defaults;
 };
 
-export const getNewOptions = (options: DeepPartial<$RefParserOptions>): $RefParserOptions => {
-  const newOptions = getDefaults();
+export const getNewOptions = (options: DeepPartial<$RefParserOptions> | undefined): $RefParserOptions => {
+  const newOptions = getJsonSchemaRefParserDefaultOptions();
   if (options) {
     merge(newOptions, options);
   }

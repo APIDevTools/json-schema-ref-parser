@@ -21,15 +21,7 @@ import maybe from "./util/maybe.js";
 import type { ParserOptions } from "./options.js";
 import type { $RefsCallback, JSONSchema, SchemaCallback } from "./types/index.js";
 
-export { JSONParserError };
-export { InvalidPointerError };
-export { MissingPointerError };
-export { ResolverError };
-export { ParserError };
-export { UnmatchedParserError };
-export { UnmatchedResolverError };
-
-type RefParserSchema = string | JSONSchema;
+export type RefParserSchema = string | JSONSchema;
 
 /**
  * This class parses a JSON schema, builds a map of its JSON references and their resolved values,
@@ -76,7 +68,6 @@ export class $RefParser {
     options: ParserOptions,
     callback: SchemaCallback,
   ): Promise<void>;
-
   async parse() {
     const args = normalizeArgs(arguments as any);
     let promise;
@@ -418,3 +409,19 @@ export const parse = $RefParser.parse;
 export const resolve = $RefParser.resolve;
 export const bundle = $RefParser.bundle;
 export const dereference = $RefParser.dereference;
+
+export {
+  UnmatchedResolverError,
+  JSONParserError,
+  JSONSchema,
+  InvalidPointerError,
+  MissingPointerError,
+  ResolverError,
+  ParserError,
+  UnmatchedParserError,
+  ParserOptions,
+  $RefsCallback,
+  isHandledError,
+  JSONParserErrorGroup,
+  SchemaCallback,
+};
