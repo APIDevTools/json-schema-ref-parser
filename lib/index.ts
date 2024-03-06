@@ -44,6 +44,9 @@ export {
   InvalidPointerError,
   JSONParserError,
   Plugin,
+  JSONSchema,
+  $RefsCallback,
+  SchemaCallback,
 };
 
 export type RefParserSchema = string | JSONSchema;
