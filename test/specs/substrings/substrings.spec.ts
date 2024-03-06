@@ -36,12 +36,11 @@ describe("$refs that are substrings of each other", () => {
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(dereferencedSchema);
     // Reference equality
-    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
-    expect(schema.properties.firstName).to.equal(schema.definitions.name);
-    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
-    expect(schema.properties.middleName).to.equal(schema.definitions["name-with-min-length"]);
-    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
-    expect(schema.properties.lastName).to.equal(schema.definitions["name-with-min-length-max-length"]);
+    const properties = schema.properties!;
+    const definitions = schema.definitions!;
+    expect(properties.firstName).to.equal(definitions.name);
+    expect(properties.middleName).to.equal(definitions["name-with-min-length"]);
+    expect(properties.lastName).to.equal(definitions["name-with-min-length-max-length"]);
     // The "circular" flag should NOT be set
     expect(parser.$refs.circular).to.equal(false);
   });

@@ -1,6 +1,7 @@
 import { Ono } from "@jsdevtools/ono";
 import { stripHash, toFileSystemPath } from "./url.js";
 import type $RefParser from "../index.js";
+import type $Ref from "../ref";
 
 export type JSONParserErrorType =
   | "EUNKNOWN"
@@ -51,10 +52,8 @@ export class JSONParserErrorGroup extends Error {
   static getParserErrors(parser: any) {
     const errors = [];
 
-    for (const $ref of Object.values(parser.$refs._$refs)) {
-      // @ts-expect-error TS(2571): Object is of type 'unknown'.
+    for (const $ref of Object.values(parser.$refs._$refs) as $Ref[]) {
       if ($ref.errors) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
         errors.push(...$ref.errors);
       }
     }

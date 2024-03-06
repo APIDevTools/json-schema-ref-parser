@@ -22,7 +22,6 @@ describe("Schema with internal $refs", () => {
     helper.testResolve(
       path.rel("test/specs/internal/internal.yaml"),
       path.abs("test/specs/internal/internal.yaml"),
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 3.
       parsedSchema,
     ),
   );

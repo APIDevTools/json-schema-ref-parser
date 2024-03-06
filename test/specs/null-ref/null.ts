@@ -1,0 +1,49 @@
+export default {
+  openapi: "3.0.3",
+  components: {
+    schemas: {
+      ReadyToPayMethods: {
+        example: [
+          {
+            brands: ["Visa", "MasterCard"],
+            feature: {
+              name: "Google Pay",
+            },
+            filters: ["brand:Visa,MasterCard;bin:!411111"],
+            method: "payment-card",
+          },
+          {
+            feature: {
+              expirationTime: "2006-01-02T15:04:05Z",
+              linkToken: "some-random-link_token-for-plaid",
+              name: "Plaid",
+            },
+            method: "ach",
+          },
+          {
+            brands: ["Visa"],
+            feature: null,
+            filters: ["brand:Visa;bin:411111,444433"],
+            method: "payment-card",
+          },
+          {
+            feature: {
+              $ref: "#/components/schemas/ReadyToPayMethods/example/2/feature",
+            },
+            filters: [],
+            method: "ach",
+          },
+          {
+            filters: [],
+            method: "paypal",
+          },
+          {
+            filters: [],
+            method: "Skrill",
+          },
+        ],
+        type: "array",
+      },
+    },
+  },
+};

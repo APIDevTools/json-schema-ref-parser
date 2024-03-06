@@ -49,7 +49,7 @@ class Pointer {
    */
   indirections: number;
 
-  constructor($ref: any, path: any, friendlyPath: any) {
+  constructor($ref: any, path: any, friendlyPath?: string) {
     this.$ref = $ref;
 
     this.path = path;
@@ -93,7 +93,7 @@ class Pointer {
       }
 
       const token = tokens[i];
-      if (this.value[token] === undefined || this.value[token] === null) {
+      if (this.value[token] === undefined || (this.value[token] === null && i === tokens.length - 1)) {
         this.value = null;
         throw new MissingPointerError(token, decodeURI(this.originalPath));
       } else {
@@ -198,7 +198,7 @@ class Pointer {
    * @param tokens - The token(s) to append (e.g. ["name", "first"])
    * @returns
    */
-  static join(base: any, tokens: any) {
+  static join(base: string, tokens: string | string[]) {
     // Ensure that the base path contains a hash
     if (base.indexOf("#") === -1) {
       base += "#";

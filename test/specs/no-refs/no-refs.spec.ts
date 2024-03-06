@@ -17,7 +17,6 @@ describe("Schema without any $refs", () => {
 
   it(
     "should resolve successfully",
-    // @ts-expect-error TS(2554): Expected 2 arguments, but got 3.
     helper.testResolve(
       path.rel("test/specs/no-refs/no-refs.yaml"),
       path.abs("test/specs/no-refs/no-refs.yaml"),

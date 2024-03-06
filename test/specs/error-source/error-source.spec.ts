@@ -12,8 +12,7 @@ describe("Report correct error source and path for", () => {
     try {
       await parser.dereference({ foo: { bar: { $ref: "I do not exist" } } }, { continueOnError: true });
       helper.shouldNotGetCalled();
-    } catch (err) {
-      // @ts-expect-error TS(2571): Object is of type 'unknown'.
+    } catch (err: any) {
       expect(err.errors).to.containSubset([
         {
           name: ResolverError.name,
@@ -30,8 +29,7 @@ describe("Report correct error source and path for", () => {
     try {
       await parser.dereference(path.abs("test/specs/error-source/broken-external.json"), { continueOnError: true });
       helper.shouldNotGetCalled();
-    } catch (err) {
-      // @ts-expect-error TS(2571): Object is of type 'unknown'.
+    } catch (err: any) {
       expect(err.errors).to.containSubset([
         {
           name: ResolverError.name,
@@ -48,8 +46,7 @@ describe("Report correct error source and path for", () => {
     try {
       await parser.dereference(path.abs("test/specs/error-source/invalid-external.json"), { continueOnError: true });
       helper.shouldNotGetCalled();
-    } catch (err) {
-      // @ts-expect-error TS(2571): Object is of type 'unknown'.
+    } catch (err: any) {
       expect(err.errors).to.containSubset([
         {
           name: MissingPointerError.name,
@@ -72,8 +69,7 @@ describe("Report correct error source and path for", () => {
     try {
       await parser.dereference(path.abs("test/specs/error-source/invalid-pointer.json"), { continueOnError: true });
       helper.shouldNotGetCalled();
-    } catch (err) {
-      // @ts-expect-error TS(2571): Object is of type 'unknown'.
+    } catch (err: any) {
       expect(err.errors).to.containSubset([
         {
           name: InvalidPointerError.name,

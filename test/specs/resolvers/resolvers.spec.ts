@@ -176,8 +176,7 @@ describe("options.resolve", () => {
       helper.shouldNotGetCalled();
     } catch (err) {
       expect(err).to.be.instanceof(ResolverError);
-      // @ts-expect-error TS(2571): Object is of type 'unknown'.
-      expect(err.message).to.contain("Error opening file");
+      expect((err as ResolverError).message).to.contain("Error opening file");
     }
   });
 

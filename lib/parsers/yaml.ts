@@ -41,9 +41,8 @@ export default {
     if (typeof data === "string") {
       try {
         return yaml.load(data, { schema: JSON_SCHEMA });
-      } catch (e) {
-        // @ts-expect-error TS(2571): Object is of type 'unknown'.
-        throw new ParserError(e.message, file.url);
+      } catch (e: any) {
+        throw new ParserError(e?.message || "Parser Error", file.url);
       }
     } else {
       // data is already a JavaScript value (object, array, number, null, NaN, etc.)

@@ -4,6 +4,7 @@ import { InvalidPointerError, isHandledError, normalizeError } from "./util/erro
 import { safePointerToPath, stripHash, getHash } from "./util/url.js";
 import type $Refs from "./refs.js";
 import type $RefParserOptions from "./options.js";
+import type { JSONSchema } from "./types";
 
 export type $RefError = JSONParserError | ResolverError | ParserError | MissingPointerError;
 
@@ -86,7 +87,7 @@ class $Ref {
    * @param options
    * @returns
    */
-  exists(path: string, options: any) {
+  exists(path: string, options?: $RefParserOptions) {
     try {
       this.resolve(path, options);
       return true;
@@ -102,7 +103,7 @@ class $Ref {
    * @param options
    * @returns - Returns the resolved value
    */
-  get(path: any, options: any) {
+  get(path: any, options: $RefParserOptions) {
     return this.resolve(path, options)?.value;
   }
 
@@ -144,8 +145,7 @@ class $Ref {
    * @param path - The full path of the property to set, optionally with a JSON pointer in the hash
    * @param value - The value to assign
    */
-  set(path: any, value: any) {
-    // @ts-expect-error TS(2554): Expected 3 arguments, but got 2.
+  set(path: string, value: any) {
     const pointer = new Pointer(this, path);
     this.value = pointer.set(this.value, value);
   }
@@ -156,8 +156,15 @@ class $Ref {
    * @param value - The value to inspect
    * @returns
    */
-  static is$Ref(value: any): value is { $ref: string; length?: number } {
-    return value && typeof value === "object" && typeof value.$ref === "string" && value.$ref.length > 0;
+  static is$Ref(value: unknown): value is { $ref: string; length?: number } {
+    return (
+      Boolean(value) &&
+      typeof value === "object" &&
+      value !== null &&
+      "$ref" in value &&
+      typeof value.$ref === "string" &&
+      value.$ref.length > 0
+    );
   }
 
   /**
@@ -166,7 +173,7 @@ class $Ref {
    * @param value - The value to inspect
    * @returns
    */
-  static isExternal$Ref(value: any): boolean {
+  static isExternal$Ref(value: unknown): boolean {
     return $Ref.is$Ref(value) && value.$ref![0] !== "#";
   }
 
@@ -178,7 +185,7 @@ class $Ref {
    * @param options
    * @returns
    */
-  static isAllowed$Ref(value: any, options: any) {
+  static isAllowed$Ref(value: unknown, options?: $RefParserOptions) {
     if (this.is$Ref(value)) {
       if (value.$ref.substring(0, 2) === "#/" || value.$ref === "#") {
         // It's a JSON Pointer reference, which is always allowed
@@ -224,7 +231,7 @@ class $Ref {
    * @param value - The value to inspect
    * @returns
    */
-  static isExtended$Ref(value: any) {
+  static isExtended$Ref(value: unknown) {
     return $Ref.is$Ref(value) && Object.keys(value).length > 1;
   }
 
@@ -259,7 +266,7 @@ class $Ref {
    * @param resolvedValue - The resolved value, which can be any type
    * @returns - Returns the dereferenced value
    */
-  static dereference($ref: $Ref, resolvedValue: any) {
+  static dereference($ref: $Ref, resolvedValue: JSONSchema): JSONSchema {
     if (resolvedValue && typeof resolvedValue === "object" && $Ref.isExtended$Ref($ref)) {
       const merged = {};
       for (const key of Object.keys($ref)) {

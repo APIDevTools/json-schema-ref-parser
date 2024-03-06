@@ -49,7 +49,6 @@ function crawl(
   const obj = key === null ? parent : parent[key];
 
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj)) {
-    // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
     if ($Ref.isAllowed$Ref(obj)) {
       inventory$Ref(parent, key, path, pathFromRoot, indirections, inventory, $refs, options);
     } else {
@@ -76,7 +75,6 @@ function crawl(
         const keyPathFromRoot = Pointer.join(pathFromRoot, key);
         const value = obj[key];
 
-        // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
         if ($Ref.isAllowed$Ref(value)) {
           inventory$Ref(obj, key, path, keyPathFromRoot, indirections, inventory, $refs, options);
         } else {
