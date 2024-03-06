@@ -1,7 +1,6 @@
 /// <reference lib="dom" />
 
 import nodePath from "path";
-import nodeUrl from "url";
 import { isWindows } from "../../lib/util/is-windows";
 import convertPathToPosix from "../../lib/util/convert-path-to-posix";
 
@@ -53,13 +52,7 @@ function filesystemPathHelpers() {
         pathname = convertPathToPosix(pathname);
       }
 
-      const url = nodeUrl.format({
-        protocol: "file:",
-        slashes: true,
-        pathname,
-      });
-
-      return url;
+      return new URL(`file://${pathname}`).toString();
     },
 
     /**

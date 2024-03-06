@@ -3,6 +3,7 @@ import type $RefParserOptions from "./options.js";
 import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import { JSONParserError, InvalidPointerError, MissingPointerError, isHandledError } from "./util/errors.js";
+
 const slashes = /\//g;
 const tildes = /~/g;
 const escapedSlash = /~1/g;
@@ -57,7 +58,7 @@ class Pointer {
    */
   indirections: number;
 
-  constructor($ref: any, path: any, friendlyPath?: string) {
+  constructor($ref: $Ref, path: string, friendlyPath?: string) {
     this.$ref = $ref;
 
     this.path = path;

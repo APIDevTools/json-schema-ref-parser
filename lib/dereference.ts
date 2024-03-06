@@ -159,16 +159,14 @@ function crawl(
  */
 function dereference$Ref(
   $ref: any,
-  path: any,
-  pathFromRoot: any,
-  parents: any,
+  path: string,
+  pathFromRoot: string,
+  parents: Set<any>,
   processedObjects: any,
   dereferencedCache: any,
-  $refs: any,
-  options: any,
+  $refs: $Refs,
+  options: $RefParserOptions,
 ) {
-  // console.log('Dereferencing $ref pointer "%s" at %s', $ref.$ref, path);
-
   const isExternalRef = $Ref.isExternal$Ref($ref);
   const shouldResolveOnCwd = isExternalRef && options?.dereference.externalReferenceResolution === "root";
   const $refPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref);
