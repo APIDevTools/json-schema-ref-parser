@@ -103,6 +103,21 @@ class Pointer {
 
       const token = tokens[i];
       if (this.value[token] === undefined || (this.value[token] === null && i === tokens.length - 1)) {
+        // one final case is if the entry itself includes slashes, and was parsed out as a token - we can join the remaining tokens and try again
+        let didFindSubstringSlashMatch = false;
+        for (let j = tokens.length - 1; j > i; j--) {
+          const joinedToken = tokens.slice(i, j + 1).join("/");
+          if (this.value[joinedToken] !== undefined) {
+            this.value = this.value[joinedToken];
+            i = j;
+            didFindSubstringSlashMatch = true;
+            break;
+          }
+        }
+        if (didFindSubstringSlashMatch) {
+          continue;
+        }
+
         this.value = null;
         throw new MissingPointerError(token, decodeURI(this.originalPath));
       } else {

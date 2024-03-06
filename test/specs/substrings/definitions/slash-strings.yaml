@@ -1,0 +1,8 @@
+channels:
+  'smartylighting/streetlights/1/0/event/{streetlightId}/lighting/measured':
+    description: The topic on which measured values may be produced and consumed.
+    parameters:
+      streetlightId:
+        description: The ID of the streetlight.
+        schema:
+          type: string
