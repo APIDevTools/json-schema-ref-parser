@@ -20,7 +20,6 @@ describe("Schema with date strings", () => {
     helper.testResolve(
       path.rel("test/specs/date-strings/date-strings.yaml"),
       path.abs("test/specs/date-strings/date-strings.yaml"),
-      // @ts-expect-error TS(2554): Expected 2 arguments, but got 3.
       parsedSchema.schema,
     ),
   );

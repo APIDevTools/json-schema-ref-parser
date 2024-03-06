@@ -1,5 +1,6 @@
 import { describe, it } from "vitest";
 import { expect } from "vitest";
+import type { FileInfo } from "../../../lib/index.js";
 import $RefParser from "../../../lib/index.js";
 import helper from "../../utils/helper.js";
 import path from "../../utils/path.js";
@@ -226,5 +227,29 @@ describe("options.resolve", () => {
         },
       ]);
     }
+  });
+
+  it("should preserver capitalization", async () => {
+    const parser = new $RefParser();
+    let parsed: string | undefined;
+    await parser.dereference(
+      {
+        $ref: "custom://Path/Is/Case/Sensitive",
+      },
+      {
+        resolve: {
+          custom: {
+            order: 1,
+            canRead: /^custom:\/\//i,
+            read(file: FileInfo, callback?: (error: Error | null, data: string | null) => any) {
+              console.log(file.url);
+              parsed = file.url;
+              callback?.(null, "custom://Path/Is/Case/Sensitive");
+            },
+          },
+        },
+      } as ParserOptions,
+    );
+    expect(parsed).to.equal("custom://Path/Is/Case/Sensitive");
   });
 });
