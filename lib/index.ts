@@ -178,19 +178,6 @@ export class $RefParser {
     options: ParserOptions,
     callback: $RefsCallback,
   ): Promise<void>;
-  /**
-   * Parses the given JSON schema and resolves any JSON references, including references in
-   * externally-referenced files.
-   *
-   * @param [path] - The file path or URL of the JSON schema
-   * @param [schema] - A JSON schema object. This object will be used instead of reading from `path`.
-   * @param [options] - Options that determine how the schema is parsed and resolved
-   * @param [callback]
-   * - An error-first callback. The second parameter is a {@link $Refs} object containing the resolved JSON references
-   *
-   * @returns
-   * The returned promise resolves with a {@link $Refs} object containing the resolved JSON references
-   */
   async resolve() {
     const args = normalizeArgs(arguments);
 
@@ -232,17 +219,6 @@ export class $RefParser {
   }
 
   /**
-   * Parses the given JSON schema, resolves any JSON references, and bundles all external references
-   * into the main JSON schema. This produces a JSON schema that only has *internal* references,
-   * not any *external* references.
-   *
-   * @param [path] - The file path or URL of the JSON schema
-   * @param [schema] - A JSON schema object. This object will be used instead of reading from `path`.
-   * @param [options] - Options that determine how the schema is parsed, resolved, and dereferenced
-   * @param [callback] - An error-first callback. The second parameter is the bundled JSON schema object
-   * @returns - The returned promise resolves with the bundled JSON schema object.
-   */
-  /**
    * Bundles all referenced files/URLs into a single schema that only has internal `$ref` pointers. This lets you split-up your schema however you want while you're building it, but easily combine all those files together when it's time to package or distribute the schema to other people. The resulting schema size will be small, since it will still contain internal JSON references rather than being fully-dereferenced.
    *
    * This also eliminates the risk of circular references, so the schema can be safely serialized using `JSON.stringify()`.
@@ -269,17 +245,6 @@ export class $RefParser {
     return instance.bundle.apply(instance, arguments as any);
   }
 
-  /**
-   * Parses the given JSON schema, resolves any JSON references, and bundles all external references
-   * into the main JSON schema. This produces a JSON schema that only has *internal* references,
-   * not any *external* references.
-   *
-   * @param [path] - The file path or URL of the JSON schema
-   * @param [schema] - A JSON schema object. This object will be used instead of reading from `path`.
-   * @param [options] - Options that determine how the schema is parsed, resolved, and dereferenced
-   * @param [callback] - An error-first callback. The second parameter is the bundled JSON schema object
-   * @returns - The returned promise resolves with the bundled JSON schema object.
-   */
   /**
    * Bundles all referenced files/URLs into a single schema that only has internal `$ref` pointers. This lets you split-up your schema however you want while you're building it, but easily combine all those files together when it's time to package or distribute the schema to other people. The resulting schema size will be small, since it will still contain internal JSON references rather than being fully-dereferenced.
    *
@@ -315,16 +280,6 @@ export class $RefParser {
   }
 
   /**
-   * Parses the given JSON schema, resolves any JSON references, and dereferences the JSON schema.
-   * That is, all JSON references are replaced with their resolved values.
-   *
-   * @param [path] - The file path or URL of the JSON schema
-   * @param [schema] - A JSON schema object. This object will be used instead of reading from `path`.
-   * @param [options] - Options that determine how the schema is parsed, resolved, and dereferenced
-   * @param [callback] - An error-first callback. The second parameter is the dereferenced JSON schema object
-   * @returns - The returned promise resolves with the dereferenced JSON schema object.
-   */
-  /**
    * Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value. This results in a schema object that does not contain any `$ref` pointers. Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object. This is great for programmatic usage, especially when using tools that don't understand JSON references.
    *
    * The dereference method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object. Again, this is great for programmatic usage, but it does introduce the risk of circular references, so be careful if you intend to serialize the schema using `JSON.stringify()`. Consider using the bundle method instead, which does not create circular references.
@@ -351,16 +306,6 @@ export class $RefParser {
     return instance.dereference.apply(instance, arguments as any);
   }
 
-  /**
-   * Parses the given JSON schema, resolves any JSON references, and dereferences the JSON schema.
-   * That is, all JSON references are replaced with their resolved values.
-   *
-   * @param [path] - The file path or URL of the JSON schema
-   * @param [schema] - A JSON schema object. This object will be used instead of reading from `path`.
-   * @param [options] - Options that determine how the schema is parsed, resolved, and dereferenced
-   * @param [callback] - An error-first callback. The second parameter is the dereferenced JSON schema object
-   * @returns - The returned promise resolves with the dereferenced JSON schema object.
-   */
   /**
    * Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value. This results in a schema object that does not contain any `$ref` pointers. Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object. This is great for programmatic usage, especially when using tools that don't understand JSON references.
    *
