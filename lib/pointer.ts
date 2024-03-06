@@ -8,6 +8,14 @@ const tildes = /~/g;
 const escapedSlash = /~1/g;
 const escapedTilde = /~0/g;
 
+const safeDecodeURIComponent = (encodedURIComponent: string): string => {
+  try {
+    return decodeURIComponent(encodedURIComponent);
+  } catch {
+    return encodedURIComponent;
+  }
+};
+
 /**
  * This class represents a single JSON pointer and its resolved value.
  *
@@ -181,7 +189,7 @@ class Pointer {
 
     // Decode each part, according to RFC 6901
     for (let i = 0; i < pointer.length; i++) {
-      pointer[i] = decodeURIComponent(pointer[i].replace(escapedSlash, "/").replace(escapedTilde, "~"));
+      pointer[i] = safeDecodeURIComponent(pointer[i].replace(escapedSlash, "/").replace(escapedTilde, "~"));
     }
 
     if (pointer[0] !== "") {
