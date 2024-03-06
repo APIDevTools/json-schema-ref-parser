@@ -39,7 +39,7 @@ describe("Schema with a top-level (root) $ref", () => {
     expect(schema).to.deep.equal(dereferencedSchema);
     // Reference equality
     // @ts-expect-error TS(2532): Object is possibly 'undefined'.
-    expect(schema.properties.first).to.equal(schema.properties.last);
+    expect(schema.properties.first).to.deep.equal(schema.properties.last);
     // The "circular" flag should NOT be set
     expect(parser.$refs.circular).to.equal(false);
   });

@@ -13,5 +13,10 @@ export default defineConfig({
     passWithNoTests: true,
     reporters: ["verbose"],
     coverage: { reporter: ["lcov", "html", "text"] },
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
   },
 });

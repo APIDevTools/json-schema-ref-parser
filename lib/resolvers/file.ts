@@ -1,4 +1,4 @@
-import { promises as fs } from "fs";
+import fs from "fs";
 import { ono } from "@jsdevtools/ono";
 import * as url from "../util/url.js";
 import { ResolverError } from "../util/errors.js";
@@ -31,8 +31,7 @@ export default {
       throw new ResolverError(ono.uri(err, `Malformed URI: ${file.url}`), file.url);
     }
     try {
-      const data = await fs.readFile(path);
-      return data;
+      return await fs.promises.readFile(path);
     } catch (err: any) {
       throw new ResolverError(ono(err, `Error opening file "${path}"`), path);
     }

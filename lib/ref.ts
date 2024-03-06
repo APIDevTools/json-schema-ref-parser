@@ -5,7 +5,7 @@ import { safePointerToPath, stripHash, getHash } from "./util/url.js";
 import type $Refs from "./refs.js";
 import type $RefParserOptions from "./options.js";
 
-type $RefError = JSONParserError | ResolverError | ParserError | MissingPointerError;
+export type $RefError = JSONParserError | ResolverError | ParserError | MissingPointerError;
 
 /**
  * This class represents a single JSON reference and its resolved value.
