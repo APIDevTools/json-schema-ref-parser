@@ -1,5 +1,5 @@
 import type { FileInfo, JSONSchema } from "../types/index.js";
-import type $RefParserOptions from "../options.js";
+import type { ParserOptions } from "../options.js";
 import type { ResolverOptions } from "../types/index.js";
 import type $Refs from "../refs.js";
 import type { Plugin } from "../types/index.js";
@@ -10,14 +10,16 @@ import type { Plugin } from "../types/index.js";
  *
  * @returns
  */
-export function all<S extends JSONSchema = JSONSchema>(plugins: $RefParserOptions<S>["resolve"]): Plugin[] {
-  return Object.keys(plugins)
+export function all<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  plugins: O["resolve"],
+): Plugin[] {
+  return (Object.keys(plugins || {}) as (keyof ResolverOptions<S>)[])
     .filter((key) => {
-      return typeof plugins[key] === "object";
+      return typeof plugins![key] === "object";
     })
     .map((key) => {
-      (plugins[key] as ResolverOptions<S>)!.name = key;
-      return plugins[key] as Plugin;
+      (plugins![key] as ResolverOptions<S>)!.name = key;
+      return plugins![key] as Plugin;
     });
 }
 
@@ -43,7 +45,7 @@ export function sort(plugins: Plugin[]) {
   });
 }
 
-export interface PluginResult<S extends JSONSchema = JSONSchema> {
+export interface PluginResult<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   plugin: Plugin;
   result?: string | Buffer | S;
   error?: any;
@@ -57,17 +59,17 @@ export interface PluginResult<S extends JSONSchema = JSONSchema> {
  * If the promise rejects, or the callback is called with an error, then the next plugin is called.
  * If ALL plugins fail, then the last error is thrown.
  */
-export async function run<S extends JSONSchema = JSONSchema>(
+export async function run<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   plugins: Plugin[],
   method: keyof Plugin | keyof ResolverOptions<S>,
   file: FileInfo,
-  $refs: $Refs<S>,
+  $refs: $Refs<S, O>,
 ) {
   let plugin: Plugin;
-  let lastError: PluginResult<S>;
+  let lastError: PluginResult<S, O>;
   let index = 0;
 
-  return new Promise<PluginResult<S>>((resolve, reject) => {
+  return new Promise<PluginResult<S, O>>((resolve, reject) => {
     runNextPlugin();
 
     function runNextPlugin() {
@@ -94,7 +96,7 @@ export async function run<S extends JSONSchema = JSONSchema>(
       }
     }
 
-    function callback(err: PluginResult<S>["error"], result: PluginResult<S>["result"]) {
+    function callback(err: PluginResult<S, O>["error"], result: PluginResult<S, O>["result"]) {
       if (err) {
         onError(err);
       } else {
@@ -102,7 +104,7 @@ export async function run<S extends JSONSchema = JSONSchema>(
       }
     }
 
-    function onSuccess(result: PluginResult<S>["result"]) {
+    function onSuccess(result: PluginResult<S, O>["result"]) {
       // console.log('    success');
       resolve({
         plugin,
@@ -110,7 +112,7 @@ export async function run<S extends JSONSchema = JSONSchema>(
       });
     }
 
-    function onError(error: PluginResult<S>["error"]) {
+    function onError(error: PluginResult<S, O>["error"]) {
       // console.log('    %s', err.message || err);
       lastError = {
         plugin,
@@ -127,12 +129,12 @@ export async function run<S extends JSONSchema = JSONSchema>(
  * If the value is a RegExp, then it will be tested against the file URL.
  * If the value is an array, then it will be compared against the file extension.
  */
-function getResult<S extends JSONSchema = JSONSchema>(
+function getResult<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   obj: Plugin,
   prop: keyof Plugin | keyof ResolverOptions<S>,
   file: FileInfo,
   callback?: (err?: Error, result?: any) => void,
-  $refs?: any,
+  $refs?: $Refs<S, O>,
 ) {
   const value = obj[prop as keyof typeof obj] as unknown;
 

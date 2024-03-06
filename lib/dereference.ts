@@ -16,7 +16,7 @@ export default dereference;
  * @param parser
  * @param options
  */
-function dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+function dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   parser: $RefParser<S, O>,
   options: O,
 ) {
@@ -48,14 +48,14 @@ function dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions 
  * @param options
  * @returns
  */
-function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   obj: any,
   path: string,
   pathFromRoot: string,
   parents: Set<any>,
   processedObjects: Set<any>,
   dereferencedCache: any,
-  $refs: $Refs<S>,
+  $refs: $Refs<S, O>,
   options: O,
 ) {
   let dereferenced;
@@ -161,14 +161,14 @@ function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions = Pars
  * @param options
  * @returns
  */
-function dereference$Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+function dereference$Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   $ref: any,
   path: string,
   pathFromRoot: string,
   parents: Set<any>,
   processedObjects: any,
   dereferencedCache: any,
-  $refs: $Refs<S>,
+  $refs: $Refs<S, O>,
   options: O,
 ) {
   const isExternalRef = $Ref.isExternal$Ref($ref);

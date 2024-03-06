@@ -3,7 +3,6 @@ import type { JSONParserError, MissingPointerError, ParserError, ResolverError }
 import { InvalidPointerError, isHandledError, normalizeError } from "./util/errors.js";
 import { safePointerToPath, stripHash, getHash } from "./util/url.js";
 import type $Refs from "./refs.js";
-import type $RefParserOptions from "./options.js";
 import type { ParserOptions } from "./options.js";
 import type { JSONSchema } from "./types";
 
@@ -14,7 +13,7 @@ export type $RefError = JSONParserError | ResolverError | ParserError | MissingP
  *
  * @class
  */
-class $Ref<S extends JSONSchema = JSONSchema> {
+class $Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   /**
    * The file path or URL of the referenced file.
    * This path is relative to the path of the main JSON schema file.
@@ -40,7 +39,7 @@ class $Ref<S extends JSONSchema = JSONSchema> {
    *
    * @type {$Refs}
    */
-  $refs: $Refs<S>;
+  $refs: $Refs<S, O>;
 
   /**
    * Indicates the type of {@link $Ref#path} (e.g. "file", "http", etc.)
@@ -52,7 +51,7 @@ class $Ref<S extends JSONSchema = JSONSchema> {
    */
   errors: Array<$RefError> = [];
 
-  constructor($refs: $Refs<S>) {
+  constructor($refs: $Refs<S, O>) {
     this.$refs = $refs;
   }
 
@@ -88,7 +87,7 @@ class $Ref<S extends JSONSchema = JSONSchema> {
    * @param options
    * @returns
    */
-  exists(path: string, options?: $RefParserOptions<S>) {
+  exists(path: string, options?: O) {
     try {
       this.resolve(path, options);
       return true;
@@ -104,7 +103,7 @@ class $Ref<S extends JSONSchema = JSONSchema> {
    * @param options
    * @returns - Returns the resolved value
    */
-  get(path: string, options?: $RefParserOptions<S>) {
+  get(path: string, options?: O) {
     return this.resolve(path, options)?.value;
   }
 
@@ -117,8 +116,8 @@ class $Ref<S extends JSONSchema = JSONSchema> {
    * @param pathFromRoot - The path of `obj` from the schema root
    * @returns
    */
-  resolve(path: string, options?: $RefParserOptions<S>, friendlyPath?: string, pathFromRoot?: string) {
-    const pointer = new Pointer<S>(this, path, friendlyPath);
+  resolve(path: string, options?: O, friendlyPath?: string, pathFromRoot?: string) {
+    const pointer = new Pointer<S, O>(this, path, friendlyPath);
     try {
       return pointer.resolve(this.value, options, pathFromRoot);
     } catch (err: any) {
@@ -186,7 +185,7 @@ class $Ref<S extends JSONSchema = JSONSchema> {
    * @param options
    * @returns
    */
-  static isAllowed$Ref(value: unknown, options?: ParserOptions) {
+  static isAllowed$Ref<S extends JSONSchema = JSONSchema>(value: unknown, options?: ParserOptions<S>) {
     if (this.is$Ref(value)) {
       if (value.$ref.substring(0, 2) === "#/" || value.$ref === "#") {
         // It's a JSON Pointer reference, which is always allowed
@@ -267,7 +266,10 @@ class $Ref<S extends JSONSchema = JSONSchema> {
    * @param resolvedValue - The resolved value, which can be any type
    * @returns - Returns the dereferenced value
    */
-  static dereference<S extends JSONSchema = JSONSchema>($ref: $Ref<S>, resolvedValue: S): S {
+  static dereference<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+    $ref: $Ref<S, O>,
+    resolvedValue: S,
+  ): S {
     if (resolvedValue && typeof resolvedValue === "object" && $Ref.isExtended$Ref($ref)) {
       const merged = {};
       for (const key of Object.keys($ref)) {

@@ -7,11 +7,15 @@ import type {
   JSONSchema7Object,
 } from "json-schema";
 import type $Refs from "../refs.js";
+import type { ParserOptions } from "../options";
 
 export type JSONSchema = JSONSchema4 | JSONSchema6 | JSONSchema7;
 export type JSONSchemaObject = JSONSchema4Object | JSONSchema6Object | JSONSchema7Object;
 export type SchemaCallback<S extends JSONSchema = JSONSchema> = (err: Error | null, schema?: S | object | null) => any;
-export type $RefsCallback<S extends JSONSchema = JSONSchema> = (err: Error | null, $refs?: $Refs<S>) => any;
+export type $RefsCallback<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> = (
+  err: Error | null,
+  $refs?: $Refs<S, O>,
+) => any;
 
 /**
  * See https://apitools.dev/json-schema-ref-parser/docs/options.html

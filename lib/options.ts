@@ -174,7 +174,7 @@ export const getJsonSchemaRefParserDefaultOptions = () => {
   return defaults;
 };
 
-export const getNewOptions = <S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+export const getNewOptions = <S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   options: O | undefined,
 ): O & $RefParserOptions<S> => {
   const newOptions = getJsonSchemaRefParserDefaultOptions();
@@ -183,8 +183,9 @@ export const getNewOptions = <S extends JSONSchema = JSONSchema, O extends Parse
   }
   return newOptions as O & $RefParserOptions<S>;
 };
-export type Options = $RefParserOptions<JSONSchema>;
-export type ParserOptions = DeepPartial<$RefParserOptions<JSONSchema>>;
+
+export type Options<S extends JSONSchema = JSONSchema> = $RefParserOptions<S>;
+export type ParserOptions<S extends JSONSchema = JSONSchema> = DeepPartial<$RefParserOptions<S>>;
 /**
  * Merges the properties of the source object into the target object.
  *

@@ -1,4 +1,4 @@
-import type $RefParserOptions from "./options.js";
+import type { ParserOptions } from "./options.js";
 
 import $Ref from "./ref.js";
 import * as url from "./util/url.js";
@@ -26,11 +26,11 @@ const safeDecodeURIComponent = (encodedURIComponent: string): string => {
  * @param [friendlyPath] - The original user-specified path (used for error messages)
  * @class
  */
-class Pointer<S extends JSONSchema = JSONSchema> {
+class Pointer<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   /**
    * The {@link $Ref} object that contains this {@link Pointer} object.
    */
-  $ref: $Ref<S>;
+  $ref: $Ref<S, O>;
 
   /**
    * The file path or URL, containing the JSON pointer in the hash.
@@ -59,7 +59,7 @@ class Pointer<S extends JSONSchema = JSONSchema> {
    */
   indirections: number;
 
-  constructor($ref: $Ref<S>, path: string, friendlyPath?: string) {
+  constructor($ref: $Ref<S, O>, path: string, friendlyPath?: string) {
     this.$ref = $ref;
 
     this.path = path;
@@ -86,7 +86,7 @@ class Pointer<S extends JSONSchema = JSONSchema> {
    * the {@link Pointer#$ref} and {@link Pointer#path} will reflect the resolution path
    * of the resolved value.
    */
-  resolve(obj: any, options?: $RefParserOptions<S>, pathFromRoot?: string) {
+  resolve(obj: any, options?: O, pathFromRoot?: string) {
     const tokens = Pointer.parse(this.path, this.originalPath);
 
     // Crawl the object, one token at a time
@@ -144,7 +144,7 @@ class Pointer<S extends JSONSchema = JSONSchema> {
    * @returns
    * Returns the modified object, or an entirely new object if the entire object is overwritten.
    */
-  set(obj: any, value: any, options?: $RefParserOptions<S>) {
+  set(obj: any, value: any, options?: O) {
     const tokens = Pointer.parse(this.path);
     let token;
 

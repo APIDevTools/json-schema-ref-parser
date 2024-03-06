@@ -39,7 +39,7 @@ export class JSONParserError extends Error {
 
 export class JSONParserErrorGroup<
   S extends JSONSchema = JSONSchema,
-  O extends ParserOptions = ParserOptions,
+  O extends ParserOptions<S> = ParserOptions<S>,
 > extends Error {
   files: $RefParser<S, O>;
 
@@ -55,12 +55,12 @@ export class JSONParserErrorGroup<
     Ono.extend(this);
   }
 
-  static getParserErrors<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+  static getParserErrors<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     parser: $RefParser<S, O>,
   ) {
     const errors = [];
 
-    for (const $ref of Object.values(parser.$refs._$refs) as $Ref<S>[]) {
+    for (const $ref of Object.values(parser.$refs._$refs) as $Ref<S, O>[]) {
       if ($ref.errors) {
         errors.push(...$ref.errors);
       }
@@ -78,7 +78,7 @@ export class JSONParserErrorGroup<
     | UnmatchedParserError
     | UnmatchedResolverError
   > {
-    return JSONParserErrorGroup.getParserErrors<S>(this.files);
+    return JSONParserErrorGroup.getParserErrors<S, O>(this.files);
   }
 }
 

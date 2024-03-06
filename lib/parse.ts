@@ -9,15 +9,15 @@ import {
   isHandledError,
 } from "./util/errors.js";
 import type $Refs from "./refs.js";
-import type { Options } from "./options.js";
+import type { ParserOptions } from "./options.js";
 import type { FileInfo, JSONSchema } from "./types/index.js";
 
 /**
  * Reads and parses the specified file path or URL.
  */
-async function parse<S extends JSONSchema = JSONSchema, O extends Options = Options>(
+async function parse<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   path: string,
-  $refs: $Refs<S>,
+  $refs: $Refs<S, O>,
   options: O,
 ) {
   // Remove the URL fragment, if any
@@ -70,10 +70,10 @@ async function parse<S extends JSONSchema = JSONSchema, O extends Options = Opti
  * @returns
  * The promise resolves with the raw file contents and the resolver that was used.
  */
-async function readFile<S extends JSONSchema = JSONSchema, O extends Options = Options>(
+async function readFile<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   file: FileInfo,
   options: O,
-  $refs: $Refs<S>,
+  $refs: $Refs<S, O>,
 ): Promise<any> {
   // console.log('Reading %s', file.url);
 
@@ -116,10 +116,10 @@ async function readFile<S extends JSONSchema = JSONSchema, O extends Options = O
  * @returns
  * The promise resolves with the parsed file contents and the parser that was used.
  */
-async function parseFile<S extends JSONSchema = JSONSchema, O extends Options = Options>(
+async function parseFile<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   file: FileInfo,
   options: O,
-  $refs: $Refs<S>,
+  $refs: $Refs<S, O>,
 ) {
   // Find the parsers that can read this file type.
   // If none of the parsers are an exact match for this file, then we'll try ALL of them.
@@ -131,7 +131,7 @@ async function parseFile<S extends JSONSchema = JSONSchema, O extends Options = 
   // Run the parsers, in order, until one of them succeeds
   plugins.sort(parsers);
   try {
-    const parser = await plugins.run<S>(parsers, "parse", file, $refs);
+    const parser = await plugins.run<S, O>(parsers, "parse", file, $refs);
     if (!parser.plugin.allowEmpty && isEmpty(parser.result)) {
       throw ono.syntax(`Error parsing "${file.url}" as ${parser.plugin.name}. \nParsed value is empty`);
     } else {

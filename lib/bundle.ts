@@ -14,7 +14,7 @@ import type { JSONSchema } from "./index";
  * @param parser
  * @param options
  */
-function bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+function bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   parser: $RefParser<S, O>,
   options: O,
 ) {
@@ -40,14 +40,14 @@ function bundle<S extends JSONSchema = JSONSchema, O extends ParserOptions = Par
  * @param $refs
  * @param options
  */
-function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   parent: any,
   key: string | null,
   path: string,
   pathFromRoot: string,
   indirections: number,
   inventory: unknown[],
-  $refs: $Refs<S>,
+  $refs: $Refs<S, O>,
   options: O,
 ) {
   const obj = key === null ? parent : parent[key];
@@ -102,14 +102,14 @@ function crawl<S extends JSONSchema = JSONSchema, O extends ParserOptions = Pars
  * @param $refs
  * @param options
  */
-function inventory$Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions = ParserOptions>(
+function inventory$Ref<S extends JSONSchema = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   $refParent: any,
   $refKey: any,
   path: string,
   pathFromRoot: any,
   indirections: any,
   inventory: any,
-  $refs: $Refs<S>,
+  $refs: $Refs<S, O>,
   options: O,
 ) {
   const $ref = $refKey === null ? $refParent : $refParent[$refKey];
