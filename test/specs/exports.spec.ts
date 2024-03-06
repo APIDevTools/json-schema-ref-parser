@@ -89,6 +89,8 @@ describe("json-schema-ref-parser package exports", () => {
       "ResolverError",
       "ParserError",
       "UnmatchedParserError",
+      "isHandledError",
+      "JSONParserErrorGroup",
       "UnmatchedResolverError",
     );
   });

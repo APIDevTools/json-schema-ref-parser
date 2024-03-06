@@ -46,10 +46,10 @@ function normalizeArgs(_args: Partial<IArguments>): NormalizedArguments {
   try {
     options = getNewOptions(options);
   } catch (e) {
-    console.log(e);
+    console.error(`JSON Schema Ref Parser: Error normalizing options: ${e}`);
   }
 
-  if (!options.mutateInputSchema) {
+  if (!options.mutateInputSchema && typeof schema === "object") {
     // Make a deep clone of the schema, so that we don't alter the original object
     schema = JSON.parse(JSON.stringify(schema));
   }
