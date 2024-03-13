@@ -82,6 +82,7 @@
     "call-me-maybe": "^1.0.1",
     "fastestsmallesttextencoderdecoder": "^1.0.22",
     "isomorphic-fetch": "^3.0.0",
-    "node-abort-controller": "^3.0.1"
+    "node-abort-controller": "^3.0.1",
+    "url": "^0.11.3"
   }
 }
