@@ -25,7 +25,6 @@ describe("References to non-JSON files", () => {
     path.abs("specs/parsers/files/README.md"), dereferencedSchema.defaultParsers.definitions.markdown,
     path.abs("specs/parsers/files/page.html"), dereferencedSchema.defaultParsers.definitions.html,
     path.abs("specs/parsers/files/style.css"), dereferencedSchema.defaultParsers.definitions.css,
-    path.abs("specs/parsers/files/binary.png"), dereferencedSchema.defaultParsers.definitions.binary,
     path.abs("specs/parsers/files/unknown.foo"), dereferencedSchema.defaultParsers.definitions.unknown,
     path.abs("specs/parsers/files/empty"), dereferencedSchema.defaultParsers.definitions.empty
   ));
@@ -34,7 +33,6 @@ describe("References to non-JSON files", () => {
     let parser = new $RefParser();
     const schema = await parser.dereference(path.rel("specs/parsers/parsers.yaml"));
     expect(schema).to.equal(parser.schema);
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
     // The "circular" flag should NOT be set
     expect(parser.$refs.circular).to.equal(false);
@@ -43,30 +41,7 @@ describe("References to non-JSON files", () => {
   it("should bundle successfully", async () => {
     const schema = await $RefParser
       .bundle(path.rel("specs/parsers/parsers.yaml"));
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
-  });
-
-  it('should parse text as binary if "parse.text" is disabled', async () => {
-    const schema = await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), {
-      parse: {
-        // Disable the text parser
-        text: false,
-        // Parse all non-YAML files as binary
-        binary: {
-          canParse (file) {
-            return file.url.substr(-5) !== ".yaml";
-          }
-        }
-      }
-    });
-    schema.definitions.markdown = helper.convertNodeBuffersToPOJOs(schema.definitions.markdown);
-    schema.definitions.html = helper.convertNodeBuffersToPOJOs(schema.definitions.html);
-    schema.definitions.css = helper.convertNodeBuffersToPOJOs(schema.definitions.css);
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
-    schema.definitions.unknown = helper.convertNodeBuffersToPOJOs(schema.definitions.unknown);
-    schema.definitions.empty = helper.convertNodeBuffersToPOJOs(schema.definitions.empty);
-    expect(schema).to.deep.equal(dereferencedSchema.binaryParser);
   });
 
   it("should throw an error if no no parser can be matched", async () => {
@@ -76,7 +51,6 @@ describe("References to non-JSON files", () => {
           yaml: false,
           json: false,
           text: false,
-          binary: false,
         },
       });
     }
@@ -87,9 +61,9 @@ describe("References to non-JSON files", () => {
     }
   });
 
-  it('should throw an error if "parse.text" and "parse.binary" are disabled', async () => {
+  it('should throw an error if "parse.text" is disabled', async () => {
     try {
-      await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), { parse: { text: false, binary: false }});
+      await $RefParser.dereference(path.rel("specs/parsers/parsers.yaml"), { parse: { text: false }});
       helper.shouldNotGetCalled();
     }
     catch (err) {
@@ -126,7 +100,6 @@ describe("References to non-JSON files", () => {
         }
       }
     });
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.customParser);
   });
 
@@ -143,7 +116,6 @@ describe("References to non-JSON files", () => {
         }
       }
     });
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.customParser);
   });
 
@@ -162,7 +134,6 @@ describe("References to non-JSON files", () => {
         }
       }
     });
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.customParser);
   });
 
@@ -180,7 +151,6 @@ describe("References to non-JSON files", () => {
         }
       }
     });
-    schema.definitions.binary = helper.convertNodeBuffersToPOJOs(schema.definitions.binary);
     expect(schema).to.deep.equal(dereferencedSchema.defaultParsers);
   });
 
@@ -215,7 +185,6 @@ describe("References to non-JSON files", () => {
           yaml: false,
           json: false,
           text: false,
-          binary: false,
         },
         continueOnError: true,
       });

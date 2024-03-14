@@ -1,7 +1,7 @@
 Custom Parsers
 ==========================
 
-JSON Schema $Ref Parser comes with built-in JSON, YAML, plain-text, and binary parsers, but you can add your own parsers to support additional file types, or even replace any of the built-in parsers with your own custom implementation.
+JSON Schema $Ref Parser comes with built-in JSON, YAML, and plain-text parsers, but you can add your own parsers to support additional file types, or even replace any of the built-in parsers with your own custom implementation.
 
 You can see the source code for any of the built-in parsers [right here](../../lib/parsers).
 
@@ -26,7 +26,7 @@ $RefParser.dereference(mySchema, { parse: { csv: myParser }});
 ```
 
 #### The `order` property
-All parsers have an `order` property, even the built-in parsers.  If you don't specify an `order` property, then your parser will run last. Specifying `order: 1`, like we did in this example, will make your parser run first.  Or you can squeeze your parser in-between some of the built-in parsers.  For example, `order: 201` would make it run _after_ the JSON and YAML parsers, but _before_ the plain-text and binary parsers.  You can see the order of all the built-in parsers by looking at [their source code](../../lib/parsers).
+All parsers have an `order` property, even the built-in parsers.  If you don't specify an `order` property, then your parser will run last. Specifying `order: 1`, like we did in this example, will make your parser run first.  Or you can squeeze your parser in-between some of the built-in parsers.  For example, `order: 201` would make it run _after_ the JSON and YAML parsers, but _before_ the plain-text parser.  You can see the order of all the built-in parsers by looking at [their source code](../../lib/parsers).
 
 The `order` property and `canParse` property are related to each other. For each file that JSON Schema $Ref Parser needs to parse, it first determines which parsers _can_ parse that file by checking their `canParse` property.  If only one parser matches a file, then _only_ that one parser is called, regardless of its `order`.  If multiple parsers match a file, then those parsers are tried _in order_ until one of them successfully parses the file. Once a parser successfully parses the file, the rest of the parsers are skipped.
 

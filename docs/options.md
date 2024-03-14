@@ -40,15 +40,15 @@ $RefParser.dereference("my-schema.yaml", {
 -------------------
 The `parse` options determine how different types of files will be parsed.
 
-JSON Schema $Ref Parser comes with built-in JSON, YAML, plain-text, and binary parsers, any of which you can configure or disable.  You can also add [your own custom parsers](plugins/parsers.md) if you want.
+JSON Schema $Ref Parser comes with built-in JSON, YAML, and plain-text parsers, any of which you can configure or disable.  You can also add [your own custom parsers](plugins/parsers.md) if you want.
 
-|Option(s)                    |Type       |Description
-|:----------------------------|:----------|:------------
-|`json`<br>`yaml`<br>`text`<br>`binary`|`object` `boolean`|These are the built-in parsers. In addition, you can add [your own custom parsers](plugins/parsers.md)<br><br>To disable a parser, just set it to `false`.
-|`json.order` `yaml.order` `text.order` `binary.order`|`number`|Parsers run in a specific order, relative to other parsers. For example, a parser with `order: 5` will run _before_ a parser with `order: 10`.  If a parser is unable to successfully parse a file, then the next parser is tried, until one succeeds or they all fail.<br><br>You can change the order in which parsers run, which is useful if you know that most of your referenced files will be a certain type, or if you add [your own custom parser](plugins/parsers.md) that you want to run _first_.
-|`json.allowEmpty` `yaml.allowEmpty` `text.allowEmpty` `binary.allowEmpty`|`boolean`|All of the built-in parsers allow empty files by default. The JSON and YAML parsers will parse empty files as `undefined`. The text parser will parse empty files as an empty string.  The binary parser will parse empty files as an empty byte array.<br><br>You can set `allowEmpty: false` on any parser, which will cause an error to be thrown if a file empty.
-|`json.canParse` `yaml.canParse` `text.canParse` `binary.canParse`|`boolean`, `RegExp`, `string`, `array`, `function`|Determines which parsers will be used for which files.<br><br>A regular expression can be used to match files by their full path. A string (or array of strings) can be used to match files by their file extension. Or a function can be used to perform more complex matching logic. See the [custom parser](plugins/parsers.md) docs for details.
-|`text.encoding`|`string`   |The encoding to use when parsing text-based files. The default is "utf8".
+| Option(s)                                                              |Type       |Description
+|:-----------------------------------------------------------------------|:----------|:------------
+| `json`<br>`yaml`<br>`text`                                             |`object` `boolean`|These are the built-in parsers. In addition, you can add [your own custom parsers](plugins/parsers.md)<br><br>To disable a parser, just set it to `false`.
+| `json.order` `yaml.order` `text.order`                |`number`|Parsers run in a specific order, relative to other parsers. For example, a parser with `order: 5` will run _before_ a parser with `order: 10`.  If a parser is unable to successfully parse a file, then the next parser is tried, until one succeeds or they all fail.<br><br>You can change the order in which parsers run, which is useful if you know that most of your referenced files will be a certain type, or if you add [your own custom parser](plugins/parsers.md) that you want to run _first_.
+| `json.allowEmpty` `yaml.allowEmpty` `text.allowEmpty`                  |`boolean`|All of the built-in parsers allow empty files by default. The JSON and YAML parsers will parse empty files as `undefined`. The text parser will parse empty files as an empty string.
+| `json.canParse` `yaml.canParse` `text.canParse`     |`boolean`, `RegExp`, `string`, `array`, `function`|Determines which parsers will be used for which files.<br><br>A regular expression can be used to match files by their full path. A string (or array of strings) can be used to match files by their file extension. Or a function can be used to perform more complex matching logic. See the [custom parser](plugins/parsers.md) docs for details.
+| `text.encoding`                                                        |`string`   |The encoding to use when parsing text-based files. The default is "utf8".
 
 
 `resolve` Options

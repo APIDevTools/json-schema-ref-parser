@@ -75,33 +75,17 @@ describe("Blank files", () => {
       path.abs("specs/blank/files/blank.yaml"), parsedSchema.yaml,
       path.abs("specs/blank/files/blank.json"), parsedSchema.json,
       path.abs("specs/blank/files/blank.txt"), parsedSchema.text,
-      path.abs("specs/blank/files/blank.png"), parsedSchema.binary,
       path.abs("specs/blank/files/blank.foo"), parsedSchema.unknown
     ));
 
     it("should dereference successfully", async () => {
       let schema = await $RefParser.dereference(path.rel("specs/blank/blank.yaml"));
-      schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
       expect(schema).to.deep.equal(dereferencedSchema);
     });
 
     it("should bundle successfully", async () => {
       let schema = await $RefParser.bundle(path.rel("specs/blank/blank.yaml"));
-      schema.binary = helper.convertNodeBuffersToPOJOs(schema.binary);
       expect(schema).to.deep.equal(dereferencedSchema);
-    });
-
-    it('should throw an error if "allowEmpty" is disabled', async () => {
-      try {
-        await $RefParser.dereference(path.rel("specs/blank/blank.yaml"), { parse: { binary: { allowEmpty: false }}});
-        helper.shouldNotGetCalled();
-      }
-      catch (err) {
-        expect(err).to.be.an.instanceOf(SyntaxError);
-        expect(err.message).to.contain("Error parsing ");
-        expect(err.message).to.contain("blank/files/blank.png");
-        expect(err.message).to.contain("Parsed value is empty");
-      }
     });
   });
 });

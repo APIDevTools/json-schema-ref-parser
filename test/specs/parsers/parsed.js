@@ -13,9 +13,6 @@ module.exports =
       css: {
         $ref: "files/style.css"
       },
-      binary: {
-        $ref: "files/binary.png"
-      },
       unknown: {
         $ref: "files/unknown.foo"
       },

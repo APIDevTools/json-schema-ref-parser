@@ -12,9 +12,6 @@ module.exports =
     text: {
       $ref: "files/blank.txt"
     },
-    binary: {
-      $ref: "files/blank.png"
-    },
     unknown: {
       $ref: "files/blank.foo"
     },
@@ -25,8 +22,6 @@ module.exports =
   json: undefined,
 
   text: "",
-
-  binary: { type: "Buffer", data: []},
 
   unknown: undefined
 };
