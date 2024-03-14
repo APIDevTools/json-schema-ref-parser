@@ -70,6 +70,7 @@
     "karma-cli": "^2.0.0",
     "mocha": "^8.2.1",
     "nock": "^12.0.3",
+    "node-fetch": "^2.7.0",
     "npm-check": "^5.9.0",
     "nyc": "^15.0.1",
     "shx": "^0.3.2",
@@ -81,8 +82,6 @@
     "@stoplight/yaml": "^4.0.2",
     "call-me-maybe": "^1.0.1",
     "fastestsmallesttextencoderdecoder": "^1.0.22",
-    "isomorphic-fetch": "^3.0.0",
-    "node-abort-controller": "^3.0.1",
     "url": "^0.11.3"
   }
 }

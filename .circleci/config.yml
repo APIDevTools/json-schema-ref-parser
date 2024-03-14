@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   node: circleci/node@4.7.0
-  browser-tools: circleci/browser-tools@1.4.4
+  browser-tools: circleci/browser-tools@1.4.8
 
 executors:
   linux:
@@ -39,7 +39,7 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: << parameters.node-version >>.0
+          node-version: << parameters.node-version >>
           install-yarn: false
           install-npm: true
           npm-version: "9.7.1"
@@ -48,7 +48,7 @@ jobs:
 
   test-browser:
     docker:
-      - image: cimg/node:16.13-browsers
+      - image: cimg/node:16.20-browsers
     steps:
       - checkout
       - browser-tools/install-browser-tools
@@ -66,6 +66,5 @@ workflows:
               os:
                 - linux
               node-version:
-                - "14.19"
-                - "16.13"
+                - "18.19.1"
       - test-browser
