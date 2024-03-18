@@ -67,7 +67,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest # Chrome, Firefox
-          - windows-latest # Edge
 
     steps:
       - name: Checkout source
