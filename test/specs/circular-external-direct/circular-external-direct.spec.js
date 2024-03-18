@@ -4,7 +4,7 @@ const chai = require("chai");
 const chaiSubset = require("chai-subset");
 chai.use(chaiSubset);
 const { expect } = chai;
-const $RefParser = require("../../../lib");
+const $RefParser = require("../../..");
 const path = require("../../utils/path");
 const parsedSchema = require("./parsed");
 const dereferencedSchema = require("./dereferenced");

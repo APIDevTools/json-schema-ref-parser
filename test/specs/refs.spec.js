@@ -2,7 +2,7 @@
 
 const { host } = require("@jsdevtools/host-environment");
 const { expect } = require("chai");
-const $RefParser = require("../../lib");
+const $RefParser = require("../..");
 const helper = require("../utils/helper");
 const path = require("../utils/path");
 const parsedSchema = require("./external/parsed");

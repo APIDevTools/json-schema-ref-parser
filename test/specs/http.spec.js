@@ -4,7 +4,7 @@ const { host } = require("@jsdevtools/host-environment");
 const { expect, use } = require("chai");
 const chai = require("chai");
 const spies = require("chai-spies");
-const $RefParser = require("../../lib");
+const $RefParser = require("../..");
 
 use(spies);
 

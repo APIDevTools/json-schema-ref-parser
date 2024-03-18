@@ -501,4 +501,12 @@ declare namespace $RefParser {
     public readonly name = "InvalidPointerError";
     public readonly code ="EINVALIDPOINTER";
   }
+
+  export const env: {
+    readonly platform: string;
+    readonly environment: string;
+    getCwd(): string;
+    setEnvironment(newEnv: string): void;
+    getEnvironment(): string;
+  };
 }

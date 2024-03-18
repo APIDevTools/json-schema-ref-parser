@@ -75,6 +75,7 @@ describe("json-schema-ref-parser package exports", () => {
   it("should not export anything else", async () => {
     expect(commonJSExport).to.have.same.keys(
       "default",
+      "env",
       "parse",
       "resolve",
       "dereference",

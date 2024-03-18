@@ -4,7 +4,7 @@ const chai = require("chai");
 const chaiSubset = require("chai-subset");
 chai.use(chaiSubset);
 const { expect } = chai;
-const $RefParser = require("../../../lib");
+const $RefParser = require("../../..");
 const { JSONParserErrorGroup, MissingPointerError } = require("../../../lib/util/errors");
 const helper = require("../../utils/helper");
 

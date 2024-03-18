@@ -1,7 +1,7 @@
 "use strict";
 
 const { expect } = require("chai");
-const $RefParser = require("../../lib");
+const $RefParser = require("../..");
 const helper = require("../utils/helper");
 const path = require("../utils/path");
 const { ParserError } = require("../../lib/util/errors");
