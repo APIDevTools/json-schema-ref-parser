@@ -45,7 +45,7 @@ describe("Usage", () => {
 
     expect(parser.$refs.propertyMap).to.deep.equal({
       "#/properties/books":
-        path.abs("specs/usage/definitions/design-library.json") +
+        path.unixify(path.abs("specs/usage/definitions/design-library.json")) +
         "#/definitions/Books",
       "#/properties/books/oneOf/0":
         "http://jakub.stoplight-local.com:8080/api/v1/projects/jakub/usage/nodes/reference/book.v1.json",
@@ -53,9 +53,9 @@ describe("Usage", () => {
         "http://jakub.stoplight-local.com:8080/api/v1/projects/jakub/usage/nodes/reference/book.v1.json?mid=1",
       "#/properties/books/oneOf/2":
         "http://jakub.stoplight-local.com:8080/api/v1/projects/jakub/usage/nodes/reference/book.v2.json",
-      "#/properties/design-library": path.abs(
+      "#/properties/design-library": path.unixify(path.abs(
         "specs/usage/definitions/design-library.json"
-      ),
+      )),
       "#/properties/design-library/definitions/Books":
         "http://jakub.stoplight-local.com:8080/api/v1/projects/jakub/usage/nodes/reference/books.json",
     });
