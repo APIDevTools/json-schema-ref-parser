@@ -63,7 +63,7 @@ export interface $RefParserOptions<S extends object = JSONSchema> {
     json?: Plugin | boolean;
     yaml?: Plugin | boolean;
     binary?: Plugin | boolean;
-    text?: (Plugin & { encoding?: string }) | boolean;
+    text?: Plugin | boolean;
     [key: string]: Plugin | boolean | undefined;
   };
 
