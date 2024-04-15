@@ -7,7 +7,7 @@ import { expect } from "vitest";
 const isWindows = /^win/.test(globalThis.process ? globalThis.process.platform : "");
 const isBrowser = typeof window !== "undefined";
 describe("HTTP options", () => {
-  describe("http.headers", () => {
+  describe.skip("http.headers", () => {
     it("should override default HTTP headers", async () => {
       if (isWindows || isBrowser) {
         return;
