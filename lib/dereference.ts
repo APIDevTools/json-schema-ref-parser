@@ -6,6 +6,7 @@ import type $Refs from "./refs.js";
 import type { DereferenceOptions, ParserOptions } from "./options.js";
 import type { JSONSchema } from "./types";
 import type $RefParser from "./index";
+import { TimeoutError } from "./util/errors";
 
 export default dereference;
 
@@ -20,6 +21,7 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
   parser: $RefParser<S, O>,
   options: O,
 ) {
+  const start = Date.now();
   // console.log('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
   const dereferenced = crawl<S, O>(
     parser.schema,
@@ -30,6 +32,7 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
     new Map(),
     parser.$refs,
     options,
+    start,
   );
   parser.$refs.circular = dereferenced.circular;
   parser.schema = dereferenced.value;
@@ -46,6 +49,7 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
  * @param dereferencedCache - An map of all the dereferenced objects
  * @param $refs
  * @param options
+ * @param startTime - The time when the dereferencing started
  * @returns
  */
 function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
@@ -57,6 +61,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   dereferencedCache: any,
   $refs: $Refs<S, O>,
   options: O,
+  startTime: number,
 ) {
   let dereferenced;
   const result = {
@@ -64,6 +69,11 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     circular: false,
   };
 
+  if (options && options.timeoutMs) {
+    if (Date.now() - startTime > options.timeoutMs) {
+      throw new TimeoutError(options.timeoutMs);
+    }
+  }
   const derefOptions = (options.dereference || {}) as DereferenceOptions;
   const isExcludedPath = derefOptions.excludedPathMatcher || (() => false);
 
@@ -82,6 +92,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           dereferencedCache,
           $refs,
           options,
+          startTime,
         );
         result.circular = dereferenced.circular;
         result.value = dereferenced.value;
@@ -107,6 +118,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
               dereferencedCache,
               $refs,
               options,
+              startTime,
             );
             circular = dereferenced.circular;
             // Avoid pointless mutations; breaks frozen objects to no profit
@@ -125,6 +137,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
                 dereferencedCache,
                 $refs,
                 options,
+                startTime,
               );
               circular = dereferenced.circular;
               // Avoid pointless mutations; breaks frozen objects to no profit
@@ -170,6 +183,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   dereferencedCache: any,
   $refs: $Refs<S, O>,
   options: O,
+  startTime: number,
 ) {
   const isExternalRef = $Ref.isExternal$Ref($ref);
   const shouldResolveOnCwd = isExternalRef && options?.dereference?.externalReferenceResolution === "root";
@@ -224,6 +238,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
       dereferencedCache,
       $refs,
       options,
+      startTime,
     );
     circular = dereferenced.circular;
     dereferencedValue = dereferenced.value;

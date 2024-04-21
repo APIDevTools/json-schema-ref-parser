@@ -101,6 +101,12 @@ export interface $RefParserOptions<S extends object = JSONSchema> {
    * Default: `true` due to mutating the input being the default behavior historically
    */
   mutateInputSchema?: boolean;
+
+  /**
+   * The maximum amount of time (in milliseconds) that JSON Schema $Ref Parser will spend dereferencing a single schema.
+   * It will throw a timeout error if the operation takes longer than this.
+   */
+  timeoutMs?: number;
 }
 
 export const getJsonSchemaRefParserDefaultOptions = () => {

@@ -9,6 +9,7 @@ export type JSONParserErrorType =
   | "EUNKNOWN"
   | "EPARSER"
   | "EUNMATCHEDPARSER"
+  | "ETIMEOUT"
   | "ERESOLVER"
   | "EUNMATCHEDRESOLVER"
   | "EMISSINGPOINTER"
@@ -124,6 +125,14 @@ export class MissingPointerError extends JSONParserError {
   name = "MissingPointerError";
   constructor(token: any, path: any) {
     super(`Token "${token}" does not exist.`, stripHash(path));
+  }
+}
+
+export class TimeoutError extends JSONParserError {
+  code = "ETIMEOUT" as JSONParserErrorType;
+  name = "TimeoutError";
+  constructor(timeout: number) {
+    super(`Dereferencing timeout reached: ${timeout}ms`);
   }
 }
 
