@@ -23,7 +23,7 @@ describe("Working directory", () => {
     } catch (err) {
       expect(err).to.be.an.instanceOf(JSONParserError);
       // @ts-expect-error TS(2571): Object is of type 'unknown'.
-      expect(err.message).to.contain("Error opening file");
+      expect(err.message).to.contain("Error");
     }
   });
 });

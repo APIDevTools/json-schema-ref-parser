@@ -1,0 +1,235 @@
+{
+    "$id": "schemaC/1.0",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "AbstractResponseReservationActionMetaData": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/AbstractReservationActionMetaData"
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "test"
+                    ],
+                    "properties": {
+                        "test": {
+                            "type": "string"
+                        }
+                    }
+                }
+            ],
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "AbstractReservationActionMetaData": {
+            "type": "object",
+            "required": [
+                "supplierPriceElements"
+            ],
+            "properties": {
+                "supplierPriceElements": {
+                    "$ref": "#/definitions/SupplierPriceElement"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "SupplierPriceElement": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/AbstractSupplierPriceElement"
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "purchaseRate"
+                    ],
+                    "properties": {
+                        "purchaseRate": {
+                            "$ref": "#/definitions/InDetailParent"
+                        },
+                        "fee": {
+                            "$ref": "#/definitions/AllFees"
+                        }
+                    }
+                }
+            ]
+        },
+        "AllFees": {
+            "type": "object",
+            "properties": {
+                "modificationFee": {
+                    "$ref": "#/definitions/MonetaryAmount"
+                },
+                "cancellationFee": {
+                    "$ref": "#/definitions/MonetaryAmount"
+                }
+            }
+        },
+        "MonetaryAmount": {
+            "type": "object",
+            "required": [
+                "amount",
+                "currency"
+            ],
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/Amount"
+                },
+                "currency": {
+                    "$ref": "#/definitions/Currency"
+                }
+            }
+        },
+        "Amount": {
+            "type": "number",
+            "format": "float"
+        },
+        "Currency": {
+            "type": "string",
+            "minLength": 1
+        },
+        "InDetailParent": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/MonetaryAmount"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "inDetail": {
+                            "$ref": "#/definitions/InDetailChild"
+                        }
+                    }
+                }
+            ]
+        },
+        "InDetailChild": {
+            "type": "object",
+            "properties": {
+                "perDate": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/InDetailPerDate"
+                    }
+                },
+                "perPax": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/InDetailPerPax"
+                    }
+                }
+            }
+        },
+        "InDetailPerDate": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "amount": {
+                    "$ref": "#/definitions/Amount"
+                },
+                "detailedPriceInformation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DetailedPriceInformation"
+                    }
+                }
+            }
+        },
+        "DetailedPriceInformation": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "$ref": "#/definitions/Amount"
+                },
+                "paxId": {
+                    "type": "string"
+                },
+                "inDetail": {
+                    "$ref": "#/definitions/InDetailPriceInformation"
+                }
+            }
+        },
+        "InDetailPriceInformation": {
+            "type": "object",
+            "properties": {
+                "rate": {
+                    "$ref": "#/definitions/Amount"
+                },
+                "board": {
+                    "$ref": "#/definitions/Amount"
+                },
+                "taxes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/InDetailField"
+                    }
+                },
+                "fees": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/InDetailField"
+                    }
+                },
+                "supplements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/InDetailField"
+                    }
+                },
+                "salesOfferIds": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/InDetailField"
+                    }
+                }
+            }
+        },
+        "InDetailField": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "amount": {
+                    "$ref": "#/definitions/Amount"
+                }
+            }
+        },
+        "InDetailPerPax": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "amount": {
+                    "$ref": "#/definitions/Amount"
+                },
+                "salesOfferIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "AbstractSupplierPriceElement": {
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
