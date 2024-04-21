@@ -1,0 +1,12 @@
+EmptyResponse:
+  description: Successful Response
+  content:
+    application/json:
+      schema: {}
+SuccessfulObjectResponse:
+  description: Successful Response
+  content:
+    application/json:
+      schema:
+        title: Any
+        type: object

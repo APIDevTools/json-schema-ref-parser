@@ -1,0 +1,16 @@
+get:
+  summary: Metrics
+  operationId: metrics
+  security:
+    - {}
+  responses:
+    200:
+      description: Successful Response
+      content:
+        text/plain:
+          schema:
+            type: string
+    400:
+      $ref: "../components/responses/400.yaml#/BadRequestResponse"
+  tags:
+    - Health and Metrics

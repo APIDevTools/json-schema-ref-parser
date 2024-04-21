@@ -1,0 +1,4 @@
+NotFoundResponse:
+  description: The specified resource was not found.
+NotFoundOrNotAuthorizedResponse:
+  description: The specified resource was not found or you are not authorized to access it.

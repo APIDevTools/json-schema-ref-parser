@@ -1,0 +1,18 @@
+type: object
+properties:
+  order_by:
+    title: Order By
+    type: string
+  order_dir:
+    title: Order direction
+    type: string
+    enum: [ "asc", "desc", "ASC", "DESC" ]
+  page_size:
+    title: Page Size
+    type: integer
+    default: 25
+  page_number:
+    title: Page Number
+    type: integer
+    default: 0
+    minimum: 0

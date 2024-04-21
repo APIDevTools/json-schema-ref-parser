@@ -1,0 +1,276 @@
+---
+openapi: 3.1.0
+info:
+  title: Test Example Example
+  description: Test Example Example API
+  version: "1"
+servers:
+  - url: https://api.stage.Test Example.ai
+    description: Stage API
+  - url: https://api.Test Example.ai
+    description: Production API
+security:
+  - BearerAuth: []
+paths:
+  /api/v2/create/{sensor_id}:
+    parameters:
+      - name: sensor_id
+        required: true
+        schema:
+          title: Sensor ID
+          type: string
+          format: uuid
+        example: 123e4567-e89b-12d3-a456-426614174000
+        in: path
+      - $ref: "../common/components/parameters/Correlation.yaml#/CorrelationParameter"
+      - $ref: "../common/components/parameters/Tenant.yaml#/TenantParameter"
+    post:
+      summary: Request example scan
+      tags:
+        - v2
+      operationId: example_api_v2_scan_create_post
+      requestBody:
+        description: Request body for create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanCreateRequest"
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        201:
+          $ref: "../common/components/responses/201.yaml#/CreatedResponse"
+        400:
+          $ref: "../common/components/responses/400.yaml#/BadRequestResponse"
+        422:
+          $ref: "../common/components/responses/422.yaml#/ValidationErrorResponse"  
+  /api/v1/create/{sensor_id}:
+    parameters:
+      - name: sensor_id 
+        required: true
+        schema:
+          title: Sensor ID
+          type: string
+          format: uuid
+        in: path
+        example: 123e4567-e89b-12d3-a456-426614174000
+      - $ref: "../common/components/parameters/Correlation.yaml#/CorrelationParameter"
+      - $ref: "../common/components/parameters/Tenant.yaml#/TenantParameter"
+    post:
+      tags:
+        - v1
+      summary: Request example scan
+      operationId: example_api_v1_scan_create_post
+      requestBody:
+        description: Request body for create
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanCreateRequest"
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        201:
+          $ref: "../common/components/responses/201.yaml#/CreatedResponse"
+        400:
+          $ref: "../common/components/responses/400.yaml#/BadRequestResponse"
+        422:
+          $ref: "../common/components/responses/422.yaml#/ValidationErrorResponse"
+  /api/v2/status:
+    post:
+      tags:
+        - v2
+      summary: Batch request status
+      operationId: example_api_v2_batch_status
+      requestBody:
+        description: Request for multiple sensorIds
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+      responses:
+        201:
+          $ref: "../common/components/responses/201.yaml#/CreatedResponse"
+        400:
+          $ref: "../common/components/responses/400.yaml#/BadRequestResponse"
+        422:
+          $ref: "../common/components/responses/422.yaml#/ValidationErrorResponse"
+        
+  /api/v1/status/{sensor_id}:
+    parameters:
+      - name: sensor_id
+        required: true
+        schema:
+          title: Sensor ID
+          type: string
+          format: uuid
+        in: path
+        example: 123e4567-e89b-12d3-a456-426614174000
+      - $ref: "../common/components/parameters/Correlation.yaml#/CorrelationParameter"
+      - $ref: "../common/components/parameters/Tenant.yaml#/TenantParameter"
+    get:
+      tags:
+        - v1
+      summary: Get Status or Result of a Scan
+      operationId: example_api_v1_sensors_sensor_id_get
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ScanResultsV2"
+        400:
+          $ref: "../common/components/responses/400.yaml#/BadRequestResponse"
+        404:
+          $ref: "../common/components/responses/404.yaml#/NotFoundResponse"
+  /api/v2/status/{sensor_id}:
+    parameters:
+      - name: sensor_id
+        required: true
+        schema:
+          title: Sensor ID
+          type: string
+          format: uuid
+        in: path
+        example: 123e4567-e89b-12d3-a456-426614174000
+      - $ref: "../common/components/parameters/Correlation.yaml#/CorrelationParameter"
+      - $ref: "../common/components/parameters/Tenant.yaml#/TenantParameter"
+    get:
+      tags:
+        - v2
+      summary: Get Status or Result of a Scan
+      operationId: example_api_v2_sensors_sensor_id_get
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                 - $ref: "#/components/schemas/ScanResultsV2"
+        400:
+          $ref: "../common/components/responses/400.yaml#/BadRequestResponse"
+        404:
+          $ref: "../common/components/responses/404.yaml#/NotFoundResponse"
+components:
+  schemas:
+    ScanCreateRequest:
+      title: ScanCreateRequest
+      required:
+        - location
+      type: object
+      properties:
+        location:
+          title: POSIX Path
+          type: string
+    ScanResultsV2:
+      title: Example V2 Response
+      required:
+        - scan_id
+        - status
+        - start_time
+        - end_time
+        - results
+        - detections
+      properties:
+        scan_id:
+          title: Scan ID
+          type: string
+        status:
+          title: Status
+          type: string
+          enum: 
+            - done
+            - accepted
+            - failed
+            - pending
+            - created
+            - retry
+        start_time:
+          title: Scan Start Time
+          type: integer
+          format: int64
+        end_time:
+          title: Scan End Time
+          type: integer
+          format: int64
+        results:
+          title: Scan Results
+          type: object
+          properties:
+            md5:
+              type: string
+            sha256:
+              type: string
+            type: 
+              type: string
+            subtype:
+              type: array
+              items:
+                type: string
+            tlsh: 
+              type: string
+          additionalProperties: true
+        detections:
+          type: array
+          items: 
+            type: string
+
+    ScanResultsV1:
+      title: Example V1 Response
+      required:
+        - scan_id
+        - status
+        - start_time
+        - end_time
+        - results
+        - detections
+      properties:
+        scan_id:
+          title: Scan ID
+          type: string
+        status:
+          title: Status
+          type: string
+          enum: 
+            - done
+            - accepted
+            - failed
+            - pending
+            - created
+            - retry
+        start_time:
+          title: Scan Start Time
+          type: integer
+          format: int64
+        end_time:
+          title: Scan End Time
+          type: integer
+          format: int64
+        results:
+          title: Scan Results
+          type: array
+          items:
+            type: string
+        detections:
+          type: array
+          items: 
+            type: string
+  securitySchemes:
+    BearerAuth:
+      $ref: "../common/components/security-schemes/bearer-token.yaml"
+
+    
+    

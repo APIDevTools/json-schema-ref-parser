@@ -1,0 +1,6 @@
+ValidationErrorResponse:
+  description: Validation Error
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/ValidationErrorModel.yaml#/ValidationErrorModel"

@@ -1,0 +1,9 @@
+CorrelationParameter:
+  in: header
+  name: X-Correlation-Id
+  required: true
+  schema:
+    type: string
+    format: uuid
+  description: The unique identifier for the request.
+  example: 864e00cb-fb53-4016-97f1-78e2f07f25d3

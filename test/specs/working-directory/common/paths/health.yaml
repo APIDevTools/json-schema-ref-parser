@@ -1,0 +1,20 @@
+get:
+  summary: Health
+  operationId: health
+  security:
+    - {}
+  responses:
+    200:
+      description: Successful Response
+      content:
+        application/json:
+          schema:
+            $ref: "../components/schemas/HealthModel.yaml#/HealthModel"
+    400:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "../components/responses/400.yaml#/BadRequestResponse"
+  tags:
+    - Health and Metrics

@@ -1,0 +1,5 @@
+BadRequestResponse:
+    description: | 
+      The request failed due to a client error, with one or more of the following possible causes:
+      1. The request required a tenant_id field, which was missing.
+      2. The request was malformed syntactically or semantically.

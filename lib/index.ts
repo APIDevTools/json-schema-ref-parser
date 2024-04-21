@@ -65,12 +65,12 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param [callback] - An error-first callback. The second parameter is the parsed JSON schema object.
    * @returns - The returned promise resolves with the parsed JSON schema object.
    */
-  public parse(schema: S | string): Promise<S>;
-  public parse(schema: S | string, callback: SchemaCallback<S>): Promise<void>;
-  public parse(schema: S | string, options: O): Promise<S>;
-  public parse(schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
-  public parse(baseUrl: string, schema: S | string, options: O): Promise<S>;
-  public parse(baseUrl: string, schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public parse(schema: S | string | unknown): Promise<S>;
+  public parse(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
+  public parse(schema: S | string | unknown, options: O): Promise<S>;
+  public parse(schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public parse(baseUrl: string, schema: S | string | unknown, options: O): Promise<S>;
+  public parse(baseUrl: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
   async parse() {
     const args = normalizeArgs<S, O>(arguments as any);
     let promise;
@@ -144,29 +144,29 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   }
 
   public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
   ): Promise<S>;
   public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     callback: SchemaCallback<S>,
   ): Promise<void>;
   public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
   ): Promise<S>;
   public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
   ): Promise<void>;
   public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     baseUrl: string,
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
   ): Promise<S>;
   public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     baseUrl: string,
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
   ): Promise<void>;
@@ -188,12 +188,17 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param options (optional)
    * @param callback (optional) A callback that will receive a `$Refs` object
    */
-  public resolve(schema: S | string): Promise<$Refs<S, O>>;
-  public resolve(schema: S | string, callback: $RefsCallback<S, O>): Promise<void>;
-  public resolve(schema: S | string, options: O): Promise<$Refs<S, O>>;
-  public resolve(schema: S | string, options: O, callback: $RefsCallback<S, O>): Promise<void>;
-  public resolve(baseUrl: string, schema: S | string, options: O): Promise<$Refs<S, O>>;
-  public resolve(baseUrl: string, schema: S | string, options: O, callback: $RefsCallback<S, O>): Promise<void>;
+  public resolve(schema: S | string | unknown): Promise<$Refs<S, O>>;
+  public resolve(schema: S | string | unknown, callback: $RefsCallback<S, O>): Promise<void>;
+  public resolve(schema: S | string | unknown, options: O): Promise<$Refs<S, O>>;
+  public resolve(schema: S | string | unknown, options: O, callback: $RefsCallback<S, O>): Promise<void>;
+  public resolve(baseUrl: string, schema: S | string | unknown, options: O): Promise<$Refs<S, O>>;
+  public resolve(
+    baseUrl: string,
+    schema: S | string | unknown,
+    options: O,
+    callback: $RefsCallback<S, O>,
+  ): Promise<void>;
   async resolve() {
     const args = normalizeArgs<S, O>(arguments);
 
@@ -219,29 +224,29 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param callback (optional) A callback that will receive a `$Refs` object
    */
   public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
   ): Promise<$Refs<S, O>>;
   public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     callback: $RefsCallback<S, O>,
   ): Promise<void>;
   public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
   ): Promise<$Refs<S, O>>;
   public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
     callback: $RefsCallback<S, O>,
   ): Promise<void>;
   public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     baseUrl: string,
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
   ): Promise<$Refs<S, O>>;
   public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     baseUrl: string,
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
     callback: $RefsCallback<S, O>,
   ): Promise<void>;
@@ -264,29 +269,29 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param callback (optional) A callback that will receive the bundled schema object
    */
   public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
   ): Promise<S>;
   public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     callback: SchemaCallback<S>,
   ): Promise<void>;
   public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
   ): Promise<S>;
   public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
   ): Promise<void>;
   public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     baseUrl: string,
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
   ): Promise<S>;
   public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     baseUrl: string,
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
   ): Promise<S>;
@@ -308,12 +313,12 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param options (optional)
    * @param callback (optional) A callback that will receive the bundled schema object
    */
-  public bundle(schema: S | string): Promise<S>;
-  public bundle(schema: S | string, callback: SchemaCallback<S>): Promise<void>;
-  public bundle(schema: S | string, options: O): Promise<S>;
-  public bundle(schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
-  public bundle(baseUrl: string, schema: S | string, options: O): Promise<S>;
-  public bundle(baseUrl: string, schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public bundle(schema: S | string | unknown): Promise<S>;
+  public bundle(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
+  public bundle(schema: S | string | unknown, options: O): Promise<S>;
+  public bundle(schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public bundle(baseUrl: string, schema: S | string | unknown, options: O): Promise<S>;
+  public bundle(baseUrl: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
   async bundle() {
     const args = normalizeArgs<S, O>(arguments);
     try {
@@ -338,29 +343,29 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param callback (optional) A callback that will receive the dereferenced schema object
    */
   public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
   ): Promise<S>;
   public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     callback: SchemaCallback<S>,
   ): Promise<void>;
   public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
   ): Promise<S>;
   public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
   ): Promise<void>;
   public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     baseUrl: string,
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
   ): Promise<S>;
   public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     baseUrl: string,
-    schema: S | string,
+    schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
   ): Promise<void>;
@@ -383,12 +388,17 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param options (optional)
    * @param callback (optional) A callback that will receive the dereferenced schema object
    */
-  public dereference(baseUrl: string, schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
-  public dereference(schema: S | string, options: O, callback: SchemaCallback<S>): Promise<void>;
-  public dereference(schema: S | string, callback: SchemaCallback<S>): Promise<void>;
-  public dereference(baseUrl: string, schema: S | string, options: O): Promise<S>;
-  public dereference(schema: S | string, options: O): Promise<S>;
-  public dereference(schema: S | string): Promise<S>;
+  public dereference(
+    baseUrl: string,
+    schema: S | string | unknown,
+    options: O,
+    callback: SchemaCallback<S>,
+  ): Promise<void>;
+  public dereference(schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public dereference(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
+  public dereference(baseUrl: string, schema: S | string | unknown, options: O): Promise<S>;
+  public dereference(schema: S | string | unknown, options: O): Promise<S>;
+  public dereference(schema: S | string | unknown): Promise<S>;
   async dereference() {
     const args = normalizeArgs<S, O>(arguments);
 

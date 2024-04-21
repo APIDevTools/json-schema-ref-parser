@@ -1,0 +1,9 @@
+TenantParameter:
+  in: header
+  name: X-Tenant-Id
+  required: true
+  schema:
+    type: string
+    format: uuid
+  description: The unique identifier for the tenant.
+  example: 1a618f53-8829-4ab7-b1e4-d4786617e1d0

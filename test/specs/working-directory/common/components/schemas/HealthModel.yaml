@@ -1,0 +1,17 @@
+HealthModel:
+  title: HealthResponse
+  required:
+  - title
+  - version
+  - status
+  type: object
+  properties:
+    title:
+      title: Title
+      type: string
+    version:
+      title: Version
+      type: string
+    status:
+      title: Status
+      type: string

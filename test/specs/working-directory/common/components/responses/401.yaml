@@ -1,0 +1,6 @@
+AuthenticationErrorResponse:
+  description: Authentication Error
+  content:
+    application/json:
+      schema:
+        $ref: "../schemas/AuthenticationErrorModel.yaml#/AuthenticationErrorModel"

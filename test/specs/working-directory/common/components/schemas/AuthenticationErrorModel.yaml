@@ -1,0 +1,10 @@
+AuthenticationErrorModel:
+  title: AuthenticationErrorModel
+  required:
+  - detail
+  type: object
+  properties:
+    detail:
+      title: Detail
+      type: string
+      default: "Failed to authenticate"
