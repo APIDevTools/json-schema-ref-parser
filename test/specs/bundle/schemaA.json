@@ -2,5 +2,5 @@
     "$id": "schemaA/1.0",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
-    "$ref": "schemaB.json#/definitions/ReservationPurchaseOrderForBookResponse"
+    "$ref": "schemaB.json#/definitions/SupplierPriceElement"
 }

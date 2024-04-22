@@ -6,6 +6,20 @@ import type $RefParser from "./index";
 import type { ParserOptions } from "./index";
 import type { JSONSchema } from "./index";
 
+export interface InventoryEntry {
+  $ref: any;
+  parent: any;
+  key: any;
+  pathFromRoot: any;
+  depth: any;
+  file: any;
+  hash: any;
+  value: any;
+  circular: any;
+  extended: any;
+  external: any;
+  indirections: any;
+}
 /**
  * Bundles all external JSON references into the main JSON schema, thus resulting in a schema that
  * only has *internal* references, not any *external* references.
@@ -21,7 +35,7 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
   // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
 
   // Build an inventory of all $ref pointers in the JSON Schema
-  const inventory: any = [];
+  const inventory: InventoryEntry[] = [];
   crawl<S, O>(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
 
   // Remap all $ref pointers
@@ -41,16 +55,16 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
  * @param options
  */
 function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-  parent: any,
+  parent: object | $RefParser<S, O>,
   key: string | null,
   path: string,
   pathFromRoot: string,
   indirections: number,
-  inventory: unknown[],
+  inventory: InventoryEntry[],
   $refs: $Refs<S, O>,
   options: O,
 ) {
-  const obj = key === null ? parent : parent[key];
+  const obj = key === null ? parent : parent[key as keyof typeof parent];
 
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj)) {
     if ($Ref.isAllowed$Ref(obj)) {
@@ -71,7 +85,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           // This produces the shortest possible bundled references
           return a.length - b.length;
         }
-      });
+      }) as (keyof typeof obj)[];
 
       // eslint-disable-next-line no-shadow
       for (const key of keys) {
@@ -104,11 +118,11 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
  */
 function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   $refParent: any,
-  $refKey: any,
+  $refKey: string | null,
   path: string,
-  pathFromRoot: any,
-  indirections: any,
-  inventory: any,
+  pathFromRoot: string,
+  indirections: number,
+  inventory: InventoryEntry[],
   $refs: $Refs<S, O>,
   options: O,
 ) {
@@ -118,7 +132,8 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   if (pointer === null) {
     return;
   }
-  const depth = Pointer.parse(pathFromRoot).length;
+  const parsed = Pointer.parse(pathFromRoot);
+  const depth = parsed.length;
   const file = url.stripHash(pointer.path);
   const hash = url.getHash(pointer.path);
   const external = file !== $refs._root$Ref.path;
@@ -178,9 +193,9 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
  *
  * @param inventory
  */
-function remap(inventory: any) {
+function remap(inventory: InventoryEntry[]) {
   // Group & sort all the $ref pointers, so they're in the order that we need to dereference/remap them
-  inventory.sort((a: any, b: any) => {
+  inventory.sort((a: InventoryEntry, b: InventoryEntry) => {
     if (a.file !== b.file) {
       // Group all the $refs that point to the same file
       return a.file < b.file ? -1 : +1;
@@ -243,15 +258,33 @@ function remap(inventory: any) {
         entry.$ref.$ref = entry.pathFromRoot;
       }
     }
-
-    // console.log('    new value: %s', (entry.$ref && entry.$ref.$ref) ? entry.$ref.$ref : '[object Object]');
   }
+
+  // we want to ensure that any $refs that point to another $ref are remapped to point to the final value
+  // let hadChange = true;
+  // while (hadChange) {
+  //   hadChange = false;
+  //   for (const entry of inventory) {
+  //     if (entry.$ref && typeof entry.$ref === "object" && "$ref" in entry.$ref) {
+  //       const resolved = inventory.find((e: InventoryEntry) => e.pathFromRoot === entry.$ref.$ref);
+  //       if (resolved) {
+  //         const resolvedPointsToAnotherRef =
+  //           resolved.$ref && typeof resolved.$ref === "object" && "$ref" in resolved.$ref;
+  //         if (resolvedPointsToAnotherRef && entry.$ref.$ref !== resolved.$ref.$ref) {
+  //           // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
+  //           entry.$ref.$ref = resolved.$ref.$ref;
+  //           hadChange = true;
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 /**
  * TODO
  */
-function findInInventory(inventory: any, $refParent: any, $refKey: any) {
+function findInInventory(inventory: InventoryEntry[], $refParent: any, $refKey: any) {
   for (const existingEntry of inventory) {
     if (existingEntry && existingEntry.parent === $refParent && existingEntry.key === $refKey) {
       return existingEntry;
@@ -259,7 +292,7 @@ function findInInventory(inventory: any, $refParent: any, $refKey: any) {
   }
 }
 
-function removeFromInventory(inventory: any, entry: any) {
+function removeFromInventory(inventory: InventoryEntry[], entry: any) {
   const index = inventory.indexOf(entry);
   inventory.splice(index, 1);
 }
