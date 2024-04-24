@@ -290,6 +290,7 @@ function findInInventory(inventory: InventoryEntry[], $refParent: any, $refKey: 
       return existingEntry;
     }
   }
+  return undefined
 }
 
 function removeFromInventory(inventory: InventoryEntry[], entry: any) {

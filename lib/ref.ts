@@ -195,6 +195,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
         return true;
       }
     }
+    return undefined
   }
 
   /**

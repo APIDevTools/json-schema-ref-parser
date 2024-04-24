@@ -68,6 +68,7 @@ export function getProtocol(path: string | undefined) {
   if (match) {
     return match[1].toLowerCase();
   }
+  return undefined;
 }
 
 /**
