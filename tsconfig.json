@@ -17,7 +17,9 @@
     "resolveJsonModule": true,
     "rootDir": ".",
     "skipLibCheck": true,
-    "strict": true
+    "strict": true,
+    "noImplicitReturns": true,
+    "noUnusedParameters": true
   },
   "compileOnSave": false,
   "exclude": ["node_modules", "dist"],
