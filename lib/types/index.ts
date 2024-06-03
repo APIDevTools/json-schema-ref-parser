@@ -25,7 +25,7 @@ export interface HTTPResolverOptions<S extends object = JSONSchema> extends Part
   /**
    * You can specify any HTTP headers that should be sent when downloading files. For example, some servers may require you to set the `Accept` or `Referrer` header.
    */
-  headers?: HeadersInit | null;
+  headers?: RequestInit['headers'] | null;
 
   /**
    * The amount of time (in milliseconds) to wait for a response from the server when downloading files. The default is 5 seconds.
