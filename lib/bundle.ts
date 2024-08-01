@@ -87,7 +87,6 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         }
       }) as (keyof typeof obj)[];
 
-      // eslint-disable-next-line no-shadow
       for (const key of keys) {
         const keyPath = Pointer.join(path, key);
         const keyPathFromRoot = Pointer.join(pathFromRoot, key);
@@ -290,7 +289,7 @@ function findInInventory(inventory: InventoryEntry[], $refParent: any, $refKey: 
       return existingEntry;
     }
   }
-  return undefined
+  return undefined;
 }
 
 function removeFromInventory(inventory: InventoryEntry[], entry: any) {

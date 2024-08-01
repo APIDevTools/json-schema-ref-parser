@@ -221,7 +221,9 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   // Check for circular references
   const directCircular = pointer.circular;
   let circular = directCircular || parents.has(pointer.value);
-  circular && foundCircularReference(path, $refs, options);
+  if (circular) {
+    foundCircularReference(path, $refs, options);
+  }
 
   // Dereference the JSON reference
   let dereferencedValue = $Ref.dereference($ref, pointer.value);

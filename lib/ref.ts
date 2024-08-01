@@ -91,7 +91,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
     try {
       this.resolve(path, options);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -195,7 +195,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
         return true;
       }
     }
-    return undefined
+    return undefined;
   }
 
   /**

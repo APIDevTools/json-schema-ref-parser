@@ -72,7 +72,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     try {
       this._resolve(path, "", options);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
