@@ -6,11 +6,7 @@
   "description": "A User",
   "default": {},
   "additionalProperties": false,
-  "required": [
-    "id",
-    "name",
-    "email"
-  ],
+  "required": ["id", "name", "email"],
   "properties": {
     "id": {
       "$id": "#/user/properties/id",

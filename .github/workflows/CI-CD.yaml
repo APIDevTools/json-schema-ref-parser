@@ -61,8 +61,8 @@ jobs:
       fail-fast: true
       matrix:
         os:
-          - ubuntu-latest     # Chrome, Firefox
-          - windows-latest    # Internet Explorer
+          - ubuntu-latest # Chrome, Firefox
+          - windows-latest # Internet Explorer
 
     steps:
       - name: Checkout source

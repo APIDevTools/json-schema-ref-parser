@@ -5,10 +5,7 @@
   "type": "object",
   "description": "An account.",
   "additionalProperties": false,
-  "required": [
-    "accountOwner",
-    "accountId"
-  ],
+  "required": ["accountOwner", "accountId"],
   "properties": {
     "accountOwner": {
       "$ref": "user.json"
@@ -18,9 +15,7 @@
       "type": "string",
       "description": "An explanation about the purpose of this instance.",
       "default": "",
-      "examples": [
-        "186383568343"
-      ]
+      "examples": ["186383568343"]
     }
   }
 }

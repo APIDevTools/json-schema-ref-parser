@@ -6,7 +6,7 @@ properties:
   order_dir:
     title: Order direction
     type: string
-    enum: [ "asc", "desc", "ASC", "DESC" ]
+    enum: ["asc", "desc", "ASC", "DESC"]
   page_size:
     title: Page Size
     type: integer

@@ -17,7 +17,7 @@ describe("Callback & Promise syntax", () => {
     });
   }
 
-  function testCallbackSuccess(method: typeof methods[number]) {
+  function testCallbackSuccess(method: (typeof methods)[number]) {
     return () =>
       new Promise<void>((resolve, reject) => {
         const parser = new $RefParser();
@@ -39,7 +39,7 @@ describe("Callback & Promise syntax", () => {
       });
   }
 
-  function testCallbackError(method: typeof methods[number]) {
+  function testCallbackError(method: (typeof methods)[number]) {
     return () =>
       new Promise<void>((resolve, reject) => {
         // @ts-ignore
@@ -55,7 +55,7 @@ describe("Callback & Promise syntax", () => {
       });
   }
 
-  function testPromiseSuccess(method: typeof methods[number]) {
+  function testPromiseSuccess(method: (typeof methods)[number]) {
     return function () {
       const parser = new $RefParser();
       return parser[method](path.rel("test/specs/internal/internal.yaml")).then((result: any) => {
@@ -70,7 +70,7 @@ describe("Callback & Promise syntax", () => {
     };
   }
 
-  function testPromiseError(method: typeof methods[number]) {
+  function testPromiseError(method: (typeof methods)[number]) {
     return async function () {
       try {
         // @ts-ignore

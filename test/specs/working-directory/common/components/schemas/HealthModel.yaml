@@ -1,9 +1,9 @@
 HealthModel:
   title: HealthResponse
   required:
-  - title
-  - version
-  - status
+    - title
+    - version
+    - status
   type: object
   properties:
     title:

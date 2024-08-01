@@ -9,8 +9,8 @@
 [![License](https://img.shields.io/npm/l/@apidevtools/json-schema-ref-parser.svg)](LICENSE)
 [![Buy us a tree](https://img.shields.io/badge/Treeware-%F0%9F%8C%B3-lightgreen)](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser)
 
-Installation
---------------------------
+## Installation
+
 Install using [npm](https://docs.npmjs.com/about-npm/):
 
 ```bash
@@ -19,8 +19,8 @@ yarn add @apidevtools/json-schema-ref-parser
 bun add @apidevtools/json-schema-ref-parser
 ```
 
-The Problem:
---------------------------
+## The Problem:
+
 You've got a JSON Schema with `$ref` pointers to other files and/or URLs. Maybe you know all the referenced files ahead
 of time. Maybe you don't. Maybe some are local files, and others are remote URLs. Maybe they are a mix of JSON and YAML
 format. Maybe some of the files contain cross-references to each other.
@@ -48,8 +48,8 @@ format. Maybe some of the files contain cross-references to each other.
 }
 ```
 
-The Solution:
---------------------------
+## The Solution:
+
 JSON Schema $Ref Parser is a full [JSON Reference](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03)
 and [JSON Pointer](https://tools.ietf.org/html/rfc6901) implementation that crawls even the most
 complex [JSON Schemas](http://json-schema.org/latest/json-schema-core.html) and gives you simple, straightforward
@@ -68,8 +68,7 @@ JavaScript objects.
   instance
 - Compatible with Node LTS and beyond, and all major web browsers on Windows, Mac, and Linux
 
-Example
---------------------------
+## Example
 
 ```javascript
 import $RefParser from "@apidevtools/json-schema-ref-parser";
@@ -89,10 +88,7 @@ try {
 
 For more detailed examples, please see the [API Documentation](https://apitools.dev/json-schema-ref-parser/docs/)
 
-
-Polyfills
---------------------------
-
+## Polyfills
 
 If you are using Node.js < 18, you'll need a polyfill for `fetch`,
 like [node-fetch](https://github.com/node-fetch/node-fetch):
@@ -103,8 +99,8 @@ import fetch from "node-fetch";
 globalThis.fetch = fetch;
 ```
 
-Browser support
---------------------------
+## Browser support
+
 JSON Schema $Ref Parser supports recent versions of every major web browser. Older browsers may
 require [Babel](https://babeljs.io/) and/or [polyfills](https://babeljs.io/docs/en/next/babel-polyfill).
 
@@ -121,54 +117,50 @@ Edit your `webpack.config.js` :
 
 ```js
 config.resolve.fallback = {
-  "path": require.resolve("path-browserify"),
-  'fs': require.resolve('browserify-fs')
-}
+  path: require.resolve("path-browserify"),
+  fs: require.resolve("browserify-fs"),
+};
 
 config.plugins.push(
   new webpack.ProvidePlugin({
-    Buffer: ['buffer', 'Buffer']
-  })
-)
-
+    Buffer: ["buffer", "Buffer"],
+  }),
+);
 ```
 
-API Documentation
---------------------------
+## API Documentation
+
 Full API documentation is available [right here](https://apitools.dev/json-schema-ref-parser/docs/)
 
+## Contributing
 
-Contributing
---------------------------
 I welcome any contributions, enhancements, and
-bug-fixes.  [Open an issue](https://github.com/APIDevTools/json-schema-ref-parser/issues) on GitHub
+bug-fixes. [Open an issue](https://github.com/APIDevTools/json-schema-ref-parser/issues) on GitHub
 and [submit a pull request](https://github.com/APIDevTools/json-schema-ref-parser/pulls).
 
 #### Building/Testing
 
 To build/test the project locally on your computer:
 
-1. __Clone this repo__<br>
+1. **Clone this repo**<br>
    `git clone https://github.com/APIDevTools/json-schema-ref-parser.git`
 
-2. __Install dependencies__<br>
+2. **Install dependencies**<br>
    `yarn install`
 
-3. __Run the tests__<br>
+3. **Run the tests**<br>
    `yarn test`
 
-License
---------------------------
+## License
+
 JSON Schema $Ref Parser is 100% free and open-source, under the [MIT license](LICENSE). Use it however you want.
 
 This package is [Treeware](http://treeware.earth). If you use it in production, then we ask that you [**buy the world a
 tree**](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser) to thank us for our work. By contributing to
 the Treeware forest you’ll be creating employment for local families and restoring wildlife habitats.
 
+## Big Thanks To
 
-
-Big Thanks To
---------------------------
 Thanks to these awesome companies for their support of Open Source developers ❤
 
 [![Stoplight](https://svgshare.com/i/TK5.svg)](https://stoplight.io/?utm_source=github&utm_medium=readme&utm_campaign=json_schema_ref_parser)

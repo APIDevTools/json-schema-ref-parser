@@ -23,5 +23,5 @@
   },
   "compileOnSave": false,
   "exclude": ["node_modules"],
-  "include": ["lib/**/*", "test/**/*" , "../vite.config.ts"]
+  "include": ["lib/**/*", "test/**/*", "../vite.config.ts"]
 }

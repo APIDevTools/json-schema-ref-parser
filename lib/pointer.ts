@@ -284,7 +284,7 @@ function resolveIf$Ref(pointer: any, options: any, pathFromRoot?: any) {
       return true;
     }
   }
-  return undefined
+  return undefined;
 }
 export default Pointer;
 

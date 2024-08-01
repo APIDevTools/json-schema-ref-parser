@@ -46,10 +46,10 @@ paths:
         400:
           $ref: "../common/components/responses/400.yaml#/BadRequestResponse"
         422:
-          $ref: "../common/components/responses/422.yaml#/ValidationErrorResponse"  
+          $ref: "../common/components/responses/422.yaml#/ValidationErrorResponse"
   /api/v1/create/{sensor_id}:
     parameters:
-      - name: sensor_id 
+      - name: sensor_id
         required: true
         schema:
           title: Sensor ID
@@ -104,7 +104,7 @@ paths:
           $ref: "../common/components/responses/400.yaml#/BadRequestResponse"
         422:
           $ref: "../common/components/responses/422.yaml#/ValidationErrorResponse"
-        
+
   /api/v1/status/{sensor_id}:
     parameters:
       - name: sensor_id
@@ -159,7 +159,7 @@ paths:
             application/json:
               schema:
                 oneOf:
-                 - $ref: "#/components/schemas/ScanResultsV2"
+                  - $ref: "#/components/schemas/ScanResultsV2"
         400:
           $ref: "../common/components/responses/400.yaml#/BadRequestResponse"
         404:
@@ -191,7 +191,7 @@ components:
         status:
           title: Status
           type: string
-          enum: 
+          enum:
             - done
             - accepted
             - failed
@@ -214,18 +214,18 @@ components:
               type: string
             sha256:
               type: string
-            type: 
+            type:
               type: string
             subtype:
               type: array
               items:
                 type: string
-            tlsh: 
+            tlsh:
               type: string
           additionalProperties: true
         detections:
           type: array
-          items: 
+          items:
             type: string
 
     ScanResultsV1:
@@ -244,7 +244,7 @@ components:
         status:
           title: Status
           type: string
-          enum: 
+          enum:
             - done
             - accepted
             - failed
@@ -266,11 +266,8 @@ components:
             type: string
         detections:
           type: array
-          items: 
+          items:
             type: string
   securitySchemes:
     BearerAuth:
       $ref: "../common/components/security-schemes/bearer-token.yaml"
-
-    
-    

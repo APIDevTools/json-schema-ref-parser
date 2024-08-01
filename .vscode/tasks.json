@@ -20,7 +20,7 @@
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": "$tsc",
+      "problemMatcher": "$tsc"
     },
     {
       "type": "npm",
@@ -28,7 +28,7 @@
       "group": {
         "kind": "test",
         "isDefault": true
-      },
-    },
+      }
+    }
   ]
 }

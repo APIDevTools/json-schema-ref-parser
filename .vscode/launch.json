@@ -11,9 +11,7 @@
       "cwd": "${workspaceRoot}",
       "preLaunchTask": null,
       "runtimeExecutable": null,
-      "runtimeArgs": [
-        "--nolazy"
-      ],
+      "runtimeArgs": ["--nolazy"],
       "env": {
         "NODE_ENV": "development"
       },
@@ -26,16 +24,11 @@
       "request": "launch",
       "program": "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
       "stopOnEntry": false,
-      "args": [
-        "run",
-        "test:typescript"
-      ],
+      "args": ["run", "test:typescript"],
       "cwd": "${workspaceRoot}",
       "preLaunchTask": null,
       "runtimeExecutable": null,
-      "runtimeArgs": [
-        "--nolazy"
-      ],
+      "runtimeArgs": ["--nolazy"],
       "env": {
         "NODE_ENV": "development"
       },

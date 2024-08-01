@@ -4,11 +4,7 @@
   "type": "object",
   "description": "An account list result.",
   "additionalProperties": false,
-  "required": [
-    "data",
-    "total",
-    "pages"
-  ],
+  "required": ["data", "total", "pages"],
   "properties": {
     "data": {
       "type": "array",

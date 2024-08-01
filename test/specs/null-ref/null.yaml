@@ -24,10 +24,10 @@ components:
           method: payment-card
         - feature:
             $ref: "#/components/schemas/ReadyToPayMethods/example/2/feature"
-          filters: [ ]
+          filters: []
           method: ach
-        - filters: [ ]
+        - filters: []
           method: paypal
-        - filters: [ ]
+        - filters: []
           method: Skrill
       type: array
