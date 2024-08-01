@@ -163,7 +163,7 @@ export function isHttp(path: string) {
  */
 export function isFileSystemPath(path: string | undefined) {
   // @ts-ignore
-  if (typeof window !== "undefined" || process.browser) {
+  if (typeof window !== "undefined" || (typeof process !== "undefined" && process.browser)) {
     // We're running in a browser, so assume that all paths are URLs.
     // This way, even relative paths will be treated as URLs rather than as filesystem paths
     return false;
