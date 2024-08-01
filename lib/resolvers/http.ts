@@ -23,7 +23,7 @@ export default {
   /**
    * HTTP request timeout (in milliseconds).
    */
-  timeout: 5000, // 5 seconds
+  timeout: 60_000, // 60 seconds
 
   /**
    * The maximum number of HTTP redirects to follow.
