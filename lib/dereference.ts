@@ -190,7 +190,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   const $refPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref);
 
   const cache = dereferencedCache.get($refPath);
-  if (cache) {
+  if (cache && !cache.circular) {
     const refKeys = Object.keys($ref);
     if (refKeys.length > 1) {
       const extraKeys = {};
