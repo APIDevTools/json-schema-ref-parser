@@ -19,6 +19,7 @@ import {
 import { ono } from "@jsdevtools/ono";
 import maybe from "./util/maybe.js";
 import type { ParserOptions } from "./options.js";
+import { getJsonSchemaRefParserDefaultOptions } from "./options.js";
 import type {
   $RefsCallback,
   JSONSchema,
@@ -446,4 +447,7 @@ export {
   Plugin,
   ResolverOptions,
   HTTPResolverOptions,
+  _dereference as dereferenceInternal,
+  normalizeArgs as jsonSchemaParserNormalizeArgs,
+  getJsonSchemaRefParserDefaultOptions,
 };
