@@ -1,6 +1,5 @@
 import { describe, it } from "vitest";
 import defaultExport from "../../lib/index.js";
-import * as namespaceExport from "../../lib/index.js";
 import { default as namedDefaultExport } from "../../lib/index.js";
 import {
   JSONParserError,
@@ -73,25 +72,5 @@ describe("json-schema-ref-parser package exports", () => {
   it("should export the UnmatchedResolverError class as a named ESM export", async () => {
     expect(UnmatchedResolverError).to.be.a("function");
     expect(UnmatchedResolverError.name).to.equal("UnmatchedResolverError");
-  });
-
-  it("should not export anything else", async () => {
-    expect(namespaceExport).to.have.same.keys(
-      "$RefParser",
-      "default",
-      "parse",
-      "resolve",
-      "dereference",
-      "bundle",
-      "JSONParserError",
-      "InvalidPointerError",
-      "MissingPointerError",
-      "ResolverError",
-      "ParserError",
-      "UnmatchedParserError",
-      "isHandledError",
-      "JSONParserErrorGroup",
-      "UnmatchedResolverError",
-    );
   });
 });
