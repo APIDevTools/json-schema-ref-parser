@@ -26,7 +26,7 @@ describe("Schema with missing pointers", () => {
     } catch (err) {
       expect(err).to.be.an.instanceOf(MissingPointerError);
       // @ts-expect-error TS(2571): Object is of type 'unknown'.
-      expect(err.message).to.contain('Token "external" does not exist.');
+      expect(err.message).to.contain('Missing $ref pointer "#/external". Token "external" does not exist.');
     }
   });
 
@@ -48,7 +48,7 @@ describe("Schema with missing pointers", () => {
         expect(err.errors).to.containSubset([
           {
             name: MissingPointerError.name,
-            message: 'Token "baz" does not exist.',
+            message: 'Missing $ref pointer "#/baz". Token "baz" does not exist.',
             path: ["foo"],
             // source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
           },
@@ -81,7 +81,7 @@ describe("Schema with missing pointers", () => {
         expect(err.errors).to.containSubset([
           {
             name: MissingPointerError.name,
-            message: 'Token "external" does not exist.',
+            message: 'Missing $ref pointer "#/external". Token "external" does not exist.',
             path: ["internal2"],
             source: (message: any) =>
               message.endsWith("missing-pointers/external-from-internal.yaml") ||

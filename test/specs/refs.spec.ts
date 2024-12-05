@@ -233,7 +233,7 @@ describe("$Refs object", () => {
       } catch (err) {
         expect(err).to.be.an.instanceOf(Error);
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
-        expect(err.message).to.equal('Token "" does not exist.');
+        expect(err.message).to.equal('Missing $ref pointer "#/". Token "" does not exist.');
       }
     });
 
@@ -271,7 +271,7 @@ describe("$Refs object", () => {
       } catch (err) {
         expect(err).to.be.an.instanceOf(Error);
         // @ts-expect-error TS(2571): Object is of type 'unknown'.
-        expect(err.message).to.equal('Token "foo" does not exist.');
+        expect(err.message).to.equal('Missing $ref pointer "#/foo/bar". Token "foo" does not exist.');
       }
     });
   });

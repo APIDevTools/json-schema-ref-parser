@@ -210,7 +210,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     }
 
     if (split[0] !== "") {
-      throw new InvalidPointerError(split, originalPath === undefined ? path : originalPath);
+      throw new InvalidPointerError(pointer, originalPath === undefined ? path : originalPath);
     }
 
     return split.slice(1);

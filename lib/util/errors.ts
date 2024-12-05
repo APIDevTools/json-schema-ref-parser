@@ -1,5 +1,5 @@
 import { Ono } from "@jsdevtools/ono";
-import { stripHash, toFileSystemPath } from "./url.js";
+import { getHash, stripHash, toFileSystemPath } from "./url.js";
 import type $RefParser from "../index.js";
 import type { ParserOptions } from "../index.js";
 import type { JSONSchema } from "../index.js";
@@ -121,10 +121,10 @@ export class UnmatchedResolverError extends JSONParserError {
 }
 
 export class MissingPointerError extends JSONParserError {
-  code = "EUNMATCHEDRESOLVER" as JSONParserErrorType;
+  code = "EMISSINGPOINTER" as JSONParserErrorType;
   name = "MissingPointerError";
-  constructor(token: any, path: any) {
-    super(`Token "${token}" does not exist.`, stripHash(path));
+  constructor(token: string, path: string) {
+    super(`Missing $ref pointer "${getHash(path)}". Token "${token}" does not exist.`, stripHash(path));
   }
 }
 
@@ -139,7 +139,7 @@ export class TimeoutError extends JSONParserError {
 export class InvalidPointerError extends JSONParserError {
   code = "EUNMATCHEDRESOLVER" as JSONParserErrorType;
   name = "InvalidPointerError";
-  constructor(pointer: any, path: any) {
+  constructor(pointer: string, path: string) {
     super(`Invalid $ref pointer "${pointer}". Pointers must begin with "#/"`, stripHash(path));
   }
 }
