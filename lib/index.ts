@@ -1,453 +1,209 @@
 import $Refs from "./refs.js";
-import _parse from "./parse.js";
-import normalizeArgs from "./normalize-args.js";
-import resolveExternal from "./resolve-external.js";
+import { newFile, parseFile } from "./parse.js";
+import { resolveExternal } from "./resolve-external.js";
 import _bundle from "./bundle.js";
 import _dereference from "./dereference.js";
 import * as url from "./util/url.js";
-import {
-  JSONParserError,
-  InvalidPointerError,
-  MissingPointerError,
-  ResolverError,
-  ParserError,
-  UnmatchedParserError,
-  UnmatchedResolverError,
-  isHandledError,
-  JSONParserErrorGroup,
-} from "./util/errors.js";
+import { isHandledError, JSONParserErrorGroup } from "./util/errors.js";
 import { ono } from "@jsdevtools/ono";
-import maybe from "./util/maybe.js";
-import type { ParserOptions } from "./options.js";
 import { getJsonSchemaRefParserDefaultOptions } from "./options.js";
-import type {
-  $RefsCallback,
-  JSONSchema,
-  SchemaCallback,
-  FileInfo,
-  Plugin,
-  ResolverOptions,
-  HTTPResolverOptions,
-} from "./types/index.js";
+import type { JSONSchema } from "./types/index.js";
+import { urlResolver } from "./resolvers/url.js";
+import { fileResolver } from "./resolvers/file.js";
 
-export type RefParserSchema = string | JSONSchema;
+interface ResolvedInput {
+  path: string;
+  schema: string | JSONSchema | Buffer<ArrayBufferLike> | Awaited<JSONSchema> | undefined;
+  type: 'file' | 'json' | 'url';
+}
+
+export const getResolvedInput = ({
+  pathOrUrlOrSchema,
+}: {
+  pathOrUrlOrSchema: JSONSchema | string | unknown;
+}): ResolvedInput => {
+  if (!pathOrUrlOrSchema) {
+    throw ono(`Expected a file path, URL, or object. Got ${pathOrUrlOrSchema}`);
+  }
+
+  const resolvedInput: ResolvedInput = {
+    path: typeof pathOrUrlOrSchema === 'string' ? pathOrUrlOrSchema : '',
+    schema: undefined,
+    type: 'url',
+  }
+
+  // If the path is a filesystem path, then convert it to a URL.
+  // NOTE: According to the JSON Reference spec, these should already be URLs,
+  // but, in practice, many people use local filesystem paths instead.
+  // So we're being generous here and doing the conversion automatically.
+  // This is not intended to be a 100% bulletproof solution.
+  // If it doesn't work for your use-case, then use a URL instead.
+  if (url.isFileSystemPath(resolvedInput.path)) {
+    resolvedInput.path = url.fromFileSystemPath(resolvedInput.path);
+    resolvedInput.type = 'file';
+  } else if (!resolvedInput.path && pathOrUrlOrSchema && typeof pathOrUrlOrSchema === 'object') {
+    if ("$id" in pathOrUrlOrSchema && pathOrUrlOrSchema.$id) {
+      // when schema id has defined an URL should use that hostname to request the references,
+      // instead of using the current page URL
+      const { hostname, protocol } = new URL(pathOrUrlOrSchema.$id as string);
+      resolvedInput.path = `${protocol}//${hostname}:${protocol === "https:" ? 443 : 80}`;
+      resolvedInput.type = 'url';
+    } else {
+      resolvedInput.schema = pathOrUrlOrSchema;
+      resolvedInput.type = 'json';
+    }
+  }
+
+  // resolve the absolute path of the schema
+  resolvedInput.path = url.resolve(url.cwd(), resolvedInput.path);
+
+  return resolvedInput;
+}
 
 /**
  * This class parses a JSON schema, builds a map of its JSON references and their resolved values,
  * and provides methods for traversing, manipulating, and dereferencing those references.
- *
- * @class
  */
-export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
-  /**
-   * The parsed (and possibly dereferenced) JSON schema object
-   *
-   * @type {object}
-   * @readonly
-   */
-  public schema: S | null = null;
-
+export class $RefParser {
   /**
    * The resolved JSON references
    *
    * @type {$Refs}
    * @readonly
    */
-  $refs = new $Refs<S, O>();
+  $refs = new $Refs<JSONSchema>();
+  public options = getJsonSchemaRefParserDefaultOptions()
+  /**
+   * The parsed (and possibly dereferenced) JSON schema object
+   *
+   * @type {object}
+   * @readonly
+   */
+  public schema: JSONSchema | null = null;
+
+  /**
+   * Bundles all referenced files/URLs into a single schema that only has internal `$ref` pointers. This lets you split-up your schema however you want while you're building it, but easily combine all those files together when it's time to package or distribute the schema to other people. The resulting schema size will be small, since it will still contain internal JSON references rather than being fully-dereferenced.
+   *
+   * This also eliminates the risk of circular references, so the schema can be safely serialized using `JSON.stringify()`.
+   *
+   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#bundleschema-options-callback
+   *
+   * @param pathOrUrlOrSchema A JSON Schema object, or the file path or URL of a JSON Schema file.
+   */
+  public async bundle({
+    arrayBuffer,
+    pathOrUrlOrSchema,
+    resolvedInput,
+  }: {
+    arrayBuffer?: ArrayBuffer;
+    pathOrUrlOrSchema: JSONSchema | string | unknown;
+    resolvedInput?: ResolvedInput;
+  }): Promise<JSONSchema> {
+    await this.parse({ arrayBuffer, pathOrUrlOrSchema, resolvedInput });
+    await resolveExternal(this, this.options);
+    const errors = JSONParserErrorGroup.getParserErrors(this);
+    if (errors.length > 0) {
+      throw new JSONParserErrorGroup(this);
+    }
+    _bundle(this, this.options);
+    const errors2 = JSONParserErrorGroup.getParserErrors(this);
+    if (errors2.length > 0) {
+      throw new JSONParserErrorGroup(this);
+    }
+    return this.schema!;
+  }
+
+  /**
+   * Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value. This results in a schema object that does not contain any `$ref` pointers. Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object. This is great for programmatic usage, especially when using tools that don't understand JSON references.
+   *
+   * The dereference method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object. Again, this is great for programmatic usage, but it does introduce the risk of circular references, so be careful if you intend to serialize the schema using `JSON.stringify()`. Consider using the bundle method instead, which does not create circular references.
+   *
+   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferenceschema-options-callback
+   *
+   * @param pathOrUrlOrSchema A JSON Schema object, or the file path or URL of a JSON Schema file.
+   */
+  public async dereference({
+    pathOrUrlOrSchema,
+  }: {
+    pathOrUrlOrSchema: JSONSchema | string | unknown;
+  }): Promise<JSONSchema> {
+    await this.parse({ pathOrUrlOrSchema });
+    await resolveExternal(this, this.options);
+    const errors = JSONParserErrorGroup.getParserErrors(this);
+    if (errors.length > 0) {
+      throw new JSONParserErrorGroup(this);
+    }
+    _dereference(this, this.options);
+    const errors2 = JSONParserErrorGroup.getParserErrors(this);
+    if (errors2.length > 0) {
+      throw new JSONParserErrorGroup(this);
+    }
+    return this.schema!;
+  }
 
   /**
    * Parses the given JSON schema.
    * This method does not resolve any JSON references.
    * It just reads a single file in JSON or YAML format, and parse it as a JavaScript object.
    *
-   * @param [path] - The file path or URL of the JSON schema
-   * @param [schema] - A JSON schema object. This object will be used instead of reading from `path`.
-   * @param [options] - Options that determine how the schema is parsed
-   * @param [callback] - An error-first callback. The second parameter is the parsed JSON schema object.
+   * @param pathOrUrlOrSchema A JSON Schema object, or the file path or URL of a JSON Schema file.
    * @returns - The returned promise resolves with the parsed JSON schema object.
    */
-  public parse(schema: S | string | unknown): Promise<S>;
-  public parse(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
-  public parse(schema: S | string | unknown, options: O): Promise<S>;
-  public parse(schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
-  public parse(baseUrl: string, schema: S | string | unknown, options: O): Promise<S>;
-  public parse(baseUrl: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
-  async parse() {
-    const args = normalizeArgs<S, O>(arguments as any);
-    let promise;
+  public async parse({
+    arrayBuffer,
+    pathOrUrlOrSchema,
+    resolvedInput: _resolvedInput,
+  }: {
+    arrayBuffer?: ArrayBuffer;
+    pathOrUrlOrSchema: JSONSchema | string | unknown;
+    resolvedInput?: ResolvedInput;
+  }): Promise<{ schema: JSONSchema }> {
+    const resolvedInput = _resolvedInput || getResolvedInput({ pathOrUrlOrSchema });
+    const { path, type } = resolvedInput;
+    let { schema } = resolvedInput;
 
-    if (!args.path && !args.schema) {
-      const err = ono(`Expected a file path, URL, or object. Got ${args.path || args.schema}`);
-      return maybe(args.callback, Promise.reject(err));
-    }
-
-    // Reset everything
+    // reset everything
     this.schema = null;
     this.$refs = new $Refs();
 
-    // If the path is a filesystem path, then convert it to a URL.
-    // NOTE: According to the JSON Reference spec, these should already be URLs,
-    // but, in practice, many people use local filesystem paths instead.
-    // So we're being generous here and doing the conversion automatically.
-    // This is not intended to be a 100% bulletproof solution.
-    // If it doesn't work for your use-case, then use a URL instead.
-    let pathType = "http";
-    if (url.isFileSystemPath(args.path)) {
-      args.path = url.fromFileSystemPath(args.path);
-      pathType = "file";
-    } else if (!args.path && args.schema && "$id" in args.schema && args.schema.$id) {
-      // when schema id has defined an URL should use that hostname to request the references,
-      // instead of using the current page URL
-      const params = url.parse(args.schema.$id as string);
-      const port = params.protocol === "https:" ? 443 : 80;
+    if (schema) {
+      // immediately add a new $Ref with the schema object as value
+      const $ref = this.$refs._add(path);
+      $ref.pathType = url.isFileSystemPath(path) ? 'file' : 'http';
+      $ref.value = schema;
+    } else if (type !== 'json') {
+      const file = newFile(path)
 
-      args.path = `${params.protocol}//${params.hostname}:${port}`;
-    }
-
-    // Resolve the absolute path of the schema
-    args.path = url.resolve(url.cwd(), args.path);
-
-    if (args.schema && typeof args.schema === "object") {
-      // A schema object was passed-in.
-      // So immediately add a new $Ref with the schema object as its value
-      const $ref = this.$refs._add(args.path);
-      $ref.value = args.schema;
-      $ref.pathType = pathType;
-      promise = Promise.resolve(args.schema);
-    } else {
-      // Parse the schema file/url
-      promise = _parse<S, typeof args.options>(args.path, this.$refs, args.options);
-    }
-
-    try {
-      const result = await promise;
-
-      if (result !== null && typeof result === "object" && !Buffer.isBuffer(result)) {
-        this.schema = result;
-        return maybe(args.callback, Promise.resolve(this.schema!));
-      } else if (args.options.continueOnError) {
-        this.schema = null; // it's already set to null at line 79, but let's set it again for the sake of readability
-        return maybe(args.callback, Promise.resolve(this.schema!));
-      } else {
-        throw ono.syntax(`"${this.$refs._root$Ref.path || result}" is not a valid JSON Schema`);
+      // Add a new $Ref for this file, even though we don't have the value yet.
+      // This ensures that we don't simultaneously read & parse the same file multiple times
+      const $refAdded = this.$refs._add(file.url);
+      $refAdded.pathType = type;
+      try {
+        const resolver = type === 'file' ? fileResolver : urlResolver;
+        await resolver.handler(file, arrayBuffer);
+        const parseResult = await parseFile(file, this.options);
+        $refAdded.value = parseResult.result;
+        schema = parseResult.result;
+      } catch (err) {
+        if (isHandledError(err)) {
+          $refAdded.value = err;
+        }
+    
+        throw err;
       }
-    } catch (err) {
-      if (!args.options.continueOnError || !isHandledError(err)) {
-        return maybe(args.callback, Promise.reject(err));
-      }
-
-      if (this.$refs._$refs[url.stripHash(args.path)]) {
-        this.$refs._$refs[url.stripHash(args.path)].addError(err);
-      }
-
-      return maybe(args.callback, Promise.resolve(null));
     }
-  }
 
-  public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-  ): Promise<S>;
-  public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    callback: SchemaCallback<S>,
-  ): Promise<void>;
-  public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    options: O,
-  ): Promise<S>;
-  public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    options: O,
-    callback: SchemaCallback<S>,
-  ): Promise<void>;
-  public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
-    schema: S | string | unknown,
-    options: O,
-  ): Promise<S>;
-  public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
-    schema: S | string | unknown,
-    options: O,
-    callback: SchemaCallback<S>,
-  ): Promise<void>;
-  public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>():
-    | Promise<S>
-    | Promise<void> {
-    const parser = new $RefParser<S, O>();
-    return parser.parse.apply(parser, arguments as any);
-  }
-
-  /**
-   * *This method is used internally by other methods, such as `bundle` and `dereference`. You probably won't need to call this method yourself.*
-   *
-   * Resolves all JSON references (`$ref` pointers) in the given JSON Schema file. If it references any other files/URLs, then they will be downloaded and resolved as well. This method **does not** dereference anything. It simply gives you a `$Refs` object, which is a map of all the resolved references and their values.
-   *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#resolveschema-options-callback
-   *
-   * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
-   * @param options (optional)
-   * @param callback (optional) A callback that will receive a `$Refs` object
-   */
-  public resolve(schema: S | string | unknown): Promise<$Refs<S, O>>;
-  public resolve(schema: S | string | unknown, callback: $RefsCallback<S, O>): Promise<void>;
-  public resolve(schema: S | string | unknown, options: O): Promise<$Refs<S, O>>;
-  public resolve(schema: S | string | unknown, options: O, callback: $RefsCallback<S, O>): Promise<void>;
-  public resolve(baseUrl: string, schema: S | string | unknown, options: O): Promise<$Refs<S, O>>;
-  public resolve(
-    baseUrl: string,
-    schema: S | string | unknown,
-    options: O,
-    callback: $RefsCallback<S, O>,
-  ): Promise<void>;
-  async resolve() {
-    const args = normalizeArgs<S, O>(arguments);
-
-    try {
-      await this.parse(args.path, args.schema, args.options);
-      await resolveExternal(this, args.options);
-      finalize(this);
-      return maybe(args.callback, Promise.resolve(this.$refs));
-    } catch (err) {
-      return maybe(args.callback, Promise.reject(err));
+    if (schema === null || typeof schema !== 'object' || Buffer.isBuffer(schema)) {
+      throw ono.syntax(`"${this.$refs._root$Ref.path || schema}" is not a valid JSON Schema`);
     }
-  }
 
-  /**
-   * *This method is used internally by other methods, such as `bundle` and `dereference`. You probably won't need to call this method yourself.*
-   *
-   * Resolves all JSON references (`$ref` pointers) in the given JSON Schema file. If it references any other files/URLs, then they will be downloaded and resolved as well. This method **does not** dereference anything. It simply gives you a `$Refs` object, which is a map of all the resolved references and their values.
-   *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#resolveschema-options-callback
-   *
-   * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
-   * @param options (optional)
-   * @param callback (optional) A callback that will receive a `$Refs` object
-   */
-  public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-  ): Promise<$Refs<S, O>>;
-  public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    callback: $RefsCallback<S, O>,
-  ): Promise<void>;
-  public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    options: O,
-  ): Promise<$Refs<S, O>>;
-  public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    options: O,
-    callback: $RefsCallback<S, O>,
-  ): Promise<void>;
-  public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
-    schema: S | string | unknown,
-    options: O,
-  ): Promise<$Refs<S, O>>;
-  public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
-    schema: S | string | unknown,
-    options: O,
-    callback: $RefsCallback<S, O>,
-  ): Promise<void>;
-  static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>():
-    | Promise<S>
-    | Promise<void> {
-    const instance = new $RefParser<S, O>();
-    return instance.resolve.apply(instance, arguments as any);
-  }
+    this.schema = schema;
 
-  /**
-   * Bundles all referenced files/URLs into a single schema that only has internal `$ref` pointers. This lets you split-up your schema however you want while you're building it, but easily combine all those files together when it's time to package or distribute the schema to other people. The resulting schema size will be small, since it will still contain internal JSON references rather than being fully-dereferenced.
-   *
-   * This also eliminates the risk of circular references, so the schema can be safely serialized using `JSON.stringify()`.
-   *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#bundleschema-options-callback
-   *
-   * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
-   * @param options (optional)
-   * @param callback (optional) A callback that will receive the bundled schema object
-   */
-  public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-  ): Promise<S>;
-  public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    callback: SchemaCallback<S>,
-  ): Promise<void>;
-  public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    options: O,
-  ): Promise<S>;
-  public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    options: O,
-    callback: SchemaCallback<S>,
-  ): Promise<void>;
-  public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
-    schema: S | string | unknown,
-    options: O,
-  ): Promise<S>;
-  public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
-    schema: S | string | unknown,
-    options: O,
-    callback: SchemaCallback<S>,
-  ): Promise<S>;
-  static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>():
-    | Promise<S>
-    | Promise<void> {
-    const instance = new $RefParser<S, O>();
-    return instance.bundle.apply(instance, arguments as any);
-  }
-
-  /**
-   * Bundles all referenced files/URLs into a single schema that only has internal `$ref` pointers. This lets you split-up your schema however you want while you're building it, but easily combine all those files together when it's time to package or distribute the schema to other people. The resulting schema size will be small, since it will still contain internal JSON references rather than being fully-dereferenced.
-   *
-   * This also eliminates the risk of circular references, so the schema can be safely serialized using `JSON.stringify()`.
-   *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#bundleschema-options-callback
-   *
-   * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
-   * @param options (optional)
-   * @param callback (optional) A callback that will receive the bundled schema object
-   */
-  public bundle(schema: S | string | unknown): Promise<S>;
-  public bundle(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
-  public bundle(schema: S | string | unknown, options: O): Promise<S>;
-  public bundle(schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
-  public bundle(baseUrl: string, schema: S | string | unknown, options: O): Promise<S>;
-  public bundle(baseUrl: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
-  async bundle() {
-    const args = normalizeArgs<S, O>(arguments);
-    try {
-      await this.resolve(args.path, args.schema, args.options);
-      _bundle<S, O>(this, args.options);
-      finalize(this);
-      return maybe(args.callback, Promise.resolve(this.schema!));
-    } catch (err) {
-      return maybe(args.callback, Promise.reject(err));
-    }
-  }
-
-  /**
-   * Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value. This results in a schema object that does not contain any `$ref` pointers. Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object. This is great for programmatic usage, especially when using tools that don't understand JSON references.
-   *
-   * The dereference method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object. Again, this is great for programmatic usage, but it does introduce the risk of circular references, so be careful if you intend to serialize the schema using `JSON.stringify()`. Consider using the bundle method instead, which does not create circular references.
-   *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferenceschema-options-callback
-   *
-   * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
-   * @param options (optional)
-   * @param callback (optional) A callback that will receive the dereferenced schema object
-   */
-  public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-  ): Promise<S>;
-  public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    callback: SchemaCallback<S>,
-  ): Promise<void>;
-  public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    options: O,
-  ): Promise<S>;
-  public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-    options: O,
-    callback: SchemaCallback<S>,
-  ): Promise<void>;
-  public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
-    schema: S | string | unknown,
-    options: O,
-  ): Promise<S>;
-  public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
-    schema: S | string | unknown,
-    options: O,
-    callback: SchemaCallback<S>,
-  ): Promise<void>;
-  static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>():
-    | Promise<S>
-    | Promise<void> {
-    const instance = new $RefParser<S, O>();
-    return instance.dereference.apply(instance, arguments as any);
-  }
-
-  /**
-   * Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value. This results in a schema object that does not contain any `$ref` pointers. Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object. This is great for programmatic usage, especially when using tools that don't understand JSON references.
-   *
-   * The dereference method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object. Again, this is great for programmatic usage, but it does introduce the risk of circular references, so be careful if you intend to serialize the schema using `JSON.stringify()`. Consider using the bundle method instead, which does not create circular references.
-   *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferenceschema-options-callback
-   *
-   * @param baseUrl
-   * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
-   * @param options (optional)
-   * @param callback (optional) A callback that will receive the dereferenced schema object
-   */
-  public dereference(
-    baseUrl: string,
-    schema: S | string | unknown,
-    options: O,
-    callback: SchemaCallback<S>,
-  ): Promise<void>;
-  public dereference(schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
-  public dereference(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
-  public dereference(baseUrl: string, schema: S | string | unknown, options: O): Promise<S>;
-  public dereference(schema: S | string | unknown, options: O): Promise<S>;
-  public dereference(schema: S | string | unknown): Promise<S>;
-  async dereference() {
-    const args = normalizeArgs<S, O>(arguments);
-
-    try {
-      await this.resolve(args.path, args.schema, args.options);
-      _dereference(this, args.options);
-      finalize(this);
-      return maybe<S>(args.callback, Promise.resolve(this.schema!) as Promise<S>);
-    } catch (err) {
-      return maybe<S>(args.callback, Promise.reject(err));
-    }
-  }
-}
-export default $RefParser;
-
-function finalize<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-  parser: $RefParser<S, O>,
-) {
-  const errors = JSONParserErrorGroup.getParserErrors(parser);
-  if (errors.length > 0) {
-    throw new JSONParserErrorGroup(parser);
+    return {
+      schema,
+    };
   }
 }
 
-export const parse = $RefParser.parse;
-export const resolve = $RefParser.resolve;
-export const bundle = $RefParser.bundle;
-export const dereference = $RefParser.dereference;
-
-export {
-  UnmatchedResolverError,
-  JSONParserError,
-  JSONSchema,
-  InvalidPointerError,
-  MissingPointerError,
-  ResolverError,
-  ParserError,
-  UnmatchedParserError,
-  ParserOptions,
-  $RefsCallback,
-  isHandledError,
-  JSONParserErrorGroup,
-  SchemaCallback,
-  FileInfo,
-  Plugin,
-  ResolverOptions,
-  HTTPResolverOptions,
-  _dereference as dereferenceInternal,
-  normalizeArgs as jsonSchemaParserNormalizeArgs,
-  getJsonSchemaRefParserDefaultOptions,
-};
+export { sendRequest } from './resolvers/url.js'
+export type { JSONSchema } from "./types/index.js";

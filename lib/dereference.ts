@@ -5,7 +5,7 @@ import * as url from "./util/url.js";
 import type $Refs from "./refs.js";
 import type { DereferenceOptions, ParserOptions } from "./options.js";
 import type { JSONSchema } from "./types";
-import type $RefParser from "./index";
+import type { $RefParser } from "./index";
 import { TimeoutError } from "./util/errors";
 
 export default dereference;
@@ -17,13 +17,13 @@ export default dereference;
  * @param parser
  * @param options
  */
-function dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-  parser: $RefParser<S, O>,
-  options: O,
+function dereference(
+  parser: $RefParser,
+  options: ParserOptions,
 ) {
   const start = Date.now();
   // console.log('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
-  const dereferenced = crawl<S, O>(
+  const dereferenced = crawl<JSONSchema>(
     parser.schema,
     parser.$refs._root$Ref.path!,
     "#",
@@ -52,15 +52,15 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
  * @param startTime - The time when the dereferencing started
  * @returns
  */
-function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function crawl<S extends object = JSONSchema>(
   obj: any,
   path: string,
   pathFromRoot: string,
   parents: Set<any>,
   processedObjects: Set<any>,
   dereferencedCache: any,
-  $refs: $Refs<S, O>,
-  options: O,
+  $refs: $Refs<S>,
+  options: ParserOptions,
   startTime: number,
 ) {
   let dereferenced;
@@ -82,7 +82,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       parents.add(obj);
       processedObjects.add(obj);
 
-      if ($Ref.isAllowed$Ref(obj, options)) {
+      if ($Ref.isAllowed$Ref(obj)) {
         dereferenced = dereference$Ref(
           obj,
           path,
@@ -108,7 +108,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           const value = obj[key];
           let circular = false;
 
-          if ($Ref.isAllowed$Ref(value, options)) {
+          if ($Ref.isAllowed$Ref(value)) {
             dereferenced = dereference$Ref(
               value,
               keyPath,
@@ -174,20 +174,18 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
  * @param options
  * @returns
  */
-function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function dereference$Ref<S extends object = JSONSchema>(
   $ref: any,
   path: string,
   pathFromRoot: string,
   parents: Set<any>,
   processedObjects: any,
   dereferencedCache: any,
-  $refs: $Refs<S, O>,
-  options: O,
+  $refs: $Refs<S>,
+  options: ParserOptions,
   startTime: number,
 ) {
-  const isExternalRef = $Ref.isExternal$Ref($ref);
-  const shouldResolveOnCwd = isExternalRef && options?.dereference?.externalReferenceResolution === "root";
-  const $refPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref);
+  const $refPath = url.resolve(path, $ref.$ref);
 
   const cache = dereferencedCache.get($refPath);
   if (cache && !cache.circular) {

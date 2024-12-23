@@ -1,10 +1,10 @@
 import $Ref from "./ref.js";
+import type { ParserOptions } from "./options.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
 import type $Refs from "./refs.js";
-import type $RefParser from "./index";
-import type { ParserOptions } from "./index";
-import type { JSONSchema } from "./index";
+import type { $RefParser } from "./index";
+import type { JSONSchema } from "./types/index.js";
 
 export interface InventoryEntry {
   $ref: any;
@@ -28,15 +28,15 @@ export interface InventoryEntry {
  * @param parser
  * @param options
  */
-function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-  parser: $RefParser<S, O>,
-  options: O,
+function bundle(
+  parser: $RefParser,
+  options: ParserOptions,
 ) {
   // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
 
   // Build an inventory of all $ref pointers in the JSON Schema
   const inventory: InventoryEntry[] = [];
-  crawl<S, O>(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
+  crawl<JSONSchema>(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
 
   // Remap all $ref pointers
   remap(inventory);
@@ -54,15 +54,15 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
  * @param $refs
  * @param options
  */
-function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-  parent: object | $RefParser<S, O>,
+function crawl<S extends object = JSONSchema>(
+  parent: object | $RefParser,
   key: string | null,
   path: string,
   pathFromRoot: string,
   indirections: number,
   inventory: InventoryEntry[],
-  $refs: $Refs<S, O>,
-  options: O,
+  $refs: $Refs<S>,
+  options: ParserOptions,
 ) {
   const obj = key === null ? parent : parent[key as keyof typeof parent];
 
@@ -115,15 +115,15 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
  * @param $refs
  * @param options
  */
-function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function inventory$Ref<S extends object = JSONSchema>(
   $refParent: any,
   $refKey: string | null,
   path: string,
   pathFromRoot: string,
   indirections: number,
   inventory: InventoryEntry[],
-  $refs: $Refs<S, O>,
-  options: O,
+  $refs: $Refs<S>,
+  options: ParserOptions,
 ) {
   const $ref = $refKey === null ? $refParent : $refParent[$refKey];
   const $refPath = url.resolve(path, $ref.$ref);

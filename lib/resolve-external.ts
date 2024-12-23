@@ -1,12 +1,15 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
-import parse from "./parse.js";
+import { newFile, parseFile } from "./parse.js";
 import * as url from "./util/url.js";
-import { isHandledError } from "./util/errors.js";
 import type $Refs from "./refs.js";
-import type { ParserOptions } from "./options.js";
+import type { $RefParserOptions } from "./options.js";
 import type { JSONSchema } from "./types/index.js";
-import type $RefParser from "./index.js";
+import { getResolvedInput } from "./index.js";
+import type { $RefParser } from "./index.js";
+import { isHandledError } from "./util/errors.js";
+import { fileResolver } from "./resolvers/file.js";
+import { urlResolver } from "./resolvers/url.js";
 
 /**
  * Crawls the JSON schema, finds all external JSON references, and resolves their values.
@@ -18,15 +21,10 @@ import type $RefParser from "./index.js";
  * The promise resolves once all JSON references in the schema have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-  parser: $RefParser<S, O>,
-  options: O,
+export function resolveExternal(
+  parser: $RefParser,
+  options: $RefParserOptions,
 ) {
-  if (!options.resolve?.external) {
-    // Nothing to resolve, so exit early
-    return Promise.resolve();
-  }
-
   try {
     // console.log('Resolving $ref pointers in %s', parser.$refs._root$Ref.path);
     const promises = crawl(parser.schema, parser.$refs._root$Ref.path + "#", parser.$refs, options);
@@ -52,11 +50,11 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
  * If any of the JSON references point to files that contain additional JSON references,
  * then the corresponding promise will internally reference an array of promises.
  */
-function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+function crawl<S extends object = JSONSchema>(
   obj: string | Buffer | S | undefined | null,
   path: string,
-  $refs: $Refs<S, O>,
-  options: O,
+  $refs: $Refs<S>,
+  options: $RefParserOptions,
   seen?: Set<any>,
   external?: boolean,
 ) {
@@ -66,7 +64,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
     seen.add(obj); // Track previously seen objects to avoid infinite recursion
     if ($Ref.isExternal$Ref(obj)) {
-      promises.push(resolve$Ref<S, O>(obj, path, $refs, options));
+      promises.push(resolve$Ref<S>(obj, path, $refs, options));
     }
 
     const keys = Object.keys(obj) as string[];
@@ -92,14 +90,13 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
  * The promise resolves once all JSON references in the object have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-async function resolve$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+async function resolve$Ref<S extends object = JSONSchema>(
   $ref: S,
   path: string,
-  $refs: $Refs<S, O>,
-  options: O,
+  $refs: $Refs<S>,
+  options: $RefParserOptions,
 ) {
-  const shouldResolveOnCwd = options.dereference?.externalReferenceResolution === "root";
-  const resolvedPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, ($ref as JSONSchema).$ref!);
+  const resolvedPath = url.resolve(path, ($ref as JSONSchema).$ref!);
   const withoutHash = url.stripHash(resolvedPath);
 
   // $ref.$ref = url.relative($refs._root$Ref.path, resolvedPath);
@@ -112,25 +109,33 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
   }
 
   // Parse the $referenced file/url
-  try {
-    const result = await parse(resolvedPath, $refs, options);
+  const file = newFile(resolvedPath)
 
-    // Crawl the parsed value
-    // console.log('Resolving $ref pointers in %s', withoutHash);
-    const promises = crawl(result, withoutHash + "#", $refs, options, new Set(), true);
+  // Add a new $Ref for this file, even though we don't have the value yet.
+  // This ensures that we don't simultaneously read & parse the same file multiple times
+  const $refAdded = $refs._add(file.url);
+
+  try {
+    const resolvedInput = getResolvedInput({ pathOrUrlOrSchema: resolvedPath })
+
+    $refAdded.pathType = resolvedInput.type;
+
+    let promises: any = [];
+
+    if (resolvedInput.type !== 'json') {
+      const resolver = resolvedInput.type === 'file' ? fileResolver : urlResolver;
+      await resolver.handler(file);
+      const parseResult = await parseFile(file, options);
+      $refAdded.value = parseResult.result;
+      promises = crawl(parseResult.result, `${withoutHash}#`, $refs, options, new Set(), true);
+    }
 
     return Promise.all(promises);
   } catch (err) {
-    if (!options?.continueOnError || !isHandledError(err)) {
-      throw err;
+    if (isHandledError(err)) {
+      $refAdded.value = err;
     }
 
-    if ($refs._$refs[withoutHash]) {
-      err.source = decodeURI(url.stripHash(path));
-      err.path = url.safePointerToPath(url.getHash(path));
-    }
-
-    return [];
+    throw err;
   }
 }
-export default resolveExternal;

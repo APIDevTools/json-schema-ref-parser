@@ -3,8 +3,6 @@ import path, { win32 } from "path";
 
 const forwardSlashPattern = /\//g;
 const protocolPattern = /^(\w{2,}):\/\//i;
-const jsonPointerSlash = /~1/g;
-const jsonPointerTilde = /~0/g;
 
 import { join } from "path";
 import { isWindows } from "./is-windows";
@@ -17,8 +15,6 @@ const urlEncodePatterns = [
 
 // RegExp patterns to URL-decode special characters for local filesystem paths
 const urlDecodePatterns = [/%23/g, "#", /%24/g, "$", /%26/g, "&", /%2C/g, ",", /%40/g, "@"];
-
-export const parse = (u: string | URL) => new URL(u);
 
 /**
  * Returns resolved target URL relative to a base URL in a manner similar to that of a Web browser resolving an anchor tag HREF.
@@ -80,7 +76,7 @@ export function getProtocol(path: string | undefined) {
  */
 export function getExtension(path: any) {
   const lastDot = path.lastIndexOf(".");
-  if (lastDot >= 0) {
+  if (lastDot > -1) {
     return stripQuery(path.substr(lastDot).toLowerCase());
   }
   return "";
@@ -94,7 +90,7 @@ export function getExtension(path: any) {
  */
 export function stripQuery(path: any) {
   const queryIndex = path.indexOf("?");
-  if (queryIndex >= 0) {
+  if (queryIndex > -1) {
     path = path.substr(0, queryIndex);
   }
   return path;
@@ -112,7 +108,7 @@ export function getHash(path: undefined | string) {
     return "#";
   }
   const hashIndex = path.indexOf("#");
-  if (hashIndex >= 0) {
+  if (hashIndex > -1) {
     return path.substring(hashIndex);
   }
   return "#";
@@ -129,29 +125,10 @@ export function stripHash(path?: string | undefined) {
     return "";
   }
   const hashIndex = path.indexOf("#");
-  if (hashIndex >= 0) {
+  if (hashIndex > -1) {
     path = path.substring(0, hashIndex);
   }
   return path;
-}
-
-/**
- * Determines whether the given path is an HTTP(S) URL.
- *
- * @param path
- * @returns
- */
-export function isHttp(path: string) {
-  const protocol = getProtocol(path);
-  if (protocol === "http" || protocol === "https") {
-    return true;
-  } else if (protocol === undefined) {
-    // There is no protocol.  If we're running in a browser, then assume it's HTTP.
-    return typeof window !== "undefined";
-  } else {
-    // It's some other protocol, such as "ftp://", "mongodb://", etc.
-    return false;
-  }
 }
 
 /**
@@ -274,25 +251,6 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
   }
 
   return path;
-}
-
-/**
- * Converts a $ref pointer to a valid JSON Path.
- *
- * @param pointer
- * @returns
- */
-export function safePointerToPath(pointer: any) {
-  if (pointer.length <= 1 || pointer[0] !== "#" || pointer[1] !== "/") {
-    return [];
-  }
-
-  return pointer
-    .slice(2)
-    .split("/")
-    .map((value: any) => {
-      return decodeURIComponent(value).replace(jsonPointerSlash, "/").replace(jsonPointerTilde, "~");
-    });
 }
 
 export function relative(from: string, to: string) {

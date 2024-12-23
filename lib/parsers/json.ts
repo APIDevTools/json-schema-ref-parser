@@ -2,63 +2,38 @@ import { ParserError } from "../util/errors.js";
 import type { FileInfo } from "../types/index.js";
 import type { Plugin } from "../types/index.js";
 
-export default {
-  /**
-   * The order that this parser will run, in relation to other parsers.
-   */
-  order: 100,
-
-  /**
-   * Whether to allow "empty" files. This includes zero-byte files, as well as empty JSON objects.
-   */
-  allowEmpty: true,
-
-  /**
-   * Determines whether this parser can parse a given file reference.
-   * Parsers that match will be tried, in order, until one successfully parses the file.
-   * Parsers that don't match will be skipped, UNLESS none of the parsers match, in which case
-   * every parser will be tried.
-   */
-  canParse: ".json",
-
-  /**
-   * Allow JSON files with byte order marks (BOM)
-   */
-  allowBOM: true,
-
-  /**
-   * Parses the given file as JSON
-   */
-  async parse(file: FileInfo): Promise<object | undefined> {
+export const jsonParser: Plugin = {
+  canHandle: (file: FileInfo) => file.extension === '.json',
+  async handler(file: FileInfo): Promise<object | undefined> {
     let data = file.data;
     if (Buffer.isBuffer(data)) {
       data = data.toString();
     }
 
-    if (typeof data === "string") {
-      if (data.trim().length === 0) {
-        return; // This mirrors the YAML behavior
-      } else {
-        try {
-          return JSON.parse(data);
-        } catch (e: any) {
-          if (this.allowBOM) {
-            try {
-              // find the first curly brace
-              const firstCurlyBrace = data.indexOf("{");
-              // remove any characters before the first curly brace
-              data = data.slice(firstCurlyBrace);
-              return JSON.parse(data);
-            } catch (e: any) {
-              throw new ParserError(e.message, file.url);
-            }
-          }
-          throw new ParserError(e.message, file.url);
-        }
-      }
-    } else {
+    if (typeof data !== "string") {
       // data is already a JavaScript value (object, array, number, null, NaN, etc.)
       return data as object;
     }
+
+    if (!data.trim().length) {
+      // this mirrors the YAML behavior
+      return;
+    }
+
+    try {
+      return JSON.parse(data);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error: any) {
+      try {
+        // find the first curly brace
+        const firstCurlyBrace = data.indexOf("{");
+        // remove any characters before the first curly brace
+        data = data.slice(firstCurlyBrace);
+        return JSON.parse(data);
+      } catch (error: any) {
+        throw new ParserError(error.message, file.url);
+      }
+    }
   },
-} as Plugin;
+  name: 'json',
+};
