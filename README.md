@@ -4,12 +4,11 @@
 
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers
 
-[![Build Status](https://github.com/APIDevTools/json-schema-ref-parser/workflows/CI-CD/badge.svg?branch=master)](https://github.com/APIDevTools/json-schema-ref-parser/actions)
-[![Coverage Status](https://coveralls.io/repos/github/APIDevTools/json-schema-ref-parser/badge.svg?branch=master)](https://coveralls.io/github/APIDevTools/json-schema-ref-parser)
+<!-- [![Build Status](https://github.com/APIDevTools/json-schema-ref-parser/workflows/CI-CD/badge.svg?branch=master)](https://github.com/APIDevTools/json-schema-ref-parser/actions)
+[![Coverage Status](https://coveralls.io/repos/github/APIDevTools/json-schema-ref-parser/badge.svg?branch=master)](https://coveralls.io/github/APIDevTools/json-schema-ref-parser) -->
 
-[![npm](https://img.shields.io/npm/v/@apidevtools/json-schema-ref-parser.svg)](https://www.npmjs.com/package/@apidevtools/json-schema-ref-parser)
-[![License](https://img.shields.io/npm/l/@apidevtools/json-schema-ref-parser.svg)](LICENSE)
-[![Buy us a tree](https://img.shields.io/badge/Treeware-%F0%9F%8C%B3-lightgreen)](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser)
+<!-- [![npm](https://img.shields.io/npm/v/@apidevtools/json-schema-ref-parser.svg)](https://www.npmjs.com/package/@apidevtools/json-schema-ref-parser)
+[![License](https://img.shields.io/npm/l/@apidevtools/json-schema-ref-parser.svg)](LICENSE) -->
 
 ## Installation
 
@@ -58,13 +57,10 @@ complex [JSON Schemas](http://json-schema.org/latest/json-schema-core.html) and 
 JavaScript objects.
 
 - Use **JSON** or **YAML** schemas &mdash; or even a mix of both!
-- Supports `$ref` pointers to external files and URLs, as well
-  as [custom sources](https://apitools.dev/json-schema-ref-parser/docs/plugins/resolvers.html) such as databases
-- Can [bundle](https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#bundlepath-options-callback) multiple
-  files into a single schema that only has _internal_ `$ref` pointers
-- Can [dereference](https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferencepath-options-callback)
-  your schema, producing a plain-old JavaScript object that's easy to work with
-- Supports [circular references](https://apitools.dev/json-schema-ref-parser/docs/#circular-refs), nested references,
+- Supports `$ref` pointers to external files and URLs, as well as custom sources such as databases
+- Can bundle multiple files into a single schema that only has _internal_ `$ref` pointers
+- Can dereference your schema, producing a plain-old JavaScript object that's easy to work with
+- Supports circular references, nested references,
   back-references, and cross-references between files
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object
   instance
@@ -87,8 +83,6 @@ try {
   console.error(err);
 }
 ```
-
-For more detailed examples, please see the [API Documentation](https://apitools.dev/json-schema-ref-parser/docs/)
 
 ## Polyfills
 
@@ -130,16 +124,6 @@ config.plugins.push(
 );
 ```
 
-## API Documentation
-
-Full API documentation is available [right here](https://apitools.dev/json-schema-ref-parser/docs/)
-
-## Contributing
-
-I welcome any contributions, enhancements, and
-bug-fixes. [Open an issue](https://github.com/APIDevTools/json-schema-ref-parser/issues) on GitHub
-and [submit a pull request](https://github.com/APIDevTools/json-schema-ref-parser/pulls).
-
 #### Building/Testing
 
 To build/test the project locally on your computer:
@@ -152,19 +136,3 @@ To build/test the project locally on your computer:
 
 3. **Run the tests**<br>
    `yarn test`
-
-## License
-
-JSON Schema $Ref Parser is 100% free and open-source, under the [MIT license](LICENSE). Use it however you want.
-
-This package is [Treeware](http://treeware.earth). If you use it in production, then we ask that you [**buy the world a
-tree**](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser) to thank us for our work. By contributing to
-the Treeware forest you’ll be creating employment for local families and restoring wildlife habitats.
-
-## Big Thanks To
-
-Thanks to these awesome companies for their support of Open Source developers ❤
-
-[![Stoplight](https://svgshare.com/i/TK5.svg)](https://stoplight.io/?utm_source=github&utm_medium=readme&utm_campaign=json_schema_ref_parser)
-[![SauceLabs](https://jstools.dev/img/badges/sauce-labs.svg)](https://saucelabs.com)
-[![Coveralls](https://jstools.dev/img/badges/coveralls.svg)](https://coveralls.io)
