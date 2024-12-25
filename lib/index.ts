@@ -13,7 +13,7 @@ import { fileResolver } from "./resolvers/file.js";
 
 interface ResolvedInput {
   path: string;
-  schema: string | JSONSchema | Buffer<ArrayBufferLike> | Awaited<JSONSchema> | undefined;
+  schema: string | JSONSchema | Buffer | Awaited<JSONSchema> | undefined;
   type: 'file' | 'json' | 'url';
 }
 
