@@ -1,3 +1,5 @@
+> This is a modified fork to serve Hey API needs
+
 # JSON Schema $Ref Parser
 
 #### Parse, Resolve, and Dereference JSON Schema $ref pointers

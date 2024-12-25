@@ -26,11 +26,11 @@ const safeDecodeURIComponent = (encodedURIComponent: string): string => {
  * @param [friendlyPath] - The original user-specified path (used for error messages)
  * @class
  */
-class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
+class Pointer<S extends object = JSONSchema> {
   /**
    * The {@link $Ref} object that contains this {@link Pointer} object.
    */
-  $ref: $Ref<S, O>;
+  $ref: $Ref<S>;
 
   /**
    * The file path or URL, containing the JSON pointer in the hash.
@@ -59,7 +59,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    */
   indirections: number;
 
-  constructor($ref: $Ref<S, O>, path: string, friendlyPath?: string) {
+  constructor($ref: $Ref<S>, path: string, friendlyPath?: string) {
     this.$ref = $ref;
 
     this.path = path;
@@ -86,7 +86,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    * the {@link Pointer#$ref} and {@link Pointer#path} will reflect the resolution path
    * of the resolved value.
    */
-  resolve(obj: S, options?: O, pathFromRoot?: string) {
+  resolve(obj: S, options?: ParserOptions, pathFromRoot?: string) {
     const tokens = Pointer.parse(this.path, this.originalPath);
 
     // Crawl the object, one token at a time
@@ -144,7 +144,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    * @returns
    * Returns the modified object, or an entirely new object if the entire object is overwritten.
    */
-  set(obj: S, value: any, options?: O) {
+  set(obj: S, value: any, options?: ParserOptions) {
     const tokens = Pointer.parse(this.path);
     let token;
 
@@ -255,7 +255,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 function resolveIf$Ref(pointer: any, options: any, pathFromRoot?: any) {
   // Is the value a JSON reference? (and allowed?)
 
-  if ($Ref.isAllowed$Ref(pointer.value, options)) {
+  if ($Ref.isAllowed$Ref(pointer.value)) {
     const $refPath = url.resolve(pointer.path, pointer.value.$ref);
 
     if ($refPath === pointer.path && !isRootPath(pathFromRoot)) {

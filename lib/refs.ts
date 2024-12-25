@@ -6,8 +6,8 @@ import type { ParserOptions } from "./options.js";
 import convertPathToPosix from "./util/convert-path-to-posix";
 import type { JSONSchema } from "./types";
 
-interface $RefsMap<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
-  [url: string]: $Ref<S, O>;
+interface $RefsMap<S extends object = JSONSchema> {
+  [url: string]: $Ref<S>;
 }
 /**
  * When you call the resolve method, the value that gets passed to the callback function (or Promise) is a $Refs object. This same object is accessible via the parser.$refs property of $RefParser objects.
@@ -16,7 +16,7 @@ interface $RefsMap<S extends object = JSONSchema, O extends ParserOptions<S> = P
  *
  * See https://apitools.dev/json-schema-ref-parser/docs/refs.html
  */
-export default class $Refs<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
+export default class $Refs<S extends object = JSONSchema> {
   /**
    * This property is true if the schema contains any circular references. You may want to check this property before serializing the dereferenced schema as JSON, since JSON.stringify() does not support circular references by default.
    *
@@ -84,7 +84,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    * @param [options]
    * @returns - Returns the resolved value
    */
-  get(path: string, options?: O): JSONSchema4Type | JSONSchema6Type | JSONSchema7Type {
+  get(path: string, options?: ParserOptions): JSONSchema4Type | JSONSchema6Type | JSONSchema7Type {
     return this._resolve(path, "", options)!.value;
   }
 
@@ -126,7 +126,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
   _add(path: string) {
     const withoutHash = url.stripHash(path);
 
-    const $ref = new $Ref<S, O>(this);
+    const $ref = new $Ref<S>(this);
     $ref.path = withoutHash;
 
     this._$refs[withoutHash] = $ref;
@@ -144,7 +144,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    * @returns
    * @protected
    */
-  _resolve(path: string, pathFromRoot: string, options?: O) {
+  _resolve(path: string, pathFromRoot: string, options?: ParserOptions) {
     const absPath = url.resolve(this._root$Ref.path!, path);
     const withoutHash = url.stripHash(absPath);
     const $ref = this._$refs[withoutHash];
@@ -162,7 +162,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    * @type {object}
    * @protected
    */
-  _$refs: $RefsMap<S, O> = {};
+  _$refs: $RefsMap<S> = {};
 
   /**
    * The {@link $Ref} object that is the root of the JSON schema.
@@ -170,7 +170,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    * @type {$Ref}
    * @protected
    */
-  _root$Ref: $Ref<S, O>;
+  _root$Ref: $Ref<S>;
 
   constructor() {
     /**
@@ -215,8 +215,8 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
  * @param [types] - Only return paths of the given types ("file", "http", etc.)
  * @returns
  */
-function getPaths<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-  $refs: $RefsMap<S, O>,
+function getPaths<S extends object = JSONSchema>(
+  $refs: $RefsMap<S>,
   types: string[],
 ) {
   let paths = Object.keys($refs);

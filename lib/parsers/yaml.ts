@@ -1,52 +1,26 @@
 import { ParserError } from "../util/errors.js";
 import yaml from "js-yaml";
 import { JSON_SCHEMA } from "js-yaml";
-import type { FileInfo } from "../types/index.js";
+import type { FileInfo, JSONSchema } from "../types/index.js";
 import type { Plugin } from "../types/index.js";
 
-export default {
-  /**
-   * The order that this parser will run, in relation to other parsers.
-   */
-  order: 200,
+export const yamlParser: Plugin = {
+  // JSON is valid YAML
+  canHandle: (file: FileInfo) => [".yaml", ".yml", ".json"].includes(file.extension),
+  handler: async (file: FileInfo): Promise<JSONSchema> => {
+    const data = Buffer.isBuffer(file.data) ? file.data.toString() : file.data;
 
-  /**
-   * Whether to allow "empty" files. This includes zero-byte files, as well as empty JSON objects.
-   */
-  allowEmpty: true,
-
-  /**
-   * Determines whether this parser can parse a given file reference.
-   * Parsers that match will be tried, in order, until one successfully parses the file.
-   * Parsers that don't match will be skipped, UNLESS none of the parsers match, in which case
-   * every parser will be tried.
-   */
-  canParse: [".yaml", ".yml", ".json"], // JSON is valid YAML
-
-  /**
-   * Parses the given file as YAML
-   *
-   * @param file           - An object containing information about the referenced file
-   * @param file.url       - The full URL of the referenced file
-   * @param file.extension - The lowercased file extension (e.g. ".txt", ".html", etc.)
-   * @param file.data      - The file contents. This will be whatever data type was returned by the resolver
-   * @returns
-   */
-  async parse(file: FileInfo) {
-    let data = file.data;
-    if (Buffer.isBuffer(data)) {
-      data = data.toString();
-    }
-
-    if (typeof data === "string") {
-      try {
-        return yaml.load(data, { schema: JSON_SCHEMA });
-      } catch (e: any) {
-        throw new ParserError(e?.message || "Parser Error", file.url);
-      }
-    } else {
+    if (typeof data !== "string") {
       // data is already a JavaScript value (object, array, number, null, NaN, etc.)
       return data;
     }
+
+    try {
+      const yamlSchema = yaml.load(data, { schema: JSON_SCHEMA }) as JSONSchema
+      return yamlSchema;
+    } catch (error: any) {
+      throw new ParserError(error?.message || "Parser Error", file.url);
+    }
   },
-} as Plugin;
+  name: 'yaml',
+};

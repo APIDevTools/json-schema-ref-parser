@@ -1,7 +1,6 @@
 import Pointer from "./pointer.js";
 import type { JSONParserError, MissingPointerError, ParserError, ResolverError } from "./util/errors.js";
-import { InvalidPointerError, isHandledError, normalizeError } from "./util/errors.js";
-import { safePointerToPath, stripHash, getHash } from "./util/url.js";
+import { normalizeError } from "./util/errors.js";
 import type $Refs from "./refs.js";
 import type { ParserOptions } from "./options.js";
 import type { JSONSchema } from "./types";
@@ -13,7 +12,7 @@ export type $RefError = JSONParserError | ResolverError | ParserError | MissingP
  *
  * @class
  */
-class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
+class $Ref<S extends object = JSONSchema> {
   /**
    * The file path or URL of the referenced file.
    * This path is relative to the path of the main JSON schema file.
@@ -39,7 +38,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    *
    * @type {$Refs}
    */
-  $refs: $Refs<S, O>;
+  $refs: $Refs<S>;
 
   /**
    * Indicates the type of {@link $Ref#path} (e.g. "file", "http", etc.)
@@ -51,7 +50,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    */
   errors: Array<$RefError> = [];
 
-  constructor($refs: $Refs<S, O>) {
+  constructor($refs: $Refs<S>) {
     this.$refs = $refs;
   }
 
@@ -87,7 +86,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    * @param options
    * @returns
    */
-  exists(path: string, options?: O) {
+  exists(path: string, options?: ParserOptions) {
     try {
       this.resolve(path, options);
       return true;
@@ -103,7 +102,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    * @param options
    * @returns - Returns the resolved value
    */
-  get(path: string, options?: O) {
+  get(path: string, options?: ParserOptions) {
     return this.resolve(path, options)?.value;
   }
 
@@ -116,26 +115,9 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    * @param pathFromRoot - The path of `obj` from the schema root
    * @returns
    */
-  resolve(path: string, options?: O, friendlyPath?: string, pathFromRoot?: string) {
-    const pointer = new Pointer<S, O>(this, path, friendlyPath);
-    try {
-      return pointer.resolve(this.value, options, pathFromRoot);
-    } catch (err: any) {
-      if (!options || !options.continueOnError || !isHandledError(err)) {
-        throw err;
-      }
-
-      if (err.path === null) {
-        err.path = safePointerToPath(getHash(pathFromRoot));
-      }
-
-      if (err instanceof InvalidPointerError) {
-        err.source = decodeURI(stripHash(pathFromRoot));
-      }
-
-      this.addError(err);
-      return null;
-    }
+  resolve(path: string, options?: ParserOptions, friendlyPath?: string, pathFromRoot?: string) {
+    const pointer = new Pointer<S>(this, path, friendlyPath);
+    return pointer.resolve(this.value, options, pathFromRoot);
   }
 
   /**
@@ -179,18 +161,17 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
 
   /**
    * Determines whether the given value is a JSON reference, and whether it is allowed by the options.
-   * For example, if it references an external file, then options.resolve.external must be true.
    *
    * @param value - The value to inspect
    * @param options
    * @returns
    */
-  static isAllowed$Ref<S extends object = JSONSchema>(value: unknown, options?: ParserOptions<S>) {
+  static isAllowed$Ref(value: unknown) {
     if (this.is$Ref(value)) {
       if (value.$ref.substring(0, 2) === "#/" || value.$ref === "#") {
         // It's a JSON Pointer reference, which is always allowed
         return true;
-      } else if (value.$ref[0] !== "#" && (!options || options.resolve?.external)) {
+      } else if (value.$ref[0] !== "#") {
         // It's an external reference, which is allowed by the options
         return true;
       }
@@ -267,8 +248,8 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    * @param resolvedValue - The resolved value, which can be any type
    * @returns - Returns the dereferenced value
    */
-  static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    $ref: $Ref<S, O>,
+  static dereference<S extends object = JSONSchema>(
+    $ref: $Ref<S>,
     resolvedValue: S,
   ): S {
     if (resolvedValue && typeof resolvedValue === "object" && $Ref.isExtended$Ref($ref)) {
