@@ -87,7 +87,7 @@ describe("Schema with circular (recursive) $refs", () => {
       }
     });
 
-    it.only("should call onCircular if `options.dereference.onCircular` is present", async () => {
+    it("should call onCircular if `options.dereference.onCircular` is present", async () => {
       const parser = new $RefParser();
 
       const circularRefs: string[] = [];
