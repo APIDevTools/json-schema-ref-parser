@@ -54,7 +54,7 @@ describe("Schema with circular (recursive) $refs", () => {
       expect(schema.definitions.child.properties.pet).to.equal(schema.definitions.pet);
     });
 
-    it('should produce the same results if "options.$refs.circular" is "ignore"', async () => {
+    it('should produce the same results if "options.dereference.circular" is "ignore"', async () => {
       const parser = new $RefParser();
 
       const schema = await parser.dereference(path.rel("test/specs/circular/circular-self.yaml"), {
@@ -66,7 +66,7 @@ describe("Schema with circular (recursive) $refs", () => {
       expect(parser.$refs.circular).to.equal(true);
     });
 
-    it('should throw an error if "options.$refs.circular" is false', async () => {
+    it('should throw an error if "options.dereference.circular" is false', async () => {
       const parser = new $RefParser();
 
       try {
@@ -85,6 +85,24 @@ describe("Schema with circular (recursive) $refs", () => {
         // $Refs.circular should be true
         expect(parser.$refs.circular).to.equal(true);
       }
+    });
+
+    it.only("should call onCircular if `options.dereference.onCircular` is present", async () => {
+      const parser = new $RefParser();
+
+      const circularRefs: string[] = [];
+      const schema = await parser.dereference(path.rel("test/specs/circular/circular-self.yaml"), {
+        dereference: {
+          onCircular(path: string) {
+            circularRefs.push(path);
+          },
+        },
+      });
+      expect(schema).to.equal(parser.schema);
+      expect(schema).to.deep.equal(dereferencedSchema.self);
+      // The "circular" flag should be set
+      expect(parser.$refs.circular).to.equal(true);
+      expect(circularRefs).to.have.length(1);
     });
 
     it("should bundle successfully", async () => {
@@ -149,7 +167,7 @@ describe("Schema with circular (recursive) $refs", () => {
       expect(schema.definitions.person.properties.pet).to.equal(schema.definitions.pet);
     });
 
-    it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', async () => {
+    it('should not dereference circular $refs if "options.dereference.circular" is "ignore"', async () => {
       const parser = new $RefParser();
 
       const schema = await parser.dereference(path.rel("test/specs/circular/circular-ancestor.yaml"), {
@@ -164,7 +182,7 @@ describe("Schema with circular (recursive) $refs", () => {
       expect(schema.definitions.person.properties.pet).to.equal(schema.definitions.pet);
     });
 
-    it('should throw an error if "options.$refs.circular" is false', async () => {
+    it('should throw an error if "options.dereference.circular" is false', async () => {
       const parser = new $RefParser();
 
       try {
@@ -247,7 +265,7 @@ describe("Schema with circular (recursive) $refs", () => {
       expect(schema.definitions.child.properties.parents.items).to.equal(schema.definitions.parent);
     });
 
-    it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', async () => {
+    it('should not dereference circular $refs if "options.dereference.circular" is "ignore"', async () => {
       const parser = new $RefParser();
 
       const schema = await parser.dereference(path.rel("test/specs/circular/circular-indirect.yaml"), {
@@ -262,7 +280,7 @@ describe("Schema with circular (recursive) $refs", () => {
       expect(schema.definitions.child.properties.pet).to.equal(schema.definitions.pet);
     });
 
-    it('should throw an error if "options.$refs.circular" is false', async () => {
+    it('should throw an error if "options.dereference.circular" is false', async () => {
       const parser = new $RefParser();
 
       try {
@@ -347,7 +365,7 @@ describe("Schema with circular (recursive) $refs", () => {
       expect(schema.definitions.child.properties.children.items).to.equal(schema.definitions.child);
     });
 
-    it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', async () => {
+    it('should not dereference circular $refs if "options.dereference.circular" is "ignore"', async () => {
       const parser = new $RefParser();
 
       const schema = await parser.dereference(path.rel("test/specs/circular/circular-indirect-ancestor.yaml"), {
@@ -362,7 +380,7 @@ describe("Schema with circular (recursive) $refs", () => {
       expect(schema.definitions.child.properties.pet).to.equal(schema.definitions.pet);
     });
 
-    it('should throw an error if "options.$refs.circular" is false', async () => {
+    it('should throw an error if "options.dereference.circular" is false', async () => {
       const parser = new $RefParser();
 
       try {

@@ -30,6 +30,13 @@ export interface DereferenceOptions {
   excludedPathMatcher?(path: string): boolean;
 
   /**
+   * Callback invoked during circular reference detection.
+   *
+   * @argument {string} path - The path that is circular (ie. the `$ref` string)
+   */
+  onCircular?(path: string): void;
+
+  /**
    * Callback invoked during dereferencing.
    *
    * @argument {string} path - The path being dereferenced (ie. the `$ref` string)

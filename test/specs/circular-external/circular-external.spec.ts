@@ -53,7 +53,7 @@ describe("Schema with circular (recursive) external $refs", () => {
     expect(schema.definitions.child.properties.parents.items).to.equal(schema.definitions.parent);
   });
 
-  it('should throw an error if "options.$refs.circular" is false', async () => {
+  it('should throw an error if "options.dereference.circular" is false', async () => {
     const parser = new $RefParser();
 
     try {
