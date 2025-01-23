@@ -55,7 +55,7 @@ describe("Schema with deeply-nested circular $refs", () => {
       .to.equal(schema.properties.level1.properties.level2.properties.level3.properties.level4.properties.name);
   });
 
-  it('should throw an error if "options.$refs.circular" is false', async () => {
+  it('should throw an error if "options.dereference.circular" is false', async () => {
     const parser = new $RefParser();
 
     try {

@@ -31,6 +31,9 @@ $RefParser.dereference("my-schema.yaml", {
     excludedPathMatcher: (
       path, // Skip dereferencing content under any 'example' key
     ) => path.includes("/example/"),
+    onCircular: (
+      path, // Callback invoked during circular $ref detection
+    ) => console.log(path),
     onDereference: (
       path,
       value, // Callback invoked during dereferencing
@@ -78,4 +81,5 @@ The `dereference` options control how JSON Schema $Ref Parser will dereference `
 | :-------------------- | :--------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `circular`            | `boolean` or `"ignore"`                                                | Determines whether [circular `$ref` pointers](README.md#circular-refs) are handled.<br><br>If set to `false`, then a `ReferenceError` will be thrown if the schema contains any circular references.<br><br> If set to `"ignore"`, then circular references will simply be ignored. No error will be thrown, but the [`$Refs.circular`](refs.md#circular) property will still be set to `true`. |
 | `excludedPathMatcher` | `(string) => boolean`                                                  | A function, called for each path, which can return true to stop this path and all subpaths from being dereferenced further. This is useful in schemas where some subpaths contain literal `$ref` keys that should not be dereferenced.                                                                                                                                                          |
+| `onCircular`          | `(string) => void`                                                     | A function, called immediately after detecting a circular `$ref` with the circular `$ref` in question.                                                                                                                                                                                                                                                                                          |
 | `onDereference`       | `(string, JSONSchemaObjectType, JSONSchemaObjectType, string) => void` | A function, called immediately after dereferencing, with: the resolved JSON Schema value, the `$ref` being dereferenced, the object holding the dereferenced prop, the dereferenced prop name.                                                                                                                                                                                                  |

@@ -43,7 +43,7 @@ describe("Schema with circular $refs that extend each other", () => {
       expect(parser.$refs.circular).to.equal(true);
     });
 
-    it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', async () => {
+    it('should not dereference circular $refs if "options.dereference.circular" is "ignore"', async () => {
       const parser = new $RefParser();
 
       const schema = await parser.dereference(path.rel("test/specs/circular-extended/circular-extended-self.yaml"), {
@@ -55,7 +55,7 @@ describe("Schema with circular $refs that extend each other", () => {
       expect(parser.$refs.circular).to.equal(true);
     });
 
-    it('should throw an error if "options.$refs.circular" is false', async () => {
+    it('should throw an error if "options.dereference.circular" is false', async () => {
       const parser = new $RefParser();
 
       try {
@@ -130,7 +130,7 @@ describe("Schema with circular $refs that extend each other", () => {
       expect(schema.definitions.person.properties.pet.properties).to.equal(schema.definitions.pet.properties);
     });
 
-    it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', async () => {
+    it('should not dereference circular $refs if "options.dereference.circular" is "ignore"', async () => {
       const parser = new $RefParser();
 
       const schema = await parser.dereference(
@@ -145,7 +145,7 @@ describe("Schema with circular $refs that extend each other", () => {
       expect(parser.$refs.circular).to.equal(true);
     });
 
-    it('should throw an error if "options.$refs.circular" is false', async () => {
+    it('should throw an error if "options.dereference.circular" is false', async () => {
       const parser = new $RefParser();
 
       try {
@@ -232,7 +232,7 @@ describe("Schema with circular $refs that extend each other", () => {
       expect(schema.definitions.child.properties.pet.properties).to.equal(schema.definitions.pet.properties);
     });
 
-    it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', async () => {
+    it('should not dereference circular $refs if "options.dereference.circular" is "ignore"', async () => {
       const parser = new $RefParser();
 
       const schema = await parser.dereference(
@@ -247,7 +247,7 @@ describe("Schema with circular $refs that extend each other", () => {
       expect(parser.$refs.circular).to.equal(true);
     });
 
-    it('should throw an error if "options.$refs.circular" is false', async () => {
+    it('should throw an error if "options.dereference.circular" is false', async () => {
       const parser = new $RefParser();
 
       try {
@@ -335,7 +335,7 @@ describe("Schema with circular $refs that extend each other", () => {
       expect(schema.definitions.pet.properties).to.equal(schema.definitions.child.properties.pet.properties);
     });
 
-    it('should not dereference circular $refs if "options.$refs.circular" is "ignore"', async () => {
+    it('should not dereference circular $refs if "options.dereference.circular" is "ignore"', async () => {
       const parser = new $RefParser();
 
       const schema = await parser.dereference(
@@ -348,7 +348,7 @@ describe("Schema with circular $refs that extend each other", () => {
       expect(parser.$refs.circular).to.equal(true);
     });
 
-    it('should throw an error if "options.$refs.circular" is false', async () => {
+    it('should throw an error if "options.dereference.circular" is false', async () => {
       const parser = new $RefParser();
 
       try {

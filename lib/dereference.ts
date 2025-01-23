@@ -272,7 +272,8 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
 
 /**
  * Called when a circular reference is found.
- * It sets the {@link $Refs#circular} flag, and throws an error if options.dereference.circular is false.
+ * It sets the {@link $Refs#circular} flag, executes the options.dereference.onCircular callback,
+ * and throws an error if options.dereference.circular is false.
  *
  * @param keyPath - The JSON Reference path of the circular reference
  * @param $refs
@@ -281,6 +282,8 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
  */
 function foundCircularReference(keyPath: any, $refs: any, options: any) {
   $refs.circular = true;
+  options?.dereference?.onCircular?.(keyPath);
+
   if (!options.dereference.circular) {
     throw ono.reference(`Circular $ref pointer found at ${keyPath}`);
   }
