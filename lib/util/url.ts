@@ -26,10 +26,11 @@ export const parse = (u: string | URL) => new URL(u);
  * @returns
  */
 export function resolve(from: string, to: string) {
-  const fromUrl = new URL(convertPathToPosix(from), "resolve://");
+  // we use a non-existent URL to check if its a relative URL
+  const fromUrl = new URL(convertPathToPosix(from), "https://aaa.nonexistanturl.com");
   const resolvedUrl = new URL(convertPathToPosix(to), fromUrl);
   const endSpaces = to.match(/(\s*)$/)?.[1] || "";
-  if (resolvedUrl.protocol === "resolve:") {
+  if (resolvedUrl.hostname === "aaa.nonexistanturl.com") {
     // `from` is a relative URL.
     const { pathname, search, hash } = resolvedUrl;
     return pathname + search + hash + endSpaces;
