@@ -123,8 +123,17 @@ export class UnmatchedResolverError extends JSONParserError {
 export class MissingPointerError extends JSONParserError {
   code = "EMISSINGPOINTER" as JSONParserErrorType;
   name = "MissingPointerError";
-  constructor(token: string, path: string) {
+  public targetToken: any;
+  public targetRef: string;
+  public targetFound: string;
+  public parentPath: string; 
+  constructor(token: any, path: any, targetRef: any, targetFound: any, parentPath: any) {
     super(`Missing $ref pointer "${getHash(path)}". Token "${token}" does not exist.`, stripHash(path));
+
+    this.targetToken = token;
+    this.targetRef = targetRef;
+    this.targetFound = targetFound;
+    this.parentPath = parentPath;
   }
 }
 
