@@ -88,7 +88,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    */
   resolve(obj: S, options?: O, pathFromRoot?: string) {
     const tokens = Pointer.parse(this.path, this.originalPath);
-    let found: any = [];
+    const found: any = [];
 
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
@@ -129,10 +129,10 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
           path = this.$ref.path;
         }
 
-        let targetRef = this.path.replace(path, '');
-        let targetFound = Pointer.join('', found);
-        let parentPath = pathFromRoot?.replace(path, '');
-
+        const targetRef = this.path.replace(path, '');
+        const targetFound = Pointer.join('', found);
+        const parentPath = pathFromRoot?.replace(path, '');
+        
         throw new MissingPointerError(token, decodeURI(this.originalPath), targetRef, targetFound, parentPath);
       } else {
         this.value = this.value[token];
