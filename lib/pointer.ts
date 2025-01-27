@@ -104,7 +104,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       }
 
       const token = tokens[i];
-      
+
       if (this.value[token] === undefined || (this.value[token] === null && i === tokens.length - 1)) {
         // one final case is if the entry itself includes slashes, and was parsed out as a token - we can join the remaining tokens and try again
         let didFindSubstringSlashMatch = false;
@@ -123,22 +123,18 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
         this.value = null;
 
-        let path: any = '';
+        const path = this.$ref.path || "";
 
-        if (path !== undefined) {
-          path = this.$ref.path;
-        }
+        const targetRef = this.path.replace(path, "");
+        const targetFound = Pointer.join("", found);
+        const parentPath = pathFromRoot?.replace(path, "");
 
-        const targetRef = this.path.replace(path, '');
-        const targetFound = Pointer.join('', found);
-        const parentPath = pathFromRoot?.replace(path, '');
-        
         throw new MissingPointerError(token, decodeURI(this.originalPath), targetRef, targetFound, parentPath);
       } else {
         this.value = this.value[token];
       }
 
-      found.push(token)
+      found.push(token);
     }
 
     // Resolve the final value
