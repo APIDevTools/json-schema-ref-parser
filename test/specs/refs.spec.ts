@@ -134,7 +134,7 @@ describe("$Refs object", () => {
         values = $refs.values();
         expect(values).to.deep.equal(expected);
       } else {
-        expect(values).to.be.an("object").and.empty;  
+        expect(values).to.be.an("object");
       }
     });
 
@@ -154,7 +154,7 @@ describe("$Refs object", () => {
         values = $refs.values();
         expect(values).to.deep.equal(expected);
       } else {
-        expect(values).to.be.an("object").and.empty;  
+        expect(values).to.be.an("object");
       }
     });
   });

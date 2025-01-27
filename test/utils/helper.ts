@@ -18,7 +18,7 @@ const helper = {
    * @param {...*} [params] - The expected resolved file paths and values
    * @returns {Function}
    */
-  testResolve(filePath: string, ...params: (string | undefined | object)[]) {
+  testResolve(filePath: string) {
     const parsedSchema = arguments[2];
     const expectedFiles: any = [];
     const messages: any = [];

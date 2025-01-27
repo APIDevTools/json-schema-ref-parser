@@ -2,6 +2,18 @@
   "name": "@apidevtools/json-schema-ref-parser",
   "version": "0.0.0-dev",
   "description": "Parse, Resolve, and Dereference JSON Schema $ref pointers",
+  "scripts": {
+    "prepublishOnly": "yarn build",
+    "lint": "eslint lib",
+    "build": "rimraf dist && tsc",
+    "typecheck": "tsc --noEmit",
+    "prettier": "prettier --write \"**/*.+(js|jsx|ts|tsx|har||json|css|md)\"",
+    "test": "vitest --coverage",
+    "test:node": "yarn test",
+    "test:browser": "cross-env BROWSER=\"true\" yarn test",
+    "test:update": "vitest -u",
+    "test:watch": "vitest -w"
+  },
   "keywords": [
     "json",
     "schema",
@@ -54,18 +66,6 @@
     "dist",
     "cjs"
   ],
-  "scripts": {
-    "prepublishOnly": "yarn build",
-    "lint": "eslint lib",
-    "build": "rimraf dist && tsc",
-    "typecheck": "tsc --noEmit",
-    "prettier": "prettier --write \"**/*.+(js|jsx|ts|tsx|har||json|css|md)\"",
-    "test": "vitest --coverage",
-    "test:node": "yarn test",
-    "test:browser": "cross-env BROWSER=\"true\" yarn test",
-    "test:update": "vitest -u",
-    "test:watch": "vitest -w"
-  },
   "devDependencies": {
     "@eslint/compat": "^1.2.5",
     "@eslint/js": "^9.18.0",

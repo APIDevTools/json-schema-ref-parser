@@ -45,8 +45,7 @@ export function sort(plugins: Plugin[]) {
   });
 }
 
-// @ts-ignore
-export interface PluginResult<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
+export interface PluginResult<S extends object = JSONSchema> {
   plugin: Plugin;
   result?: string | Buffer | S;
   error?: any;
@@ -67,10 +66,10 @@ export async function run<S extends object = JSONSchema, O extends ParserOptions
   $refs: $Refs<S, O>,
 ) {
   let plugin: Plugin;
-  let lastError: PluginResult<S, O>;
+  let lastError: PluginResult<S>;
   let index = 0;
 
-  return new Promise<PluginResult<S, O>>((resolve, reject) => {
+  return new Promise<PluginResult<S>>((resolve, reject) => {
     runNextPlugin();
 
     function runNextPlugin() {
@@ -97,7 +96,7 @@ export async function run<S extends object = JSONSchema, O extends ParserOptions
       }
     }
 
-    function callback(err: PluginResult<S, O>["error"], result: PluginResult<S, O>["result"]) {
+    function callback(err: PluginResult<S>["error"], result: PluginResult<S>["result"]) {
       if (err) {
         onError(err);
       } else {
@@ -105,7 +104,7 @@ export async function run<S extends object = JSONSchema, O extends ParserOptions
       }
     }
 
-    function onSuccess(result: PluginResult<S, O>["result"]) {
+    function onSuccess(result: PluginResult<S>["result"]) {
       // console.log('    success');
       resolve({
         plugin,
@@ -113,7 +112,7 @@ export async function run<S extends object = JSONSchema, O extends ParserOptions
       });
     }
 
-    function onError(error: PluginResult<S, O>["error"]) {
+    function onError(error: PluginResult<S>["error"]) {
       // console.log('    %s', err.message || err);
       lastError = {
         plugin,

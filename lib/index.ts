@@ -144,10 +144,8 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     }
   }
 
-  public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-  ): Promise<S>;
-  public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  public static parse<S extends object = JSONSchema>(schema: S | string | unknown): Promise<S>;
+  public static parse<S extends object = JSONSchema>(
     schema: S | string | unknown,
     callback: SchemaCallback<S>,
   ): Promise<void>;
@@ -269,10 +267,8 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param options (optional)
    * @param callback (optional) A callback that will receive the bundled schema object
    */
-  public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-  ): Promise<S>;
-  public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  public static bundle<S extends object = JSONSchema>(schema: S | string | unknown): Promise<S>;
+  public static bundle<S extends object = JSONSchema>(
     schema: S | string | unknown,
     callback: SchemaCallback<S>,
   ): Promise<void>;
@@ -343,10 +339,8 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param options (optional)
    * @param callback (optional) A callback that will receive the dereferenced schema object
    */
-  public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    schema: S | string | unknown,
-  ): Promise<S>;
-  public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  public static dereference<S extends object = JSONSchema>(schema: S | string | unknown): Promise<S>;
+  public static dereference<S extends object = JSONSchema>(
     schema: S | string | unknown,
     callback: SchemaCallback<S>,
   ): Promise<void>;
