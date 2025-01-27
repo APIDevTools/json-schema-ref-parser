@@ -5,7 +5,6 @@ import prettierExtends from "eslint-config-prettier";
 import { fixupPluginRules } from "@eslint/compat";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import promisePlugin from "eslint-plugin-promise";
 
 const globalToUse = {
   ...globals.browser,
@@ -29,14 +28,8 @@ const configs = tseslint.config(
   {
     ignores,
 
-    extends: [
-      eslint.configs.recommended,
-      ...tseslint.configs.recommended,
-      promisePlugin.configs["flat/recommended"],
-      prettierExtends,
-    ],
+    extends: [eslint.configs.recommended, ...tseslint.configs.recommended, prettierExtends],
     plugins: {
-      promise: promisePlugin,
       prettierPlugin,
       "unused-imports": fixupPluginRules(unusedImportsPlugin),
     },
