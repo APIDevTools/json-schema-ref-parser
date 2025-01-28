@@ -126,7 +126,7 @@ export class MissingPointerError extends JSONParserError {
   public targetToken: any;
   public targetRef: string;
   public targetFound: string;
-  public parentPath: string; 
+  public parentPath: string;
   constructor(token: any, path: any, targetRef: any, targetFound: any, parentPath: any) {
     super(`Missing $ref pointer "${getHash(path)}". Token "${token}" does not exist.`, stripHash(path));
 

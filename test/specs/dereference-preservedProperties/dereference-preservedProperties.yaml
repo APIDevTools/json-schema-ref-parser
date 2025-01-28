@@ -1,0 +1,16 @@
+title: Person
+required:
+  - name
+type: object
+definitions:
+  name:
+    type: string
+    description: Someone's name
+properties:
+  name:
+    $ref: "#/definitions/name"
+  secretName:
+    $ref: "#/definitions/name"
+    # Despite "Someone's name" being the description of the referenced `name` schema our overwritten
+    # description should be preserved instead.
+    description: Someone's secret name
