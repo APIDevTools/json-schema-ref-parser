@@ -47,6 +47,16 @@ export interface DereferenceOptions {
   onDereference?(path: string, value: JSONSchemaObject, parent?: JSONSchemaObject, parentPropName?: string): void;
 
   /**
+   * An array of properties to preserve when dereferencing a `$ref` schema. Useful if you want to
+   * enforce non-standard dereferencing behavior like present in the OpenAPI 3.1 specification where
+   * `description` and `summary` properties are preserved when alongside a `$ref` pointer.
+   *
+   * If none supplied then no properties will be preserved and the object will be fully replaced
+   * with the dereferenced `$ref`.
+   */
+  preservedProperties?: string[];
+
+  /**
    * Whether a reference should resolve relative to its directory/path, or from the cwd
    *
    * Default: `relative`

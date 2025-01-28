@@ -123,7 +123,31 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
             circular = dereferenced.circular;
             // Avoid pointless mutations; breaks frozen objects to no profit
             if (obj[key] !== dereferenced.value) {
+              // If we have properties we want to preserve from our dereferenced schema then we need
+              // to copy them over to our new object.
+              const preserved: Map<string, unknown> = new Map();
+              if (derefOptions?.preservedProperties) {
+                if (typeof obj[key] === "object" && !Array.isArray(obj[key])) {
+                  derefOptions?.preservedProperties.forEach((prop) => {
+                    if (prop in obj[key]) {
+                      preserved.set(prop, obj[key][prop]);
+                    }
+                  });
+                }
+              }
+
               obj[key] = dereferenced.value;
+
+              // If we have data to preserve and our dereferenced object is still an object then
+              // we need copy back our preserved data into our dereferenced schema.
+              if (derefOptions?.preservedProperties) {
+                if (preserved.size && typeof obj[key] === "object" && !Array.isArray(obj[key])) {
+                  preserved.forEach((value, prop) => {
+                    obj[key][prop] = value;
+                  });
+                }
+              }
+
               derefOptions?.onDereference?.(value.$ref, obj[key], obj, key);
             }
           } else {
