@@ -155,14 +155,10 @@ To build/test the project locally on your computer:
 
 JSON Schema $Ref Parser is 100% free and open-source, under the [MIT license](LICENSE). Use it however you want.
 
-This package is [Treeware](http://treeware.earth). If you use it in production, then we ask that you [**buy the world a
-tree**](https://plant.treeware.earth/APIDevTools/json-schema-ref-parser) to thank us for our work. By contributing to
-the Treeware forest you’ll be creating employment for local families and restoring wildlife habitats.
+## Thanks
 
-## Big Thanks To
+Thanks to these awesome contributors for their major support of this open-source project.
 
-Thanks to these awesome companies for their support of Open Source developers ❤
-
-[![Stoplight](https://svgshare.com/i/TK5.svg)](https://stoplight.io/?utm_source=github&utm_medium=readme&utm_campaign=json_schema_ref_parser)
-[![SauceLabs](https://jstools.dev/img/badges/sauce-labs.svg)](https://saucelabs.com)
-[![Coveralls](https://jstools.dev/img/badges/coveralls.svg)](https://coveralls.io)
+- [JonLuca De Caro](https://jonlu.ca)
+- [Phil Sturgeon](https://philsturgeon.com)
+- [Stoplight](https://stoplight.io/?utm_source=github&utm_medium=readme&utm_campaign=json_schema_ref_parser)
