@@ -6,10 +6,12 @@ import type { FileInfo } from "../types/index.js";
 export const sendRequest = async ({
   init,
   redirects = [],
+  timeout = 60_000,
   url,
 }: {
   init?: RequestInit;
   redirects?: string[];
+  timeout?: number;
   url: URL | string;
 }): Promise<{
   response: Response;
@@ -21,7 +23,7 @@ export const sendRequest = async ({
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
       controller.abort();
-    }, 60_000);
+    }, timeout);
     const response = await fetch(url, {
       signal: controller.signal,
       ...init,
@@ -29,6 +31,11 @@ export const sendRequest = async ({
     clearTimeout(timeoutId);
 
     if (response.status >= 400) {
+      // gracefully handle HEAD method not allowed
+      if (response.status === 405 && init?.method === 'HEAD') {
+        return { response };
+      }
+
       throw ono({ status: response.status }, `HTTP ERROR ${response.status}`);
     }
     
@@ -49,6 +56,7 @@ export const sendRequest = async ({
       return sendRequest({
         init,
         redirects,
+        timeout,
         url: resolve(url.href, response.headers.location as string),
       });
     }
