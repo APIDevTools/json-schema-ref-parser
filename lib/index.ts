@@ -70,8 +70,8 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   public parse(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
   public parse(schema: S | string | unknown, options: O): Promise<S>;
   public parse(schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
-  public parse(baseUrl: string, schema: S | string | unknown, options: O): Promise<S>;
-  public parse(baseUrl: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public parse(path: string, schema: S | string | unknown, options: O): Promise<S>;
+  public parse(path: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
   async parse() {
     const args = normalizeArgs<S, O>(arguments as any);
     let promise;
@@ -159,12 +159,12 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     callback: SchemaCallback<S>,
   ): Promise<void>;
   public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
+    path: string,
     schema: S | string | unknown,
     options: O,
   ): Promise<S>;
   public static parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
+    path: string,
     schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
@@ -191,9 +191,9 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   public resolve(schema: S | string | unknown, callback: $RefsCallback<S, O>): Promise<void>;
   public resolve(schema: S | string | unknown, options: O): Promise<$Refs<S, O>>;
   public resolve(schema: S | string | unknown, options: O, callback: $RefsCallback<S, O>): Promise<void>;
-  public resolve(baseUrl: string, schema: S | string | unknown, options: O): Promise<$Refs<S, O>>;
+  public resolve(path: string, schema: S | string | unknown, options: O): Promise<$Refs<S, O>>;
   public resolve(
-    baseUrl: string,
+    path: string,
     schema: S | string | unknown,
     options: O,
     callback: $RefsCallback<S, O>,
@@ -239,12 +239,12 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     callback: $RefsCallback<S, O>,
   ): Promise<void>;
   public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
+    path: string,
     schema: S | string | unknown,
     options: O,
   ): Promise<$Refs<S, O>>;
   public static resolve<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
+    path: string,
     schema: S | string | unknown,
     options: O,
     callback: $RefsCallback<S, O>,
@@ -282,12 +282,12 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     callback: SchemaCallback<S>,
   ): Promise<void>;
   public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
+    path: string,
     schema: S | string | unknown,
     options: O,
   ): Promise<S>;
   public static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
+    path: string,
     schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
@@ -314,8 +314,8 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   public bundle(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
   public bundle(schema: S | string | unknown, options: O): Promise<S>;
   public bundle(schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
-  public bundle(baseUrl: string, schema: S | string | unknown, options: O): Promise<S>;
-  public bundle(baseUrl: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
+  public bundle(path: string, schema: S | string | unknown, options: O): Promise<S>;
+  public bundle(path: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
   async bundle() {
     const args = normalizeArgs<S, O>(arguments);
     try {
@@ -354,12 +354,12 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     callback: SchemaCallback<S>,
   ): Promise<void>;
   public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
+    path: string,
     schema: S | string | unknown,
     options: O,
   ): Promise<S>;
   public static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-    baseUrl: string,
+    path: string,
     schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
@@ -378,20 +378,20 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    *
    * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferenceschema-options-callback
    *
-   * @param baseUrl
+   * @param path
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
    * @param options (optional)
    * @param callback (optional) A callback that will receive the dereferenced schema object
    */
   public dereference(
-    baseUrl: string,
+    path: string,
     schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
   ): Promise<void>;
   public dereference(schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
   public dereference(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
-  public dereference(baseUrl: string, schema: S | string | unknown, options: O): Promise<S>;
+  public dereference(path: string, schema: S | string | unknown, options: O): Promise<S>;
   public dereference(schema: S | string | unknown, options: O): Promise<S>;
   public dereference(schema: S | string | unknown): Promise<S>;
   async dereference() {
