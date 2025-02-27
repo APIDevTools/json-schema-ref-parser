@@ -121,6 +121,14 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
           continue;
         }
 
+        // If the token we're looking for ended up not containing any slashes but is
+        // actually instead pointing to an existing `null` value then we should use that
+        // `null` value.
+        if (token in this.value && this.value[token] === null) {
+          this.value = null;
+          continue;
+        }
+
         this.value = null;
 
         const path = this.$ref.path || "";
