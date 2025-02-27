@@ -1,4 +1,4 @@
-import Pointer from "./pointer.js";
+import Pointer, { nullSymbol } from "./pointer.js";
 import type { JSONParserError, MissingPointerError, ParserError, ResolverError } from "./util/errors.js";
 import { InvalidPointerError, isHandledError, normalizeError } from "./util/errors.js";
 import { safePointerToPath, stripHash, getHash } from "./util/url.js";
@@ -119,7 +119,12 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
   resolve(path: string, options?: O, friendlyPath?: string, pathFromRoot?: string) {
     const pointer = new Pointer<S, O>(this, path, friendlyPath);
     try {
-      return pointer.resolve(this.value, options, pathFromRoot);
+      const resolved = pointer.resolve(this.value, options, pathFromRoot);
+      if (resolved.value === nullSymbol) {
+        resolved.value = null;
+      }
+
+      return resolved;
     } catch (err: any) {
       if (!options || !options.continueOnError || !isHandledError(err)) {
         throw err;
@@ -148,6 +153,9 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
   set(path: string, value: any) {
     const pointer = new Pointer(this, path);
     this.value = pointer.set(this.value, value);
+    if (this.value === nullSymbol) {
+      this.value = null;
+    }
   }
 
   /**
