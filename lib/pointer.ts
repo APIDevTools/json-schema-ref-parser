@@ -5,6 +5,8 @@ import * as url from "./util/url.js";
 import { JSONParserError, InvalidPointerError, MissingPointerError, isHandledError } from "./util/errors.js";
 import type { JSONSchema } from "./types";
 
+export const nullSymbol = Symbol('null');
+
 const slashes = /\//g;
 const tildes = /~/g;
 const escapedSlash = /~1/g;
@@ -125,7 +127,9 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
         // actually instead pointing to an existing `null` value then we should use that
         // `null` value.
         if (token in this.value && this.value[token] === null) {
-          this.value = null;
+          // We use a `null` symbol for internal tracking to differntiate between a general `null`
+          // value and our expected `null` value.
+          this.value = nullSymbol;
           continue;
         }
 
