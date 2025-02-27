@@ -5,7 +5,7 @@ import path from "../../utils/path";
 import dereferenced from "./dereferenced.js";
 
 describe("dereferencing a `$ref` that points to a `null` value", () => {
-  it.only("should dereference successfully", async () => {
+  it("should dereference successfully", async () => {
     const parser = new $RefParser();
     const schema = await parser.dereference(path.rel("test/specs/dereference-null-ref/dereference-null-ref.yaml"));
     expect(schema).to.equal(parser.schema);
