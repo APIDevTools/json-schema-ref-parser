@@ -1,5 +1,0 @@
-{
-  "foo": {
-    "$ref": "./invalid.json#f"
-  }
-}

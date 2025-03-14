@@ -48,8 +48,8 @@
     "test:browser": "cross-env BROWSER=\"true\" yarn test",
     "test:node": "yarn test",
     "test:update": "vitest -u",
-    "test:watch": "vitest -w",
-    "test": "vitest --coverage",
+    "test:watch": "vitest watch --config vitest.config.unit.ts",
+    "test": "vitest run --config vitest.config.unit.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

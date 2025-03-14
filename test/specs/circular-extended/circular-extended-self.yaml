@@ -1,3 +1,0 @@
-definitions:
-  thing:
-    $ref: "definitions/thing.yaml"
