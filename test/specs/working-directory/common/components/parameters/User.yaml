@@ -1,7 +1,0 @@
-HLUserParameter:
-  in: header
-  name: HL-User-Id
-  required: true
-  schema:
-    type: string
-  description: The unique identifier for the user inside the HL backend.

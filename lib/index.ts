@@ -38,7 +38,7 @@ export const getResolvedInput = ({
   // So we're being generous here and doing the conversion automatically.
   // This is not intended to be a 100% bulletproof solution.
   // If it doesn't work for your use-case, then use a URL instead.
-  if (url.isFileSystemPath(resolvedInput.path)) {
+  if (resolvedInput.path && url.isFileSystemPath(resolvedInput.path)) {
     resolvedInput.path = url.fromFileSystemPath(resolvedInput.path);
     resolvedInput.type = 'file';
   } else if (!resolvedInput.path && pathOrUrlOrSchema && typeof pathOrUrlOrSchema === 'object') {
@@ -54,8 +54,10 @@ export const getResolvedInput = ({
     }
   }
 
-  // resolve the absolute path of the schema
-  resolvedInput.path = url.resolve(url.cwd(), resolvedInput.path);
+  if (resolvedInput.type !== 'json') {
+    // resolve the absolute path of the schema
+    resolvedInput.path = url.resolve(url.cwd(), resolvedInput.path);
+  }
 
   return resolvedInput;
 }

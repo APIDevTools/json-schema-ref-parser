@@ -1,7 +1,0 @@
-title: person
-type: object
-properties:
-  name:
-    type: string
-  spouse:
-    $ref: person.yaml # direct circular reference

@@ -1,6 +1,0 @@
-definitions:
-  person:
-    $ref: definitions/person-with-spouse.yaml
-
-  pet:
-    $ref: definitions/pet.yaml
