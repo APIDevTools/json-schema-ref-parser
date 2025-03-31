@@ -124,7 +124,7 @@ async function resolve$Ref<S extends object = JSONSchema>(
 
     if (resolvedInput.type !== 'json') {
       const resolver = resolvedInput.type === 'file' ? fileResolver : urlResolver;
-      await resolver.handler(file);
+      await resolver.handler({ file });
       const parseResult = await parseFile(file, options);
       $refAdded.value = parseResult.result;
       promises = crawl(parseResult.result, `${withoutHash}#`, $refs, options, new Set(), true);

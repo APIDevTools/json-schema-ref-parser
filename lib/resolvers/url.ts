@@ -4,17 +4,17 @@ import { ResolverError } from "../util/errors.js";
 import type { FileInfo } from "../types/index.js";
 
 export const sendRequest = async ({
-  init,
+  fetchOptions,
   redirects = [],
   timeout = 60_000,
   url,
 }: {
-  init?: RequestInit;
+  fetchOptions?: RequestInit;
   redirects?: string[];
   timeout?: number;
   url: URL | string;
 }): Promise<{
-  init?: RequestInit;
+  fetchOptions?: RequestInit;
   response: Response;
 }> => {
   url = new URL(url);
@@ -26,7 +26,7 @@ export const sendRequest = async ({
   }, timeout);
   const response = await fetch(url, {
     signal: controller.signal,
-    ...init,
+    ...fetchOptions,
   });
   clearTimeout(timeoutId);
 
@@ -45,32 +45,41 @@ export const sendRequest = async ({
     }
 
     return sendRequest({
-      init,
+      fetchOptions,
       redirects,
       timeout,
       url: resolve(url.href, response.headers.location as string),
     });
   }
 
-  return { init, response };
+  return { fetchOptions, response };
 }
 
 export const urlResolver = {
-  handler: async (file: FileInfo, arrayBuffer?: ArrayBuffer): Promise<void> => {
+  handler: async ({
+    arrayBuffer,
+    fetch: _fetch,
+    file,
+  }: {
+    arrayBuffer?: ArrayBuffer;
+    fetch?: RequestInit;
+    file: FileInfo;
+  }): Promise<void> => {
     let data = arrayBuffer;
 
     if (!data) {
       try {
-        const { init, response } = await sendRequest({
-          init: {
+        const { fetchOptions, response } = await sendRequest({
+          fetchOptions: {
             method: 'GET',
+            ..._fetch,
           },
           url: file.url,
         });
 
         if (response.status >= 400) {
           // gracefully handle HEAD method not allowed
-          if (response.status !== 405 || init?.method !== 'HEAD') {
+          if (response.status !== 405 || fetchOptions?.method !== 'HEAD') {
             throw ono({ status: response.status }, `HTTP ERROR ${response.status}`);
           }
 

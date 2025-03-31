@@ -94,14 +94,21 @@ export class $RefParser {
    */
   public async bundle({
     arrayBuffer,
+    fetch,
     pathOrUrlOrSchema,
     resolvedInput,
   }: {
     arrayBuffer?: ArrayBuffer;
+    fetch?: RequestInit;
     pathOrUrlOrSchema: JSONSchema | string | unknown;
     resolvedInput?: ResolvedInput;
   }): Promise<JSONSchema> {
-    await this.parse({ arrayBuffer, pathOrUrlOrSchema, resolvedInput });
+    await this.parse({
+      arrayBuffer,
+      fetch,
+      pathOrUrlOrSchema,
+      resolvedInput,
+    });
     await resolveExternal(this, this.options);
     const errors = JSONParserErrorGroup.getParserErrors(this);
     if (errors.length > 0) {
@@ -125,11 +132,16 @@ export class $RefParser {
    * @param pathOrUrlOrSchema A JSON Schema object, or the file path or URL of a JSON Schema file.
    */
   public async dereference({
+    fetch,
     pathOrUrlOrSchema,
   }: {
+    fetch?: RequestInit;
     pathOrUrlOrSchema: JSONSchema | string | unknown;
   }): Promise<JSONSchema> {
-    await this.parse({ pathOrUrlOrSchema });
+    await this.parse({
+      fetch,
+      pathOrUrlOrSchema,
+    });
     await resolveExternal(this, this.options);
     const errors = JSONParserErrorGroup.getParserErrors(this);
     if (errors.length > 0) {
@@ -153,10 +165,12 @@ export class $RefParser {
    */
   public async parse({
     arrayBuffer,
+    fetch,
     pathOrUrlOrSchema,
     resolvedInput: _resolvedInput,
   }: {
     arrayBuffer?: ArrayBuffer;
+    fetch?: RequestInit;
     pathOrUrlOrSchema: JSONSchema | string | unknown;
     resolvedInput?: ResolvedInput;
   }): Promise<{ schema: JSONSchema }> {
@@ -182,7 +196,11 @@ export class $RefParser {
       $refAdded.pathType = type;
       try {
         const resolver = type === 'file' ? fileResolver : urlResolver;
-        await resolver.handler(file, arrayBuffer);
+        await resolver.handler({
+          arrayBuffer,
+          fetch,
+          file,
+        });
         const parseResult = await parseFile(file, this.options);
         $refAdded.value = parseResult.result;
         schema = parseResult.result;
