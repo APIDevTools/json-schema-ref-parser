@@ -5,7 +5,11 @@ import { ResolverError } from "../util/errors.js";
 import type { FileInfo } from "../types/index.js";
 
 export const fileResolver = {
-  handler: async (file: FileInfo): Promise<void> => {
+  handler: async ({
+    file,
+  }: {
+    file: FileInfo;
+  }): Promise<void> => {
     let path: string | undefined;
 
     try {
