@@ -69,11 +69,8 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     circular: false,
   };
 
-  if (options && options.timeoutMs) {
-    if (Date.now() - startTime > options.timeoutMs) {
-      throw new TimeoutError(options.timeoutMs);
-    }
-  }
+  checkDereferenceTimeout<S, O>(startTime, options);
+
   const derefOptions = (options.dereference || {}) as DereferenceOptions;
   const isExcludedPath = derefOptions.excludedPathMatcher || (() => false);
 
@@ -98,6 +95,8 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         result.value = dereferenced.value;
       } else {
         for (const key of Object.keys(obj)) {
+          checkDereferenceTimeout<S, O>(startTime, options);
+
           const keyPath = Pointer.join(path, key);
           const keyPathFromRoot = Pointer.join(pathFromRoot, key);
 
@@ -214,7 +213,17 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   const $refPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref);
 
   const cache = dereferencedCache.get($refPath);
-  if (cache && !cache.circular) {
+
+  if (cache) {
+    // If the object we found is circular we can immediately return it because it would have been
+    // cached with everything we need already and we don't need to re-process anything inside it.
+    //
+    // If the cached object however is _not_ circular and there are additional keys alongside our
+    // `$ref` pointer here we should merge them back in and return that.
+    if (cache.circular) {
+      return cache;
+    }
+
     const refKeys = Object.keys($ref);
     if (refKeys.length > 1) {
       const extraKeys = {};
@@ -292,6 +301,20 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   }
 
   return dereferencedObject;
+}
+
+/**
+ * Check if we've run past our allowed timeout and throw an error if we have.
+ *
+ * @param startTime - The time when the dereferencing started.
+ * @param options
+ */
+function checkDereferenceTimeout<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(startTime: number, options: O): void {
+  if (options && options.timeoutMs) {
+    if (Date.now() - startTime > options.timeoutMs) {
+      throw new TimeoutError(options.timeoutMs);
+    }
+  }
 }
 
 /**
