@@ -1,0 +1,2812 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Example OpenAPI definition with an extensive amount of circular references",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com"
+    }
+  ],
+  "paths": {
+    "/anything": {
+      "get": {
+        "operationId": "getAnything",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ArrayOfTalentT4" }
+              }
+            }
+          },
+          "400": { "content": {} },
+          "401": { "content": {} },
+          "403": { "content": {} },
+          "404": { "content": {} },
+          "406": {
+            "content": {}
+          },
+          "415": {
+            "content": {}
+          },
+          "429": { "content": {} },
+          "500": {
+            "content": {}
+          },
+          "502": {
+            "content": {}
+          }
+        },
+        "security": [{ "api_key": [] }]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Address": {
+        "type": "object",
+        "properties": {
+          "addressGuid": { "type": "string", "format": "guid" },
+          "street1": { "type": "string" },
+          "street2": { "type": "string" },
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "zipCode": { "type": "string" },
+          "addressId": { "type": "integer", "format": "int32" },
+          "geoCode": { "type": "string" },
+          "externalLabel": { "type": "string" },
+          "externalId": { "type": "string" },
+          "county": { "type": "string" },
+          "externalDb": { "type": "string" },
+          "countryCode": { "type": "string" },
+          "schoolDistrictCode": { "type": "string" },
+          "overRideGeoCode": { "type": "string" },
+          "isOverridingGeocode": { "type": "boolean" },
+          "inCareOf": { "type": "string" },
+          "fkguid": { "type": "string", "format": "guid" },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" },
+          "psdCode": { "type": "string" },
+          "customerAddress": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CustomerAddress" }
+          },
+          "employeeAddress": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmployeeAddress" }
+          },
+          "customerAddressExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerAddressExternalReference"
+            }
+          },
+          "masterStaffingSupplier": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MasterStaffingSupplier" }
+          },
+          "masterStaffingSupplierSite": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MasterStaffingSupplierSite"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfStringSchema": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/StringSchema" }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "customerGuid": { "type": "string", "format": "guid" },
+          "customerId": { "type": "integer", "format": "int32" },
+          "parentGuid": { "type": "string", "format": "guid" },
+          "customerName": { "type": "string" },
+          "departmentName": { "type": "string" },
+          "rootCustomerGuid": { "type": "string", "format": "guid" },
+          "staffingSupplierSiteGuid": { "type": "string", "format": "guid" },
+          "customerStatusConfigChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "externalId": { "type": "string" },
+          "externalDb": { "type": "string" },
+          "externalLabel": { "type": "string" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "customerRecordTypeConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "defaultPriority": { "type": "string" },
+          "defaultLineOfBusiness": { "type": "string" },
+          "customerSummary": { "type": "string" },
+          "staffingOrder": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StaffingOrder" }
+          },
+          "contactMethod": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ContactMethod" }
+          },
+          "customerAddress": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CustomerAddress" }
+          },
+          "customerAddressExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerAddressExternalReference"
+            }
+          },
+          "customerExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerExternalReference"
+            }
+          },
+          "customerDepartmentExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerDepartmentExternalReference"
+            }
+          },
+          "dateType": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DateType" }
+          },
+          "inverseParentGu": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Customer" }
+          },
+          "customerNode": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CustomerNode" }
+          },
+          "customerStatusConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          },
+          "parentGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Customer" }]
+          },
+          "staffingSupplierSiteGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/MasterStaffingSupplierSite" }]
+          },
+          "customerPonumber": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CustomerPonumber" }
+          },
+          "customerInvoiceSetup": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CustomerInvoiceSetup" }
+          },
+          "customerServiceInfo": {
+            "oneOf": [{ "$ref": "#/components/schemas/CustomerServiceInfo" }]
+          },
+          "inverseRootGu": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Customer" }
+          },
+          "rootGu": { "oneOf": [{ "$ref": "#/components/schemas/Customer" }] }
+        },
+        "additionalProperties": false
+      },
+      "Node": {
+        "type": "object",
+        "properties": {
+          "nodeId": { "type": "integer", "format": "int32" },
+          "nodeDescription": { "type": "string" },
+          "nodeTypeId": { "type": "integer", "format": "int32" },
+          "parentNodeId": { "type": "integer", "format": "int32" },
+          "fkguid": { "type": "string", "format": "guid" },
+          "configChoiceNode": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigChoiceNode" }
+          },
+          "configWcCodeNode": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigWcCodeNode" }
+          },
+          "configSkillCodeNode": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigSkillCodeNode" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfTalentT4": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/TalentT4" }
+      },
+      "Gender": { "type": "string", "enum": ["UNKNOWN", "M", "F", "N", "X"] },
+      "TalentPayCheckBankV2": {
+        "type": "object",
+        "properties": {
+          "accountType": {
+            "type": "string"
+          },
+          "amountType": {
+            "type": "string"
+          },
+          "last4AccountNumber": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "amountYTD": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompanyTypeExtraValue": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int32" },
+          "idType": { "$ref": "#/components/schemas/OfficeTypeEnum" },
+          "extraValues": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Extra" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Assignment": {
+        "type": "object",
+        "properties": {
+          "assignmentGuid": { "type": "string", "format": "guid" },
+          "assignmentId": { "type": "integer", "format": "int32" },
+          "staffingOrderGuid": { "type": "string", "format": "guid" },
+          "employeeGuid": { "type": "string", "format": "guid" },
+          "staffingSupplierSiteGuid": { "type": "string", "format": "guid" },
+          "performanceConfigChoiceId": { "type": "integer", "format": "int32" },
+          "monday": { "type": "boolean" },
+          "tuesday": { "type": "boolean" },
+          "wednesday": { "type": "boolean" },
+          "thursday": { "type": "boolean" },
+          "friday": { "type": "boolean" },
+          "saturday": { "type": "boolean" },
+          "sunday": { "type": "boolean" },
+          "note": { "type": "string" },
+          "agencyGuid": { "type": "string", "format": "guid" },
+          "externalId": { "type": "string" },
+          "isW2": { "type": "boolean" },
+          "externalDb": { "type": "string" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "customerMarkupGuid": { "type": "string", "format": "guid" },
+          "endReasonConfigChoiceId": { "type": "integer", "format": "int32" },
+          "assignmentTypeConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "configTransactionSplitPlanGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "payBasisConfigSystemChoiceID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "assignmentExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignmentExternalReference"
+            }
+          },
+          "assignmentNode": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AssignmentNode" }
+          },
+          "assignmentSchedule": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AssignmentSchedule" }
+          },
+          "employeeGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Employee" }]
+          },
+          "endReasonConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          },
+          "performanceConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          },
+          "staffingOrderGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrder" }]
+          },
+          "staffingSupplierSiteGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/MasterStaffingSupplierSite" }]
+          },
+          "userType": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/UserType" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfigSkillCodeNode": {
+        "type": "object",
+        "properties": {
+          "configSkillCodeNodeId": { "type": "integer", "format": "int32" },
+          "configSkillCodeId": { "type": "integer", "format": "int32" },
+          "nodeId": { "type": "integer", "format": "int32" },
+          "isJobPosition": { "type": "boolean" },
+          "isWebVisible": { "type": "boolean" },
+          "isSkill": { "type": "boolean" },
+          "configSkillCodeNodeGuid": { "type": "string", "format": "guid" },
+          "configSkillCode": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigSkillCode" }]
+          },
+          "node": { "oneOf": [{ "$ref": "#/components/schemas/Node" }] }
+        },
+        "additionalProperties": false
+      },
+      "ExternalReference": {
+        "type": "object",
+        "properties": {
+          "boldId": {
+            "type": "string"
+          },
+          "backOfficeId": {
+            "type": "string"
+          },
+          "backOfficeUuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "entityType": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EmployeeTax": {
+        "type": "object",
+        "properties": {
+          "employeeTaxGuid": { "type": "string", "format": "guid" },
+          "employeeTaxId": { "type": "integer", "format": "int32" },
+          "employeeGuid": { "type": "string", "format": "guid" },
+          "taxId": { "type": "integer", "format": "int32" },
+          "taxName": { "type": "string" },
+          "taxMaritalStatus": { "type": "integer", "format": "int32" },
+          "exemptions": { "type": "integer", "format": "int32" },
+          "dependents": { "type": "integer", "format": "int32" },
+          "addWh": { "type": "number", "format": "decimal" },
+          "fixedPercentage": { "type": "number", "format": "double" },
+          "active": { "type": "boolean" },
+          "externalLabel": { "type": "string" },
+          "externalId": { "type": "string" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "isTaxExempt": { "type": "boolean" },
+          "exemptionAmount": { "type": "number", "format": "decimal" },
+          "useDefaultExemptionAmount": { "type": "boolean" },
+          "employeeGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Employee" }]
+          },
+          "fixedAmount": { "type": "number", "format": "decimal" },
+          "nR_CERT": { "type": "boolean" },
+          "prescribedZone": { "type": "number", "format": "decimal" }
+        },
+        "additionalProperties": false
+      },
+      "ConfigChoice": {
+        "type": "object",
+        "properties": {
+          "configChoiceId": { "type": "integer", "format": "int32" },
+          "choiceCode": { "type": "string" },
+          "choiceCodeDesc": { "type": "string" },
+          "setupTable": { "type": "string" },
+          "configChoiceCategoryId": { "type": "integer", "format": "int32" },
+          "rootStaffingSupplierGuid": { "type": "string", "format": "guid" },
+          "configChoiceGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "enteredByUserGuid": { "type": "string", "format": "guid" },
+          "assignment": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Assignment" }
+          },
+          "assignmentEndReasons": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Assignment" }
+          },
+          "configChoiceNode": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigChoiceNode" }
+          },
+          "contactMethod": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ContactMethod" }
+          },
+          "customer": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Customer" }
+          },
+          "customerAddress": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CustomerAddress" }
+          },
+          "dateType": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DateType" }
+          },
+          "employee": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Employee" }
+          },
+          "employeeAddress": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmployeeAddress" }
+          },
+          "staffingOrder": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StaffingOrder" }
+          },
+          "configChoiceCategory": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoiceCategory" }]
+          },
+          "userType": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/UserType" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "EmployeeAddress": {
+        "type": "object",
+        "properties": {
+          "employeeAddressGuid": { "type": "string", "format": "guid" },
+          "addressGuid": { "type": "string", "format": "guid" },
+          "employeeGuid": { "type": "string", "format": "guid" },
+          "addressTypeConfigChoiceId": { "type": "integer", "format": "int32" },
+          "active": { "type": "boolean" },
+          "isPrimary": { "type": "boolean" },
+          "shortName": { "type": "string" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "isPaymentCheckAddress": { "type": "boolean" },
+          "payeeName": { "type": "string" },
+          "addressGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Address" }]
+          },
+          "addressTypeConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          },
+          "employeeGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Employee" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfTalentT4A": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/TalentT4A" }
+      },
+      "AssignmentNode": {
+        "type": "object",
+        "properties": {
+          "assignmentNodeGuid": { "type": "string", "format": "guid" },
+          "nodeId": { "type": "integer", "format": "int32" },
+          "assignmentGuid": { "type": "string", "format": "guid" },
+          "assignmentGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Assignment" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "MasterStaffingSupplierSite": {
+        "type": "object",
+        "properties": {
+          "staffingSupplierSiteGuid": { "type": "string", "format": "guid" },
+          "siteName": { "type": "string" },
+          "siteDesc": { "type": "string" },
+          "staffingSupplierGuid": { "type": "string", "format": "guid" },
+          "addressGuid": { "type": "string", "format": "guid" },
+          "active": { "type": "boolean" },
+          "defaultPaymentBankId": { "type": "integer", "format": "int32" },
+          "isUsingGl": { "type": "boolean" },
+          "isSystemStaffingSupplierSite": { "type": "boolean" },
+          "parentStaffingSupplierSiteGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "staffingSupplierSiteTypeConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "masterStaffingSupplierSiteExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MasterStaffingSupplierSiteExternalReference"
+            }
+          },
+          "assignment": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Assignment" }
+          },
+          "customer": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Customer" }
+          },
+          "employee": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Employee" }
+          },
+          "staffingSupplierGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/MasterStaffingSupplier" }]
+          },
+          "addressGu": { "oneOf": [{ "$ref": "#/components/schemas/Address" }] }
+        },
+        "additionalProperties": false
+      },
+      "ConfigChoiceNode": {
+        "type": "object",
+        "properties": {
+          "configChoiceNodeId": { "type": "integer", "format": "int32" },
+          "configChoiceId": { "type": "integer", "format": "int32" },
+          "nodeId": { "type": "integer", "format": "int32" },
+          "isVisible": { "type": "boolean" },
+          "sortOrder": { "type": "integer", "format": "int32" },
+          "configChoiceNodeGuid": { "type": "string", "format": "guid" },
+          "configChoiceProperty": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigChoiceProperty" }
+          },
+          "configChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          },
+          "node": { "oneOf": [{ "$ref": "#/components/schemas/Node" }] }
+        },
+        "additionalProperties": false
+      },
+      "MultiQueryResultOfTalentAndGuid": {
+        "type": "object",
+        "properties": {
+          "totalRequestedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "foundCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errorCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Talent" }
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MultiQueryErrorReasonOfGuid"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "MasterStaffingSupplier": {
+        "type": "object",
+        "properties": {
+          "staffingSupplierGuid": { "type": "string", "format": "guid" },
+          "staffingSupplierCode": { "type": "string" },
+          "staffingSupplierDesc": { "type": "string" },
+          "configSystemGuid": { "type": "string", "format": "guid" },
+          "addressGuid": { "type": "string", "format": "guid" },
+          "parentGuid": { "type": "string", "format": "guid" },
+          "rootStaffingSupplierGuid": { "type": "string", "format": "guid" },
+          "fein": { "type": "string" },
+          "nextInvoiceNumber": { "type": "integer", "format": "int32" },
+          "copyInformationFromGuid": { "type": "string", "format": "guid" },
+          "masterStaffingSupplierSite": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MasterStaffingSupplierSite"
+            }
+          },
+          "addressGu": { "oneOf": [{ "$ref": "#/components/schemas/Address" }] }
+        },
+        "additionalProperties": false
+      },
+      "Employee": {
+        "type": "object",
+        "properties": {
+          "employeeGuid": { "type": "string", "format": "guid" },
+          "employeeId": { "type": "integer", "format": "int32" },
+          "ssn": { "type": "string" },
+          "lastName": { "type": "string" },
+          "firstName": { "type": "string" },
+          "middleName": { "type": "string" },
+          "staffingSupplierSiteGuid": { "type": "string", "format": "guid" },
+          "onAssignment": { "type": "boolean" },
+          "employeeStatusConfigChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maritalStatus": { "type": "integer", "format": "int32" },
+          "federalExemptions": { "type": "integer", "format": "int32" },
+          "stateExemptions": { "type": "integer", "format": "int32" },
+          "agencyGuid": { "type": "string", "format": "guid" },
+          "externalId": { "type": "string" },
+          "nickName": { "type": "string" },
+          "employeeDipercent": { "type": "number", "format": "double" },
+          "isW2": { "type": "boolean" },
+          "externalDb": { "type": "string" },
+          "salutationConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "checkDeliveryConfigChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "employeeRecordOriginConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "employeeRecordTypeConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "electronicW2": { "type": "boolean" },
+          "acaeligibilityConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "acastabilityEndDate": { "type": "string", "format": "date-time" },
+          "maidenName": { "type": "string" },
+          "previousAliases": { "type": "string" },
+          "languageCode": { "type": "string" },
+          "backgroundSummaryComments": { "type": "string" },
+          "additionalFederalWithholding": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "additionalStateWithholding": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "additionalCountyWithholding": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "lastParsedResumeDocumentGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "isAeroParsed": { "type": "boolean" },
+          "htmlResume": { "type": "string" },
+          "primaryIndustry": { "type": "string" },
+          "hireDate": { "type": "string", "format": "date-time" },
+          "rehireDate": { "type": "string", "format": "date-time" },
+          "terminationDate": { "type": "string", "format": "date-time" },
+          "availabilityDate": { "type": "string", "format": "date-time" },
+          "assignment": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Assignment" }
+          },
+          "contactMethod": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ContactMethod" }
+          },
+          "dateType": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DateType" }
+          },
+          "employeeAddress": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmployeeAddress" }
+          },
+          "employeeBank": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmployeeBank" }
+          },
+          "employeeEeo": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmployeeEeo" }
+          },
+          "employeeExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmployeeExternalReference"
+            }
+          },
+          "employeeNode": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmployeeNode" }
+          },
+          "employeeTax": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmployeeTax" }
+          },
+          "employeeInterview": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmployeeInterview" }
+          },
+          "employeeStatusConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          },
+          "staffingSupplierSiteGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/MasterStaffingSupplierSite" }]
+          },
+          "extraValue": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ExtraValue" }
+          },
+          "userType": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/UserType" }
+          },
+          "employeeTaxTaxCounty": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmployeeTaxCounty" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "EmployeeNode": {
+        "type": "object",
+        "properties": {
+          "employeeNodeGuid": { "type": "string", "format": "guid" },
+          "nodeId": { "type": "integer", "format": "int32" },
+          "employeeGuid": { "type": "string", "format": "guid" },
+          "employeeGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Employee" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrderRate": {
+        "type": "object",
+        "properties": {
+          "orderRateGuid": { "type": "string", "format": "guid" },
+          "staffingOrderGuid": { "type": "string", "format": "guid" },
+          "configTransactionTypeId": { "type": "integer", "format": "int32" },
+          "payRate": { "type": "number", "format": "decimal" },
+          "billRate": { "type": "number", "format": "decimal" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "frequencyConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "configTransactionType": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigTransactionType" }]
+          },
+          "staffingOrderGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrder" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomerExternalReference": {
+        "type": "object",
+        "properties": {
+          "customerExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "customerGuid": { "type": "string", "format": "guid" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "customer": { "oneOf": [{ "$ref": "#/components/schemas/Customer" }] }
+        },
+        "additionalProperties": false
+      },
+      "UserType": {
+        "type": "object",
+        "properties": {
+          "userTypeGuid": { "type": "string", "format": "guid" },
+          "fkguid": { "type": "string", "format": "guid" },
+          "userTypeConfigChoiceId": { "type": "integer", "format": "int32" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "percentOfCommisionConfigChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "sortOrder": { "type": "integer", "format": "int32" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "fkguNavigation": {
+            "oneOf": [{ "$ref": "#/components/schemas/Assignment" }]
+          },
+          "fkgu3": { "oneOf": [{ "$ref": "#/components/schemas/Employee" }] },
+          "fkgu4": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrder" }]
+          },
+          "userTypeConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentT4": {
+        "type": "object",
+        "properties": {
+          "supplierGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "taxYear": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "employmentIncome": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "cppContribution": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "eiPremium": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "incomeTax": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfigWcCodeNode": {
+        "type": "object",
+        "properties": {
+          "configWcCodeNodeId": { "type": "integer", "format": "int32" },
+          "configWcCodeId": { "type": "integer", "format": "int32" },
+          "nodeId": { "type": "integer", "format": "int32" },
+          "isVisible": { "type": "boolean" },
+          "configWcCodeNodeGuid": { "type": "string", "format": "guid" },
+          "configWcCode": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigWcCode" }]
+          },
+          "node": { "oneOf": [{ "$ref": "#/components/schemas/Node" }] }
+        },
+        "additionalProperties": false
+      },
+      "ConfigChoiceProperty": {
+        "type": "object",
+        "properties": {
+          "configChoicePropertyId": { "type": "integer", "format": "int32" },
+          "configChoiceNodeId": { "type": "integer", "format": "int32" },
+          "configChoicePropertyTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "value": { "type": "string" },
+          "configChoicePropertyGuid": { "type": "string", "format": "guid" },
+          "configChoiceNode": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoiceNode" }]
+          },
+          "configChoicePropertyType": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoicePropertyType" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "StaffingOrderTe": {
+        "type": "object",
+        "properties": {
+          "staffingOrderGuid": { "type": "string", "format": "guid" },
+          "configWcCodeId": { "type": "integer", "format": "int32" },
+          "customerMarkUpGuid": { "type": "string", "format": "guid" },
+          "payPeriodConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "otplanConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "configWcCode": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigWcCode" }]
+          },
+          "staffingOrderGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrder" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentBenefitTransactionType": {
+        "type": "object",
+        "properties": {
+          "transactionTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "systemName": {
+            "type": "string"
+          },
+          "deductionCategoryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isEmployeeDeduction": {
+            "type": "boolean"
+          },
+          "isEmployerContribution": {
+            "type": "boolean"
+          },
+          "isPreTax": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfigTransactionTypeExternalReference": {
+        "type": "object",
+        "properties": {
+          "configTransactionTypeExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "configTransactionTypeId": { "type": "integer", "format": "int32" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "configTransactionType": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigTransactionType" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomerNode": {
+        "type": "object",
+        "properties": {
+          "customerNodeGuid": { "type": "string", "format": "guid" },
+          "customerGuid": { "type": "string", "format": "guid" },
+          "nodeId": { "type": "integer", "format": "int32" },
+          "customerGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Customer" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfExternalReference": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/ExternalReference" }
+      },
+      "StaffingOrderCommon": {
+        "type": "object",
+        "properties": {
+          "staffingOrderGuid": { "type": "string", "format": "guid" },
+          "monday": { "type": "boolean" },
+          "tuesday": { "type": "boolean" },
+          "wednesday": { "type": "boolean" },
+          "thursday": { "type": "boolean" },
+          "friday": { "type": "boolean" },
+          "saturday": { "type": "boolean" },
+          "sunday": { "type": "boolean" },
+          "durationConfigChoiceId": { "type": "integer", "format": "int32" },
+          "customerCreditCardGuid": { "type": "string", "format": "guid" },
+          "ponumberGuid": { "type": "string", "format": "guid" },
+          "customerDiscountGuid": { "type": "string", "format": "guid" },
+          "configTransactionSplitPlanGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "minRate": { "type": "number", "format": "decimal" },
+          "maxRate": { "type": "number", "format": "decimal" },
+          "orderRateTypeConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "startTime": { "type": "string" },
+          "endTime": { "type": "string" },
+          "dispatchTime": { "type": "string" },
+          "ponumberGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Ponumber" }]
+          },
+          "staffingOrderGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrder" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompanyExtraRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idType": {
+            "type": "string"
+          },
+          "useRoot": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateConfigChoiceProperties": {
+        "type": "object",
+        "properties": {
+          "configChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "choiceCode": {
+            "type": "string"
+          },
+          "choiceCodeDesc": {
+            "type": "string"
+          },
+          "configChoiceCategoryId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomerServiceInfo": {
+        "type": "object",
+        "properties": {
+          "customerServiceInfoGuid": { "type": "string", "format": "guid" },
+          "customerGuid": { "type": "string", "format": "guid" },
+          "serviceNote": { "type": "string" },
+          "checkDeliveryConfigChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "skipWeeklyCall": { "type": "boolean" },
+          "skipAssignmentEndingCall": { "type": "boolean" },
+          "billingPeriodConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "billingCycleConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "payPeriodConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "payCycleConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "weekEndDayConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "generateDailyPay": { "type": "boolean" },
+          "dailyPayTransactionOption": { "type": "string" },
+          "isCertifiedPayroll": { "type": "boolean" },
+          "otplanConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "isPeo": { "type": "boolean" },
+          "useTimeClock": { "type": "boolean" },
+          "milageRate": { "type": "number", "format": "decimal" },
+          "customerGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Customer" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfigWcCode": {
+        "type": "object",
+        "properties": {
+          "configWcCodeId": { "type": "integer", "format": "int32" },
+          "configWcCodeGuid": { "type": "string", "format": "guid" },
+          "wcCode": { "type": "string" },
+          "state": { "type": "string" },
+          "description": { "type": "string" },
+          "staffingSupplierGuid": { "type": "string", "format": "guid" },
+          "processingMethod": { "type": "string" },
+          "countryCode": { "type": "string" },
+          "configWcCodeNode": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigWcCodeNode" }
+          },
+          "staffingOrderTe": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StaffingOrderTe" }
+          },
+          "configWcCodeRate": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigWcCodeRate" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContactMethod": {
+        "type": "object",
+        "properties": {
+          "contactMethodGuid": { "type": "string", "format": "guid" },
+          "contactMethodId": { "type": "integer", "format": "int32" },
+          "fkguid": { "type": "string", "format": "guid" },
+          "contactMethodValue": { "type": "string" },
+          "active": { "type": "boolean" },
+          "description": { "type": "string" },
+          "configEditMaskTypeId": { "type": "integer", "format": "int32" },
+          "contactTypeConfigChoiceId": { "type": "integer", "format": "int32" },
+          "isPrimaryContactMethod": { "type": "boolean" },
+          "externalLabel": { "type": "string" },
+          "externalId": { "type": "string" },
+          "sortOrder": { "type": "integer", "format": "int32" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "cellPhoneProviderConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "doNotText": { "type": "boolean" },
+          "contactTypeConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          },
+          "fkgu1": { "oneOf": [{ "$ref": "#/components/schemas/Customer" }] },
+          "fkgu2": { "oneOf": [{ "$ref": "#/components/schemas/Employee" }] }
+        },
+        "additionalProperties": false
+      },
+      "CustomerInvoiceSetup": {
+        "type": "object",
+        "properties": {
+          "customerInvoiceSetupGuid": { "type": "string", "format": "guid" },
+          "customerGuid": { "type": "string", "format": "guid" },
+          "invoiceSetupConfigChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "invoiceSetupValue": { "type": "string" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "customerGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Customer" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfigSystemChoice": {
+        "type": "object",
+        "properties": {
+          "configSystemChoiceId": { "type": "integer", "format": "int32" },
+          "choiceCode": { "type": "string" },
+          "description": { "type": "string" },
+          "configChoiceCategoryId": { "type": "integer", "format": "int32" },
+          "active": { "type": "boolean" },
+          "configSystemChoiceGuid": { "type": "string", "format": "guid" },
+          "configChoiceCategory": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoiceCategory" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfigWcCodeRate": {
+        "type": "object",
+        "properties": {
+          "configWcCodeRateGuid": { "type": "string", "format": "guid" },
+          "configWcCodeGuid": { "type": "string", "format": "guid" },
+          "ratePercent": { "type": "number", "format": "double" },
+          "costPercent": { "type": "number", "format": "double" },
+          "lnieepercent": { "type": "number", "format": "double" },
+          "lnierpercent": { "type": "number", "format": "double" },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "configWcCode": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigWcCode" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentPayCheckDetailV2": {
+        "type": "object",
+        "properties": {
+          "paymentCheckGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "checkNumber": {
+            "type": "string"
+          },
+          "checkDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "grossAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "netAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "totalTaxes": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "totalDeductions": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "isDirectDeposit": {
+            "type": "boolean"
+          },
+          "ytdGross": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "totalHours": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "talentPayCheckTransaction": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TalentPayCheckTransactionV2"
+            }
+          },
+          "talentPayCheckTax": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TalentPayCheckTaxV2" }
+          },
+          "talentPayCheckDeduction": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TalentPayCheckDeductionV2"
+            }
+          },
+          "talentPayCheckAccrual": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TalentPayCheckAccrualV2" }
+          },
+          "talentPayCheckBenefit": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TalentPayCheckBenefitV2" }
+          },
+          "talentPayCheckBank": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TalentPayCheckBankV2" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CompanyExtraValue": {
+        "type": "object",
+        "properties": {
+          "backOfficeCompanyID": { "type": "integer", "format": "int32" },
+          "boldCompanyID": { "type": "integer", "format": "int32" },
+          "extraValues": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Extra" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "EmployeeTaxCounty": {
+        "type": "object",
+        "properties": {
+          "employeeTaxCountyID": { "type": "integer", "format": "int32" },
+          "employeeGUID": { "type": "string", "format": "guid" },
+          "year": { "type": "integer", "format": "int32" },
+          "residentCounty": { "type": "string" },
+          "employmentCounty": { "type": "string" },
+          "employeeGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Employee" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ByteStringSchema": { "type": "string", "format": "byte" },
+      "CustomerDepartmentExternalReference": {
+        "type": "object",
+        "properties": {
+          "customerDepartmentExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "customerGuid": { "type": "string", "format": "guid" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "customer": { "oneOf": [{ "$ref": "#/components/schemas/Customer" }] }
+        },
+        "additionalProperties": false
+      },
+      "OrderSchedule": {
+        "type": "object",
+        "properties": {
+          "orderScheduleGuid": { "type": "string", "format": "guid" },
+          "staffingOrderGuid": { "type": "string", "format": "guid" },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" },
+          "required": { "type": "integer", "format": "int32" },
+          "placed": { "type": "integer", "format": "int32" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "customerShiftGuid": { "type": "string", "format": "guid" },
+          "shiftName": { "type": "string" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "endTime": { "type": "string", "format": "date-time" },
+          "dispatchTime": { "type": "string", "format": "date-time" },
+          "orderScheduleStatusConfigChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "assignmentSchedule": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AssignmentSchedule" }
+          },
+          "staffingOrderGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrder" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfMappedData": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/MappedData" }
+      },
+      "TalentBenefitEnrollment": {
+        "allOf": [
+          { "$ref": "#/components/schemas/TalentBenefit" },
+          {
+            "type": "object",
+            "properties": {
+              "partnerTransactionLookup": {
+                "oneOf": [{ "$ref": "#/components/schemas/TransactionTypeLookUp" }]
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "CreateConfigChoiceProperties": {
+        "type": "object",
+        "properties": {
+          "choiceCode": {
+            "type": "string"
+          },
+          "choiceCodeDesc": {
+            "type": "string"
+          },
+          "configChoiceCategoryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "employerId": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Talent1095c": {
+        "type": "object",
+        "properties": {
+          "form1095cId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "employerName": {
+            "type": "string"
+          },
+          "taxYear": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Talent1099": {
+        "type": "object",
+        "properties": {
+          "quarterGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "employerName": {
+            "type": "string"
+          },
+          "taxYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nonEmployeeCompensation": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfigSkillCode": {
+        "type": "object",
+        "properties": {
+          "configSkillCodeId": { "type": "integer", "format": "int32" },
+          "skillCode": { "type": "string" },
+          "description": { "type": "string" },
+          "isJobPosition": { "type": "boolean" },
+          "rootStaffingSupplierGuid": { "type": "string", "format": "guid" },
+          "configSkillCodeGuid": { "type": "string", "format": "guid" },
+          "configSkillCodeCategoryId": { "type": "integer", "format": "int32" },
+          "staffingOrder": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StaffingOrder" }
+          },
+          "configSkillCodeNode": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigSkillCodeNode" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentJobSummary": {
+        "type": "object",
+        "properties": {
+          "talentGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "paycheckSummariesByYearAndBranch": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PaycheckYearSummary" }
+          },
+          "rehireDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "terminationDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "hireDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "firstPlacementGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "firstPlacementStartDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latestPlacementGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "latestPlacementStartDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "firstPayrollCheckDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "latestPayrollCheckDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EmployeeExternalReference": {
+        "type": "object",
+        "properties": {
+          "employeeExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "employeeGuid": { "type": "string", "format": "guid" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "employee": { "oneOf": [{ "$ref": "#/components/schemas/Employee" }] }
+        },
+        "additionalProperties": false
+      },
+      "EmployeeInterview": {
+        "type": "object",
+        "properties": {
+          "employeeInterviewGuid": { "type": "string", "format": "guid" },
+          "employeeInterviewId": { "type": "integer", "format": "int32" },
+          "employeeGuid": { "type": "string", "format": "guid" },
+          "category": { "type": "string" },
+          "questionConfigChoiceId": { "type": "integer", "format": "int32" },
+          "answer": { "type": "string" },
+          "note": { "type": "string" },
+          "sortOrder": { "type": "integer", "format": "int32" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "numericAnswer": { "type": "number", "format": "double" },
+          "dateAnswer": { "type": "string", "format": "date-time" },
+          "employeeGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Employee" }]
+          },
+          "questionConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "StaffingOrder": {
+        "type": "object",
+        "properties": {
+          "staffingOrderGuid": { "type": "string", "format": "guid" },
+          "staffingOrderId": { "type": "integer", "format": "int32" },
+          "masterOrderId": { "type": "integer", "format": "int32" },
+          "customerGuid": { "type": "string", "format": "guid" },
+          "configSkillCodeId": { "type": "integer", "format": "int32" },
+          "positionDescription": { "type": "string" },
+          "customerAddressGuid": { "type": "string", "format": "guid" },
+          "staffingSupplierSiteGuid": { "type": "string", "format": "guid" },
+          "orderStatusConfigChoiceId": { "type": "integer", "format": "int32" },
+          "systemOrderType": { "type": "string" },
+          "isPostedToWeb": { "type": "boolean" },
+          "currencyTypeConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "externalId": { "type": "string" },
+          "externalDb": { "type": "string" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "orderRecordTypeConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderRecordOriginConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderTypeConfigChoiceId": { "type": "integer", "format": "int32" },
+          "autoUpdateOrderStatus": { "type": "boolean" },
+          "dateOpened": { "type": "string", "format": "date-time" },
+          "timeToFill": { "type": "integer", "format": "int64" },
+          "dateFilled": { "type": "string", "format": "date-time" },
+          "assignment": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Assignment" }
+          },
+          "dateType": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/DateType" }
+          },
+          "orderRate": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderRate" }
+          },
+          "orderSchedule": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderSchedule" }
+          },
+          "staffingOrderExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StaffingOrderExternalReference"
+            }
+          },
+          "staffingOrderNode": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StaffingOrderNode" }
+          },
+          "extraValue": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ExtraValue" }
+          },
+          "configSkillCode": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigSkillCode" }]
+          },
+          "customerAddressGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/CustomerAddress" }]
+          },
+          "customerGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Customer" }]
+          },
+          "orderStatusConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          },
+          "staffingOrderTe": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrderTe" }]
+          },
+          "staffingOrderCommon": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrderCommon" }]
+          },
+          "userType": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/UserType" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransactionTypeLookUp": {
+        "type": "object",
+        "properties": {
+          "deductionTypeName": {
+            "type": "string"
+          },
+          "coverageLevel": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EmployeeBank": {
+        "type": "object",
+        "properties": {
+          "employeeBankGuid": { "type": "string", "format": "guid" },
+          "employeeGuid": { "type": "string", "format": "guid" },
+          "routingNumber": { "type": "string" },
+          "accountNumber": { "type": "string" },
+          "amountValue": { "type": "number", "format": "double" },
+          "bankName": { "type": "string" },
+          "prenoteSentDate": { "type": "string", "format": "date-time" },
+          "prenoteApproveDate": { "type": "string", "format": "date-time" },
+          "active": { "type": "boolean" },
+          "sequence": { "type": "integer", "format": "int32" },
+          "externalId": { "type": "string" },
+          "bankAmountTypeConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bankStatusConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "accountTypeConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "accountDateEntered": { "type": "string", "format": "date-time" },
+          "useAch": { "type": "boolean" },
+          "proxyNumber": { "type": "string" },
+          "employeeGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Employee" }]
+          },
+          "employeeBankExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmployeeBankExternalReference"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Version": {
+        "type": "object",
+        "properties": {
+          "major": { "type": "integer", "format": "int32" },
+          "minor": { "type": "integer", "format": "int32" },
+          "build": { "type": "integer", "format": "int32" },
+          "revision": { "type": "integer", "format": "int32" },
+          "majorRevision": { "type": "integer", "format": "int32" },
+          "minorRevision": { "type": "integer", "format": "int32" }
+        },
+        "additionalProperties": false
+      },
+      "StringSchema": { "type": "string" },
+      "ConfigChoicePropertyType": {
+        "type": "object",
+        "properties": {
+          "configChoicePropertyTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "property": { "type": "string" },
+          "defaultValue": { "type": "string" },
+          "hasValueList": { "type": "boolean" },
+          "configChoiceCategoryId": { "type": "integer", "format": "int32" },
+          "propertyDescription": { "type": "string" },
+          "isHardCodedValue": { "type": "boolean" },
+          "hardCodedTableName": { "type": "string" },
+          "checkForDuplicate": { "type": "boolean" },
+          "checkForUnique": { "type": "boolean" },
+          "mustHaveValue": { "type": "string" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "enteredByUserGuid": { "type": "string", "format": "guid" },
+          "configChoicePropertyTypeGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "configChoiceProperty": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigChoiceProperty" }
+          },
+          "configChoiceCategory": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoiceCategory" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "DateType": {
+        "type": "object",
+        "properties": {
+          "dateTypeGuid": { "type": "string", "format": "guid" },
+          "fkguid": { "type": "string", "format": "guid" },
+          "dateTypeConfigChoiceId": { "type": "integer", "format": "int32" },
+          "date": { "type": "string", "format": "date-time" },
+          "note": { "type": "string" },
+          "sortOrder": { "type": "integer", "format": "int32" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "dateTypeConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          },
+          "fkgu2": { "oneOf": [{ "$ref": "#/components/schemas/Customer" }] },
+          "fkgu3": { "oneOf": [{ "$ref": "#/components/schemas/Employee" }] },
+          "fkgu4": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrder" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "MappedData": {
+        "type": "object",
+        "properties": {
+          "mappingTypeName": { "type": "string" },
+          "sourceSystemValue": { "type": "string" },
+          "mappedValueID": { "type": "string" },
+          "mappedValue": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "Ponumber": {
+        "type": "object",
+        "properties": {
+          "ponumberGuid": { "type": "string", "format": "guid" },
+          "staffingSupplierGuid": { "type": "string", "format": "guid" },
+          "ponumber1": { "type": "string" },
+          "description": { "type": "string" },
+          "polimit": { "type": "number", "format": "decimal" },
+          "expirationDate": { "type": "string", "format": "date-time" },
+          "warningValue": { "type": "number", "format": "double" },
+          "warningDate": { "type": "string", "format": "date-time" },
+          "amountUsed": { "type": "number", "format": "decimal" },
+          "isActive": { "type": "boolean" },
+          "isPercentage": { "type": "boolean" },
+          "externalId": { "type": "string" },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" },
+          "poNumberExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PONumberExternalReference"
+            }
+          },
+          "staffingOrderCommon": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StaffingOrderCommon" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentPayCheckBenefitV2": {
+        "type": "object",
+        "properties": {
+          "benefitName": {
+            "type": "string"
+          },
+          "benefitAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "benefitAmountYTD": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "benefitAmountLTD": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomerAddressExternalReference": {
+        "type": "object",
+        "properties": {
+          "customerAddressExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "customerGuid": { "type": "string", "format": "guid" },
+          "addressGuid": { "type": "string", "format": "guid" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "customer": {
+            "oneOf": [{ "$ref": "#/components/schemas/Customer" }]
+          },
+          "address": { "oneOf": [{ "$ref": "#/components/schemas/Address" }] }
+        },
+        "additionalProperties": false
+      },
+      "AssignmentExternalReference": {
+        "type": "object",
+        "properties": {
+          "assignmentExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "assignmentGuid": { "type": "string", "format": "guid" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "assignment": {
+            "oneOf": [{ "$ref": "#/components/schemas/Assignment" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "PayPeriod": {
+        "type": "string",
+        "enum": ["Unknown", "Weekly", "BiWeekly", "Monthly", "SemiMonthly", "Daily", "Yearly", "Hourly"]
+      },
+      "TalentPayCheckAccrualV2": {
+        "type": "object",
+        "properties": {
+          "planName": {
+            "type": "string"
+          },
+          "accruedUnit": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "depleteUnit": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "remainingBalance": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MappingTypeData": {
+        "type": "object",
+        "properties": {
+          "mappingTypeDataGUID": { "type": "string", "format": "guid" },
+          "mappingTypeDataID": { "type": "integer", "format": "int32" },
+          "mappingTypeGUID": { "type": "string", "format": "guid" },
+          "mapFromID": { "type": "string" },
+          "mapToID": { "type": "string" },
+          "extra1": { "type": "string" },
+          "extra2": { "type": "string" },
+          "extra3": { "type": "string" },
+          "extra4": { "type": "string" },
+          "extra5": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "PaginationResponse": {
+        "type": "object",
+        "properties": {
+          "totalResults": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currentPage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "OperationBase": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string" },
+          "op": { "type": "string" },
+          "from": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfConfigChoice": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/ConfigChoice" }
+      },
+      "PagedResultsOfTalentPayCheckV2": {
+        "allOf": [
+          { "$ref": "#/components/schemas/IPagedResultsOfTalentPayCheckV2" },
+          {
+            "type": "object",
+            "properties": {
+              "pageSize": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "currentPage": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "totalPages": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "AssignmentSchedule": {
+        "type": "object",
+        "properties": {
+          "assignmentScheduleGuid": { "type": "string", "format": "guid" },
+          "assignmentGuid": { "type": "string", "format": "guid" },
+          "orderScheduleGuid": { "type": "string", "format": "guid" },
+          "startDate": { "type": "string", "format": "date-time" },
+          "endDate": { "type": "string", "format": "date-time" },
+          "isActive": { "type": "boolean" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "assignmentRateChangeReasonConfigChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "assignmentRateAssignmentScheduleGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "shiftName": { "type": "string" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "endTime": { "type": "string", "format": "date-time" },
+          "customerShiftGuid": { "type": "string", "format": "guid" },
+          "assignmentRate": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AssignmentRate" }
+          },
+          "assignmentGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Assignment" }]
+          },
+          "assignmentRateAssignmentScheduleGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/AssignmentSchedule" }]
+          },
+          "inverseAssignmentRateAssignmentScheduleGu": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AssignmentSchedule" }
+          },
+          "orderScheduleGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/OrderSchedule" }]
+          },
+          "assignmentScheduleExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignmentScheduleExternalReference"
+            }
+          },
+          "assignmentScheduleCommissionUser": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AssignmentScheduleCommissionUser"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentPayCheckTaxV2": {
+        "type": "object",
+        "properties": {
+          "taxId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "taxName": {
+            "type": "string"
+          },
+          "taxableGross": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "taxAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "taxAmountYTD": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "taxableGrossYTD": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfigTransactionType": {
+        "type": "object",
+        "properties": {
+          "configTransactionTypeId": { "type": "integer", "format": "int32" },
+          "name": {
+            "type": "string"
+          },
+          "description": { "type": "string" },
+          "isDeduction": { "type": "boolean" },
+          "deductionCategoryId": { "type": "integer", "format": "int32" },
+          "systemName": { "type": "string" },
+          "sortOrder": { "type": "integer", "format": "int32" },
+          "isTiered": { "type": "boolean" },
+          "isPermanent": { "type": "boolean" },
+          "isTransactional": { "type": "boolean" },
+          "allowMultipleEntry": { "type": "boolean" },
+          "externalDeductionId": { "type": "integer", "format": "int32" },
+          "rootStaffingSupplierGuid": { "type": "string", "format": "guid" },
+          "configTransactionTypeGuid": { "type": "string", "format": "guid" },
+          "w2label": { "type": "string" },
+          "w2box": { "type": "string" },
+          "vertexCmpcode": { "type": "integer", "format": "int32" },
+          "isBenefit": { "type": "boolean" },
+          "allowWebTimeEntry": { "type": "boolean" },
+          "isEquipment": { "type": "boolean" },
+          "isHealthcare": { "type": "boolean" },
+          "showEmployerContributionOnPaycheck": { "type": "boolean" },
+          "assignmentRate": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AssignmentRate" }
+          },
+          "orderRate": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderRate" }
+          },
+          "configTransactionTypeExternalReference": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfigTransactionTypeExternalReference"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentPayCheckDeductionV2": {
+        "type": "object",
+        "properties": {
+          "deductionName": {
+            "type": "string"
+          },
+          "deductionAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "deductionAmountYTD": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "deductionAmountLTD": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "isPermanent": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ExtraValue": {
+        "type": "object",
+        "properties": {
+          "extraValueGuid": { "type": "string", "format": "guid" },
+          "fkguid": { "type": "string", "format": "guid" },
+          "labelConfigChoiceId": { "type": "integer", "format": "int32" },
+          "value": { "type": "string" },
+          "category": { "type": "string" },
+          "sortOrder": { "type": "integer", "format": "int32" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "numericValue": { "type": "number", "format": "double" },
+          "dateValue": { "type": "string", "format": "date-time" },
+          "fkgu1": { "oneOf": [{ "$ref": "#/components/schemas/Employee" }] },
+          "fkgu2": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrder" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "PONumberExternalReference": {
+        "type": "object",
+        "properties": {
+          "poNumberExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "poNumberGuid": { "type": "string", "format": "guid" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "ponumber": { "oneOf": [{ "$ref": "#/components/schemas/Ponumber" }] }
+        },
+        "additionalProperties": false
+      },
+      "CustomerAddress": {
+        "type": "object",
+        "properties": {
+          "customerAddressGuid": { "type": "string", "format": "guid" },
+          "customerGuid": { "type": "string", "format": "guid" },
+          "addressGuid": { "type": "string", "format": "guid" },
+          "billingCode": { "type": "string" },
+          "active": { "type": "boolean" },
+          "direction": { "type": "string" },
+          "specialInstruction": { "type": "string" },
+          "addressTypeConfigChoiceId": { "type": "integer", "format": "int32" },
+          "shortName": { "type": "string" },
+          "attnTo": { "type": "string" },
+          "dressCode": { "type": "string" },
+          "configSalesTaxGuid": { "type": "string", "format": "guid" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "staffingOrder": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/StaffingOrder" }
+          },
+          "addressGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Address" }]
+          },
+          "addressTypeConfigChoice": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigChoice" }]
+          },
+          "customerGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Customer" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfTalent1095c": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/Talent1095c" }
+      },
+      "AssignmentRate": {
+        "type": "object",
+        "properties": {
+          "assignmentRateGuid": { "type": "string", "format": "guid" },
+          "assignmentGuid": { "type": "string", "format": "guid" },
+          "configTransactionTypeId": { "type": "integer", "format": "int32" },
+          "payRate": { "type": "number", "format": "decimal" },
+          "billRate": { "type": "number", "format": "decimal" },
+          "assignmentScheduleGuid": { "type": "string", "format": "guid" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "frequencyConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "assignmentScheduleGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/AssignmentSchedule" }]
+          },
+          "configTransactionType": {
+            "oneOf": [{ "$ref": "#/components/schemas/ConfigTransactionType" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "EmployeeEeo": {
+        "type": "object",
+        "properties": {
+          "employeeEeoguid": { "type": "string", "format": "guid" },
+          "employeeGuid": { "type": "string", "format": "guid" },
+          "dateOfBirth": { "type": "string", "format": "date-time" },
+          "race": { "type": "string" },
+          "sex": { "type": "string" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "raceConfigSystemChoiceId": { "type": "integer", "format": "int32" },
+          "veteranStatusConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "disabilityConfigSystemChoiceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dateOfBirthDeclineAnswer": { "type": "boolean" },
+          "sexDeclineAnswer": { "type": "boolean" },
+          "employeeGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Employee" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfTalent1099": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/Talent1099" }
+      },
+      "OfficeTypeEnum": { "type": "string", "enum": ["BOLD", "BO"] },
+      "IPagedResultsOfTalentPayCheckV2": {
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "results": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TalentPayCheckV2" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "StaffingOrderNode": {
+        "type": "object",
+        "properties": {
+          "staffingOrderNodeGuid": { "type": "string", "format": "guid" },
+          "staffingOrderGuid": { "type": "string", "format": "guid" },
+          "nodeId": { "type": "integer", "format": "int32" },
+          "staffingOrderGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrder" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfCompanyExtraValue": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/CompanyExtraValue" }
+      },
+      "BulkDataPage": {
+        "type": "object",
+        "properties": {
+          "pagination": {
+            "oneOf": [{ "$ref": "#/components/schemas/PaginationResponse" }]
+          },
+          "pageData": {
+            "type": "array",
+            "items": { "type": "object" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "MultiQueryResultOfTalentJobSummaryAndGuid": {
+        "type": "object",
+        "properties": {
+          "totalRequestedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "foundCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "errorCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TalentJobSummary" }
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MultiQueryErrorReasonOfGuid"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "Operation": {
+        "allOf": [
+          { "$ref": "#/components/schemas/OperationBase" },
+          {
+            "type": "object",
+            "properties": { "value": { "type": "object" } },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "TalentBenefit": {
+        "required": ["benefitPayrollDeduction", "talentGuid"],
+        "type": "object",
+        "properties": {
+          "talentGuid": {
+            "minLength": 1,
+            "type": "string",
+            "format": "guid"
+          },
+          "transactionTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "benefitPayrollDeduction": {
+            "$ref": "#/components/schemas/TalentBenefitDeduction"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentPayCheckTransactionV2": {
+        "type": "object",
+        "properties": {
+          "transactionType": {
+            "type": "string"
+          },
+          "rate": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "hours": {
+            "type": "number",
+            "format": "double"
+          },
+          "pay": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AssignmentScheduleExternalReference": {
+        "type": "object",
+        "properties": {
+          "assignmentScheduleExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "assignmentScheduleGuid": { "type": "string", "format": "guid" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "assignmentSchedule": {
+            "oneOf": [{ "$ref": "#/components/schemas/AssignmentSchedule" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentT4A": {
+        "type": "object",
+        "properties": {
+          "supplierGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "taxYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MultiQueryErrorReasonOfGuid": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "format": "guid"
+          },
+          "errorReason": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfigChoiceCategory": {
+        "type": "object",
+        "properties": {
+          "configChoiceCategoryId": { "type": "integer", "format": "int32" },
+          "category": { "type": "string" },
+          "description": { "type": "string" },
+          "isSystemChoice": { "type": "boolean" },
+          "configChoiceCategoryGuid": { "type": "string", "format": "guid" },
+          "configChoice": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigChoice" }
+          },
+          "configSystemChoice": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigSystemChoice" }
+          },
+          "configChoicePropertyType": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ConfigChoicePropertyType" }
+          }
+        },
+        "additionalProperties": false
+      },
+      "MasterStaffingSupplierSiteExternalReference": {
+        "type": "object",
+        "properties": {
+          "masterStaffingSupplierSiteExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "staffingSupplierSiteGuid": { "type": "string", "format": "guid" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "masterStaffingSupplierSite": {
+            "oneOf": [{ "$ref": "#/components/schemas/MasterStaffingSupplierSite" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfOperation": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/Operation" }
+      },
+      "EmployeeBankExternalReference": {
+        "type": "object",
+        "properties": {
+          "employeeBankExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "employeeBankGuid": { "type": "string", "format": "guid" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "employeeBank": {
+            "oneOf": [{ "$ref": "#/components/schemas/EmployeeBank" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArrayOfTalentW2": {
+        "type": "array",
+        "items": { "$ref": "#/components/schemas/TalentW2" }
+      },
+      "AssignmentScheduleCommissionUser": {
+        "type": "object",
+        "properties": {
+          "assignmentScheduleCommissionUserId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "assignmentScheduleGuid": { "type": "string", "format": "guid" },
+          "commissionUserType": { "type": "string" },
+          "userFullName": { "type": "string" },
+          "commissionPercent": { "type": "number", "format": "decimal" },
+          "assignmentSchedule": {
+            "oneOf": [{ "$ref": "#/components/schemas/AssignmentSchedule" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "compasIntegrationServiceVersion": {
+            "oneOf": [{ "$ref": "#/components/schemas/Version" }]
+          },
+          "machineName": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StaffingOrderExternalReference": {
+        "type": "object",
+        "properties": {
+          "staffingOrderExternalReferenceId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "staffingOrderGuid": { "type": "string", "format": "guid" },
+          "externalSystemName": { "type": "string" },
+          "externalSystemId": { "type": "string" },
+          "staffingOrder": {
+            "oneOf": [{ "$ref": "#/components/schemas/StaffingOrder" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "MappingTypeDataRequest": {
+        "type": "object",
+        "properties": {
+          "mappingGroup": { "type": "string" },
+          "mappingTypeName": { "type": "string" },
+          "systemSourceValue": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "Address2": {
+        "required": ["addressGuid", "country"],
+        "type": "object",
+        "properties": {
+          "addressGuid": {
+            "minLength": 1,
+            "type": "string",
+            "format": "guid"
+          },
+          "street1": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "street2": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "city": {
+            "maxLength": 255,
+            "type": "string"
+          },
+          "postalCode": {
+            "maxLength": 15,
+            "type": "string"
+          },
+          "state": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          },
+          "country": {
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentW2": {
+        "type": "object",
+        "properties": {
+          "w2Guid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "taxYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "wageTip": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "fedWages": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "fedTaxWithheld": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "ssTaxWithheld": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "medTaxWithheld": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Talent": {
+        "required": ["firstName", "lastName", "talentGuid"],
+        "type": "object",
+        "properties": {
+          "talentGuid": {
+            "minLength": 1,
+            "type": "string",
+            "format": "guid"
+          },
+          "branchGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "backOfficeEmployeeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "firstName": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string"
+          },
+          "middleName": {
+            "maxLength": 50,
+            "type": "string"
+          },
+          "lastName": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string"
+          },
+          "residentAddress": {
+            "oneOf": [{ "$ref": "#/components/schemas/Address2" }]
+          },
+          "taxIdNumber": {
+            "maxLength": 50,
+            "type": "string"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "mobilePhone": {
+            "maxLength": 20,
+            "type": "string"
+          },
+          "emailAddress": {
+            "maxLength": 50,
+            "type": "string"
+          },
+          "gender": {
+            "$ref": "#/components/schemas/Gender"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Extra": {
+        "type": "object",
+        "properties": {
+          "extraLabelID": { "type": "integer", "format": "int32" },
+          "extraLabel": { "type": "string" },
+          "extraValue": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "TalentPayCheckV2": {
+        "type": "object",
+        "properties": {
+          "paymentCheckGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "checkNumber": {
+            "type": "string"
+          },
+          "checkDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "grossAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "netAmount": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "totalTaxes": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "totalDeductions": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "isDirectDeposit": {
+            "type": "boolean"
+          },
+          "ytdGross": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "totalHours": {
+            "type": "number",
+            "format": "decimal"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TalentBenefitDeduction": {
+        "required": ["deductionAmount", "deductionPayCycle", "deductionStartDate"],
+        "type": "object",
+        "properties": {
+          "talentBenefitDeductionGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "deductionAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "deductionStartDate": {
+            "minLength": 1,
+            "type": "string",
+            "format": "date-time"
+          },
+          "deductionEndDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "deductionPayCycle": {
+            "$ref": "#/components/schemas/PayPeriod"
+          },
+          "referenceNumber": {
+            "type": "string"
+          },
+          "payPeriodLimit": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "monthlyLimit": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "yearlyLimit": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "lifeTimeLimit": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomerPonumber": {
+        "type": "object",
+        "properties": {
+          "customerPonumberGuid": { "type": "string", "format": "guid" },
+          "customerGuid": { "type": "string", "format": "guid" },
+          "ponumberGuid": { "type": "string", "format": "guid" },
+          "isDefault": { "type": "boolean" },
+          "userGuid": { "type": "string", "format": "guid" },
+          "dateEntered": { "type": "string", "format": "date-time" },
+          "customerGu": {
+            "oneOf": [{ "$ref": "#/components/schemas/Customer" }]
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaycheckYearSummary": {
+        "type": "object",
+        "properties": {
+          "summaryTalentGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "summaryBranchGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "summaryYear": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paycheckEmployerGuid": {
+            "type": "string",
+            "format": "guid"
+          },
+          "hoursWorkedYTD": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "grossWagesYTD": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "grossPaidYTD": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "paidEmployeePlacementGuids": {
+            "type": "array",
+            "items": { "type": "string", "format": "guid" }
+          },
+          "paidContractPlacementGuids": {
+            "type": "array",
+            "items": { "type": "string", "format": "guid" }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "api_key": { "type": "apiKey", "name": "x-api-key", "in": "header" }
+    }
+  }
+}

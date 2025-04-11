@@ -22,26 +22,26 @@ describe("Schema with a $ref", () => {
     expect(calls).to.deep.equal([
       {
         path: "#/definitions/b",
-        value: { $ref: "#/definitions/b" },
+        value: { $ref: "#/definitions/a" },
         parent: {
           a: {
-            $ref: "#/definitions/b",
+            $ref: "#/definitions/a",
           },
           b: {
-            $ref: "#/definitions/b",
+            $ref: "#/definitions/a",
           },
         },
         parentPropName: "a",
       },
       {
         path: "#/definitions/a",
-        value: { $ref: "#/definitions/b" },
+        value: { $ref: "#/definitions/a" },
         parent: {
           c: {
             type: "string",
           },
           d: {
-            $ref: "#/definitions/b",
+            $ref: "#/definitions/a",
           },
         },
         parentPropName: "d",
