@@ -309,7 +309,10 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
  * @param startTime - The time when the dereferencing started.
  * @param options
  */
-function checkDereferenceTimeout<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(startTime: number, options: O): void {
+function checkDereferenceTimeout<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  startTime: number,
+  options: O,
+): void {
   if (options && options.timeoutMs) {
     if (Date.now() - startTime > options.timeoutMs) {
       throw new TimeoutError(options.timeoutMs);
