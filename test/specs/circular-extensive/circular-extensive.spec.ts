@@ -6,7 +6,7 @@ import path from "../../utils/path.js";
 import { expect } from "vitest";
 
 describe("Schema with an extensive amount of circular $refs", () => {
-  it.only("should dereference successfully", async () => {
+  it("should dereference successfully", async () => {
     const circularRefs = new Set<string>();
 
     const parser = new $RefParser<Record<string, any>>();
