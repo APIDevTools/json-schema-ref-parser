@@ -53,6 +53,28 @@ describe("Schema with circular (recursive) external $refs", () => {
     expect(schema.definitions.child.properties.parents.items).to.equal(schema.definitions.parent);
   });
 
+  it('should throw an error if "options.dereference.circular" is "ignore"', async () => {
+    const parser = new $RefParser();
+
+    const schema = await parser.dereference(path.rel("test/specs/circular-external/circular-external.yaml"), {
+      dereference: { circular: 'ignore' },
+    });
+
+    expect(schema).to.equal(parser.schema);
+    expect(schema).not.to.deep.equal(dereferencedSchema);
+    expect(parser.$refs.circular).to.equal(true);
+    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+    expect(schema.definitions.pet.title).to.equal('pet');
+    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+    expect(schema.definitions.thing).to.deep.equal({ $ref: 'circular-external.yaml#/definitions/thing'});
+    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+    expect(schema.definitions.person).to.deep.equal({ $ref: 'definitions/person.yaml'});
+    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+    expect(schema.definitions.parent).to.deep.equal({ $ref: 'definitions/parent.yaml'});
+    // @ts-expect-error TS(2532): Object is possibly 'undefined'.
+    expect(schema.definitions.child).to.deep.equal({ $ref: 'definitions/child.yaml'});
+  });
+
   it('should throw an error if "options.dereference.circular" is false', async () => {
     const parser = new $RefParser();
 
