@@ -220,26 +220,46 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
     //
     // If the cached object however is _not_ circular and there are additional keys alongside our
     // `$ref` pointer here we should merge them back in and return that.
-    if (cache.circular) {
+    if (!cache.circular) {
+      const refKeys = Object.keys($ref);
+      if (refKeys.length > 1) {
+        const extraKeys = {};
+        for (const key of refKeys) {
+          if (key !== "$ref" && !(key in cache.value)) {
+            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+            extraKeys[key] = $ref[key];
+          }
+        }
+        return {
+          circular: cache.circular,
+          value: Object.assign({}, cache.value, extraKeys),
+        };
+      }
+
       return cache;
     }
 
-    const refKeys = Object.keys($ref);
-    if (refKeys.length > 1) {
-      const extraKeys = {};
-      for (const key of refKeys) {
-        if (key !== "$ref" && !(key in cache.value)) {
-          // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-          extraKeys[key] = $ref[key];
-        }
+    // If both our cached value and our incoming `$ref` are the same then we can return what we
+    // got out of the cache, otherwise we should re-process this value. We need to do this because
+    // the current dereference caching mechanism doesn't take into account that `$ref` are neither
+    // unique or reference the same file.
+    //
+    // For example if `schema.yaml` references `definitions/child.yaml` and
+    // `definitions/parent.yaml` references `child.yaml` then `$ref: 'child.yaml'` may get cached
+    // for `definitions/child.yaml`, resulting in `schema.yaml` being having an invalid reference
+    // to `child.yaml`.
+    //
+    // This check is not perfect and the design of the dereference caching mechanism needs a total
+    // overhaul.
+    if (typeof cache.value === 'object' && '$ref' in cache.value && '$ref' in $ref) {
+      if (cache.value.$ref === $ref.$ref) {
+        return cache;
+      } else {
+        // no-op
       }
-      return {
-        circular: cache.circular,
-        value: Object.assign({}, cache.value, extraKeys),
-      };
+    } else {
+      return cache;
     }
-
-    return cache;
   }
 
   const pointer = $refs._resolve($refPath, path, options);
