@@ -57,12 +57,12 @@ JavaScript objects.
 
 - Use **JSON** or **YAML** schemas &mdash; or even a mix of both!
 - Supports `$ref` pointers to external files and URLs, as well
-  as [custom sources](https://apitools.dev/json-schema-ref-parser/docs/plugins/resolvers.html) such as databases
-- Can [bundle](https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#bundlepath-options-callback) multiple
+  as [custom sources](https://apidevtools.com/json-schema-ref-parser/docs/plugins/resolvers.html) such as databases
+- Can [bundle](https://apidevtools.com/json-schema-ref-parser/docs/ref-parser.html#bundlepath-options-callback) multiple
   files into a single schema that only has _internal_ `$ref` pointers
-- Can [dereference](https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferencepath-options-callback)
+- Can [dereference](https://apidevtools.com/json-schema-ref-parser/docs/ref-parser.html#dereferencepath-options-callback)
   your schema, producing a plain-old JavaScript object that's easy to work with
-- Supports [circular references](https://apitools.dev/json-schema-ref-parser/docs/#circular-refs), nested references,
+- Supports [circular references](https://apidevtools.com/json-schema-ref-parser/docs/#circular-refs), nested references,
   back-references, and cross-references between files
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object
   instance
@@ -86,7 +86,7 @@ try {
 }
 ```
 
-For more detailed examples, please see the [API Documentation](https://apitools.dev/json-schema-ref-parser/docs/)
+For more detailed examples, please see the [API Documentation](https://apidevtools.com/json-schema-ref-parser/docs/)
 
 ## Polyfills
 
@@ -130,7 +130,7 @@ config.plugins.push(
 
 ## API Documentation
 
-Full API documentation is available [right here](https://apitools.dev/json-schema-ref-parser/docs/)
+Full API documentation is available [right here](https://apidevtools.com/json-schema-ref-parser/docs/)
 
 ## Contributing
 
