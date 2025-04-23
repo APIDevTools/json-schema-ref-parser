@@ -1,3 +1,5 @@
+import isEqual from "lodash/isEqual";
+
 import $Ref from "./ref.js";
 import type { ParserOptions } from "./options.js";
 import Pointer from "./pointer.js";
@@ -8,123 +10,76 @@ import type { JSONSchema } from "./types/index.js";
 
 export interface InventoryEntry {
   $ref: any;
-  parent: any;
-  key: any;
-  pathFromRoot: any;
-  depth: any;
-  file: any;
-  hash: any;
-  value: any;
   circular: any;
+  depth: any;
   extended: any;
   external: any;
+  file: any;
+  hash: any;
   indirections: any;
-}
-/**
- * Bundles all external JSON references into the main JSON schema, thus resulting in a schema that
- * only has *internal* references, not any *external* references.
- * This method mutates the JSON schema object, adding new references and re-mapping existing ones.
- *
- * @param parser
- * @param options
- */
-function bundle(
-  parser: $RefParser,
-  options: ParserOptions,
-) {
-  // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
-
-  // Build an inventory of all $ref pointers in the JSON Schema
-  const inventory: InventoryEntry[] = [];
-  crawl<JSONSchema>(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
-
-  // Remap all $ref pointers
-  remap(inventory);
+  key: any;
+  parent: any;
+  pathFromRoot: any;
+  value: any;
 }
 
 /**
- * Recursively crawls the given value, and inventories all JSON references.
- *
- * @param parent - The object containing the value to crawl. If the value is not an object or array, it will be ignored.
- * @param key - The property key of `parent` to be crawled
- * @param path - The full path of the property being crawled, possibly with a JSON Pointer in the hash
- * @param pathFromRoot - The path of the property being crawled, from the schema root
- * @param indirections
- * @param inventory - An array of already-inventoried $ref pointers
- * @param $refs
- * @param options
+ * TODO
  */
-function crawl<S extends object = JSONSchema>(
-  parent: object | $RefParser,
-  key: string | null,
-  path: string,
-  pathFromRoot: string,
-  indirections: number,
-  inventory: InventoryEntry[],
-  $refs: $Refs<S>,
-  options: ParserOptions,
-) {
-  const obj = key === null ? parent : parent[key as keyof typeof parent];
-
-  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj)) {
-    if ($Ref.isAllowed$Ref(obj)) {
-      inventory$Ref(parent, key, path, pathFromRoot, indirections, inventory, $refs, options);
-    } else {
-      // Crawl the object in a specific order that's optimized for bundling.
-      // This is important because it determines how `pathFromRoot` gets built,
-      // which later determines which keys get dereferenced and which ones get remapped
-      const keys = Object.keys(obj).sort((a, b) => {
-        // Most people will expect references to be bundled into the the "definitions" property,
-        // so we always crawl that property first, if it exists.
-        if (a === "definitions") {
-          return -1;
-        } else if (b === "definitions") {
-          return 1;
-        } else {
-          // Otherwise, crawl the keys based on their length.
-          // This produces the shortest possible bundled references
-          return a.length - b.length;
-        }
-      }) as (keyof typeof obj)[];
-
-      for (const key of keys) {
-        const keyPath = Pointer.join(path, key);
-        const keyPathFromRoot = Pointer.join(pathFromRoot, key);
-        const value = obj[key];
-
-        if ($Ref.isAllowed$Ref(value)) {
-          inventory$Ref(obj, key, path, keyPathFromRoot, indirections, inventory, $refs, options);
-        } else {
-          crawl(obj, key, keyPath, keyPathFromRoot, indirections, inventory, $refs, options);
+const findInInventory = (inventory: Array<InventoryEntry>, $refParent: any, $refKey: any) => {
+  for (const entry of inventory) {
+    if (entry) {
+      if (isEqual(entry.parent, $refParent)) {
+        if (entry.key === $refKey) {
+          return entry;
         }
       }
     }
   }
-}
+  return undefined;
+};
 
 /**
  * Inventories the given JSON Reference (i.e. records detailed information about it so we can
  * optimize all $refs in the schema), and then crawls the resolved value.
- *
- * @param $refParent - The object that contains a JSON Reference as one of its keys
- * @param $refKey - The key in `$refParent` that is a JSON Reference
- * @param path - The full path of the JSON Reference at `$refKey`, possibly with a JSON Pointer in the hash
- * @param indirections - unknown
- * @param pathFromRoot - The path of the JSON Reference at `$refKey`, from the schema root
- * @param inventory - An array of already-inventoried $ref pointers
- * @param $refs
- * @param options
  */
-function inventory$Ref<S extends object = JSONSchema>(
-  $refParent: any,
-  $refKey: string | null,
-  path: string,
-  pathFromRoot: string,
-  indirections: number,
-  inventory: InventoryEntry[],
-  $refs: $Refs<S>,
-  options: ParserOptions,
-) {
+const inventory$Ref = <S extends object = JSONSchema>({
+  $refKey,
+  $refParent,
+  $refs,
+  indirections,
+  inventory,
+  options,
+  path,
+  pathFromRoot,
+}: {
+  /**
+   * The key in `$refParent` that is a JSON Reference
+   */
+  $refKey: string | null;
+  /**
+   * The object that contains a JSON Reference as one of its keys
+   */
+  $refParent: any;
+  $refs: $Refs<S>;
+  /**
+   * unknown
+   */
+  indirections: number;
+  /**
+   * An array of already-inventoried $ref pointers
+   */
+  inventory: Array<InventoryEntry>;
+  options: ParserOptions;
+  /**
+   * The full path of the JSON Reference at `$refKey`, possibly with a JSON Pointer in the hash
+   */
+  path: string;
+  /**
+   * The path of the JSON Reference at `$refKey`, from the schema root
+   */
+  pathFromRoot: string;
+}) => {
   const $ref = $refKey === null ? $refParent : $refParent[$refKey];
   const $refPath = url.resolve(path, $ref.$ref);
   const pointer = $refs._resolve($refPath, pathFromRoot, options);
@@ -151,24 +106,135 @@ function inventory$Ref<S extends object = JSONSchema>(
 
   inventory.push({
     $ref, // The JSON Reference (e.g. {$ref: string})
-    parent: $refParent, // The object that contains this $ref pointer
-    key: $refKey, // The key in `parent` that is the $ref pointer
-    pathFromRoot, // The path to the $ref pointer, from the JSON Schema root
-    depth, // How far from the JSON Schema root is this $ref pointer?
-    file, // The file that the $ref pointer resolves to
-    hash, // The hash within `file` that the $ref pointer resolves to
-    value: pointer.value, // The resolved value of the $ref pointer
     circular: pointer.circular, // Is this $ref pointer DIRECTLY circular? (i.e. it references itself)
+    depth, // How far from the JSON Schema root is this $ref pointer?
     extended, // Does this $ref extend its resolved value? (i.e. it has extra properties, in addition to "$ref")
     external, // Does this $ref pointer point to a file other than the main JSON Schema file?
+    file, // The file that the $ref pointer resolves to
+    hash, // The hash within `file` that the $ref pointer resolves to
     indirections, // The number of indirect references that were traversed to resolve the value
+    key: $refKey, // The key in `parent` that is the $ref pointer
+    parent: $refParent, // The object that contains this $ref pointer
+    pathFromRoot, // The path to the $ref pointer, from the JSON Schema root
+    value: pointer.value, // The resolved value of the $ref pointer
   });
 
   // Recursively crawl the resolved value
   if (!existingEntry || external) {
-    crawl(pointer.value, null, pointer.path, pathFromRoot, indirections + 1, inventory, $refs, options);
+    crawl({
+      parent: pointer.value,
+      key: null,
+      path: pointer.path,
+      pathFromRoot,
+      indirections: indirections + 1,
+      inventory,
+      $refs,
+      options,
+    });
   }
-}
+};
+
+/**
+ * Recursively crawls the given value, and inventories all JSON references.
+ */
+const crawl = <S extends object = JSONSchema>({
+  $refs,
+  indirections,
+  inventory,
+  key,
+  options,
+  parent,
+  path,
+  pathFromRoot,
+}: {
+  $refs: $Refs<S>;
+  indirections: number;
+  /**
+   * An array of already-inventoried $ref pointers
+   */
+  inventory: Array<InventoryEntry>;
+  /**
+   * The property key of `parent` to be crawled
+   */
+  key: string | null;
+  options: ParserOptions;
+  /**
+   * The object containing the value to crawl. If the value is not an object or array, it will be ignored.
+   */
+  parent: object | $RefParser;
+  /**
+   * The full path of the property being crawled, possibly with a JSON Pointer in the hash
+   */
+  path: string;
+  /**
+   * The path of the property being crawled, from the schema root
+   */
+  pathFromRoot: string;
+}) => {
+  const obj = key === null ? parent : parent[key as keyof typeof parent];
+  
+  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj)) {
+    if ($Ref.isAllowed$Ref(obj)) {
+      inventory$Ref({
+        $refParent: parent,
+        $refKey: key,
+        path,
+        pathFromRoot,
+        indirections,
+        inventory,
+        $refs,
+        options,
+      });
+    } else {
+      // Crawl the object in a specific order that's optimized for bundling.
+      // This is important because it determines how `pathFromRoot` gets built,
+      // which later determines which keys get dereferenced and which ones get remapped
+      const keys = Object.keys(obj).sort((a, b) => {
+        // Most people will expect references to be bundled into the "definitions" property,
+        // so we always crawl that property first, if it exists.
+        if (a === "definitions") {
+          return -1;
+        } else if (b === "definitions") {
+          return 1;
+        } else {
+          // Otherwise, crawl the keys based on their length.
+          // This produces the shortest possible bundled references
+          return a.length - b.length;
+        }
+      }) as (keyof typeof obj)[];
+
+      for (const key of keys) {
+        const keyPath = Pointer.join(path, key);
+        const keyPathFromRoot = Pointer.join(pathFromRoot, key);
+        const value = obj[key];
+
+        if ($Ref.isAllowed$Ref(value)) {
+          inventory$Ref({
+            $refParent: obj,
+            $refKey: key,
+            path,
+            pathFromRoot: keyPathFromRoot,
+            indirections,
+            inventory,
+            $refs,
+            options,
+          });
+        } else {
+          crawl({
+            parent: obj,
+            key,
+            path: keyPath,
+            pathFromRoot: keyPathFromRoot,
+            indirections,
+            inventory,
+            $refs,
+            options,
+          });
+        }
+      }
+    }
+  }
+};
 
 /**
  * Re-maps every $ref pointer, so that they're all relative to the root of the JSON Schema.
@@ -280,20 +346,38 @@ function remap(inventory: InventoryEntry[]) {
   // }
 }
 
-/**
- * TODO
- */
-function findInInventory(inventory: InventoryEntry[], $refParent: any, $refKey: any) {
-  for (const existingEntry of inventory) {
-    if (existingEntry && existingEntry.parent === $refParent && existingEntry.key === $refKey) {
-      return existingEntry;
-    }
-  }
-  return undefined;
-}
-
 function removeFromInventory(inventory: InventoryEntry[], entry: any) {
   const index = inventory.indexOf(entry);
   inventory.splice(index, 1);
 }
-export default bundle;
+
+/**
+ * Bundles all external JSON references into the main JSON schema, thus resulting in a schema that
+ * only has *internal* references, not any *external* references.
+ * This method mutates the JSON schema object, adding new references and re-mapping existing ones.
+ *
+ * @param parser
+ * @param options
+ */
+export const bundle = (
+  parser: $RefParser,
+  options: ParserOptions,
+) => {
+  // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
+
+  // Build an inventory of all $ref pointers in the JSON Schema
+  const inventory: InventoryEntry[] = [];
+  crawl<JSONSchema>({
+    parent: parser,
+    key: 'schema',
+    path: parser.$refs._root$Ref.path + "#",
+    pathFromRoot: "#",
+    indirections: 0,
+    inventory,
+    $refs: parser.$refs,
+    options,
+  });
+
+  // Remap all $ref pointers
+  remap(inventory);
+};
