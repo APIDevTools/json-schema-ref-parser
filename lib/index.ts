@@ -1,7 +1,7 @@
 import $Refs from "./refs.js";
 import { newFile, parseFile } from "./parse.js";
 import { resolveExternal } from "./resolve-external.js";
-import _bundle from "./bundle.js";
+import { bundle as _bundle } from "./bundle.js";
 import _dereference from "./dereference.js";
 import * as url from "./util/url.js";
 import { isHandledError, JSONParserErrorGroup } from "./util/errors.js";
