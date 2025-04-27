@@ -76,9 +76,9 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       const keys = Object.keys(obj).sort((a, b) => {
         // Most people will expect references to be bundled into the the "definitions" property,
         // so we always crawl that property first, if it exists.
-        if (a === "definitions") {
+        if (a === "definitions" || a === "$defs") {
           return -1;
-        } else if (b === "definitions") {
+        } else if (b === "definitions" || b === "$defs") {
           return 1;
         } else {
           // Otherwise, crawl the keys based on their length.
@@ -216,8 +216,14 @@ function remap(inventory: InventoryEntry[]) {
     } else {
       // Determine how far each $ref is from the "definitions" property.
       // Most people will expect references to be bundled into the the "definitions" property if possible.
-      const aDefinitionsIndex = a.pathFromRoot.lastIndexOf("/definitions");
-      const bDefinitionsIndex = b.pathFromRoot.lastIndexOf("/definitions");
+      const aDefinitionsIndex = Math.max(
+        a.pathFromRoot.lastIndexOf("/definitions"),
+        a.pathFromRoot.lastIndexOf("/$defs"),
+      );
+      const bDefinitionsIndex = Math.max(
+        b.pathFromRoot.lastIndexOf("/definitions"),
+        b.pathFromRoot.lastIndexOf("/$defs"),
+      );
 
       if (aDefinitionsIndex !== bDefinitionsIndex) {
         // Give higher priority to the $ref that's closer to the "definitions" property
