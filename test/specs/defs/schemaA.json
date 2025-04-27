@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/SupplierPriceElement",
+  "definitions": {
+    "SupplierPriceElement": {
+      "type": "object",
+      "properties": {
+        "fee": {
+          "$ref": "#/definitions/AllFees"
+        },
+        "purchaseRate": {
+          "$ref": "#/definitions/InDetailParent"
+        }
+      }
+    },
+    "AllFees": {
+      "type": "object",
+      "properties": {
+        "modificationFee": {
+          "$ref": "#/definitions/MonetaryAmount"
+        }
+      }
+    },
+    "MonetaryAmount": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "$ref": "#/definitions/Amount"
+        }
+      }
+    },
+    "Amount": {
+      "type": "number",
+      "format": "float"
+    },
+    "InDetailParent": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/MonetaryAmount"
+        },
+        {
+          "type": "object",
+          "$ref": "#/definitions/Amount"
+        }
+      ]
+    }
+  }
+}

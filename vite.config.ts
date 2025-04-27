@@ -13,5 +13,6 @@ export default defineConfig({
     passWithNoTests: true,
     reporters: ["verbose"],
     coverage: { reporter: ["lcov", "html", "text"] },
+    snapshotSerializers: ["./test/utils/serializeJson.ts"],
   },
 });

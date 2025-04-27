@@ -192,12 +192,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   public resolve(schema: S | string | unknown, options: O): Promise<$Refs<S, O>>;
   public resolve(schema: S | string | unknown, options: O, callback: $RefsCallback<S, O>): Promise<void>;
   public resolve(path: string, schema: S | string | unknown, options: O): Promise<$Refs<S, O>>;
-  public resolve(
-    path: string,
-    schema: S | string | unknown,
-    options: O,
-    callback: $RefsCallback<S, O>,
-  ): Promise<void>;
+  public resolve(path: string, schema: S | string | unknown, options: O, callback: $RefsCallback<S, O>): Promise<void>;
   async resolve() {
     const args = normalizeArgs<S, O>(arguments);
 

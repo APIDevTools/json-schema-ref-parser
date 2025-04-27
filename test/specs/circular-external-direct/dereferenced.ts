@@ -1,3 +1,6 @@
 export default {
-  $ref: "./circular-external-direct-root.yaml#/foo",
+  foo: {
+    type: "object",
+  },
+  type: "object",
 };
