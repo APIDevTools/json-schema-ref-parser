@@ -82,9 +82,9 @@ export const urlResolver = {
           if (response.status !== 405 || fetchOptions?.method !== 'HEAD') {
             throw ono({ status: response.status }, `HTTP ERROR ${response.status}`);
           }
-
-          data = response.body ? await response.arrayBuffer() : new ArrayBuffer(0)
         }
+
+        data = response.body ? await response.arrayBuffer() : new ArrayBuffer(0);
       } catch (error: any) {
         throw new ResolverError(ono(error, `Error requesting ${file.url}`), file.url);
       }
