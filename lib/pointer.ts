@@ -5,7 +5,7 @@ import * as url from "./util/url.js";
 import { JSONParserError, InvalidPointerError, MissingPointerError, isHandledError } from "./util/errors.js";
 import type { JSONSchema } from "./types";
 
-export const nullSymbol = Symbol('null');
+export const nullSymbol = Symbol("null");
 
 const slashes = /\//g;
 const tildes = /~/g;
@@ -99,10 +99,6 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       if (resolveIf$Ref(this, options, pathFromRoot)) {
         // The $ref path has changed, so append the remaining tokens to the path
         this.path = Pointer.join(this.path, tokens.slice(i));
-      }
-
-      if (typeof this.value === "object" && this.value !== null && !isRootPath(pathFromRoot) && "$ref" in this.value) {
-        return this;
       }
 
       const token = tokens[i];

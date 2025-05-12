@@ -251,7 +251,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
     //
     // This check is not perfect and the design of the dereference caching mechanism needs a total
     // overhaul.
-    if (typeof cache.value === 'object' && '$ref' in cache.value && '$ref' in $ref) {
+    if (typeof cache.value === "object" && "$ref" in cache.value && "$ref" in $ref) {
       if (cache.value.$ref === $ref.$ref) {
         return cache;
       } else {

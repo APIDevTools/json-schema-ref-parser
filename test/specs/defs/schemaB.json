@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/SupplierPriceElement",
+  "$defs": {
+    "SupplierPriceElement": {
+      "type": "object",
+      "properties": {
+        "fee": {
+          "$ref": "#/$defs/AllFees"
+        },
+        "purchaseRate": {
+          "$ref": "#/$defs/InDetailParent"
+        }
+      }
+    },
+    "AllFees": {
+      "type": "object",
+      "properties": {
+        "modificationFee": {
+          "$ref": "#/$defs/MonetaryAmount"
+        }
+      }
+    },
+    "MonetaryAmount": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "$ref": "#/$defs/Amount"
+        }
+      }
+    },
+    "Amount": {
+      "type": "number",
+      "format": "float"
+    },
+    "InDetailParent": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/MonetaryAmount"
+        },
+        {
+          "type": "object",
+          "$ref": "#/$defs/Amount"
+        }
+      ]
+    }
+  }
+}
