@@ -16,7 +16,6 @@ import {
   isHandledError,
   JSONParserErrorGroup,
 } from "./util/errors.js";
-import { ono } from "@jsdevtools/ono";
 import maybe from "./util/maybe.js";
 import type { ParserOptions } from "./options.js";
 import { getJsonSchemaRefParserDefaultOptions } from "./options.js";
@@ -77,7 +76,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     let promise;
 
     if (!args.path && !args.schema) {
-      const err = ono(`Expected a file path, URL, or object. Got ${args.path || args.schema}`);
+      const err = new Error(`Expected a file path, URL, or object. Got ${args.path || args.schema}`);
       return maybe(args.callback, Promise.reject(err));
     }
 
@@ -129,7 +128,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
         this.schema = null; // it's already set to null at line 79, but let's set it again for the sake of readability
         return maybe(args.callback, Promise.resolve(this.schema!));
       } else {
-        throw ono.syntax(`"${this.$refs._root$Ref.path || result}" is not a valid JSON Schema`);
+        throw new SyntaxError(`"${this.$refs._root$Ref.path || result}" is not a valid JSON Schema`);
       }
     } catch (err) {
       if (!args.options.continueOnError || !isHandledError(err)) {

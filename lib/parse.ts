@@ -1,4 +1,3 @@
-import { ono } from "@jsdevtools/ono";
 import * as url from "./util/url.js";
 import * as plugins from "./util/plugins.js";
 import {
@@ -92,7 +91,7 @@ async function readFile<S extends object = JSONSchema, O extends ParserOptions<S
       throw new UnmatchedResolverError(file.url);
     } else if (!err || !("error" in err)) {
       // Throw a generic, friendly error.
-      throw ono.syntax(`Unable to resolve $ref pointer "${file.url}"`);
+      throw new SyntaxError(`Unable to resolve $ref pointer "${file.url}"`);
     }
     // Throw the original error, if it's one of our own (user-friendly) errors.
     else if (err.error instanceof ResolverError) {
@@ -133,7 +132,7 @@ async function parseFile<S extends object = JSONSchema, O extends ParserOptions<
   try {
     const parser = await plugins.run<S, O>(parsers, "parse", file, $refs);
     if (!parser.plugin.allowEmpty && isEmpty(parser.result)) {
-      throw ono.syntax(`Error parsing "${file.url}" as ${parser.plugin.name}. \nParsed value is empty`);
+      throw new SyntaxError(`Error parsing "${file.url}" as ${parser.plugin.name}. \nParsed value is empty`);
     } else {
       return parser;
     }
@@ -144,7 +143,7 @@ async function parseFile<S extends object = JSONSchema, O extends ParserOptions<
     } else if (err && err.message && err.message.startsWith("Error parsing")) {
       throw err;
     } else if (!err || !("error" in err)) {
-      throw ono.syntax(`Unable to parse ${file.url}`);
+      throw new SyntaxError(`Unable to parse ${file.url}`);
     } else if (err.error instanceof ParserError) {
       throw err.error;
     } else {

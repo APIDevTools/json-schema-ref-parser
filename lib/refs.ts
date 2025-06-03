@@ -1,4 +1,3 @@
-import { ono } from "@jsdevtools/ono";
 import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
@@ -100,7 +99,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     const $ref = this._$refs[withoutHash];
 
     if (!$ref) {
-      throw ono(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
+      throw new Error(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
     }
 
     $ref.set(absPath, value);
@@ -150,7 +149,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     const $ref = this._$refs[withoutHash];
 
     if (!$ref) {
-      throw ono(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
+      throw new Error(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
     }
 
     return $ref.resolve(absPath, options, path, pathFromRoot);

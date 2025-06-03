@@ -1,4 +1,3 @@
-import { ono } from "@jsdevtools/ono";
 import * as url from "../util/url.js";
 import { ResolverError } from "../util/errors.js";
 import type { FileInfo, HTTPResolverOptions, JSONSchema } from "../types/index.js";
@@ -78,17 +77,20 @@ async function download<S extends object = JSONSchema>(
   try {
     const res = await get(u, httpOptions);
     if (res.status >= 400) {
-      throw ono({ status: res.status }, `HTTP ERROR ${res.status}`);
+      const error = new Error(`HTTP ERROR ${res.status}`) as Error & { status?: number };
+      error.status = res.status;
+      throw error;
     } else if (res.status >= 300) {
       if (!Number.isNaN(httpOptions.redirects) && redirects.length > httpOptions.redirects!) {
-        throw new ResolverError(
-          ono(
-            { status: res.status },
-            `Error downloading ${redirects[0]}. \nToo many redirects: \n  ${redirects.join(" \n  ")}`,
-          ),
-        );
+        const error = new Error(
+          `Error downloading ${redirects[0]}. \nToo many redirects: \n  ${redirects.join(" \n  ")}`,
+        ) as Error & { status?: number };
+        error.status = res.status;
+        throw new ResolverError(error);
       } else if (!("location" in res.headers) || !res.headers.location) {
-        throw ono({ status: res.status }, `HTTP ${res.status} redirect with no location header`);
+        const error = new Error(`HTTP ${res.status} redirect with no location header`) as Error & { status?: number };
+        error.status = res.status;
+        throw error;
       } else {
         const redirectTo = url.resolve(u.href, res.headers.location as string);
         return download(redirectTo, httpOptions, redirects);
@@ -101,7 +103,9 @@ async function download<S extends object = JSONSchema>(
       return Buffer.alloc(0);
     }
   } catch (err: any) {
-    throw new ResolverError(ono(err, `Error downloading ${u.href}`), u.href);
+    const e = err as Error;
+    e.message = `Error downloading ${u.href}: ${e.message}`;
+    throw new ResolverError(e, u.href);
   }
 }
 

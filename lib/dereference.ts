@@ -1,6 +1,5 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
-import { ono } from "@jsdevtools/ono";
 import * as url from "./util/url.js";
 import type $Refs from "./refs.js";
 import type { DereferenceOptions, ParserOptions } from "./options.js";
@@ -355,7 +354,8 @@ function foundCircularReference(keyPath: any, $refs: any, options: any) {
   options?.dereference?.onCircular?.(keyPath);
 
   if (!options.dereference.circular) {
-    throw ono.reference(`Circular $ref pointer found at ${keyPath}`);
+    const error = new ReferenceError(`Circular $ref pointer found at ${keyPath}`);
+    throw error;
   }
   return true;
 }

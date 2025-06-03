@@ -1,5 +1,4 @@
 import fs from "fs";
-import { ono } from "@jsdevtools/ono";
 import * as url from "../util/url.js";
 import { ResolverError } from "../util/errors.js";
 import type { JSONSchema, ResolverOptions } from "../types/index.js";
@@ -28,12 +27,16 @@ export default {
     try {
       path = url.toFileSystemPath(file.url);
     } catch (err: any) {
-      throw new ResolverError(ono.uri(err, `Malformed URI: ${file.url}`), file.url);
+      const e = err as Error;
+      e.message = `Malformed URI: ${file.url}: ${e.message}`;
+      throw new ResolverError(e, file.url);
     }
     try {
       return await fs.promises.readFile(path);
     } catch (err: any) {
-      throw new ResolverError(ono(err, `Error opening file "${path}"`), path);
+      const e = err as Error;
+      e.message = `Error opening file ${path}: ${e.message}`;
+      throw new ResolverError(e, path);
     }
   },
 } as ResolverOptions<JSONSchema>;
