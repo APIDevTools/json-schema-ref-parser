@@ -438,4 +438,5 @@ export {
   _dereference as dereferenceInternal,
   normalizeArgs as jsonSchemaParserNormalizeArgs,
   getJsonSchemaRefParserDefaultOptions,
+  $Refs,
 };
