@@ -44,8 +44,8 @@ export function resolve(from: string, to: string) {
  * @returns
  */
 export function cwd() {
-  if (typeof window !== "undefined" && window.location) {
-    return location.href;
+  if (typeof window !== "undefined" && window.location && window.location.href) {
+    return window.location.href;
   }
 
   if (typeof process !== "undefined" && process.cwd) {
