@@ -44,18 +44,21 @@ export function resolve(from: string, to: string) {
  * @returns
  */
 export function cwd() {
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" && window.location) {
     return location.href;
   }
 
-  const path = process.cwd();
+  if (typeof process !== "undefined" && process.cwd) {
+    const path = process.cwd();
 
-  const lastChar = path.slice(-1);
-  if (lastChar === "/" || lastChar === "\\") {
-    return path;
-  } else {
-    return path + "/";
+    const lastChar = path.slice(-1);
+    if (lastChar === "/" || lastChar === "\\") {
+      return path;
+    } else {
+      return path + "/";
+    }
   }
+  return "/";
 }
 
 /**
