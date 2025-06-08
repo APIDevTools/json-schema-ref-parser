@@ -45,7 +45,17 @@ export function resolve(from: string, to: string) {
  */
 export function cwd() {
   if (typeof window !== "undefined" && window.location && window.location.href) {
-    return window.location.href;
+    const href = window.location.href;
+    if (!href || !href.startsWith("http")) {
+      // try parsing as url, and if it fails, return root url /
+      try {
+        new URL(href);
+        return href;
+      } catch {
+        return "/";
+      }
+    }
+    return href;
   }
 
   if (typeof process !== "undefined" && process.cwd) {
