@@ -1,7 +1,6 @@
 remote_theme: APIDevTools/gh-pages-theme
 
 title: JSON Schema $Ref Parser
-
 logo: https://apidevtools.com/img/logos/logo.png
 
 author:
