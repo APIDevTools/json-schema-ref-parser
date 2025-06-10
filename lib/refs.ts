@@ -13,20 +13,20 @@ interface $RefsMap<S extends object = JSONSchema, O extends ParserOptions<S> = P
  *
  * This object is a map of JSON References and their resolved values. It also has several convenient helper methods that make it easy for you to navigate and manipulate the JSON References.
  *
- * See https://apitools.dev/json-schema-ref-parser/docs/refs.html
+ * See https://apidevtools.com/json-schema-ref-parser/docs/refs.html
  */
 export default class $Refs<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   /**
    * This property is true if the schema contains any circular references. You may want to check this property before serializing the dereferenced schema as JSON, since JSON.stringify() does not support circular references by default.
    *
-   * See https://apitools.dev/json-schema-ref-parser/docs/refs.html#circular
+   * See https://apidevtools.com/json-schema-ref-parser/docs/refs.html#circular
    */
   public circular: boolean;
 
   /**
    * Returns the paths/URLs of all the files in your schema (including the main schema file).
    *
-   * See https://apitools.dev/json-schema-ref-parser/docs/refs.html#pathstypes
+   * See https://apidevtools.com/json-schema-ref-parser/docs/refs.html#pathstypes
    *
    * @param types (optional) Optionally only return certain types of paths ("file", "http", etc.)
    */
@@ -40,7 +40,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
   /**
    * Returns a map of paths/URLs and their correspond values.
    *
-   * See https://apitools.dev/json-schema-ref-parser/docs/refs.html#valuestypes
+   * See https://apidevtools.com/json-schema-ref-parser/docs/refs.html#valuestypes
    *
    * @param types (optional) Optionally only return values from certain locations ("file", "http", etc.)
    */
@@ -56,7 +56,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
   /**
    * Returns `true` if the given path exists in the schema; otherwise, returns `false`
    *
-   * See https://apitools.dev/json-schema-ref-parser/docs/refs.html#existsref
+   * See https://apidevtools.com/json-schema-ref-parser/docs/refs.html#existsref
    *
    * @param $ref The JSON Reference path, optionally with a JSON Pointer in the hash
    */

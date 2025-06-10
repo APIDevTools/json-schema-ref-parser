@@ -46,7 +46,7 @@
       "email": "apis@jonlu.ca"
     }
   ],
-  "homepage": "https://apitools.dev/json-schema-ref-parser/",
+  "homepage": "https://apidevtools.com/json-schema-ref-parser/",
   "repository": {
     "type": "git",
     "url": "https://github.com/APIDevTools/json-schema-ref-parser.git"

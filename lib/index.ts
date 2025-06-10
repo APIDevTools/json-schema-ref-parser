@@ -180,7 +180,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    *
    * Resolves all JSON references (`$ref` pointers) in the given JSON Schema file. If it references any other files/URLs, then they will be downloaded and resolved as well. This method **does not** dereference anything. It simply gives you a `$Refs` object, which is a map of all the resolved references and their values.
    *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#resolveschema-options-callback
+   * See https://apidevtools.com/json-schema-ref-parser/docs/ref-parser.html#resolveschema-options-callback
    *
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
    * @param options (optional)
@@ -210,7 +210,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    *
    * Resolves all JSON references (`$ref` pointers) in the given JSON Schema file. If it references any other files/URLs, then they will be downloaded and resolved as well. This method **does not** dereference anything. It simply gives you a `$Refs` object, which is a map of all the resolved references and their values.
    *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#resolveschema-options-callback
+   * See https://apidevtools.com/json-schema-ref-parser/docs/ref-parser.html#resolveschema-options-callback
    *
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
    * @param options (optional)
@@ -255,7 +255,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    *
    * This also eliminates the risk of circular references, so the schema can be safely serialized using `JSON.stringify()`.
    *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#bundleschema-options-callback
+   * See https://apidevtools.com/json-schema-ref-parser/docs/ref-parser.html#bundleschema-options-callback
    *
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
    * @param options (optional)
@@ -298,7 +298,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    *
    * This also eliminates the risk of circular references, so the schema can be safely serialized using `JSON.stringify()`.
    *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#bundleschema-options-callback
+   * See https://apidevtools.com/json-schema-ref-parser/docs/ref-parser.html#bundleschema-options-callback
    *
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
    * @param options (optional)
@@ -327,7 +327,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    *
    * The dereference method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object. Again, this is great for programmatic usage, but it does introduce the risk of circular references, so be careful if you intend to serialize the schema using `JSON.stringify()`. Consider using the bundle method instead, which does not create circular references.
    *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferenceschema-options-callback
+   * See https://apidevtools.com/json-schema-ref-parser/docs/ref-parser.html#dereferenceschema-options-callback
    *
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
    * @param options (optional)
@@ -370,7 +370,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    *
    * The dereference method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object. Again, this is great for programmatic usage, but it does introduce the risk of circular references, so be careful if you intend to serialize the schema using `JSON.stringify()`. Consider using the bundle method instead, which does not create circular references.
    *
-   * See https://apitools.dev/json-schema-ref-parser/docs/ref-parser.html#dereferenceschema-options-callback
+   * See https://apidevtools.com/json-schema-ref-parser/docs/ref-parser.html#dereferenceschema-options-callback
    *
    * @param path
    * @param schema A JSON Schema object, or the file path or URL of a JSON Schema file. See the `parse` method for more info.
