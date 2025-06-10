@@ -71,10 +71,10 @@
     "@eslint/js": "^9.28.0",
     "@types/eslint": "^9.6.1",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^22",
-    "@typescript-eslint/eslint-plugin": "^8.33.1",
-    "@typescript-eslint/parser": "^8.33.1",
-    "@vitest/coverage-v8": "^3.2.2",
+    "@types/node": "^24",
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "@vitest/coverage-v8": "^3.2.3",
     "cross-env": "^7.0.3",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
@@ -88,8 +88,8 @@
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.33.1",
-    "vitest": "^3.2.2"
+    "typescript-eslint": "^8.34.0",
+    "vitest": "^3.2.3"
   },
   "dependencies": {
     "@types/json-schema": "^7.0.15",
