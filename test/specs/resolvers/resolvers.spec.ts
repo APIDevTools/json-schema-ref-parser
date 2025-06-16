@@ -252,4 +252,49 @@ describe("options.resolve", () => {
     );
     expect(parsed).to.equal("custom://Path/Is/Case/Sensitive");
   });
+
+  it("should block unsafe URLs when safeUrlResolver is true (default)", async () => {
+    const unsafeUrls = [
+      "http://localhost/schema.json",
+      "http://127.0.0.1/schema.json", 
+      "http://192.168.1.1/schema.json",
+      "http://10.0.0.1/schema.json",
+      "http://172.16.0.1/schema.json",
+    ];
+
+    for (const unsafeUrl of unsafeUrls) {
+      try {
+        await $RefParser.dereference({ $ref: unsafeUrl });
+        helper.shouldNotGetCalled();
+      } catch (err) {
+        expect(err).to.be.an.instanceOf(Error);
+        expect((err as Error).message).to.contain("Unable to resolve $ref pointer");
+      }
+    }
+  });
+
+  it("should allow unsafe URLs when safeUrlResolver is false", async () => {
+    const mockHttpResolver = {
+      order: 200,
+      canRead: /^https?:\/\//i,
+      safeUrlResolver: false,
+      read() {
+        return { type: "object", properties: { test: { type: "string" } } };
+      },
+    };
+
+    const schema = await $RefParser.dereference(
+      { $ref: "http://localhost/schema.json" },
+      {
+        resolve: {
+          http: mockHttpResolver,
+        },
+      } as ParserOptions,
+    );
+
+    expect(schema).to.deep.equal({
+      type: "object",
+      properties: { test: { type: "string" } },
+    });
+  });
 });

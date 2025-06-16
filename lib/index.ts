@@ -28,6 +28,7 @@ import type {
   ResolverOptions,
   HTTPResolverOptions,
 } from "./types/index.js";
+import { isUnsafeUrl } from "./util/url.js";
 
 export type RefParserSchema = string | JSONSchema;
 
@@ -439,4 +440,5 @@ export {
   normalizeArgs as jsonSchemaParserNormalizeArgs,
   getJsonSchemaRefParserDefaultOptions,
   $Refs,
+  isUnsafeUrl,
 };

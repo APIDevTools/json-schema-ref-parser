@@ -41,6 +41,11 @@ export interface HTTPResolverOptions<S extends object = JSONSchema> extends Part
    * Set this to `true` if you're downloading files from a CORS-enabled server that requires authentication
    */
   withCredentials?: boolean;
+
+  /**
+   * Set this to `false` if you want to allow unsafe URLs (e.g., `127.0.0.1`, localhost, and other internal URLs).
+   */
+  safeUrlResolver: true;
 }
 
 /**

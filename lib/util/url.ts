@@ -167,7 +167,173 @@ export function isHttp(path: string) {
     return false;
   }
 }
+/**
+ * Determines whether the given url is an unsafe or internal url.
+ *
+ * @param path - The URL or path to check
+ * @returns true if the URL is unsafe/internal, false otherwise
+ */
+export function isUnsafeUrl(path: string): boolean {
+  if (!path || typeof path !== "string") {
+    return true;
+  }
 
+  // Trim whitespace and convert to lowercase for comparison
+  const normalizedPath = path.trim().toLowerCase();
+
+  // Empty or just whitespace
+  if (!normalizedPath) {
+    return true;
+  }
+
+  // JavaScript protocols
+  if (
+    normalizedPath.startsWith("javascript:") ||
+    normalizedPath.startsWith("vbscript:") ||
+    normalizedPath.startsWith("data:")
+  ) {
+    return true;
+  }
+
+  // File protocol
+  if (normalizedPath.startsWith("file:")) {
+    return true;
+  }
+
+  // Local/internal network addresses
+  const localPatterns = [
+    // Localhost variations
+    "localhost",
+    "127.0.0.1",
+    "::1",
+
+    // Private IP ranges (RFC 1918)
+    "10.",
+    "172.16.",
+    "172.17.",
+    "172.18.",
+    "172.19.",
+    "172.20.",
+    "172.21.",
+    "172.22.",
+    "172.23.",
+    "172.24.",
+    "172.25.",
+    "172.26.",
+    "172.27.",
+    "172.28.",
+    "172.29.",
+    "172.30.",
+    "172.31.",
+    "192.168.",
+
+    // Link-local addresses
+    "169.254.",
+
+    // Internal domains
+    ".local",
+    ".internal",
+    ".intranet",
+    ".corp",
+    ".home",
+    ".lan",
+  ];
+
+  try {
+    // Try to parse as URL
+    const url = new URL(normalizedPath.startsWith("//") ? "http:" + normalizedPath : normalizedPath);
+
+    const hostname = url.hostname.toLowerCase();
+
+    // Check against local patterns
+    for (const pattern of localPatterns) {
+      if (hostname === pattern || hostname.startsWith(pattern) || hostname.endsWith(pattern)) {
+        return true;
+      }
+    }
+
+    // Check for IP addresses in private ranges
+    if (isPrivateIP(hostname)) {
+      return true;
+    }
+
+    // Check for non-standard ports that might indicate internal services
+    const port = url.port;
+    if (port && isInternalPort(parseInt(port))) {
+      return true;
+    }
+  } catch (e) {
+    // If URL parsing fails, check if it's a relative path or contains suspicious patterns
+
+    // Relative paths starting with / are generally safe for same-origin
+    if (normalizedPath.startsWith("/") && !normalizedPath.startsWith("//")) {
+      return false;
+    }
+
+    // Check for localhost patterns in non-URL strings
+    for (const pattern of localPatterns) {
+      if (normalizedPath.includes(pattern)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Helper function to check if an IP address is in a private range
+ */
+function isPrivateIP(ip: string): boolean {
+  const ipRegex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+  const match = ip.match(ipRegex);
+
+  if (!match) {
+    return false;
+  }
+
+  const [, a, b, c, d] = match.map(Number);
+
+  // Validate IP format
+  if (a > 255 || b > 255 || c > 255 || d > 255) {
+    return false;
+  }
+
+  // Private IP ranges
+  return (
+    a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254) // Link-local
+  );
+}
+
+/**
+ * Helper function to check if a port is typically used for internal services
+ */
+function isInternalPort(port: number): boolean {
+  const internalPorts = [
+    22, // SSH
+    23, // Telnet
+    25, // SMTP
+    53, // DNS
+    135, // RPC
+    139, // NetBIOS
+    445, // SMB
+    993, // IMAPS
+    995, // POP3S
+    1433, // SQL Server
+    1521, // Oracle
+    3306, // MySQL
+    3389, // RDP
+    5432, // PostgreSQL
+    5900, // VNC
+    6379, // Redis
+    8080, // Common internal web
+    8443, // Common internal HTTPS
+    9200, // Elasticsearch
+    27017, // MongoDB
+  ];
+
+  return internalPorts.includes(port);
+}
 /**
  * Determines whether the given path is a filesystem path.
  * This includes "file://" URLs.

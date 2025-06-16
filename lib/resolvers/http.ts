@@ -37,12 +37,17 @@ export default {
   withCredentials: false,
 
   /**
+   * Set this to `false` if you want to allow unsafe URLs (e.g., `127.0.0.1`, localhost, and other internal URLs).
+   */
+  safeUrlResolver: true,
+
+  /**
    * Determines whether this resolver can read a given file reference.
    * Resolvers that return true will be tried in order, until one successfully resolves the file.
    * Resolvers that return false will not be given a chance to resolve the file.
    */
   canRead(file: FileInfo) {
-    return url.isHttp(file.url);
+    return url.isHttp(file.url) && (!this.safeUrlResolver || !url.isUnsafeUrl(file.url));
   },
 
   /**
