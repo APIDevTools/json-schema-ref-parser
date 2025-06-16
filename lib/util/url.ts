@@ -200,6 +200,11 @@ export function isUnsafeUrl(path: string): boolean {
     return true;
   }
 
+  // if we're in the browser, we assume that it is safe
+  if (typeof window !== "undefined" && window.location && window.location.href) {
+    return false;
+  }
+
   // Local/internal network addresses
   const localPatterns = [
     // Localhost variations
