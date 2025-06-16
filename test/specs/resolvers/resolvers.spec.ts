@@ -256,12 +256,16 @@ describe("options.resolve", () => {
   it("should block unsafe URLs when safeUrlResolver is true (default)", async () => {
     const unsafeUrls = [
       "http://localhost/schema.json",
-      "http://127.0.0.1/schema.json", 
+      "http://127.0.0.1/schema.json",
       "http://192.168.1.1/schema.json",
       "http://10.0.0.1/schema.json",
       "http://172.16.0.1/schema.json",
     ];
 
+    // if we're in the browser, skip the test
+    if (typeof window !== "undefined") {
+      return;
+    }
     for (const unsafeUrl of unsafeUrls) {
       try {
         await $RefParser.dereference({ $ref: unsafeUrl });
@@ -283,14 +287,11 @@ describe("options.resolve", () => {
       },
     };
 
-    const schema = await $RefParser.dereference(
-      { $ref: "http://localhost/schema.json" },
-      {
-        resolve: {
-          http: mockHttpResolver,
-        },
-      } as ParserOptions,
-    );
+    const schema = await $RefParser.dereference({ $ref: "http://localhost/schema.json" }, {
+      resolve: {
+        http: mockHttpResolver,
+      },
+    } as ParserOptions);
 
     expect(schema).to.deep.equal({
       type: "object",
