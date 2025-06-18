@@ -31,6 +31,10 @@ export default {
       e.message = `Malformed URI: ${file.url}: ${e.message}`;
       throw new ResolverError(e, file.url);
     }
+    // strip trailing slashes
+    if (path.endsWith("/") || path.endsWith("\\")) {
+      path = path.slice(0, -1);
+    }
     try {
       return await fs.promises.readFile(path);
     } catch (err: any) {

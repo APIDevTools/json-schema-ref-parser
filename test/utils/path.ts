@@ -138,27 +138,27 @@ function urlPathHelpers() {
 }
 
 export default {
-  rel() {
+  rel(..._args: any[]) {
     // @ts-expect-error TS(2556): A spread argument must either have a tuple type or... Remove this comment to see the full error message
     return !isDom ? pathHelpers.filesystem.rel(...arguments) : pathHelpers.url.rel(...arguments);
   },
 
-  abs() {
+  abs(..._args: any[]) {
     // @ts-expect-error TS(2556): A spread argument must either have a tuple type or... Remove this comment to see the full error message
     return !isDom ? pathHelpers.filesystem.abs(...arguments) : pathHelpers.url.abs(...arguments);
   },
 
-  unixify() {
+  unixify(..._args: any[]) {
     // @ts-expect-error TS(2556): A spread argument must either have a tuple type or... Remove this comment to see the full error message
     return !isDom ? pathHelpers.filesystem.unixify(...arguments) : pathHelpers.url.unixify(...arguments);
   },
 
-  url() {
+  url(..._args: any[]) {
     // @ts-expect-error TS(2556): A spread argument must either have a tuple type or... Remove this comment to see the full error message
     return !isDom ? pathHelpers.filesystem.url(...arguments) : pathHelpers.url.url(...arguments);
   },
 
-  cwd() {
+  cwd(..._args: any[]) {
     // @ts-expect-error TS(2556): A spread argument must either have a tuple type or... Remove this comment to see the full error message
     return !isDom ? pathHelpers.filesystem.cwd(...arguments) : pathHelpers.url.cwd(...arguments);
   },

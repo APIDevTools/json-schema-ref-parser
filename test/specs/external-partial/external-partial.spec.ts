@@ -3,6 +3,7 @@ import $RefParser from "../../../lib/index.js";
 import helper from "../../utils/helper.js";
 import path from "../../utils/path.js";
 import parsedSchema from "./parsed.js";
+import parsedSchemaTrailing from "./parsed-trailing.js";
 import dereferencedSchema from "./dereferenced.js";
 import bundledSchema from "./bundled.js";
 
@@ -15,6 +16,16 @@ describe("Schema with $refs to parts of external files", () => {
     expect(schema).to.equal(parser.schema);
     expect(schema).to.deep.equal(parsedSchema.schema);
     expect(parser.$refs.paths()).to.deep.equal([path.abs("test/specs/external-partial/external-partial.yaml")]);
+  });
+
+  it("should parse successfully with files with trailing slashes", async () => {
+    const parser = new $RefParser();
+    const schema = await parser.parse(path.rel("test/specs/external-partial/external-partial-trailing-slash.yaml"));
+    expect(schema).to.equal(parser.schema);
+    expect(schema).to.deep.equal(parsedSchemaTrailing.schema);
+    expect(parser.$refs.paths()).to.deep.equal([
+      path.abs("test/specs/external-partial/external-partial-trailing-slash.yaml"),
+    ]);
   });
 
   it(
