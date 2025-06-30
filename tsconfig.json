@@ -15,6 +15,7 @@
     "noFallthroughCasesInSwitch": true,
     "pretty": true,
     "resolveJsonModule": true,
+    "exactOptionalPropertyTypes": true,
     "rootDir": ".",
     "skipLibCheck": true,
     "strict": true,

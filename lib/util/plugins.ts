@@ -108,7 +108,7 @@ export async function run<S extends object = JSONSchema, O extends ParserOptions
       // console.log('    success');
       resolve({
         plugin,
-        result,
+        result: result!,
       });
     }
 
