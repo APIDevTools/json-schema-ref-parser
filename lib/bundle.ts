@@ -5,6 +5,7 @@ import type $Refs from "./refs.js";
 import type $RefParser from "./index";
 import type { ParserOptions } from "./index";
 import type { JSONSchema } from "./index";
+import type { BundleOptions } from "./options";
 
 export interface InventoryEntry {
   $ref: any;
@@ -65,8 +66,10 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   options: O,
 ) {
   const obj = key === null ? parent : parent[key as keyof typeof parent];
+  const bundleOptions = (options.bundle || {}) as BundleOptions;
+  const isExcludedPath = bundleOptions.excludedPathMatcher || (() => false);
 
-  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj)) {
+  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
     if ($Ref.isAllowed$Ref(obj)) {
       inventory$Ref(parent, key, path, pathFromRoot, indirections, inventory, $refs, options);
     } else {
@@ -96,6 +99,10 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           inventory$Ref(obj, key, path, keyPathFromRoot, indirections, inventory, $refs, options);
         } else {
           crawl(obj, key, keyPath, keyPathFromRoot, indirections, inventory, $refs, options);
+        }
+
+        if (value["$ref"]) {
+          bundleOptions?.onBundle?.(value["$ref"], obj[key], obj as any, key);          
         }
       }
     }
