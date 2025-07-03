@@ -18,7 +18,7 @@ describe("Schema with a $ref", () => {
       },
     } as Options;
     await parser.bundle(schema, options);
-    console.log(calls)
+
     expect(calls).to.deep.equal([
       {
         path: "#/definitions/b",
