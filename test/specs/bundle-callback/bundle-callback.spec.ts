@@ -18,35 +18,24 @@ describe("Schema with a $ref", () => {
       },
     } as Options;
     await parser.bundle(schema, options);
-
+    console.log(calls)
     expect(calls).to.deep.equal([
       {
-        path: "#/definitions/a",
+        path: "#/definitions/b",
         value: { $ref: "#/definitions/b" },
         parent: {
           a: {
-            $ref: "#/definitions/a",
+            $ref: "#/definitions/b",
           },
           b: {
-            $ref: "#/definitions/b",
+            $ref: "#/definitions/a",
           },
         },
         parentPropName: "a",
       },
       {
         path: "#/definitions/a",
-        value: { $ref: "#/definitions/apath: "#/definitions/b",
-        value: { $ref: "#/definitions/b" },
-        parent: {
-          a: {
-            $ref: "#/definitions/b",
-          },
-          b: {
-            $ref: "#/definitions/a",
-          },
-        },
-        parentPropName: "a",
-      }," },
+        value: { $ref: "#/definitions/a" },
         parent: {
           a: {
             $ref: "#/definitions/b",
