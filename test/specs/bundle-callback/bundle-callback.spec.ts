@@ -13,7 +13,7 @@ describe("Schema with a $ref", () => {
     const options = {
       bundle: {
         onBundle(path, value, parent, parentPropName) {
-          calls.push({ path, value, parent, parentPropName });
+          calls.push(JSON.parse(JSON.stringify({ path, value, parent, parentPropName })));
         },
       },
     } as Options;
