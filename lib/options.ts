@@ -12,6 +12,26 @@ export type DeepPartial<T> = T extends object
       [P in keyof T]?: DeepPartial<T[P]>;
     }
   : T;
+
+export interface BundleOptions {
+  /**
+   * A function, called for each path, which can return true to stop this path and all
+   * subpaths from being processed further. This is useful in schemas where some
+   * subpaths contain literal $ref keys that should not be changed.
+   */
+  excludedPathMatcher?(path: string): boolean;
+
+  /**
+   * Callback invoked during bundling.
+   *
+   * @argument {string} path - The path being processed (ie. the `$ref` string)
+   * @argument {JSONSchemaObject} value - The JSON-Schema that the `$ref` resolved to
+   * @argument {JSONSchemaObject} parent - The parent of the processed object
+   * @argument {string} parentPropName - The prop name of the parent object whose value was processed
+   */
+  onBundle?(path: string, value: JSONSchemaObject, parent?: JSONSchemaObject, parentPropName?: string): void;
+}
+
 export interface DereferenceOptions {
   /**
    * Determines whether circular `$ref` pointers are handled.
@@ -108,6 +128,11 @@ export interface $RefParserOptions<S extends object = JSONSchema> {
   continueOnError: boolean;
 
   /**
+   * The `bundle` options control how JSON Schema `$Ref` Parser will process `$ref` pointers within the JSON schema.
+   */
+  bundle: BundleOptions;
+
+  /**
    * The `dereference` options control how JSON Schema `$Ref` Parser will dereference `$ref` pointers within the JSON schema.
    */
   dereference: DereferenceOptions;
@@ -167,6 +192,20 @@ export const getJsonSchemaRefParserDefaultOptions = () => {
      * that were encountered.
      */
     continueOnError: false,
+
+    /**
+     * Determines the types of JSON references that are allowed.
+     */
+    bundle: {
+      /**
+       * A function, called for each path, which can return true to stop this path and all
+       * subpaths from being processed further. This is useful in schemas where some
+       * subpaths contain literal $ref keys that should not be changed.
+       *
+       * @type {function}
+       */
+      excludedPathMatcher: () => false,
+    },
 
     /**
      * Determines the types of JSON references that are allowed.
