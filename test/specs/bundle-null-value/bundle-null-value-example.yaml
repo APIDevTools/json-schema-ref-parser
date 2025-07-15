@@ -1,0 +1,12 @@
+defintions:
+  Pet:
+    type: object
+    properties:
+      name:
+        type: string
+      breed:
+        type: string
+        enum: [dog, cat]
+    example:
+      name:
+      breed: dog
