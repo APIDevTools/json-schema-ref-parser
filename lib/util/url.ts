@@ -425,14 +425,14 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
 
   // Step 3: If it's a "file://" URL, then format it consistently
   // or convert it to a local filesystem path
-  let isFileUrl = path.substring(0, 7).toLowerCase() === "file://";
+  let isFileUrl = path.toLowerCase().startsWith("file://");
   if (isFileUrl) {
     // Strip-off the protocol, and the initial "/", if there is one
-    path = path[7] === "/" ? path.substring(8) : path.substring(7);
+    path = path.replace(/^file:\/\//, "").replace(/^\//, "");
 
     // insert a colon (":") after the drive letter on Windows
     if (isWindows() && path[1] === "/") {
-      path = path[0] + ":" + path.substring(1);
+      path = `${path[0]}:${path.substring(1)}`;
     }
 
     if (keepFileProtocol) {
@@ -453,7 +453,7 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
     path = path.replace(forwardSlashPattern, "\\");
 
     // Capitalize the drive letter
-    if (path.substring(1, 2) === ":\\") {
+    if (path.match(/^[a-z]:\\/i)) {
       path = path[0].toUpperCase() + path.substring(1);
     }
   }
