@@ -1,4 +1,4 @@
-import { SnapshotSerializer } from "vitest";
+import type { SnapshotSerializer } from "vitest";
 
 /**
  * This serializes JSON objects as plain JSON strings for snapshot testing
@@ -6,7 +6,7 @@ import { SnapshotSerializer } from "vitest";
  * But it doesn't look well in .json files
  */
 export default {
-  serialize(val, config, indentation, depth, refs, printer) {
+  serialize(val) {
     return JSON.stringify(val, null, 2);
   },
   test(val) {

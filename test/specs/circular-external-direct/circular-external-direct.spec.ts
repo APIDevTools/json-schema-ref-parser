@@ -2,7 +2,6 @@ import { describe, it } from "vitest";
 import { expect } from "vitest";
 import $RefParser from "../../../lib/index.js";
 import path from "../../utils/path.js";
-import parsedSchema from "./parsed.js";
 import dereferencedSchema from "./dereferenced.js";
 
 describe("Schema with direct circular (recursive) external $refs", () => {

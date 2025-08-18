@@ -95,7 +95,7 @@ export function getProtocol(path: string | undefined) {
 export function getExtension(path: any) {
   const lastDot = path.lastIndexOf(".");
   if (lastDot >= 0) {
-    return stripQuery(path.substr(lastDot).toLowerCase());
+    return stripQuery(path.substring(lastDot).toLowerCase());
   }
   return "";
 }
@@ -109,7 +109,7 @@ export function getExtension(path: any) {
 export function stripQuery(path: any) {
   const queryIndex = path.indexOf("?");
   if (queryIndex >= 0) {
-    path = path.substr(0, queryIndex);
+    path = path.substring(0, queryIndex);
   }
   return path;
 }
@@ -173,7 +173,7 @@ export function isHttp(path: string) {
  * @param path - The URL or path to check
  * @returns true if the URL is unsafe/internal, false otherwise
  */
-export function isUnsafeUrl(path: string): boolean {
+export function isUnsafeUrl(path: string | unknown): boolean {
   if (!path || typeof path !== "string") {
     return true;
   }
@@ -267,7 +267,7 @@ export function isUnsafeUrl(path: string): boolean {
     if (port && isInternalPort(parseInt(port))) {
       return true;
     }
-  } catch (e) {
+  } catch {
     // If URL parsing fails, check if it's a relative path or contains suspicious patterns
 
     // Relative paths starting with / are generally safe for same-origin
@@ -425,14 +425,14 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
 
   // Step 3: If it's a "file://" URL, then format it consistently
   // or convert it to a local filesystem path
-  let isFileUrl = path.substr(0, 7).toLowerCase() === "file://";
+  let isFileUrl = path.substring(0, 7).toLowerCase() === "file://";
   if (isFileUrl) {
     // Strip-off the protocol, and the initial "/", if there is one
-    path = path[7] === "/" ? path.substr(8) : path.substr(7);
+    path = path[7] === "/" ? path.substring(8) : path.substring(7);
 
     // insert a colon (":") after the drive letter on Windows
     if (isWindows() && path[1] === "/") {
-      path = path[0] + ":" + path.substr(1);
+      path = path[0] + ":" + path.substring(1);
     }
 
     if (keepFileProtocol) {
@@ -453,8 +453,8 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
     path = path.replace(forwardSlashPattern, "\\");
 
     // Capitalize the drive letter
-    if (path.substr(1, 2) === ":\\") {
-      path = path[0].toUpperCase() + path.substr(1);
+    if (path.substring(1, 2) === ":\\") {
+      path = path[0].toUpperCase() + path.substring(1);
     }
   }
 
