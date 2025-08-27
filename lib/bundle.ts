@@ -94,9 +94,10 @@ const inventory$Ref = <S extends object = JSONSchema>({
   const extended = $Ref.isExtended$Ref($ref);
   indirections += pointer.indirections;
 
+  // Check if this exact location (parent + key + pathFromRoot) has already been inventoried
   const existingEntry = findInInventory(inventory, $refParent, $refKey);
-  if (existingEntry) {
-    // This $Ref has already been inventoried, so we don't need to process it again
+  if (existingEntry && existingEntry.pathFromRoot === pathFromRoot) {
+    // This exact location has already been inventoried, so we don't need to process it again
     if (depth < existingEntry.depth || indirections < existingEntry.indirections) {
       removeFromInventory(inventory, existingEntry);
     } else {
@@ -172,7 +173,7 @@ const crawl = <S extends object = JSONSchema>({
   pathFromRoot: string;
 }) => {
   const obj = key === null ? parent : parent[key as keyof typeof parent];
-  
+
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj)) {
     if ($Ref.isAllowed$Ref(obj)) {
       inventory$Ref({
@@ -359,17 +360,13 @@ function removeFromInventory(inventory: InventoryEntry[], entry: any) {
  * @param parser
  * @param options
  */
-export const bundle = (
-  parser: $RefParser,
-  options: ParserOptions,
-) => {
+export const bundle = (parser: $RefParser, options: ParserOptions) => {
   // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
-
   // Build an inventory of all $ref pointers in the JSON Schema
   const inventory: InventoryEntry[] = [];
   crawl<JSONSchema>({
     parent: parser,
-    key: 'schema',
+    key: "schema",
     path: parser.$refs._root$Ref.path + "#",
     pathFromRoot: "#",
     indirections: 0,
