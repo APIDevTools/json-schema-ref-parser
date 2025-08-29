@@ -24,6 +24,24 @@ export interface InventoryEntry {
 }
 
 /**
+ * Determines whether an internal $ref should be inlined (copied) rather than left as a $ref.
+ * Currently inlines OpenAPI path items ("#/paths/..."), while keeping components/definitions/declarations as refs.
+ */
+const shouldInlineInternal = (entry: InventoryEntry) => {
+  if (entry.external) {
+    return false;
+  }
+  const h = entry.hash as string | undefined;
+  if (!h || h === "#") {
+    return false;
+  }
+  if (h.startsWith("#/components/schemas") || h.indexOf("/definitions") !== -1 || h.startsWith("#/declarations")) {
+    return false;
+  }
+  return h.startsWith("#/paths/");
+};
+
+/**
  * TODO
  */
 const findInInventory = (inventory: Array<InventoryEntry>, $refParent: any, $refKey: any) => {
@@ -300,7 +318,7 @@ function remap(inventory: InventoryEntry[]) {
   for (const entry of inventory) {
     // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
 
-    if (!entry.external) {
+    if (!entry.external && !shouldInlineInternal(entry)) {
       // This $ref already resolves to the main JSON Schema file
       entry.$ref.$ref = entry.hash;
     } else if (entry.file === file && entry.hash === hash) {
