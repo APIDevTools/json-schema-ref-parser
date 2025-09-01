@@ -35,7 +35,7 @@ const shouldInlineInternal = (entry: InventoryEntry) => {
   if (!h || h === "#") {
     return false;
   }
-  if (h.startsWith("#/components/schemas") || h.indexOf("/definitions") !== -1 || h.startsWith("#/declarations")) {
+  if (h.startsWith("#/components/schemas") || h.startsWith("#/definitions")) {
     return false;
   }
   return h.startsWith("#/paths/");
