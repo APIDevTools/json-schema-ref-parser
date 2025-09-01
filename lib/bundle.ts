@@ -300,7 +300,7 @@ function remap(inventory: InventoryEntry[]) {
   for (const entry of inventory) {
     // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
 
-    if (!entry.external) {
+    if (!entry.external && !entry.hash?.startsWith("#/paths/")) {
       // This $ref already resolves to the main JSON Schema file
       entry.$ref.$ref = entry.hash;
     } else if (entry.file === file && entry.hash === hash) {

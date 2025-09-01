@@ -42,6 +42,7 @@
   ],
   "scripts": {
     "build": "rimraf dist && tsc",
+    "dev": "rimraf dist && tsc --watch",
     "lint": "eslint lib",
     "prepublishOnly": "yarn build",
     "prettier": "prettier --write \"**/*.+(js|jsx|ts|tsx|har||json|css|md)\"",
