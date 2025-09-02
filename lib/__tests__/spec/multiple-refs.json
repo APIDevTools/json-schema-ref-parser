@@ -5,7 +5,7 @@
         "summary": "First endpoint using the same pathId schema",
         "parameters": [
           {
-            "$ref": "path-parameter.json#/pathId"
+            "$ref": "path-parameter.json#/components/parameters/pathId"
           }
         ],
         "responses": {
@@ -20,7 +20,7 @@
         "summary": "Second endpoint using the same pathId schema",
         "parameters": [
           {
-            "$ref": "path-parameter.json#/pathId"
+            "$ref": "path-parameter.json#/components/parameters/pathId"
           }
         ],
         "responses": {

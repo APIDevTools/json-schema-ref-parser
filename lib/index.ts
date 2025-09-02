@@ -14,7 +14,7 @@ import { fileResolver } from "./resolvers/file.js";
 interface ResolvedInput {
   path: string;
   schema: string | JSONSchema | Buffer | Awaited<JSONSchema> | undefined;
-  type: 'file' | 'json' | 'url';
+  type: "file" | "json" | "url";
 }
 
 export const getResolvedInput = ({
@@ -27,10 +27,10 @@ export const getResolvedInput = ({
   }
 
   const resolvedInput: ResolvedInput = {
-    path: typeof pathOrUrlOrSchema === 'string' ? pathOrUrlOrSchema : '',
+    path: typeof pathOrUrlOrSchema === "string" ? pathOrUrlOrSchema : "",
     schema: undefined,
-    type: 'url',
-  }
+    type: "url",
+  };
 
   // If the path is a filesystem path, then convert it to a URL.
   // NOTE: According to the JSON Reference spec, these should already be URLs,
@@ -40,27 +40,27 @@ export const getResolvedInput = ({
   // If it doesn't work for your use-case, then use a URL instead.
   if (resolvedInput.path && url.isFileSystemPath(resolvedInput.path)) {
     resolvedInput.path = url.fromFileSystemPath(resolvedInput.path);
-    resolvedInput.type = 'file';
-  } else if (!resolvedInput.path && pathOrUrlOrSchema && typeof pathOrUrlOrSchema === 'object') {
+    resolvedInput.type = "file";
+  } else if (!resolvedInput.path && pathOrUrlOrSchema && typeof pathOrUrlOrSchema === "object") {
     if ("$id" in pathOrUrlOrSchema && pathOrUrlOrSchema.$id) {
       // when schema id has defined an URL should use that hostname to request the references,
       // instead of using the current page URL
       const { hostname, protocol } = new URL(pathOrUrlOrSchema.$id as string);
       resolvedInput.path = `${protocol}//${hostname}:${protocol === "https:" ? 443 : 80}`;
-      resolvedInput.type = 'url';
+      resolvedInput.type = "url";
     } else {
       resolvedInput.schema = pathOrUrlOrSchema;
-      resolvedInput.type = 'json';
+      resolvedInput.type = "json";
     }
   }
 
-  if (resolvedInput.type !== 'json') {
+  if (resolvedInput.type !== "json") {
     // resolve the absolute path of the schema
     resolvedInput.path = url.resolve(url.cwd(), resolvedInput.path);
   }
 
   return resolvedInput;
-}
+};
 
 /**
  * This class parses a JSON schema, builds a map of its JSON references and their resolved values,
@@ -74,7 +74,7 @@ export class $RefParser {
    * @readonly
    */
   $refs = new $Refs<JSONSchema>();
-  public options = getJsonSchemaRefParserDefaultOptions()
+  public options = getJsonSchemaRefParserDefaultOptions();
   /**
    * The parsed (and possibly dereferenced) JSON schema object
    *
@@ -185,17 +185,17 @@ export class $RefParser {
     if (schema) {
       // immediately add a new $Ref with the schema object as value
       const $ref = this.$refs._add(path);
-      $ref.pathType = url.isFileSystemPath(path) ? 'file' : 'http';
+      $ref.pathType = url.isFileSystemPath(path) ? "file" : "http";
       $ref.value = schema;
-    } else if (type !== 'json') {
-      const file = newFile(path)
+    } else if (type !== "json") {
+      const file = newFile(path);
 
       // Add a new $Ref for this file, even though we don't have the value yet.
       // This ensures that we don't simultaneously read & parse the same file multiple times
       const $refAdded = this.$refs._add(file.url);
       $refAdded.pathType = type;
       try {
-        const resolver = type === 'file' ? fileResolver : urlResolver;
+        const resolver = type === "file" ? fileResolver : urlResolver;
         await resolver.handler({
           arrayBuffer,
           fetch,
@@ -208,12 +208,12 @@ export class $RefParser {
         if (isHandledError(err)) {
           $refAdded.value = err;
         }
-    
+
         throw err;
       }
     }
 
-    if (schema === null || typeof schema !== 'object' || Buffer.isBuffer(schema)) {
+    if (schema === null || typeof schema !== "object" || Buffer.isBuffer(schema)) {
       throw ono.syntax(`"${this.$refs._root$Ref.path || schema}" is not a valid JSON Schema`);
     }
 
@@ -225,5 +225,5 @@ export class $RefParser {
   }
 }
 
-export { sendRequest } from './resolvers/url.js'
+export { sendRequest } from "./resolvers/url.js";
 export type { JSONSchema } from "./types/index.js";

@@ -21,6 +21,7 @@ export interface InventoryEntry {
   parent: any;
   pathFromRoot: any;
   value: any;
+  originalContainerType?: "schemas" | "parameters" | "requestBodies" | "responses" | "headers";
 }
 
 /**
@@ -37,6 +38,38 @@ const findInInventory = (inventory: Array<InventoryEntry>, $refParent: any, $ref
     }
   }
   return undefined;
+};
+
+/**
+ * Determine the container type from a JSON Pointer path.
+ * Analyzes the path tokens to identify the appropriate OpenAPI component container.
+ *
+ * @param path - The JSON Pointer path to analyze
+ * @returns The container type: "schemas", "parameters", "requestBodies", "responses", or "headers"
+ */
+const getContainerTypeFromPath = (
+  path: string,
+): "schemas" | "parameters" | "requestBodies" | "responses" | "headers" => {
+  const tokens = Pointer.parse(path);
+  const has = (t: string) => tokens.includes(t);
+  // Prefer more specific containers first
+  if (has("parameters")) {
+    return "parameters";
+  }
+  if (has("requestBody")) {
+    return "requestBodies";
+  }
+  if (has("headers")) {
+    return "headers";
+  }
+  if (has("responses")) {
+    return "responses";
+  }
+  if (has("schema")) {
+    return "schemas";
+  }
+  // default: treat as schema-like
+  return "schemas";
 };
 
 /**
@@ -118,6 +151,7 @@ const inventory$Ref = <S extends object = JSONSchema>({
     parent: $refParent, // The object that contains this $ref pointer
     pathFromRoot, // The path to the $ref pointer, from the JSON Schema root
     value: pointer.value, // The resolved value of the $ref pointer
+    originalContainerType: external ? getContainerTypeFromPath(pointer.path) : undefined, // The original container type in the external file
   });
 
   // Recursively crawl the resolved value
@@ -238,113 +272,178 @@ const crawl = <S extends object = JSONSchema>({
 };
 
 /**
- * Re-maps every $ref pointer, so that they're all relative to the root of the JSON Schema.
- * Each referenced value is dereferenced EXACTLY ONCE.  All subsequent references to the same
- * value are re-mapped to point to the first reference.
- *
- * @example: {
- *    first: { $ref: somefile.json#/some/part },
- *    second: { $ref: somefile.json#/another/part },
- *    third: { $ref: somefile.json },
- *    fourth: { $ref: somefile.json#/some/part/sub/part }
- *  }
- *
- * In this example, there are four references to the same file, but since the third reference points
- * to the ENTIRE file, that's the only one we need to dereference.  The other three can just be
- * remapped to point inside the third one.
- *
- * On the other hand, if the third reference DIDN'T exist, then the first and second would both need
- * to be dereferenced, since they point to different parts of the file. The fourth reference does NOT
- * need to be dereferenced, because it can be remapped to point inside the first one.
- *
- * @param inventory
+ * Remap external refs by hoisting resolved values into a shared container in the root schema
+ * and pointing all occurrences to those internal definitions. Internal refs remain internal.
  */
-function remap(inventory: InventoryEntry[]) {
-  // Group & sort all the $ref pointers, so they're in the order that we need to dereference/remap them
-  inventory.sort((a: InventoryEntry, b: InventoryEntry) => {
-    if (a.file !== b.file) {
-      // Group all the $refs that point to the same file
-      return a.file < b.file ? -1 : +1;
-    } else if (a.hash !== b.hash) {
-      // Group all the $refs that point to the same part of the file
-      return a.hash < b.hash ? -1 : +1;
-    } else if (a.circular !== b.circular) {
-      // If the $ref points to itself, then sort it higher than other $refs that point to this $ref
-      return a.circular ? -1 : +1;
-    } else if (a.extended !== b.extended) {
-      // If the $ref extends the resolved value, then sort it lower than other $refs that don't extend the value
-      return a.extended ? +1 : -1;
-    } else if (a.indirections !== b.indirections) {
-      // Sort direct references higher than indirect references
-      return a.indirections - b.indirections;
-    } else if (a.depth !== b.depth) {
-      // Sort $refs by how close they are to the JSON Schema root
-      return a.depth - b.depth;
-    } else {
-      // Determine how far each $ref is from the "definitions" property.
-      // Most people will expect references to be bundled into the the "definitions" property if possible.
-      const aDefinitionsIndex = a.pathFromRoot.lastIndexOf("/definitions");
-      const bDefinitionsIndex = b.pathFromRoot.lastIndexOf("/definitions");
+function remap(parser: $RefParser, inventory: InventoryEntry[]) {
+  const root = parser.schema as any;
 
-      if (aDefinitionsIndex !== bDefinitionsIndex) {
-        // Give higher priority to the $ref that's closer to the "definitions" property
-        return bDefinitionsIndex - aDefinitionsIndex;
-      } else {
-        // All else is equal, so use the shorter path, which will produce the shortest possible reference
-        return a.pathFromRoot.length - b.pathFromRoot.length;
+  // Ensure or return a container by component type. Prefer OpenAPI-aware placement;
+  // otherwise use existing root containers; otherwise create components/*.
+  const ensureContainer = (type: "schemas" | "parameters" | "requestBodies" | "responses" | "headers") => {
+    const isOas3 = !!(root && typeof root === "object" && typeof root.openapi === "string");
+    const isOas2 = !!(root && typeof root === "object" && typeof root.swagger === "string");
+
+    if (isOas3) {
+      if (!root.components || typeof root.components !== "object") {
+        root.components = {};
       }
+      if (!root.components[type] || typeof root.components[type] !== "object") {
+        root.components[type] = {};
+      }
+      return { obj: root.components[type], prefix: `#/components/${type}` } as const;
     }
-  });
 
-  let file, hash, pathFromRoot;
+    if (isOas2) {
+      if (type === "schemas") {
+        if (!root.definitions || typeof root.definitions !== "object") {
+          root.definitions = {};
+        }
+        return { obj: root.definitions, prefix: "#/definitions" } as const;
+      }
+      if (type === "parameters") {
+        if (!root.parameters || typeof root.parameters !== "object") {
+          root.parameters = {};
+        }
+        return { obj: root.parameters, prefix: "#/parameters" } as const;
+      }
+      if (type === "responses") {
+        if (!root.responses || typeof root.responses !== "object") {
+          root.responses = {};
+        }
+        return { obj: root.responses, prefix: "#/responses" } as const;
+      }
+      // requestBodies/headers don't exist as reusable containers in OAS2; fallback to definitions
+      if (!root.definitions || typeof root.definitions !== "object") {
+        root.definitions = {};
+      }
+      return { obj: root.definitions, prefix: "#/definitions" } as const;
+    }
+
+    // No explicit version: prefer existing containers
+    if (root && typeof root === "object") {
+      if (root.components && typeof root.components === "object") {
+        if (!root.components[type] || typeof root.components[type] !== "object") {
+          root.components[type] = {};
+        }
+        return { obj: root.components[type], prefix: `#/components/${type}` } as const;
+      }
+      if (root.definitions && typeof root.definitions === "object") {
+        return { obj: root.definitions, prefix: "#/definitions" } as const;
+      }
+      // Create components/* by default if nothing exists
+      if (!root.components || typeof root.components !== "object") {
+        root.components = {};
+      }
+      if (!root.components[type] || typeof root.components[type] !== "object") {
+        root.components[type] = {};
+      }
+      return { obj: root.components[type], prefix: `#/components/${type}` } as const;
+    }
+
+    // Fallback
+    root.definitions = root.definitions || {};
+    return { obj: root.definitions, prefix: "#/definitions" } as const;
+  };
+
+  /**
+   * Choose the appropriate component container for bundling.
+   * Prioritizes the original container type from external files over usage location.
+   *
+   * @param entry - The inventory entry containing reference information
+   * @returns The container type to use for bundling
+   */
+  const chooseComponent = (entry: InventoryEntry) => {
+    // If we have the original container type from the external file, use it
+    if (entry.originalContainerType) {
+      return entry.originalContainerType;
+    }
+
+    // Fallback to usage path for internal references or when original type is not available
+    return getContainerTypeFromPath(entry.pathFromRoot);
+  };
+
+  // Track names per (container prefix) and per target
+  const targetToNameByPrefix = new Map<string, Map<string, string>>();
+  const usedNamesByObj = new Map<any, Set<string>>();
+
+  const sanitize = (name: string) => name.replace(/[^A-Za-z0-9_-]/g, "_");
+  const baseName = (filePath: string) => {
+    try {
+      const withoutHash = filePath.split("#")[0];
+      const parts = withoutHash.split("/");
+      const filename = parts[parts.length - 1] || "schema";
+      const dot = filename.lastIndexOf(".");
+      return sanitize(dot > 0 ? filename.substring(0, dot) : filename);
+    } catch {
+      return "schema";
+    }
+  };
+  const lastToken = (hash: string) => {
+    if (!hash || hash === "#") {
+      return "root";
+    }
+    const tokens = hash.replace(/^#\//, "").split("/");
+    return sanitize(tokens[tokens.length - 1] || "root");
+  };
+  const uniqueName = (containerObj: any, proposed: string) => {
+    if (!usedNamesByObj.has(containerObj)) {
+      usedNamesByObj.set(containerObj, new Set<string>(Object.keys(containerObj || {})));
+    }
+    const used = usedNamesByObj.get(containerObj)!;
+    let name = proposed;
+    let i = 2;
+    while (used.has(name)) {
+      name = `${proposed}_${i++}`;
+    }
+    used.add(name);
+    return name;
+  };
+
   for (const entry of inventory) {
-    // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
-
+    // Keep internal refs internal
     if (!entry.external) {
-      // This $ref already resolves to the main JSON Schema file
-      entry.$ref.$ref = entry.hash;
-    } else if (entry.file === file && entry.hash === hash) {
-      // This $ref points to the same value as the prevous $ref, so remap it to the same path
-      entry.$ref.$ref = pathFromRoot;
-    } else if (entry.file === file && entry.hash.indexOf(hash + "/") === 0) {
-      // This $ref points to a sub-value of the prevous $ref, so remap it beneath that path
-      entry.$ref.$ref = Pointer.join(pathFromRoot, Pointer.parse(entry.hash.replace(hash, "#")));
-    } else {
-      // We've moved to a new file or new hash
-      file = entry.file;
-      hash = entry.hash;
-      pathFromRoot = entry.pathFromRoot;
+      if (entry.$ref && typeof entry.$ref === "object") {
+        entry.$ref.$ref = entry.hash;
+      }
+      continue;
+    }
 
-      // This is the first $ref to point to this value, so dereference the value.
-      // Any other $refs that point to the same value will point to this $ref instead
-      entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value);
-
-      if (entry.circular) {
-        // This $ref points to itself
+    // Avoid changing direct self-references; keep them internal
+    if (entry.circular) {
+      if (entry.$ref && typeof entry.$ref === "object") {
         entry.$ref.$ref = entry.pathFromRoot;
       }
+      continue;
+    }
+
+    // Choose appropriate container based on original location in external file
+    const component = chooseComponent(entry);
+    const { obj: container, prefix } = ensureContainer(component);
+
+    const targetKey = `${entry.file}::${entry.hash}`;
+    if (!targetToNameByPrefix.has(prefix)) {
+      targetToNameByPrefix.set(prefix, new Map<string, string>());
+    }
+    const namesForPrefix = targetToNameByPrefix.get(prefix)!;
+
+    let defName = namesForPrefix.get(targetKey);
+    if (!defName) {
+      const proposed = `${baseName(entry.file)}_${lastToken(entry.hash)}`;
+      defName = uniqueName(container, proposed);
+      namesForPrefix.set(targetKey, defName);
+      // Store the resolved value under the container
+      container[defName] = entry.value;
+    }
+
+    // Point the occurrence to the internal definition, preserving extensions
+    const refPath = `${prefix}/${defName}`;
+    if (entry.extended && entry.$ref && typeof entry.$ref === "object") {
+      entry.$ref.$ref = refPath;
+    } else {
+      entry.parent[entry.key] = { $ref: refPath };
     }
   }
-
-  // we want to ensure that any $refs that point to another $ref are remapped to point to the final value
-  // let hadChange = true;
-  // while (hadChange) {
-  //   hadChange = false;
-  //   for (const entry of inventory) {
-  //     if (entry.$ref && typeof entry.$ref === "object" && "$ref" in entry.$ref) {
-  //       const resolved = inventory.find((e: InventoryEntry) => e.pathFromRoot === entry.$ref.$ref);
-  //       if (resolved) {
-  //         const resolvedPointsToAnotherRef =
-  //           resolved.$ref && typeof resolved.$ref === "object" && "$ref" in resolved.$ref;
-  //         if (resolvedPointsToAnotherRef && entry.$ref.$ref !== resolved.$ref.$ref) {
-  //           // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
-  //           entry.$ref.$ref = resolved.$ref.$ref;
-  //           hadChange = true;
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
 }
 
 function removeFromInventory(inventory: InventoryEntry[], entry: any) {
@@ -376,5 +475,5 @@ export const bundle = (parser: $RefParser, options: ParserOptions) => {
   });
 
   // Remap all $ref pointers
-  remap(inventory);
+  remap(parser, inventory);
 };
