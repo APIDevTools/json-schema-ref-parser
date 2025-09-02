@@ -534,7 +534,7 @@ function removeFromInventory(inventory: InventoryEntry[], entry: any) {
  * @param options
  */
 export const bundle = (parser: $RefParser, options: ParserOptions) => {
-  console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
+  // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
   perf.mark('bundle-start');
   
   // Build an inventory of all $ref pointers in the JSON Schema
