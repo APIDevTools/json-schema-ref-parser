@@ -17,24 +17,18 @@ describe("bundle", () => {
     const pathOrUrlOrSchema = path.resolve("lib", "__tests__", "spec", "multiple-refs.json");
     const schema = (await refParser.bundle({ pathOrUrlOrSchema })) as any;
 
-    // First reference should be fully resolved (no $ref)
-    expect(schema.paths["/test1/{pathId}"].get.parameters[0].name).toBe("pathId");
-    expect(schema.paths["/test1/{pathId}"].get.parameters[0].schema.type).toBe("string");
-    expect(schema.paths["/test1/{pathId}"].get.parameters[0].schema.format).toBe("uuid");
-    expect(schema.paths["/test1/{pathId}"].get.parameters[0].$ref).toBeUndefined();
-
-    // Second reference should be remapped to point to the first reference
-    expect(schema.paths["/test2/{pathId}"].get.parameters[0].$ref).toBe(
-      "#/paths/~1test1~1%7BpathId%7D/get/parameters/0",
-    );
-
-    // Both should effectively resolve to the same data
+    // Both parameters should now be $ref to the same internal definition
     const firstParam = schema.paths["/test1/{pathId}"].get.parameters[0];
     const secondParam = schema.paths["/test2/{pathId}"].get.parameters[0];
 
-    // The second parameter should resolve to the same data as the first
-    expect(secondParam.$ref).toBeDefined();
-    expect(firstParam).toEqual({
+    // The $ref should match the output structure in file_context_0
+    expect(firstParam.$ref).toBe("#/components/parameters/path-parameter_pathId");
+    expect(secondParam.$ref).toBe("#/components/parameters/path-parameter_pathId");
+
+    // The referenced parameter should exist and match the expected structure
+    expect(schema.components).toBeDefined();
+    expect(schema.components.parameters).toBeDefined();
+    expect(schema.components.parameters["path-parameter_pathId"]).toEqual({
       name: "pathId",
       in: "path",
       required: true,

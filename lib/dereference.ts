@@ -1,4 +1,5 @@
 import $Ref from "./ref.js";
+import cloneDeep from "lodash/cloneDeep";
 import Pointer from "./pointer.js";
 import { ono } from "@jsdevtools/ono";
 import * as url from "./util/url.js";
@@ -17,10 +18,7 @@ export default dereference;
  * @param parser
  * @param options
  */
-function dereference(
-  parser: $RefParser,
-  options: ParserOptions,
-) {
+function dereference(parser: $RefParser, options: ParserOptions) {
   const start = Date.now();
   // console.log('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
   const dereferenced = crawl<JSONSchema>(
@@ -200,11 +198,12 @@ function dereference$Ref<S extends object = JSONSchema>(
       }
       return {
         circular: cache.circular,
-        value: Object.assign({}, cache.value, extraKeys),
+        value: Object.assign({}, cloneDeep(cache.value), extraKeys),
       };
     }
 
-    return cache;
+    // Return a deep-cloned value so each occurrence is an independent copy
+    return { circular: cache.circular, value: cloneDeep(cache.value) };
   }
 
   const pointer = $refs._resolve($refPath, path, options);
