@@ -16,7 +16,6 @@ describe("bundle", () => {
     const refParser = new $RefParser();
     const pathOrUrlOrSchema = path.resolve("lib", "__tests__", "spec", "multiple-refs.json");
     const schema = (await refParser.bundle({ pathOrUrlOrSchema })) as any;
-    // console.log(JSON.stringify(schema, null, 2));
 
     // Both parameters should now be $ref to the same internal definition
     const firstParam = schema.paths["/test1/{pathId}"].get.parameters[0];
