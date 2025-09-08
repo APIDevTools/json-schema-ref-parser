@@ -340,20 +340,63 @@ export class $RefParser {
       throw ono("mergeMany called with no schemas. Did you run parseMany?");
     }
 
-    const first: any = schemas[0] || {};
     const merged: any = {};
 
-    if (typeof first.openapi === "string") {
-      merged.openapi = first.openapi;
+    // Determine spec version: prefer first occurrence of openapi, else swagger
+    let chosenOpenapi: string | undefined;
+    let chosenSwagger: string | undefined;
+    for (const s of schemas) {
+      if (!chosenOpenapi && s && typeof (s as any).openapi === "string") {
+        chosenOpenapi = (s as any).openapi;
+      }
+      if (!chosenSwagger && s && typeof (s as any).swagger === "string") {
+        chosenSwagger = (s as any).swagger;
+      }
+      if (chosenOpenapi && chosenSwagger) {
+        break;
+      }
     }
-    if (typeof first.swagger === "string") {
-      merged.swagger = first.swagger;
+    if (typeof chosenOpenapi === "string") {
+      merged.openapi = chosenOpenapi;
+    } else if (typeof chosenSwagger === "string") {
+      merged.swagger = chosenSwagger;
     }
-    if (first.info) {
-      merged.info = JSON.parse(JSON.stringify(first.info));
+
+    // Merge info: take first non-empty per-field across inputs
+    const infoAccumulator: any = {};
+    for (const s of schemas) {
+      const info = (s as any)?.info;
+      if (info && typeof info === "object") {
+        for (const [k, v] of Object.entries(info)) {
+          if (infoAccumulator[k] === undefined && v !== undefined) {
+            infoAccumulator[k] = JSON.parse(JSON.stringify(v));
+          }
+        }
+      }
     }
-    if (first.servers) {
-      merged.servers = JSON.parse(JSON.stringify(first.servers));
+    if (Object.keys(infoAccumulator).length > 0) {
+      merged.info = infoAccumulator;
+    }
+
+    // Merge servers: union by url+description
+    const servers: any[] = [];
+    const seenServers = new Set<string>();
+    for (const s of schemas) {
+      const arr = (s as any)?.servers;
+      if (Array.isArray(arr)) {
+        for (const srv of arr) {
+          if (srv && typeof srv === "object") {
+            const key = `${srv.url || ""}|${srv.description || ""}`;
+            if (!seenServers.has(key)) {
+              seenServers.add(key);
+              servers.push(JSON.parse(JSON.stringify(srv)));
+            }
+          }
+        }
+      }
+    }
+    if (servers.length > 0) {
+      merged.servers = servers;
     }
 
     merged.paths = {};
