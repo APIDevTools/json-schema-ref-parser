@@ -21,10 +21,7 @@ import { urlResolver } from "./resolvers/url.js";
  * The promise resolves once all JSON references in the schema have been resolved,
  * including nested references that are contained in externally-referenced files.
  */
-export function resolveExternal(
-  parser: $RefParser,
-  options: $RefParserOptions,
-) {
+export function resolveExternal(parser: $RefParser, options: $RefParserOptions) {
   try {
     // console.log('Resolving $ref pointers in %s', parser.$refs._root$Ref.path);
     const promises = crawl(parser.schema, parser.$refs._root$Ref.path + "#", parser.$refs, options);
@@ -101,29 +98,33 @@ async function resolve$Ref<S extends object = JSONSchema>(
 
   // $ref.$ref = url.relative($refs._root$Ref.path, resolvedPath);
 
+  // If this ref points back to an input source we've already merged, avoid re-importing
+  // by checking if the path (without hash) matches a known source in parser and we can serve it internally later.
+  // We keep normal flow but ensure cache hit if already added.
   // Do we already have this $ref?
   const ref = $refs._$refs[withoutHash];
   if (ref) {
-    // We've already parsed this $ref, so use the existing value
-    return Promise.resolve(ref.value);
+    // We've already parsed this $ref, so crawl it to resolve its own externals
+    const promises = crawl(ref.value as S, `${withoutHash}#`, $refs, options, new Set(), true);
+    return Promise.all(promises);
   }
 
   // Parse the $referenced file/url
-  const file = newFile(resolvedPath)
+  const file = newFile(resolvedPath);
 
   // Add a new $Ref for this file, even though we don't have the value yet.
   // This ensures that we don't simultaneously read & parse the same file multiple times
   const $refAdded = $refs._add(file.url);
 
   try {
-    const resolvedInput = getResolvedInput({ pathOrUrlOrSchema: resolvedPath })
+    const resolvedInput = getResolvedInput({ pathOrUrlOrSchema: resolvedPath });
 
     $refAdded.pathType = resolvedInput.type;
 
     let promises: any = [];
 
-    if (resolvedInput.type !== 'json') {
-      const resolver = resolvedInput.type === 'file' ? fileResolver : urlResolver;
+    if (resolvedInput.type !== "json") {
+      const resolver = resolvedInput.type === "file" ? fileResolver : urlResolver;
       await resolver.handler({ file });
       const parseResult = await parseFile(file, options);
       $refAdded.value = parseResult.result;

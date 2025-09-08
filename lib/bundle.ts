@@ -607,7 +607,21 @@ function remap(parser: $RefParser, inventory: InventoryEntry[]) {
 
     let defName = namesForPrefix.get(targetKey);
     if (!defName) {
-      const proposed = `${baseName(entry.file)}_${lastToken(entry.hash)}`;
+      // If the external file is one of the original input sources, prefer its assigned prefix
+      let proposedBase = baseName(entry.file);
+      try {
+        const parserAny: any = parser as any;
+        if (parserAny && parserAny.sourcePathToPrefix && typeof parserAny.sourcePathToPrefix.get === "function") {
+          const withoutHash = (entry.file || "").split("#")[0];
+          const mapped = parserAny.sourcePathToPrefix.get(withoutHash);
+          if (mapped && typeof mapped === "string") {
+            proposedBase = mapped;
+          }
+        }
+      } catch {
+        // Ignore errors
+      }
+      const proposed = `${proposedBase}_${lastToken(entry.hash)}`;
       defName = uniqueName(container, proposed);
       namesForPrefix.set(targetKey, defName);
       // Store the resolved value under the container
