@@ -15,9 +15,9 @@
 Install using [npm](https://docs.npmjs.com/about-npm/):
 
 ```bash
-npm install @apidevtools/json-schema-ref-parser
-yarn add @apidevtools/json-schema-ref-parser
-bun add @apidevtools/json-schema-ref-parser
+npm install @hey-api/json-schema-ref-parser
+yarn add @hey-api/json-schema-ref-parser
+bun add @hey-api/json-schema-ref-parser
 ```
 
 ## The Problem:
@@ -69,19 +69,59 @@ JavaScript objects.
 ## Example
 
 ```javascript
-import $RefParser from "@apidevtools/json-schema-ref-parser";
+import { $RefParser } from "@hey-api/json-schema-ref-parser";
 
 try {
-  await $RefParser.dereference(mySchema);
-  // note - by default, mySchema is modified in place, and the returned value is a reference to the same object
-  console.log(mySchema.definitions.person.properties.firstName);
-
-  // if you want to avoid modifying the original schema, you can disable the `mutateInputSchema` option
-  let clonedSchema = await $RefParser.dereference(mySchema, { mutateInputSchema: false });
-  console.log(clonedSchema.definitions.person.properties.firstName);
+  const parser = new $RefParser();
+  await parser.dereference({ pathOrUrlOrSchema: mySchema });
+  console.log(parser.schema.definitions.person.properties.firstName);
 } catch (err) {
   console.error(err);
 }
+```
+
+### New in this fork (@hey-api)
+
+- **Multiple inputs with `bundleMany`**: Merge and bundle several OpenAPI/JSON Schema inputs (files, URLs, or raw objects) into a single schema. Components are prefixed to avoid name collisions, paths are namespaced on conflict, and `$ref`s are rewritten accordingly.
+
+```javascript
+import { $RefParser } from "@hey-api/json-schema-ref-parser";
+
+const parser = new $RefParser();
+const merged = await parser.bundleMany({
+  pathOrUrlOrSchemas: [
+    "./specs/a.yaml",
+    "https://example.com/b.yaml",
+    { openapi: "3.1.0", info: { title: "Inline" }, paths: {} },
+  ],
+});
+
+// merged.components.* will contain prefixed names like a_<name>, b_<name>, etc.
+```
+
+- **Dereference hooks**: Fine-tune dereferencing with `excludedPathMatcher(path) => boolean` to skip subpaths and `onDereference(path, value, parent, parentPropName)` to observe replacements.
+
+```javascript
+const parser = new $RefParser();
+parser.options.dereference.excludedPathMatcher = (p) => p.includes("/example/");
+parser.options.dereference.onDereference = (p, v) => {
+  // inspect p / v as needed
+};
+await parser.dereference({ pathOrUrlOrSchema: "./openapi.yaml" });
+```
+
+- **Smart input resolution**: You can pass a file path, URL, or raw schema object. If a raw schema includes `$id`, it is used as the base URL for resolving relative `$ref`s.
+
+```javascript
+await new $RefParser().bundle({
+  pathOrUrlOrSchema: {
+    $id: "https://api.example.com/openapi.json",
+    openapi: "3.1.0",
+    paths: {
+      "/ping": { get: { responses: { 200: { description: "ok" } } } },
+    },
+  },
+});
 ```
 
 ## Polyfills
