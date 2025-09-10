@@ -42,7 +42,12 @@ export default {
       try {
         return yaml.load(data, { schema: JSON_SCHEMA });
       } catch (e: any) {
-        throw new ParserError(e?.message || "Parser Error", file.url);
+        try {
+          // fallback to non JSON_SCHEMA
+          return yaml.load(data);
+        } catch (e: any) {
+          throw new ParserError(e?.message || "Parser Error", file.url);
+        }
       }
     } else {
       // data is already a JavaScript value (object, array, number, null, NaN, etc.)
