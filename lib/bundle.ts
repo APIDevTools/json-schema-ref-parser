@@ -579,9 +579,11 @@ function remap(parser: $RefParser, inventory: InventoryEntry[]) {
       continue;
     }
 
-    // Keep internal refs internal
+    // Keep internal refs internal. However, if the $ref extends the resolved value
+    // (i.e. it has additional properties in addition to "$ref"), then we must
+    // preserve the original $ref rather than rewriting it to the resolved hash.
     if (!entry.external) {
-      if (entry.$ref && typeof entry.$ref === "object") {
+      if (!entry.extended && entry.$ref && typeof entry.$ref === "object") {
         entry.$ref.$ref = entry.hash;
       }
       continue;

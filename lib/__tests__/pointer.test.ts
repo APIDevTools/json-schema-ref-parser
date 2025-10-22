@@ -7,7 +7,6 @@ describe("pointer", () => {
     const refParser = new $RefParser();
     const pathOrUrlOrSchema = path.resolve("lib", "__tests__", "spec", "openapi-paths-ref.json");
     const schema = (await refParser.bundle({ pathOrUrlOrSchema })) as any;
-    console.log(JSON.stringify(schema, null, 2));
 
     // The GET endpoint should have its schema defined inline
     const getSchema = schema.paths["/foo"].get.responses["200"].content["application/json"].schema;

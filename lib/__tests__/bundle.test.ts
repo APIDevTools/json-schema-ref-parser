@@ -9,7 +9,17 @@ describe("bundle", () => {
     const refParser = new $RefParser();
     const pathOrUrlOrSchema = path.resolve("lib", "__tests__", "spec", "circular-ref-with-description.json");
     const schema = await refParser.bundle({ pathOrUrlOrSchema });
-    expect(schema).not.toBeUndefined();
+    expect(schema).toEqual({
+      schemas: {
+        Bar: {
+          $ref: '#/schemas/Foo',
+          description: 'ok',
+        },
+        Foo: {
+          $ref: '#/schemas/Bar',
+        },
+      },
+    });
   });
 
   it("bundles multiple references to the same file correctly", async () => {
