@@ -37,9 +37,9 @@ export function resolve(from: string, to: string) {
   }
   const resolved = resolvedUrl.toString() + endSpaces;
   // if there is a #, we want to split on the first one only, and decode the part after
-  if (resolved.indexOf("#") >= 0) {
-    const [base, hash] = resolved.split(/#(.+)/);
-    return base + "#" + decodeURIComponent(hash);
+  if (resolved.includes("#")) {
+    const [base, hash] = resolved.split("#", 2);
+    return base + "#" + decodeURIComponent(hash || "");
   }
   return resolved;
 }
