@@ -7,7 +7,7 @@ import type {
   JSONSchema7Object,
 } from "json-schema";
 import type $Refs from "../refs.js";
-import type { ParserOptions } from "../options";
+import type { ParserOptions } from "../options.js";
 
 export type JSONSchema = JSONSchema4 | JSONSchema6 | JSONSchema7;
 export type JSONSchemaObject = JSONSchema4Object | JSONSchema6Object | JSONSchema7Object;

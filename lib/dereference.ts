@@ -3,9 +3,8 @@ import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
 import type $Refs from "./refs.js";
 import type { DereferenceOptions, ParserOptions } from "./options.js";
-import type { JSONSchema } from "./types";
-import type $RefParser from "./index";
-import { TimeoutError } from "./util/errors";
+import { type $RefParser, type JSONSchema } from "./index.js";
+import { TimeoutError } from "./util/errors.js";
 
 export default dereference;
 

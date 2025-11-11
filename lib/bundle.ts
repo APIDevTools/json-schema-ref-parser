@@ -2,10 +2,10 @@ import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
 import type $Refs from "./refs.js";
-import type $RefParser from "./index";
-import type { ParserOptions } from "./index";
-import type { JSONSchema } from "./index";
-import type { BundleOptions } from "./options";
+import type $RefParser from "./index.js";
+import type { ParserOptions } from "./index.js";
+import type { JSONSchema } from "./index.js";
+import type { BundleOptions } from "./options.js";
 
 export interface InventoryEntry {
   $ref: any;

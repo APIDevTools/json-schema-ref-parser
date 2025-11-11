@@ -2,7 +2,7 @@ import { getHash, stripHash, toFileSystemPath } from "./url.js";
 import type $RefParser from "../index.js";
 import type { ParserOptions } from "../index.js";
 import type { JSONSchema } from "../index.js";
-import type $Ref from "../ref";
+import type $Ref from "../ref.js";
 
 export type JSONParserErrorType =
   | "EUNKNOWN"

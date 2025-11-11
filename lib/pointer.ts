@@ -3,7 +3,7 @@ import type { ParserOptions } from "./options.js";
 import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import { JSONParserError, InvalidPointerError, MissingPointerError, isHandledError } from "./util/errors.js";
-import type { JSONSchema } from "./types";
+import type { JSONSchema } from "./index.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 
 export const nullSymbol = Symbol("null");

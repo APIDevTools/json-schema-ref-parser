@@ -2,6 +2,9 @@
   "name": "@apidevtools/json-schema-ref-parser",
   "version": "0.0.0-dev",
   "description": "Parse, Resolve, and Dereference JSON Schema $ref pointers",
+  "type": "module",
+  "types": "dist/lib/index.d.ts",
+  "module": "dist/lib/index.js",
   "scripts": {
     "prepublishOnly": "yarn build",
     "lint": "eslint lib",
@@ -9,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "prettier": "prettier --write \"**/*.+(js|jsx|ts|tsx|har||json|css|md)\"",
     "test": "vitest --coverage",
+    "test:specific": "vitest defs-encoding",
     "test:node": "yarn test",
     "test:browser": "cross-env BROWSER=\"true\" yarn test",
     "test:update": "vitest -u",
@@ -53,14 +57,11 @@
     "url": "https://github.com/APIDevTools/json-schema-ref-parser.git"
   },
   "license": "MIT",
-  "funding": "https://github.com/sponsors/philsturgeon",
-  "types": "dist/lib/index.d.ts",
-  "main": "dist/lib/index.js",
   "browser": {
     "fs": false
   },
   "engines": {
-    "node": ">= 20"
+    "node": ">=20"
   },
   "files": [
     "lib",

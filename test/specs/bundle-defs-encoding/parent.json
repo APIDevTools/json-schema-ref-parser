@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "foo": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "myschema": {
+      "$ref": "./myschema.json"
+    },
+    "otherschema": {
+      "$ref": "./otherschema.json"
+    }
+  }
+}

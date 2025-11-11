@@ -4,7 +4,7 @@ import { InvalidPointerError, isHandledError, normalizeError } from "./util/erro
 import { safePointerToPath, stripHash, getHash } from "./util/url.js";
 import type $Refs from "./refs.js";
 import type { ParserOptions } from "./options.js";
-import type { JSONSchema } from "./types";
+import type { JSONSchema } from "./index.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 
 export type $RefError = JSONParserError | ResolverError | ParserError | MissingPointerError;

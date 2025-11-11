@@ -1,4 +1,4 @@
-import convertPathToPosix from "./convert-path-to-posix";
+import convertPathToPosix from "./convert-path-to-posix.js";
 import path, { win32 } from "path";
 
 const forwardSlashPattern = /\//g;
@@ -7,7 +7,7 @@ const jsonPointerSlash = /~1/g;
 const jsonPointerTilde = /~0/g;
 
 import { join } from "path";
-import { isWindows } from "./is-windows";
+import { isWindows } from "./is-windows.js";
 
 // RegExp patterns to URL-encode special characters in local filesystem paths
 const urlEncodePatterns = [
