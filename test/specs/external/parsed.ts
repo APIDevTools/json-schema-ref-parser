@@ -26,7 +26,7 @@ export default {
       $ref: "required-string.yaml",
     },
     string: {
-      $ref: "#/required%20string/type",
+      $ref: "#/required string/type",
     },
     name: {
       $ref: "../definitions/name.yaml",

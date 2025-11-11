@@ -1,6 +1,6 @@
 import type { Options, ParserOptions } from "./options.js";
 import { getNewOptions } from "./options.js";
-import type { JSONSchema, SchemaCallback } from "./types";
+import type { JSONSchema, SchemaCallback } from "./index.js";
 
 // I really dislike this function and the way it's written. It's not clear what it's doing, and it's way too flexible
 // In the future, I'd like to deprecate the api and accept only named parameters in index.ts

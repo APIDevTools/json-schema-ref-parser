@@ -29,19 +29,15 @@ format. Maybe some of the files contain cross-references to each other.
 {
   "definitions": {
     "person": {
-      // references an external file
       "$ref": "schemas/people/Bruce-Wayne.json"
     },
     "place": {
-      // references a sub-schema in an external file
       "$ref": "schemas/places.yaml#/definitions/Gotham-City"
     },
     "thing": {
-      // references a URL
       "$ref": "http://wayne-enterprises.com/things/batmobile"
     },
     "color": {
-      // references a value in an external file via an internal reference
       "$ref": "#/definitions/thing/properties/colors/black-as-the-night"
     }
   }

@@ -2,8 +2,8 @@ import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 import type { ParserOptions } from "./options.js";
-import convertPathToPosix from "./util/convert-path-to-posix";
-import type { JSONSchema } from "./types";
+import convertPathToPosix from "./util/convert-path-to-posix.js";
+import type { JSONSchema } from "./index.js";
 
 interface $RefsMap<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   [url: string]: $Ref<S, O>;

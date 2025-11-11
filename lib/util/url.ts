@@ -1,4 +1,4 @@
-import convertPathToPosix from "./convert-path-to-posix";
+import convertPathToPosix from "./convert-path-to-posix.js";
 import path, { win32 } from "path";
 
 const forwardSlashPattern = /\//g;
@@ -7,7 +7,7 @@ const jsonPointerSlash = /~1/g;
 const jsonPointerTilde = /~0/g;
 
 import { join } from "path";
-import { isWindows } from "./is-windows";
+import { isWindows } from "./is-windows.js";
 
 // RegExp patterns to URL-encode special characters in local filesystem paths
 const urlEncodePatterns = [
@@ -33,9 +33,15 @@ export function resolve(from: string, to: string) {
   if (resolvedUrl.hostname === "aaa.nonexistanturl.com") {
     // `from` is a relative URL.
     const { pathname, search, hash } = resolvedUrl;
-    return pathname + search + hash + endSpaces;
+    return pathname + search + decodeURIComponent(hash) + endSpaces;
   }
-  return resolvedUrl.toString() + endSpaces;
+  const resolved = resolvedUrl.toString() + endSpaces;
+  // if there is a #, we want to split on the first one only, and decode the part after
+  if (resolved.includes("#")) {
+    const [base, hash] = resolved.split("#", 2);
+    return base + "#" + decodeURIComponent(hash || "");
+  }
+  return resolved;
 }
 
 /**
@@ -467,7 +473,7 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
  * @param pointer
  * @returns
  */
-export function safePointerToPath(pointer: any) {
+export function safePointerToPath(pointer: string) {
   if (pointer.length <= 1 || pointer[0] !== "#" || pointer[1] !== "/") {
     return [];
   }
@@ -475,8 +481,8 @@ export function safePointerToPath(pointer: any) {
   return pointer
     .slice(2)
     .split("/")
-    .map((value: any) => {
-      return decodeURIComponent(value).replace(jsonPointerSlash, "/").replace(jsonPointerTilde, "~");
+    .map((value: string) => {
+      return value.replace(jsonPointerSlash, "/").replace(jsonPointerTilde, "~");
     });
 }
 

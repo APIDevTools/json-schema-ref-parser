@@ -3,9 +3,8 @@ import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
 import type $Refs from "./refs.js";
 import type { DereferenceOptions, ParserOptions } from "./options.js";
-import type { JSONSchema } from "./types";
-import type $RefParser from "./index";
-import { TimeoutError } from "./util/errors";
+import { type $RefParser, type JSONSchema } from "./index.js";
+import { TimeoutError } from "./util/errors.js";
 
 export default dereference;
 
@@ -278,7 +277,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   }
 
   // Dereference the JSON reference
-  let dereferencedValue = $Ref.dereference($ref, pointer.value);
+  let dereferencedValue = $Ref.dereference($ref, pointer.value, options);
 
   // Crawl the dereferenced value (unless it's circular)
   if (!circular) {

@@ -3,7 +3,8 @@ import type { ParserOptions } from "./options.js";
 import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import { JSONParserError, InvalidPointerError, MissingPointerError, isHandledError } from "./util/errors.js";
-import type { JSONSchema } from "./types";
+import type { JSONSchema } from "./index.js";
+import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 
 export const nullSymbol = Symbol("null");
 
@@ -11,14 +12,6 @@ const slashes = /\//g;
 const tildes = /~/g;
 const escapedSlash = /~1/g;
 const escapedTilde = /~0/g;
-
-const safeDecodeURIComponent = (encodedURIComponent: string): string => {
-  try {
-    return decodeURIComponent(encodedURIComponent);
-  } catch {
-    return encodedURIComponent;
-  }
-};
 
 /**
  * This class represents a single JSON pointer and its resolved value.
@@ -90,7 +83,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    */
   resolve(obj: S, options?: O, pathFromRoot?: string) {
     const tokens = Pointer.parse(this.path, this.originalPath);
-    const found: any = [];
+    const found: string[] = [];
 
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
@@ -123,7 +116,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
         // actually instead pointing to an existing `null` value then we should use that
         // `null` value.
         if (token in this.value && this.value[token] === null) {
-          // We use a `null` symbol for internal tracking to differntiate between a general `null`
+          // We use a `null` symbol for internal tracking to differentiate between a general `null`
           // value and our expected `null` value.
           this.value = nullSymbol;
           continue;
@@ -163,7 +156,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    * @returns
    * Returns the modified object, or an entirely new object if the entire object is overwritten.
    */
-  set(obj: S, value: any, options?: O) {
+  set(obj: S, value: JSONSchema4Type | JSONSchema6Type | JSONSchema7Type, options?: O) {
     const tokens = Pointer.parse(this.path);
     let token;
 
@@ -190,7 +183,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     }
 
     // Set the value of the final token
-    resolveIf$Ref(this, options);
+    resolveIf$Ref<S, O>(this, options);
     token = tokens[tokens.length - 1];
     setValue(this, token, value);
 
@@ -225,7 +218,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
     // Decode each part, according to RFC 6901
     for (let i = 0; i < split.length; i++) {
-      split[i] = safeDecodeURIComponent(split[i].replace(escapedSlash, "/").replace(escapedTilde, "~"));
+      split[i] = split[i].replace(escapedSlash, "/").replace(escapedTilde, "~");
     }
 
     if (split[0] !== "") {
@@ -253,7 +246,9 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
       // Encode the token, according to RFC 6901
-      base += "/" + encodeURIComponent(token.replace(tildes, "~0").replace(slashes, "~1"));
+      // RFC 6901 only requires encoding ~ as ~0 and / as ~1
+      // We do NOT use encodeURIComponent as it encodes characters like $ which should remain literal
+      base += "/" + token.replace(tildes, "~0").replace(slashes, "~1");
     }
 
     return base;
@@ -271,7 +266,11 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
  * @param [pathFromRoot] - the path of place that initiated resolving
  * @returns - Returns `true` if the resolution path changed
  */
-function resolveIf$Ref(pointer: any, options: any, pathFromRoot?: any) {
+function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  pointer: Pointer,
+  options: O | undefined,
+  pathFromRoot?: string,
+) {
   // Is the value a JSON reference? (and allowed?)
 
   if ($Ref.isAllowed$Ref(pointer.value, options)) {
@@ -291,7 +290,7 @@ function resolveIf$Ref(pointer: any, options: any, pathFromRoot?: any) {
       if ($Ref.isExtended$Ref(pointer.value)) {
         // This JSON reference "extends" the resolved value, rather than simply pointing to it.
         // So the resolved path does NOT change.  Just the value does.
-        pointer.value = $Ref.dereference(pointer.value, resolved.value);
+        pointer.value = $Ref.dereference(pointer.value, resolved.value, options);
         return false;
       } else {
         // Resolve the reference
@@ -318,7 +317,7 @@ export default Pointer;
  * @param value - The value to assign
  * @returns - Returns the assigned value
  */
-function setValue(pointer: any, token: any, value: any) {
+function setValue(pointer: Pointer, token: string, value: JSONSchema4Type | JSONSchema6Type | JSONSchema7Type) {
   if (pointer.value && typeof pointer.value === "object") {
     if (token === "-" && Array.isArray(pointer.value)) {
       pointer.value.push(value);
@@ -333,7 +332,7 @@ function setValue(pointer: any, token: any, value: any) {
   return value;
 }
 
-function unwrapOrThrow(value: any) {
+function unwrapOrThrow(value: unknown) {
   if (isHandledError(value)) {
     throw value;
   }
@@ -341,6 +340,6 @@ function unwrapOrThrow(value: any) {
   return value;
 }
 
-function isRootPath(pathFromRoot: any): boolean {
+function isRootPath(pathFromRoot: string | unknown): boolean {
   return typeof pathFromRoot == "string" && Pointer.parse(pathFromRoot).length == 0;
 }

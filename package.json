@@ -2,6 +2,9 @@
   "name": "@apidevtools/json-schema-ref-parser",
   "version": "0.0.0-dev",
   "description": "Parse, Resolve, and Dereference JSON Schema $ref pointers",
+  "type": "module",
+  "types": "dist/lib/index.d.ts",
+  "module": "dist/lib/index.js",
   "scripts": {
     "prepublishOnly": "yarn build",
     "lint": "eslint lib",
@@ -9,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "prettier": "prettier --write \"**/*.+(js|jsx|ts|tsx|har||json|css|md)\"",
     "test": "vitest --coverage",
+    "test:specific": "vitest invalid",
     "test:node": "yarn test",
     "test:browser": "cross-env BROWSER=\"true\" yarn test",
     "test:update": "vitest -u",
@@ -53,14 +57,11 @@
     "url": "https://github.com/APIDevTools/json-schema-ref-parser.git"
   },
   "license": "MIT",
-  "funding": "https://github.com/sponsors/philsturgeon",
-  "types": "dist/lib/index.d.ts",
-  "main": "dist/lib/index.js",
   "browser": {
     "fs": false
   },
   "engines": {
-    "node": ">= 20"
+    "node": ">=20"
   },
   "files": [
     "lib",
@@ -73,29 +74,29 @@
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "@eslint/compat": "^1.3.2",
-    "@eslint/js": "^9.35.0",
+    "@eslint/compat": "^1.4.1",
+    "@eslint/js": "^9.39.1",
     "@types/eslint": "^9.6.1",
     "@types/js-yaml": "^4.0.9",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^24",
-    "@typescript-eslint/eslint-plugin": "^8.43.0",
-    "@typescript-eslint/parser": "^8.43.0",
-    "@vitest/coverage-v8": "^3.2.4",
-    "cross-env": "^10.0.0",
-    "eslint": "^9.35.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.4",
+    "@typescript-eslint/parser": "^8.46.4",
+    "@vitest/coverage-v8": "^4.0.8",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-promise": "^7.2.1",
-    "eslint-plugin-unused-imports": "^4.2.0",
-    "globals": "^16.4.0",
-    "jsdom": "^26.1.0",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "globals": "^16.5.0",
+    "jsdom": "^27.1.0",
     "prettier": "^3.6.2",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.43.0",
-    "vitest": "^3.2.4"
+    "rimraf": "^6.1.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vitest": "^4.0.8"
   },
   "release": {
     "branches": [
@@ -108,5 +109,5 @@
       "@semantic-release/github"
     ]
   },
-  "packageManager": "yarn@4.9.4"
+  "packageManager": "yarn@4.11.0"
 }

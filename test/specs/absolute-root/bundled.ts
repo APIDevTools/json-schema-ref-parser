@@ -22,7 +22,7 @@ export default {
       minLength: 1,
     },
     string: {
-      $ref: "#/definitions/required%20string/type",
+      $ref: "#/definitions/required string/type",
     },
     name: {
       title: "name",
@@ -30,21 +30,21 @@ export default {
       required: ["first", "last"],
       properties: {
         first: {
-          $ref: "#/definitions/required%20string",
+          $ref: "#/definitions/required string",
         },
         last: {
-          $ref: "#/definitions/required%20string",
+          $ref: "#/definitions/required string",
         },
         middle: {
           type: {
-            $ref: "#/definitions/required%20string/type",
+            $ref: "#/definitions/required string/type",
           },
           minLength: {
-            $ref: "#/definitions/required%20string/minLength",
+            $ref: "#/definitions/required string/minLength",
           },
         },
         prefix: {
-          $ref: "#/definitions/required%20string",
+          $ref: "#/definitions/required string",
           minLength: 3,
         },
         suffix: {

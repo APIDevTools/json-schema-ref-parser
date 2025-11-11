@@ -4,7 +4,8 @@ import { InvalidPointerError, isHandledError, normalizeError } from "./util/erro
 import { safePointerToPath, stripHash, getHash } from "./util/url.js";
 import type $Refs from "./refs.js";
 import type { ParserOptions } from "./options.js";
-import type { JSONSchema } from "./types";
+import type { JSONSchema } from "./index.js";
+import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 
 export type $RefError = JSONParserError | ResolverError | ParserError | MissingPointerError;
 
@@ -150,7 +151,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    * @param path - The full path of the property to set, optionally with a JSON pointer in the hash
    * @param value - The value to assign
    */
-  set(path: string, value: any) {
+  set(path: string, value: JSONSchema4Type | JSONSchema6Type | JSONSchema7Type) {
     const pointer = new Pointer(this, path);
     this.value = pointer.set(this.value, value);
     if (this.value === nullSymbol) {
@@ -273,14 +274,16 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    *
    * @param $ref - The JSON reference object (the one with the "$ref" property)
    * @param resolvedValue - The resolved value, which can be any type
+   * @param options - The options
    * @returns - Returns the dereferenced value
    */
   static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     $ref: $Ref<S, O>,
     resolvedValue: S,
+    options?: O,
   ): S {
     if (resolvedValue && typeof resolvedValue === "object" && $Ref.isExtended$Ref($ref)) {
-      const merged = {};
+      const merged = {} as Partial<S>;
       for (const key of Object.keys($ref)) {
         if (key !== "$ref") {
           // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
@@ -288,10 +291,24 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
         }
       }
 
-      for (const key of Object.keys(resolvedValue)) {
+      const mergeKeys = options?.dereference?.mergeKeys ?? true;
+
+      for (const _key of Object.keys(resolvedValue)) {
+        const key = _key as keyof S;
         if (!(key in merged)) {
-          // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
           merged[key] = resolvedValue[key];
+        } else {
+          // TODO: this behavior should be configurable from options on the CLI
+          // Key is already in merged, so we should merge them if both are objects
+          if (
+            mergeKeys &&
+            typeof merged[key] === "object" &&
+            merged[key] !== null &&
+            typeof resolvedValue[key] === "object" &&
+            resolvedValue[key] !== null
+          ) {
+            merged[key] = deepMerge<(typeof merged)[keyof S]>(resolvedValue[key], merged[key]);
+          }
         }
       }
 
@@ -301,6 +318,39 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
       return resolvedValue;
     }
   }
+}
+
+function deepMerge<T>(target: Partial<T>, source: Partial<T>): T {
+  //return {...target, ...source};
+
+  // If either isn't an object, just return source (overwrite)
+  if (typeof target !== "object" || target === null) {
+    return source as T;
+  }
+  if (typeof source !== "object" || source === null) {
+    return source;
+  }
+
+  // Ensure we don't mutate target directly
+  const output = Array.isArray(target) ? [...target] : { ...target };
+
+  for (const key of Object.keys(source)) {
+    // @ts-expect-error
+    if (Array.isArray(source[key])) {
+      // If it's an array, replace entirely (you can customize this to concat instead)
+      // @ts-expect-error
+      output[key] = [...source[key]];
+      // @ts-expect-error
+    } else if (typeof source[key] === "object" && source[key] !== null) {
+      // @ts-expect-error
+      output[key] = deepMerge(target[key], source[key]);
+    } else {
+      // @ts-expect-error
+      output[key] = source[key];
+    }
+  }
+
+  return output as T;
 }
 
 export default $Ref;

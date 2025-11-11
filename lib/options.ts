@@ -82,6 +82,13 @@ export interface DereferenceOptions {
    * Default: `relative`
    */
   externalReferenceResolution?: "relative" | "root";
+
+  /**
+   * Whether duplicate keys should be merged when dereferencing objects.
+   *
+   * Default: `true`
+   */
+  mergeKeys?: boolean;
 }
 
 /**
@@ -229,6 +236,7 @@ export const getJsonSchemaRefParserDefaultOptions = () => {
        */
       excludedPathMatcher: () => false,
       referenceResolution: "relative",
+      mergeKeys: true,
     },
 
     mutateInputSchema: true,
