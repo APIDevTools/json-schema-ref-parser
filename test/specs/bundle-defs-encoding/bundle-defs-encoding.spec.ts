@@ -9,6 +9,9 @@ describe("Bundle $defs encoding", () => {
     const schema = path.rel("test/specs/bundle-defs-encoding/parent.json");
     const bundled = await parser.bundle(schema);
 
+    // Debug: log the bundled schema
+    console.log('Bundled schema:', JSON.stringify(bundled, null, 2));
+
     // The bundled schema should have $defs section with myschema that references otherschema
     expect(bundled).toHaveProperty("$defs");
     expect(bundled.$defs).toHaveProperty("myschema");

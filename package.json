@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "prettier": "prettier --write \"**/*.+(js|jsx|ts|tsx|har||json|css|md)\"",
     "test": "vitest --coverage",
-    "test:specific": "vitest defs-encoding",
+    "test:specific": "vitest invalid",
     "test:node": "yarn test",
     "test:browser": "cross-env BROWSER=\"true\" yarn test",
     "test:update": "vitest -u",

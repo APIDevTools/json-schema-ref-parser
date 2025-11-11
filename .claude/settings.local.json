@@ -1,8 +1,6 @@
 {
-  "enableAllProjectMcpServers": false,
   "permissions": {
-    "allow": [
-      "Bash(npx vitest:*)"
-    ]
-  }
+    "allow": ["Bash(npx vitest:*)", "Bash(bash:*)", "Bash(node test-debug.js:*)"]
+  },
+  "enableAllProjectMcpServers": false
 }

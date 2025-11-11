@@ -307,7 +307,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
             typeof resolvedValue[key] === "object" &&
             resolvedValue[key] !== null
           ) {
-            merged[key] = deepMerge<typeof merged[keyof S]>(resolvedValue[key], merged[key]);
+            merged[key] = deepMerge<(typeof merged)[keyof S]>(resolvedValue[key], merged[key]);
           }
         }
       }

@@ -13,14 +13,6 @@ const tildes = /~/g;
 const escapedSlash = /~1/g;
 const escapedTilde = /~0/g;
 
-const safeDecodeURIComponent = (encodedURIComponent: string): string => {
-  try {
-    return decodeURIComponent(encodedURIComponent);
-  } catch {
-    return encodedURIComponent;
-  }
-};
-
 /**
  * This class represents a single JSON pointer and its resolved value.
  *
@@ -124,7 +116,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
         // actually instead pointing to an existing `null` value then we should use that
         // `null` value.
         if (token in this.value && this.value[token] === null) {
-          // We use a `null` symbol for internal tracking to differntiate between a general `null`
+          // We use a `null` symbol for internal tracking to differentiate between a general `null`
           // value and our expected `null` value.
           this.value = nullSymbol;
           continue;
@@ -226,7 +218,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
     // Decode each part, according to RFC 6901
     for (let i = 0; i < split.length; i++) {
-      split[i] = safeDecodeURIComponent(split[i].replace(escapedSlash, "/").replace(escapedTilde, "~"));
+      split[i] = split[i].replace(escapedSlash, "/").replace(escapedTilde, "~");
     }
 
     if (split[0] !== "") {
@@ -254,7 +246,9 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
       // Encode the token, according to RFC 6901
-      base += "/" + encodeURIComponent(token.replace(tildes, "~0").replace(slashes, "~1"));
+      // RFC 6901 only requires encoding ~ as ~0 and / as ~1
+      // We do NOT use encodeURIComponent as it encodes characters like $ which should remain literal
+      base += "/" + token.replace(tildes, "~0").replace(slashes, "~1");
     }
 
     return base;
