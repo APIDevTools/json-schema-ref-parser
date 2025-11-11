@@ -40,7 +40,7 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
   crawl<S, O>(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
 
   // Remap all $ref pointers
-  remap(inventory);
+  remap<S, O>(inventory, options);
 }
 
 /**
@@ -203,7 +203,10 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
  *
  * @param inventory
  */
-function remap(inventory: InventoryEntry[]) {
+function remap<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  inventory: InventoryEntry[],
+  options: O,
+) {
   // Group & sort all the $ref pointers, so they're in the order that we need to dereference/remap them
   inventory.sort((a: InventoryEntry, b: InventoryEntry) => {
     if (a.file !== b.file) {
@@ -254,10 +257,10 @@ function remap(inventory: InventoryEntry[]) {
       // This $ref already resolves to the main JSON Schema file
       entry.$ref.$ref = entry.hash;
     } else if (entry.file === file && entry.hash === hash) {
-      // This $ref points to the same value as the prevous $ref, so remap it to the same path
+      // This $ref points to the same value as the previous $ref, so remap it to the same path
       entry.$ref.$ref = pathFromRoot;
     } else if (entry.file === file && entry.hash.indexOf(hash + "/") === 0) {
-      // This $ref points to a sub-value of the prevous $ref, so remap it beneath that path
+      // This $ref points to a sub-value of the previous $ref, so remap it beneath that path
       entry.$ref.$ref = Pointer.join(pathFromRoot, Pointer.parse(entry.hash.replace(hash, "#")));
     } else {
       // We've moved to a new file or new hash
@@ -267,7 +270,7 @@ function remap(inventory: InventoryEntry[]) {
 
       // This is the first $ref to point to this value, so dereference the value.
       // Any other $refs that point to the same value will point to this $ref instead
-      entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value);
+      entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
 
       if (entry.circular) {
         // This $ref points to itself

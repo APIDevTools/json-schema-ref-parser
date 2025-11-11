@@ -278,7 +278,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   }
 
   // Dereference the JSON reference
-  let dereferencedValue = $Ref.dereference($ref, pointer.value);
+  let dereferencedValue = $Ref.dereference($ref, pointer.value, options);
 
   // Crawl the dereferenced value (unless it's circular)
   if (!circular) {

@@ -4,6 +4,7 @@ import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import { JSONParserError, InvalidPointerError, MissingPointerError, isHandledError } from "./util/errors.js";
 import type { JSONSchema } from "./types";
+import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 
 export const nullSymbol = Symbol("null");
 
@@ -90,7 +91,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    */
   resolve(obj: S, options?: O, pathFromRoot?: string) {
     const tokens = Pointer.parse(this.path, this.originalPath);
-    const found: any = [];
+    const found: string[] = [];
 
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
@@ -163,7 +164,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    * @returns
    * Returns the modified object, or an entirely new object if the entire object is overwritten.
    */
-  set(obj: S, value: any, options?: O) {
+  set(obj: S, value: JSONSchema4Type | JSONSchema6Type | JSONSchema7Type, options?: O) {
     const tokens = Pointer.parse(this.path);
     let token;
 
@@ -190,7 +191,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     }
 
     // Set the value of the final token
-    resolveIf$Ref(this, options);
+    resolveIf$Ref<S, O>(this, options);
     token = tokens[tokens.length - 1];
     setValue(this, token, value);
 
@@ -271,7 +272,11 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
  * @param [pathFromRoot] - the path of place that initiated resolving
  * @returns - Returns `true` if the resolution path changed
  */
-function resolveIf$Ref(pointer: any, options: any, pathFromRoot?: any) {
+function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  pointer: Pointer,
+  options: O | undefined,
+  pathFromRoot?: string,
+) {
   // Is the value a JSON reference? (and allowed?)
 
   if ($Ref.isAllowed$Ref(pointer.value, options)) {
@@ -291,7 +296,7 @@ function resolveIf$Ref(pointer: any, options: any, pathFromRoot?: any) {
       if ($Ref.isExtended$Ref(pointer.value)) {
         // This JSON reference "extends" the resolved value, rather than simply pointing to it.
         // So the resolved path does NOT change.  Just the value does.
-        pointer.value = $Ref.dereference(pointer.value, resolved.value);
+        pointer.value = $Ref.dereference(pointer.value, resolved.value, options);
         return false;
       } else {
         // Resolve the reference
@@ -318,7 +323,7 @@ export default Pointer;
  * @param value - The value to assign
  * @returns - Returns the assigned value
  */
-function setValue(pointer: any, token: any, value: any) {
+function setValue(pointer: Pointer, token: string, value: JSONSchema4Type | JSONSchema6Type | JSONSchema7Type) {
   if (pointer.value && typeof pointer.value === "object") {
     if (token === "-" && Array.isArray(pointer.value)) {
       pointer.value.push(value);
@@ -333,7 +338,7 @@ function setValue(pointer: any, token: any, value: any) {
   return value;
 }
 
-function unwrapOrThrow(value: any) {
+function unwrapOrThrow(value: unknown) {
   if (isHandledError(value)) {
     throw value;
   }
@@ -341,6 +346,6 @@ function unwrapOrThrow(value: any) {
   return value;
 }
 
-function isRootPath(pathFromRoot: any): boolean {
+function isRootPath(pathFromRoot: string | unknown): boolean {
   return typeof pathFromRoot == "string" && Pointer.parse(pathFromRoot).length == 0;
 }

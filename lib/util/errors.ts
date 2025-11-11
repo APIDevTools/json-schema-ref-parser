@@ -201,7 +201,7 @@ export class InvalidPointerError extends JSONParserError {
   }
 }
 
-export function isHandledError(err: any): err is JSONParserError {
+export function isHandledError(err: unknown): err is JSONParserError {
   return err instanceof JSONParserError || err instanceof JSONParserErrorGroup;
 }
 
