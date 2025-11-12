@@ -1,5 +1,5 @@
 import * as url from "./util/url.js";
-import * as plugins from "./util/plugins.js";
+import { filter, all, sort, run } from "./util/plugins.js";
 import {
   ResolverError,
   ParserError,
@@ -77,13 +77,13 @@ async function readFile<S extends object = JSONSchema, O extends ParserOptions<S
   // console.log('Reading %s', file.url);
 
   // Find the resolvers that can read this file
-  let resolvers = plugins.all(options.resolve);
-  resolvers = plugins.filter(resolvers, "canRead", file);
+  let resolvers = all(options.resolve);
+  resolvers = filter(resolvers, "canRead", file, undefined, $refs);
 
   // Run the resolvers, in order, until one of them succeeds
-  plugins.sort(resolvers);
+  sort(resolvers);
   try {
-    const data = await plugins.run(resolvers, "read", file, $refs);
+    const data = await run(resolvers, "read", file, $refs);
     return data;
   } catch (err: any) {
     if (!err && options.continueOnError) {
@@ -123,14 +123,14 @@ async function parseFile<S extends object = JSONSchema, O extends ParserOptions<
   // Find the parsers that can read this file type.
   // If none of the parsers are an exact match for this file, then we'll try ALL of them.
   // This handles situations where the file IS a supported type, just with an unknown extension.
-  const allParsers = plugins.all(options.parse);
-  const filteredParsers = plugins.filter(allParsers, "canParse", file);
+  const allParsers = all(options.parse);
+  const filteredParsers = filter(allParsers, "canParse", file);
   const parsers = filteredParsers.length > 0 ? filteredParsers : allParsers;
 
   // Run the parsers, in order, until one of them succeeds
-  plugins.sort(parsers);
+  sort(parsers);
   try {
-    const parser = await plugins.run<S, O>(parsers, "parse", file, $refs);
+    const parser = await run<S, O>(parsers, "parse", file, $refs);
     if (!parser.plugin.allowEmpty && isEmpty(parser.result)) {
       throw new SyntaxError(`Error parsing "${file.url}" as ${parser.plugin.name}. \nParsed value is empty`);
     } else {

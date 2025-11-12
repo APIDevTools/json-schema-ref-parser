@@ -26,9 +26,15 @@ export function all<S extends object = JSONSchema, O extends ParserOptions<S> = 
 /**
  * Filters the given plugins, returning only the ones return `true` for the given method.
  */
-export function filter(plugins: Plugin[], method: any, file: any) {
+export function filter<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  plugins: Plugin[],
+  method: keyof Plugin | keyof ResolverOptions<S>,
+  file: FileInfo,
+  callback?: (err?: Error, result?: any) => void,
+  $refs?: $Refs<S, O>,
+) {
   return plugins.filter((plugin: Plugin) => {
-    return !!getResult(plugin, method, file);
+    return !!getResult(plugin, method, file, callback, $refs);
   });
 }
 
@@ -40,8 +46,8 @@ export function sort(plugins: Plugin[]) {
     plugin.order = plugin.order || Number.MAX_SAFE_INTEGER;
   }
 
-  return plugins.sort((a: any, b: any) => {
-    return a.order - b.order;
+  return plugins.sort((a: Plugin, b: Plugin) => {
+    return a.order! - b.order!;
   });
 }
 
