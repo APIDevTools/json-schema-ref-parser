@@ -99,7 +99,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
       // when schema id has defined an URL should use that hostname to request the references,
       // instead of using the current page URL
       const params = url.parse(args.schema.$id as string);
-      const port = params.protocol === "https:" ? 443 : 80;
+      const port = params.port ?? (params.protocol === "https:" ? 443 : 80);
 
       args.path = `${params.protocol}//${params.hostname}:${port}`;
     }
