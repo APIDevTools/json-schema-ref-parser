@@ -5,6 +5,7 @@
   "type": "module",
   "types": "dist/lib/index.d.ts",
   "module": "dist/lib/index.js",
+  "main": "dist/lib/index.js",
   "scripts": {
     "prepublishOnly": "yarn build",
     "lint": "eslint lib",
