@@ -41,7 +41,7 @@ export default {
     if (typeof data === "string") {
       try {
         return yaml.load(data, { schema: JSON_SCHEMA });
-      } catch (e: any) {
+      } catch {
         try {
           // fallback to non JSON_SCHEMA
           return yaml.load(data);
