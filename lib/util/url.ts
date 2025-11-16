@@ -1,5 +1,5 @@
 import convertPathToPosix from "./convert-path-to-posix.js";
-import path, { win32 } from "path";
+import path from "path";
 
 const forwardSlashPattern = /\//g;
 const protocolPattern = /^(\w{2,}):\/\//i;
@@ -8,6 +8,8 @@ const jsonPointerTilde = /~0/g;
 
 import { join } from "path";
 import { isWindows } from "./is-windows.js";
+
+const isAbsoluteWin32Path = /^[a-zA-Z]:\\/;
 
 // RegExp patterns to URL-encode special characters in local filesystem paths
 const urlEncodePatterns = [
@@ -391,7 +393,7 @@ export function fromFileSystemPath(path: string) {
     const hasProjectDir = upperPath.includes(posixUpper);
     const hasProjectUri = upperPath.includes(posixUpper);
     const isAbsolutePath =
-      win32?.isAbsolute(path) ||
+      isAbsoluteWin32Path.test(path) ||
       path.startsWith("http://") ||
       path.startsWith("https://") ||
       path.startsWith("file://");

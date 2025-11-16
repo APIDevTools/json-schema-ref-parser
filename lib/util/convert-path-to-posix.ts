@@ -1,5 +1,6 @@
 import path from "path";
 
+const win32Sep = "\\";
 export default function convertPathToPosix(filePath: string) {
   const isExtendedLengthPath = filePath.startsWith("\\\\?\\");
 
@@ -7,5 +8,5 @@ export default function convertPathToPosix(filePath: string) {
     return filePath;
   }
 
-  return filePath.split(path?.win32?.sep).join(path?.posix?.sep ?? "/");
+  return filePath.split(win32Sep).join(path?.posix?.sep ?? "/");
 }
