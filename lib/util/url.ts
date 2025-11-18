@@ -146,7 +146,7 @@ export function getHash(path: undefined | string) {
  * @param path
  * @returns
  */
-export function stripHash(path: string) {
+export function stripHash(path: string | undefined) {
   if (!path) {
     return "";
   }
