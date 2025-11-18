@@ -100,7 +100,7 @@ export function getProtocol(path: string | undefined) {
  * @param path
  * @returns
  */
-export function getExtension(path: any) {
+export function getExtension(path: string) {
   const lastDot = path.lastIndexOf(".");
   if (lastDot >= 0) {
     return stripQuery(path.substring(lastDot).toLowerCase());
@@ -114,7 +114,7 @@ export function getExtension(path: any) {
  * @param path
  * @returns
  */
-export function stripQuery(path: any) {
+export function stripQuery(path: string) {
   const queryIndex = path.indexOf("?");
   if (queryIndex >= 0) {
     path = path.substring(0, queryIndex);
@@ -146,7 +146,7 @@ export function getHash(path: undefined | string) {
  * @param path
  * @returns
  */
-export function stripHash(path?: string | undefined) {
+export function stripHash(path: string) {
   if (!path) {
     return "";
   }
