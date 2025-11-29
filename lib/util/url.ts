@@ -1,12 +1,10 @@
 import convertPathToPosix from "./convert-path-to-posix.js";
-import path from "path";
 
 const forwardSlashPattern = /\//g;
 const protocolPattern = /^(\w{2,}):\/\//i;
 const jsonPointerSlash = /~1/g;
 const jsonPointerTilde = /~0/g;
 
-import { join } from "path";
 import { isWindows } from "./is-windows.js";
 
 const isAbsoluteWin32Path = /^[a-zA-Z]:\\/;
@@ -399,6 +397,13 @@ export function fromFileSystemPath(path: string) {
       path.startsWith("file://");
 
     if (!(hasProjectDir || hasProjectUri || isAbsolutePath) && !projectDir.startsWith("http")) {
+      const join = (a: string, b: string) => {
+        if (a.endsWith("/") || a.endsWith("\\")) {
+          return a + b;
+        } else {
+          return a + "/" + b;
+        }
+      };
       path = join(projectDir, path);
     }
     path = convertPathToPosix(path);
@@ -486,16 +491,4 @@ export function safePointerToPath(pointer: string) {
     .map((value: string) => {
       return value.replace(jsonPointerSlash, "/").replace(jsonPointerTilde, "~");
     });
-}
-
-export function relative(from: string, to: string) {
-  if (!isFileSystemPath(from) || !isFileSystemPath(to)) {
-    return resolve(from, to);
-  }
-
-  const fromDir = path.dirname(stripHash(from));
-  const toPath = stripHash(to);
-
-  const result = path.relative(fromDir, toPath);
-  return result + getHash(to);
 }

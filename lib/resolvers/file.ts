@@ -1,4 +1,3 @@
-import fs from "fs";
 import * as url from "../util/url.js";
 import { ResolverError } from "../util/errors.js";
 import type { JSONSchema, ResolverOptions } from "../types/index.js";
@@ -24,6 +23,7 @@ export default {
    */
   async read(file: FileInfo): Promise<Buffer> {
     let path: string | undefined;
+    const fs = await import("fs");
     try {
       path = url.toFileSystemPath(file.url);
     } catch (err: any) {
