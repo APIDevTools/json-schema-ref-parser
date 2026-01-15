@@ -5,6 +5,8 @@ import resolveExternal from "./resolve-external.js";
 import _bundle from "./bundle.js";
 import _dereference from "./dereference.js";
 import * as url from "./util/url.js";
+import FileResolver from "./resolvers/file.js";
+import HTTPResolver from "./resolvers/http.js";
 import {
   JSONParserError,
   InvalidPointerError,
@@ -441,4 +443,6 @@ export {
   getJsonSchemaRefParserDefaultOptions,
   $Refs,
   isUnsafeUrl,
+  FileResolver,
+  HTTPResolver,
 };
