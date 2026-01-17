@@ -121,7 +121,7 @@ async function download<S extends object = JSONSchema>(
 async function get<S extends object = JSONSchema>(u: RequestInfo | URL, httpOptions: HTTPResolverOptions<S>) {
   let controller: any;
   let timeoutId: any;
-  if (httpOptions.timeout) {
+  if (httpOptions.timeout && typeof AbortController !== "undefined") {
     controller = new AbortController();
     timeoutId = setTimeout(() => controller.abort(), httpOptions.timeout);
   }

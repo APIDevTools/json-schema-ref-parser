@@ -1,6 +1,11 @@
 {
   "permissions": {
-    "allow": ["Bash(npx vitest:*)", "Bash(bash:*)", "Bash(node test-debug.js:*)"]
+    "allow": [
+      "Bash(npx vitest:*)",
+      "Bash(bash:*)",
+      "Bash(node test-debug.js:*)",
+      "WebFetch(domain:github.com)"
+    ]
   },
   "enableAllProjectMcpServers": false
 }

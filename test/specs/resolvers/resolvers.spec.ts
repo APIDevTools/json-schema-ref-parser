@@ -298,4 +298,64 @@ describe("options.resolve", () => {
       properties: { test: { type: "string" } },
     });
   });
+
+  it("should properly resolve a remote schema", async () => {
+    const mockHttpResolver = {
+      order: 200,
+      canRead: true,
+      safeUrlResolver: false,
+      read() {
+        return {
+          type: "object",
+          properties: {
+            firstName: {
+              type: "string",
+            },
+          },
+        };
+      },
+    };
+
+    const schema = await $RefParser.dereference(
+      {
+        type: "object",
+        required: ["firstName"],
+        properties: {
+          firstName: {
+            $ref: "#/$defs/externalModel/properties/firstName",
+          },
+        },
+        $defs: {
+          externalModel: {
+            $ref: "http://localhost:5000/myModel",
+          },
+        },
+      },
+      {
+        resolve: {
+          http: mockHttpResolver,
+        },
+      } as ParserOptions,
+    );
+
+    expect(schema).to.deep.equal({
+      type: "object",
+      required: ["firstName"],
+      properties: {
+        firstName: {
+          type: "string",
+        },
+      },
+      $defs: {
+        externalModel: {
+          type: "object",
+          properties: {
+            firstName: {
+              type: "string",
+            },
+          },
+        },
+      },
+    });
+  });
 });
