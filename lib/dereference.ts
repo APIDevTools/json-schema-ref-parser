@@ -251,11 +251,14 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
     // overhaul.
     if (typeof cache.value === "object" && "$ref" in cache.value && "$ref" in $ref) {
       if (cache.value.$ref === $ref.$ref) {
+        // Fire onCircular for cached circular refs so callers are notified of every occurrence
+        foundCircularReference(path, $refs, options);
         return cache;
       } else {
-        // no-op
+        // no-op - fall through to re-process (handles external ref edge case)
       }
     } else {
+      foundCircularReference(path, $refs, options);
       return cache;
     }
   }
