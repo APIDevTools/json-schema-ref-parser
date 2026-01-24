@@ -1,0 +1,26 @@
+# Test schema: Multiple occurrences of the same circular $ref target
+# Verifies onCircular is called for ALL 5 occurrences, not just the first.
+
+definitions:
+  Node:
+    type: object
+    properties:
+      name:
+        type: string
+      self:
+        $ref: "#/definitions/Node" # 1. Self-reference
+
+  Container:
+    type: object
+    properties:
+      primaryNode:
+        $ref: "#/definitions/Node" # 2. First external ref
+      secondaryNode:
+        $ref: "#/definitions/Node" # 3. Second external ref
+      nodeList:
+        type: array
+        items:
+          $ref: "#/definitions/Node" # 4. Array items ref
+
+root:
+  $ref: "#/definitions/Node" # 5. Root-level ref
