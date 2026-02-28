@@ -39,11 +39,20 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
   const inventory: InventoryEntry[] = [];
   crawl<S, O>(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
 
+  // Get the root schema's $id (if any) for qualifying refs inside sub-schemas with their own $id
+  const rootId =
+    parser.schema && typeof parser.schema === "object" && "$id" in (parser.schema as any)
+      ? (parser.schema as any).$id
+      : undefined;
+
   // Remap all $ref pointers
-  remap<S, O>(inventory, options);
+  remap<S, O>(inventory, options, rootId);
 
   // Fix any $ref paths that traverse through other $refs (which is invalid per JSON Schema spec)
-  fixRefsThroughRefs(inventory, parser.schema as any);
+  const bundleOptions = (options.bundle || {}) as BundleOptions;
+  if (bundleOptions.optimizeInternalRefs !== false) {
+    fixRefsThroughRefs(inventory, parser.schema as any);
+  }
 }
 
 /**
@@ -209,6 +218,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
 function remap<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   inventory: InventoryEntry[],
   options: O,
+  rootId?: string,
 ) {
   // Group & sort all the $ref pointers, so they're in the order that we need to dereference/remap them
   inventory.sort((a: InventoryEntry, b: InventoryEntry) => {
@@ -256,15 +266,31 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   for (const entry of inventory) {
     // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
 
+    const bundleOpts = (options.bundle || {}) as BundleOptions;
     if (!entry.external) {
-      // This $ref already resolves to the main JSON Schema file
-      entry.$ref.$ref = entry.hash;
+      // This $ref already resolves to the main JSON Schema file.
+      // When optimizeInternalRefs is false, preserve the original internal ref path
+      // instead of rewriting it to the fully resolved hash.
+      if (bundleOpts.optimizeInternalRefs !== false) {
+        entry.$ref.$ref = entry.hash;
+      }
     } else if (entry.file === file && entry.hash === hash) {
       // This $ref points to the same value as the previous $ref, so remap it to the same path
-      entry.$ref.$ref = pathFromRoot;
+      if (rootId && isInsideIdScope(inventory, entry)) {
+        // This entry is inside a sub-schema with its own $id, so a bare root-relative JSON Pointer
+        // would be resolved relative to that $id, not the document root. Qualify with the root $id.
+        entry.$ref.$ref = rootId + pathFromRoot;
+      } else {
+        entry.$ref.$ref = pathFromRoot;
+      }
     } else if (entry.file === file && entry.hash.indexOf(hash + "/") === 0) {
       // This $ref points to a sub-value of the previous $ref, so remap it beneath that path
-      entry.$ref.$ref = Pointer.join(pathFromRoot, Pointer.parse(entry.hash.replace(hash, "#")));
+      const subPath = Pointer.join(pathFromRoot, Pointer.parse(entry.hash.replace(hash, "#")));
+      if (rootId && isInsideIdScope(inventory, entry)) {
+        entry.$ref.$ref = rootId + subPath;
+      } else {
+        entry.$ref.$ref = subPath;
+      }
     } else {
       // We've moved to a new file or new hash
       file = entry.file;
@@ -407,6 +433,28 @@ function walkPath(schema: any, path: string): any {
   }
 
   return current;
+}
+
+/**
+ * Checks whether the given inventory entry is located inside a sub-schema that has its own $id.
+ * If so, root-relative JSON Pointer $refs placed at this location would be resolved against
+ * the $id base URI rather than the document root, making them invalid.
+ */
+function isInsideIdScope(inventory: InventoryEntry[], entry: InventoryEntry): boolean {
+  for (const other of inventory) {
+    // Skip root-level entries
+    if (other.pathFromRoot === "#" || other.pathFromRoot === "#/") {
+      continue;
+    }
+    // Check if the other entry is an ancestor of the current entry
+    if (entry.pathFromRoot.startsWith(other.pathFromRoot + "/")) {
+      // Check if the ancestor's resolved value has a $id
+      if (other.value && typeof other.value === "object" && "$id" in other.value) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 export default bundle;

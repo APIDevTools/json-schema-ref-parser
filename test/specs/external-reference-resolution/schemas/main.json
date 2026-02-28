@@ -1,0 +1,7 @@
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "address": { "$ref": "./_shared/address.json" }
+  }
+}

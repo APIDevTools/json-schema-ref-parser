@@ -55,9 +55,10 @@ describe("Issue #338: bundle() should not create refs through refs", () => {
         current = current[idx];
       }
 
-      expect(valid, `$ref "${ref}" traverses through another $ref (failed at: ${failedAt}). Bundled:\n${bundledStr}`).toBe(
-        true,
-      );
+      expect(
+        valid,
+        `$ref "${ref}" traverses through another $ref (failed at: ${failedAt}). Bundled:\n${bundledStr}`,
+      ).toBe(true);
     }
   });
 });

@@ -1,0 +1,19 @@
+{
+  "type": "array",
+  "items": {
+    "oneOf": [
+      {
+        "title": "String",
+        "type": "string"
+      },
+      {
+        "title": "Nested",
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "entries": { "$ref": "#" }
+        }
+      }
+    ]
+  }
+}
