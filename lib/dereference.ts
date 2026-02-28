@@ -115,7 +115,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           }
 
           const value = obj[key];
-          let circular = false;
+          let circular;
 
           if ($Ref.isAllowed$Ref(value, options)) {
             dereferenced = dereference$Ref(

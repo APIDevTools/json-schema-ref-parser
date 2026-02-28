@@ -91,7 +91,7 @@ async function readFile<S extends object = JSONSchema, O extends ParserOptions<S
       throw new UnmatchedResolverError(file.url);
     } else if (!err || !("error" in err)) {
       // Throw a generic, friendly error.
-      throw new SyntaxError(`Unable to resolve $ref pointer "${file.url}"`);
+      throw new SyntaxError(`Unable to resolve $ref pointer "${file.url}"`, { cause: err });
     }
     // Throw the original error, if it's one of our own (user-friendly) errors.
     else if (err.error instanceof ResolverError) {
@@ -143,7 +143,7 @@ async function parseFile<S extends object = JSONSchema, O extends ParserOptions<
     } else if (err && err.message && err.message.startsWith("Error parsing")) {
       throw err;
     } else if (!err || !("error" in err)) {
-      throw new SyntaxError(`Unable to parse ${file.url}`);
+      throw new SyntaxError(`Unable to parse ${file.url}`, { cause: err });
     } else if (err.error instanceof ParserError) {
       throw err.error;
     } else {
