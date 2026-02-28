@@ -89,6 +89,15 @@ export interface DereferenceOptions {
    * Default: `true`
    */
   mergeKeys?: boolean;
+
+  /**
+   * The maximum recursion depth for dereferencing nested schemas.
+   * If the schema nesting exceeds this depth, a RangeError will be thrown
+   * with a descriptive message instead of crashing with a stack overflow.
+   *
+   * Default: 500
+   */
+  maxDepth?: number;
 }
 
 /**

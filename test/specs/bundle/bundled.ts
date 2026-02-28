@@ -16,7 +16,7 @@ export default {
         },
         {
           type: "object",
-          $ref: "#/properties/fee/properties/modificationFee/properties/amount",
+          $ref: "#/properties/purchaseRate/allOf/0/properties/amount",
         },
       ],
     },

@@ -31,6 +31,7 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
     parser.$refs,
     options,
     start,
+    0,
   );
   parser.$refs.circular = dereferenced.circular;
   parser.schema = dereferenced.value;
@@ -48,6 +49,7 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
  * @param $refs
  * @param options
  * @param startTime - The time when the dereferencing started
+ * @param depth - The current recursion depth
  * @returns
  */
 function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
@@ -60,6 +62,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   $refs: $Refs<S, O>,
   options: O,
   startTime: number,
+  depth: number,
 ) {
   let dereferenced;
   const result = {
@@ -70,6 +73,14 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   checkDereferenceTimeout<S, O>(startTime, options);
 
   const derefOptions = (options.dereference || {}) as DereferenceOptions;
+  const maxDepth = derefOptions.maxDepth ?? 500;
+  if (depth > maxDepth) {
+    throw new RangeError(
+      `Maximum dereference depth (${maxDepth}) exceeded at ${pathFromRoot}. ` +
+        `This likely indicates an extremely deep or recursive schema. ` +
+        `You can increase this limit with the dereference.maxDepth option.`,
+    );
+  }
   const isExcludedPath = derefOptions.excludedPathMatcher || (() => false);
 
   if (derefOptions?.circular === "ignore" || !processedObjects.has(obj)) {
@@ -88,6 +99,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           $refs,
           options,
           startTime,
+          depth,
         );
         result.circular = dereferenced.circular;
         result.value = dereferenced.value;
@@ -116,6 +128,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
               $refs,
               options,
               startTime,
+              depth,
             );
             circular = dereferenced.circular;
             // Avoid pointless mutations; breaks frozen objects to no profit
@@ -159,6 +172,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
                 $refs,
                 options,
                 startTime,
+                depth + 1,
               );
               circular = dereferenced.circular;
               // Avoid pointless mutations; breaks frozen objects to no profit
@@ -205,6 +219,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   $refs: $Refs<S, O>,
   options: O,
   startTime: number,
+  depth: number,
 ) {
   const isExternalRef = $Ref.isExternal$Ref($ref);
   const shouldResolveOnCwd = isExternalRef && options?.dereference?.externalReferenceResolution === "root";
@@ -295,6 +310,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
       $refs,
       options,
       startTime,
+      depth + 1,
     );
     circular = dereferenced.circular;
     dereferencedValue = dereferenced.value;

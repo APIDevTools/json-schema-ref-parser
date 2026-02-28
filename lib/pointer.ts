@@ -89,9 +89,22 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     this.value = unwrapOrThrow(obj);
 
     for (let i = 0; i < tokens.length; i++) {
+      // During token walking, if the current value is an extended $ref (has sibling keys
+      // alongside $ref, as allowed by JSON Schema 2019-09+), and resolveIf$Ref marks it
+      // as circular because the $ref resolves to the same path we're walking, we should
+      // reset the circular flag and continue walking the object's own properties.
+      // This prevents false circular detection when e.g. a root schema has both
+      // $ref: "#/$defs/Foo" and $defs: { Foo: {...} } as siblings.
+      const wasCircular = this.circular;
+      const isExtendedRef = $Ref.isExtended$Ref(this.value);
       if (resolveIf$Ref(this, options, pathFromRoot)) {
         // The $ref path has changed, so append the remaining tokens to the path
         this.path = Pointer.join(this.path, tokens.slice(i));
+      } else if (!wasCircular && this.circular && isExtendedRef) {
+        // resolveIf$Ref set circular=true on an extended $ref during token walking.
+        // Since we still have tokens to process, the object should be walked by its
+        // properties, not treated as a circular self-reference.
+        this.circular = false;
       }
 
       const token = tokens[i];
