@@ -1,0 +1,14 @@
+{
+  "$id": "LinkedList.schema.json",
+  "definitions": {
+    "linkedList": {
+      "type": "object",
+      "properties": {
+        "head": {
+          "description": "The head of the list",
+          "$ref": "node-schema.json#/definitions/node"
+        }
+      }
+    }
+  }
+}
