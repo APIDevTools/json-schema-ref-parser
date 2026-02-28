@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "definitions": {
+    "base": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "extended": {
+      "$ref": "#/definitions/base"
+    }
+  },
+  "properties": {
+    "item": {
+      "$ref": "#/definitions/extended"
+    }
+  }
+}

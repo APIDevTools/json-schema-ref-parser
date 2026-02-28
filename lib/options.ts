@@ -30,6 +30,15 @@ export interface BundleOptions {
    * @argument {string} parentPropName - The prop name of the parent object whose value was processed
    */
   onBundle?(path: string, value: JSONSchemaObject, parent?: JSONSchemaObject, parentPropName?: string): void;
+
+  /**
+   * Whether to optimize internal `$ref` paths by following intermediate `$ref` chains and
+   * rewriting them to point directly to the final target. When `false`, intermediate `$ref`
+   * indirections are preserved as-is.
+   *
+   * Default: `true`
+   */
+  optimizeInternalRefs?: boolean;
 }
 
 export interface DereferenceOptions {
@@ -98,6 +107,21 @@ export interface DereferenceOptions {
    * Default: 500
    */
   maxDepth?: number;
+
+  /**
+   * Whether to create independent clones of each `$ref` target value instead of
+   * reusing the same JS object reference. When `false` (the default), multiple
+   * `$ref` pointers that resolve to the same value will all share the same object
+   * in memory, so modifying one will affect all others. When `true`, each `$ref`
+   * replacement gets its own deep copy, preventing unintended side effects from
+   * post-dereference mutations.
+   *
+   * Note: circular references are never cloned — they always maintain reference
+   * equality to correctly represent the circular structure.
+   *
+   * Default: `false`
+   */
+  cloneReferences?: boolean;
 }
 
 /**

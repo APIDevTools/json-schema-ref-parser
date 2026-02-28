@@ -34,9 +34,7 @@ describe("Dereference max depth", () => {
     const parser = new $RefParser();
 
     // Should fail with a low max depth
-    await expect(
-      parser.dereference(schema, { dereference: { maxDepth: 5 } }),
-    ).rejects.toThrow(RangeError);
+    await expect(parser.dereference(schema, { dereference: { maxDepth: 5 } })).rejects.toThrow(RangeError);
 
     // Should succeed with a higher max depth
     const parser2 = new $RefParser();

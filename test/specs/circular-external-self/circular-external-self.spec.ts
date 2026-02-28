@@ -14,9 +14,7 @@ describe("Circular $ref to self via filename vs hash", () => {
 
   it("should dereference $ref: 'recursive-filename.json' with circular reference at top level", async () => {
     const parser = new $RefParser();
-    const schema = await parser.dereference(
-      path.rel("test/specs/circular-external-self/recursive-filename.json"),
-    );
+    const schema = await parser.dereference(path.rel("test/specs/circular-external-self/recursive-filename.json"));
 
     expect(parser.$refs.circular).to.equal(true);
     // When using $ref: "recursive-filename.json", the value property should ALSO directly

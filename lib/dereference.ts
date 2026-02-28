@@ -146,7 +146,14 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
                 }
               }
 
-              obj[key] = dereferenced.value;
+              // Clone the dereferenced value if cloneReferences is enabled and this is not a
+              // circular reference. This prevents mutations to one location from affecting others.
+              let assignedValue = dereferenced.value;
+              if (derefOptions?.cloneReferences && !circular && assignedValue && typeof assignedValue === "object") {
+                assignedValue = structuredClone(assignedValue);
+              }
+
+              obj[key] = assignedValue;
 
               // If we have data to preserve and our dereferenced object is still an object then
               // we need copy back our preserved data into our dereferenced schema.
