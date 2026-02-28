@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "foodef": { "$ref": "bar.json#/definitions/bardef" }
+  },
+  "type": "object",
+  "properties": {
+    "prop": {
+      "$ref": "#/definitions/foodef"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+Person:
+  type: object
+  properties:
+    name:
+      type: string
+    data:
+      type: string
+      default: "base64data"
