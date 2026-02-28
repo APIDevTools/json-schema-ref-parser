@@ -41,6 +41,9 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
 
   // Remap all $ref pointers
   remap<S, O>(inventory, options);
+
+  // Fix any $ref paths that traverse through other $refs (which is invalid per JSON Schema spec)
+  fixRefsThroughRefs(inventory, parser.schema as any);
 }
 
 /**
@@ -316,4 +319,94 @@ function removeFromInventory(inventory: InventoryEntry[], entry: any) {
   const index = inventory.indexOf(entry);
   inventory.splice(index, 1);
 }
+
+/**
+ * After remapping, some $ref paths may traverse through other $ref nodes.
+ * JSON pointer resolution does not follow $ref indirection, so these paths are invalid.
+ * This function detects and fixes such paths by following any intermediate $refs
+ * to compute a valid direct path.
+ */
+function fixRefsThroughRefs(inventory: InventoryEntry[], schema: any) {
+  for (const entry of inventory) {
+    if (!entry.$ref || typeof entry.$ref !== "object" || !("$ref" in entry.$ref)) {
+      continue;
+    }
+
+    const refValue = entry.$ref.$ref;
+    if (typeof refValue !== "string" || !refValue.startsWith("#/")) {
+      continue;
+    }
+
+    const fixedPath = resolvePathThroughRefs(schema, refValue);
+    if (fixedPath !== refValue) {
+      entry.$ref.$ref = fixedPath;
+    }
+  }
+}
+
+/**
+ * Walks a JSON pointer path through the schema. If any intermediate value
+ * is a $ref, follows it and adjusts the path accordingly.
+ * Returns the corrected path that doesn't traverse through any $ref.
+ */
+function resolvePathThroughRefs(schema: any, refPath: string): string {
+  if (!refPath.startsWith("#/")) {
+    return refPath;
+  }
+
+  const segments = refPath.slice(2).split("/");
+  let current = schema;
+  const resolvedSegments: string[] = [];
+
+  for (const seg of segments) {
+    if (current === null || current === undefined || typeof current !== "object") {
+      // Can't walk further, return original path
+      return refPath;
+    }
+
+    // If the current value is a $ref, follow it
+    if ("$ref" in current && typeof current.$ref === "string" && current.$ref.startsWith("#/")) {
+      // Follow the $ref and restart the path from its target
+      const targetSegments = current.$ref.slice(2).split("/");
+      resolvedSegments.length = 0;
+      resolvedSegments.push(...targetSegments);
+      current = walkPath(schema, current.$ref);
+      if (current === null || current === undefined || typeof current !== "object") {
+        return refPath;
+      }
+    }
+
+    const decoded = seg.replace(/~1/g, "/").replace(/~0/g, "~");
+    const idx = Array.isArray(current) ? parseInt(decoded) : decoded;
+    current = current[idx];
+    resolvedSegments.push(seg);
+  }
+
+  const result = "#/" + resolvedSegments.join("/");
+  return result;
+}
+
+/**
+ * Walks a JSON pointer path through a schema object, returning the value at that path.
+ */
+function walkPath(schema: any, path: string): any {
+  if (!path.startsWith("#/")) {
+    return undefined;
+  }
+
+  const segments = path.slice(2).split("/");
+  let current = schema;
+
+  for (const seg of segments) {
+    if (current === null || current === undefined || typeof current !== "object") {
+      return undefined;
+    }
+    const decoded = seg.replace(/~1/g, "/").replace(/~0/g, "~");
+    const idx = Array.isArray(current) ? parseInt(decoded) : decoded;
+    current = current[idx];
+  }
+
+  return current;
+}
+
 export default bundle;

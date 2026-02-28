@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "value": {
+      "$ref": "recursive-filename.json"
+    }
+  }
+}
