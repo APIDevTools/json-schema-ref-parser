@@ -9,6 +9,53 @@ import dereferencedSchema from "./dereferenced.js";
 import { ResolverError, UnmatchedResolverError, JSONParserErrorGroup } from "../../../lib/util/errors.js";
 import type { ParserOptions } from "../../../lib/options";
 
+const selfSignedKey = `-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgtssiJGf4HoTmOR7a
+gQ0GVH3TzAHKnt246/BGc/CWMAuhRANCAARSXlthTDcst50Xy+gSjJKTqI8ut+gT
+U8wFnIbhZRGcoyYuJw0j790OVBo0RsPIkGn67/SbXbR5/KPuD1LSWYPO
+-----END PRIVATE KEY-----`;
+const selfSignedCert = `-----BEGIN CERTIFICATE-----
+MIIBZjCCAQ2gAwIBAgIUR6AsdFtpqVd0/Fo0MlIVV5R9cgYwCgYIKoZIzj0EAwIw
+FDESMBAGA1UEAwwJbG9jYWxob3N0MB4XDTI2MDMwODE4MDk0M1oXDTI3MDMwODE4
+MDk0M1owFDESMBAGA1UEAwwJbG9jYWxob3N0MFkwEwYHKoZIzj0CAQYIKoZIzj0D
+AQcDQgAEUl5bYUw3LLedF8voEoySk6iPLrfoE1PMBZyG4WURnKMmLicNI+/dDlQa
+NEbDyJBp+u/0m120efyj7g9S0lmDzqM9MDswGgYDVR0RBBMwEYIJbG9jYWxob3N0
+hwR/AAABMB0GA1UdDgQWBBTXsktzSvAT+42E/wiWneCMNc6UfzAKBggqhkjOPQQD
+AgNHADBEAiAjVAMO0sUWXFmrXDDYcm5S9T+hI1fKLaIWhbQgShEj7wIgA157RoMh
+mJf0C5aIMmJS5ZMmqUv6QrMeTkhHn+8OQw8=
+-----END CERTIFICATE-----`;
+
+async function withSelfSignedHttpsServer(run: (schemaUrl: string) => Promise<void>) {
+  const { createServer } = await import(["node", "https"].join(":"));
+  const server = createServer({ key: selfSignedKey, cert: selfSignedCert }, (_request, response) => {
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ type: "object", properties: { secure: { type: "boolean" } } }));
+  });
+
+  await new Promise<void>((resolve) => {
+    server.listen(0, "127.0.0.1", () => resolve());
+  });
+
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    throw new Error("Expected the HTTPS test server to listen on a TCP port");
+  }
+
+  try {
+    await run(`https://127.0.0.1:${address.port}/schema.json`);
+  } finally {
+    await new Promise<void>((resolve, reject) => {
+      server.close((err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+}
+
 describe("options.resolve", () => {
   it('should not resolve external links if "resolve.external" is disabled', async () => {
     const schema = await $RefParser.dereference(path.abs("test/specs/resolvers/resolvers.yaml"), {
@@ -64,6 +111,66 @@ describe("options.resolve", () => {
       },
     });
     expect(schema).to.deep.equal(dereferencedSchema);
+  });
+
+  it("should allow a custom HTTP resolver to control TLS behavior", async () => {
+    if (typeof window !== "undefined") {
+      return;
+    }
+
+    await withSelfSignedHttpsServer(async (schemaUrl) => {
+      const insecureHttpResolver = {
+        order: 1,
+        canRead: /^https?:\/\//i,
+        async read(file: FileInfo) {
+          const requestUrl = new URL(file.url);
+          const moduleName = requestUrl.protocol === "https:" ? "node:https" : "node:http";
+          const { request } = await import(moduleName);
+
+          return await new Promise<Buffer>((resolve, reject) => {
+            const req = request(
+              requestUrl,
+              {
+                method: "GET",
+                ...(requestUrl.protocol === "https:" ? { rejectUnauthorized: false } : {}),
+              },
+              (res: any) => {
+                const chunks: Buffer[] = [];
+
+                res.on("data", (chunk: string | Buffer) => {
+                  chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+                });
+                res.on("end", () => resolve(Buffer.concat(chunks)));
+              },
+            );
+
+            req.on("error", reject);
+            req.end();
+          });
+        },
+      };
+
+      const schema = await $RefParser.dereference(
+        {
+          $ref: schemaUrl,
+        },
+        {
+          resolve: {
+            http: false,
+            insecureHttp: insecureHttpResolver,
+          },
+        } as ParserOptions,
+      );
+
+      expect(schema).to.deep.equal({
+        type: "object",
+        properties: {
+          secure: {
+            type: "boolean",
+          },
+        },
+      });
+    });
   });
 
   it("should return _file url as it's written", async () => {
