@@ -1,6 +1,7 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
+import { getSchemaBasePath } from "./util/schema-resources.js";
 import type $Refs from "./refs.js";
 import type $RefParser from "./index.js";
 import type { ParserOptions } from "./index.js";
@@ -37,7 +38,18 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
 
   // Build an inventory of all $ref pointers in the JSON Schema
   const inventory: InventoryEntry[] = [];
-  crawl<S, O>(parser, "schema", parser.$refs._root$Ref.path + "#", "#", 0, inventory, parser.$refs, options);
+  crawl<S, O>(
+    parser,
+    "schema",
+    parser.$refs._root$Ref.path + "#",
+    parser.$refs._root$Ref.path!,
+    parser.$refs._root$Ref.dynamicIdScope,
+    "#",
+    0,
+    inventory,
+    parser.$refs,
+    options,
+  );
 
   // Get the root schema's $id (if any) for qualifying refs inside sub-schemas with their own $id
   const rootId =
@@ -71,6 +83,8 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   parent: object | $RefParser<S, O>,
   key: string | null,
   path: string,
+  scopeBase: string,
+  dynamicIdScope: boolean,
   pathFromRoot: string,
   indirections: number,
   inventory: InventoryEntry[],
@@ -82,8 +96,9 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   const isExcludedPath = bundleOptions.excludedPathMatcher || (() => false);
 
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
+    const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
     if ($Ref.isAllowed$Ref(obj)) {
-      inventory$Ref(parent, key, path, pathFromRoot, indirections, inventory, $refs, options);
+      inventory$Ref(parent, key, path, currentScopeBase, dynamicIdScope, pathFromRoot, indirections, inventory, $refs, options);
     } else {
       // Crawl the object in a specific order that's optimized for bundling.
       // This is important because it determines how `pathFromRoot` gets built,
@@ -108,9 +123,21 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         const value = obj[key];
 
         if ($Ref.isAllowed$Ref(value)) {
-          inventory$Ref(obj, key, path, keyPathFromRoot, indirections, inventory, $refs, options);
+          const valueScopeBase = dynamicIdScope ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
+          inventory$Ref(
+            obj,
+            key,
+            keyPath,
+            valueScopeBase,
+            dynamicIdScope,
+            keyPathFromRoot,
+            indirections,
+            inventory,
+            $refs,
+            options,
+          );
         } else {
-          crawl(obj, key, keyPath, keyPathFromRoot, indirections, inventory, $refs, options);
+          crawl(obj, key, keyPath, currentScopeBase, dynamicIdScope, keyPathFromRoot, indirections, inventory, $refs, options);
         }
 
         // We need to ensure that we have an object to work with here because we may be crawling
@@ -142,6 +169,8 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   $refParent: any,
   $refKey: string | null,
   path: string,
+  scopeBase: string,
+  dynamicIdScope: boolean,
   pathFromRoot: string,
   indirections: number,
   inventory: InventoryEntry[],
@@ -149,7 +178,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   options: O,
 ) {
   const $ref = $refKey === null ? $refParent : $refParent[$refKey];
-  const $refPath = url.resolve(path, $ref.$ref);
+  const $refPath = url.resolve(dynamicIdScope ? scopeBase : path, $ref.$ref);
   const pointer = $refs._resolve($refPath, pathFromRoot, options);
   if (pointer === null) {
     return;
@@ -158,7 +187,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   const depth = parsed.length;
   const file = url.stripHash(pointer.path);
   const hash = url.getHash(pointer.path);
-  const external = file !== $refs._root$Ref.path;
+  const external = file !== $refs._root$Ref.path && !$refs._aliases[file];
   const extended = $Ref.isExtended$Ref($ref);
   indirections += pointer.indirections;
 
@@ -189,7 +218,18 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
 
   // Recursively crawl the resolved value
   if (!existingEntry || external) {
-    crawl(pointer.value, null, pointer.path, pathFromRoot, indirections + 1, inventory, $refs, options);
+    crawl(
+      pointer.value,
+      null,
+      pointer.path,
+      pointer.$ref.path!,
+      pointer.$ref.dynamicIdScope,
+      pathFromRoot,
+      indirections + 1,
+      inventory,
+      $refs,
+      options,
+    );
   }
 }
 

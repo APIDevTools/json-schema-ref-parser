@@ -3,6 +3,7 @@ import type { ParserOptions } from "./options.js";
 import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import { JSONParserError, InvalidPointerError, MissingPointerError, isHandledError } from "./util/errors.js";
+import { getSchemaBasePath } from "./util/schema-resources.js";
 import type { JSONSchema } from "./index.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 
@@ -39,6 +40,11 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
   originalPath: string;
 
   /**
+   * The current base URI used to resolve nested $ref pointers while walking this pointer.
+   */
+  scopeBase: string;
+
+  /**
    * The value of the JSON pointer.
    * Can be any JSON type, not just objects. Unknown file types are represented as Buffers (byte arrays).
    */
@@ -60,6 +66,8 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     this.path = path;
 
     this.originalPath = friendlyPath || path;
+
+    this.scopeBase = $ref.path || url.stripHash(path);
 
     this.value = undefined;
 
@@ -87,6 +95,9 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
+    if (this.$ref.dynamicIdScope) {
+      this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
+    }
 
     for (let i = 0; i < tokens.length; i++) {
       // During token walking, if the current value is an extended $ref (has sibling keys
@@ -149,10 +160,14 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       }
 
       found.push(token);
+      if (this.$ref.dynamicIdScope) {
+        this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
+      }
     }
 
     // Resolve the final value
-    if (!this.value || (this.value.$ref && url.resolve(this.path, this.value.$ref) !== pathFromRoot)) {
+    const finalResolutionBase = this.$ref.dynamicIdScope ? this.scopeBase : this.path;
+    if (!this.value || (this.value.$ref && url.resolve(finalResolutionBase, this.value.$ref) !== pathFromRoot)) {
       resolveIf$Ref(this, options, pathFromRoot);
     }
 
@@ -181,6 +196,9 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
+    if (this.$ref.dynamicIdScope) {
+      this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
+    }
 
     for (let i = 0; i < tokens.length - 1; i++) {
       resolveIf$Ref(this, options);
@@ -192,6 +210,10 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       } else {
         // The token doesn't exist, so create it
         this.value = setValue(this, token, {});
+      }
+
+      if (this.$ref.dynamicIdScope) {
+        this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
       }
     }
 
@@ -287,7 +309,8 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   // Is the value a JSON reference? (and allowed?)
 
   if ($Ref.isAllowed$Ref(pointer.value, options)) {
-    const $refPath = url.resolve(pointer.path, pointer.value.$ref);
+    const resolutionBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.path;
+    const $refPath = url.resolve(resolutionBase, pointer.value.$ref);
 
     if ($refPath === pointer.path && !isRootPath(pathFromRoot)) {
       // The value is a reference to itself, so there's nothing to do.
@@ -304,12 +327,18 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
         // This JSON reference "extends" the resolved value, rather than simply pointing to it.
         // So the resolved path does NOT change.  Just the value does.
         pointer.value = $Ref.dereference(pointer.value, resolved.value, options);
+        if (pointer.$ref.dynamicIdScope) {
+          pointer.scopeBase = getSchemaBasePath(pointer.scopeBase, pointer.value);
+        }
         return false;
       } else {
         // Resolve the reference
         pointer.$ref = resolved.$ref;
         pointer.path = resolved.path;
         pointer.value = resolved.value;
+        pointer.scopeBase = pointer.$ref.dynamicIdScope
+          ? getSchemaBasePath(pointer.$ref.path!, pointer.value)
+          : pointer.$ref.path!;
       }
 
       return true;

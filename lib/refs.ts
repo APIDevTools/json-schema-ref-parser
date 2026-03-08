@@ -95,11 +95,10 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    */
   set(path: string, value: JSONSchema4Type | JSONSchema6Type | JSONSchema7Type) {
     const absPath = url.resolve(this._root$Ref.path!, path);
-    const withoutHash = url.stripHash(absPath);
-    const $ref = this._$refs[withoutHash];
+    const $ref = this._getRef(absPath);
 
     if (!$ref) {
-      throw new Error(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
+      throw new Error(`Error resolving $ref pointer "${path}". \n"${url.stripHash(absPath)}" not found.`);
     }
 
     $ref.set(absPath, value);
@@ -113,8 +112,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    */
   _get$Ref(path: string) {
     path = url.resolve(this._root$Ref.path!, path);
-    const withoutHash = url.stripHash(path);
-    return this._$refs[withoutHash];
+    return this._getRef(path);
   }
 
   /**
@@ -134,6 +132,23 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     return $ref;
   }
 
+  _addAlias(path: string, value: S, pathType?: string | unknown, dynamicIdScope = false) {
+    const withoutHash = url.stripHash(path);
+
+    if (!withoutHash || this._$refs[withoutHash] || this._aliases[withoutHash]) {
+      return this._$refs[withoutHash] || this._aliases[withoutHash];
+    }
+
+    const $ref = new $Ref<S, O>(this);
+    $ref.path = withoutHash;
+    $ref.pathType = pathType;
+    $ref.value = value;
+    $ref.dynamicIdScope = dynamicIdScope;
+
+    this._aliases[withoutHash] = $ref;
+    return $ref;
+  }
+
   /**
    * Resolves the given JSON reference.
    *
@@ -145,11 +160,10 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    */
   _resolve(path: string, pathFromRoot: string, options?: O) {
     const absPath = url.resolve(this._root$Ref.path!, path);
-    const withoutHash = url.stripHash(absPath);
-    const $ref = this._$refs[withoutHash];
+    const $ref = this._getRef(absPath);
 
     if (!$ref) {
-      throw new Error(`Error resolving $ref pointer "${path}". \n"${withoutHash}" not found.`);
+      throw new Error(`Error resolving $ref pointer "${path}". \n"${url.stripHash(absPath)}" not found.`);
     }
 
     return $ref.resolve(absPath, options, path, pathFromRoot);
@@ -162,6 +176,8 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    * @protected
    */
   _$refs: $RefsMap<S, O> = {};
+
+  _aliases: $RefsMap<S, O> = {};
 
   /**
    * The {@link $Ref} object that is the root of the JSON schema.
@@ -180,6 +196,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     this.circular = false;
 
     this._$refs = {};
+    this._aliases = {};
 
     // @ts-ignore
     this._root$Ref = null;
@@ -205,6 +222,11 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    * @returns {object}
    */
   toJSON = this.values;
+
+  private _getRef(path: string) {
+    const withoutHash = url.stripHash(path);
+    return this._$refs[withoutHash] || this._aliases[withoutHash];
+  }
 }
 
 /**

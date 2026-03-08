@@ -1,6 +1,7 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
+import { getSchemaBasePath } from "./util/schema-resources.js";
 import type $Refs from "./refs.js";
 import type { DereferenceOptions, ParserOptions } from "./options.js";
 import { type $RefParser, type JSONSchema } from "./index.js";
@@ -24,6 +25,8 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
   const dereferenced = crawl<S, O>(
     parser.schema,
     parser.$refs._root$Ref.path!,
+    parser.$refs._root$Ref.path!,
+    parser.$refs._root$Ref.dynamicIdScope,
     "#",
     new Set(),
     new Set(),
@@ -55,6 +58,8 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
 function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   obj: any,
   path: string,
+  scopeBase: string,
+  dynamicIdScope: boolean,
   pathFromRoot: string,
   parents: Set<any>,
   processedObjects: Set<any>,
@@ -87,11 +92,14 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
       parents.add(obj);
       processedObjects.add(obj);
+      const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
 
       if ($Ref.isAllowed$Ref(obj, options)) {
         dereferenced = dereference$Ref(
           obj,
           path,
+          currentScopeBase,
+          dynamicIdScope,
           pathFromRoot,
           parents,
           processedObjects,
@@ -118,9 +126,12 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           let circular;
 
           if ($Ref.isAllowed$Ref(value, options)) {
+            const valueScopeBase = dynamicIdScope ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
             dereferenced = dereference$Ref(
               value,
               keyPath,
+              valueScopeBase,
+              dynamicIdScope,
               keyPathFromRoot,
               parents,
               processedObjects,
@@ -172,6 +183,8 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
               dereferenced = crawl(
                 value,
                 keyPath,
+                currentScopeBase,
+                dynamicIdScope,
                 keyPathFromRoot,
                 parents,
                 processedObjects,
@@ -219,6 +232,8 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
 function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   $ref: any,
   path: string,
+  scopeBase: string,
+  dynamicIdScope: boolean,
   pathFromRoot: string,
   parents: Set<any>,
   processedObjects: any,
@@ -230,7 +245,8 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
 ) {
   const isExternalRef = $Ref.isExternal$Ref($ref);
   const shouldResolveOnCwd = isExternalRef && options?.dereference?.externalReferenceResolution === "root";
-  const $refPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, $ref.$ref);
+  const resolutionBase = shouldResolveOnCwd ? url.cwd() : dynamicIdScope ? scopeBase : path;
+  const $refPath = url.resolve(resolutionBase, $ref.$ref);
 
   const cache = dereferencedCache.get($refPath);
 
@@ -310,6 +326,8 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
     const dereferenced = crawl(
       dereferencedValue,
       pointer.path,
+      pointer.$ref.path!,
+      pointer.$ref.dynamicIdScope,
       pathFromRoot,
       parents,
       processedObjects,

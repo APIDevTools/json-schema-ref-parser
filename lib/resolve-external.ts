@@ -3,6 +3,7 @@ import Pointer from "./pointer.js";
 import parse from "./parse.js";
 import * as url from "./util/url.js";
 import { isHandledError } from "./util/errors.js";
+import { getSchemaBasePath } from "./util/schema-resources.js";
 import type $Refs from "./refs.js";
 import type { ParserOptions } from "./options.js";
 import type { JSONSchema } from "./types/index.js";
@@ -29,7 +30,14 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
 
   try {
     // console.log('Resolving $ref pointers in %s', parser.$refs._root$Ref.path);
-    const promises = crawl(parser.schema, parser.$refs._root$Ref.path + "#", parser.$refs, options);
+    const promises = crawl(
+      parser.schema,
+      parser.$refs._root$Ref.path + "#",
+      parser.$refs._root$Ref.path!,
+      parser.$refs._root$Ref.dynamicIdScope,
+      parser.$refs,
+      options,
+    );
     return Promise.all(promises);
   } catch (e) {
     return Promise.reject(e);
@@ -55,6 +63,8 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
 function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   obj: string | Buffer | S | undefined | null,
   path: string,
+  scopeBase: string,
+  dynamicIdScope: boolean,
   $refs: $Refs<S, O>,
   options: O,
   seen?: Set<any>,
@@ -65,15 +75,18 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
 
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
     seen.add(obj); // Track previously seen objects to avoid infinite recursion
+    const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
     if ($Ref.isExternal$Ref(obj)) {
-      promises.push(resolve$Ref<S, O>(obj, path, $refs, options));
+      promises.push(resolve$Ref<S, O>(obj, path, currentScopeBase, dynamicIdScope, $refs, options));
     }
 
     const keys = Object.keys(obj) as string[];
     for (const key of keys) {
       const keyPath = Pointer.join(path, key);
       const value = obj[key as keyof typeof obj] as string | JSONSchema | Buffer | undefined;
-      promises = promises.concat(crawl(value, keyPath, $refs, options, seen, external));
+      const childScopeBase =
+        dynamicIdScope && $Ref.isExternal$Ref(value) ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
+      promises = promises.concat(crawl(value, keyPath, childScopeBase, dynamicIdScope, $refs, options, seen, external));
     }
   }
 
@@ -95,17 +108,20 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
 async function resolve$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   $ref: S,
   path: string,
+  scopeBase: string,
+  dynamicIdScope: boolean,
   $refs: $Refs<S, O>,
   options: O,
 ) {
   const shouldResolveOnCwd = options.dereference?.externalReferenceResolution === "root";
-  const resolvedPath = url.resolve(shouldResolveOnCwd ? url.cwd() : path, ($ref as JSONSchema).$ref!);
+  const resolutionBase = shouldResolveOnCwd ? url.cwd() : dynamicIdScope ? scopeBase : path;
+  const resolvedPath = url.resolve(resolutionBase, ($ref as JSONSchema).$ref!);
   const withoutHash = url.stripHash(resolvedPath);
 
   // $ref.$ref = url.relative($refs._root$Ref.path, resolvedPath);
 
   // Do we already have this $ref?
-  const ref = $refs._$refs[withoutHash];
+  const ref = $refs._get$Ref(withoutHash);
   if (ref) {
     // We've already parsed this $ref, so use the existing value
     return Promise.resolve(ref.value);
@@ -117,7 +133,17 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
 
     // Crawl the parsed value
     // console.log('Resolving $ref pointers in %s', withoutHash);
-    const promises = crawl(result, withoutHash + "#", $refs, options, new Set(), true);
+    const parsedRef = $refs._get$Ref(withoutHash);
+    const promises = crawl(
+      result,
+      withoutHash + "#",
+      withoutHash,
+      parsedRef?.dynamicIdScope ?? false,
+      $refs,
+      options,
+      new Set(),
+      true,
+    );
 
     return Promise.all(promises);
   } catch (err) {

@@ -48,6 +48,11 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
   pathType: string | unknown;
 
   /**
+   * Whether this document/resource should use JSON Schema 2019-09+ nested $id scope semantics.
+   */
+  dynamicIdScope = false;
+
+  /**
    * List of all errors. Undefined if no errors.
    */
   errors: Array<$RefError> = [];

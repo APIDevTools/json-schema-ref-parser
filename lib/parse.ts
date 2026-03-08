@@ -1,4 +1,5 @@
 import * as url from "./util/url.js";
+import { registerSchemaResources, usesDynamicIdScope } from "./util/schema-resources.js";
 import { filter, all, sort, run } from "./util/plugins.js";
 import {
   ResolverError,
@@ -47,6 +48,8 @@ async function parse<S extends object = JSONSchema, O extends ParserOptions<S> =
 
     const parser = await parseFile<S, O>(file, options, $refs);
     $ref.value = parser.result;
+    $ref.dynamicIdScope = usesDynamicIdScope($ref.value);
+    registerSchemaResources($refs, $ref.path!, $ref.value, $ref.pathType, $ref.dynamicIdScope);
 
     return parser.result;
   } catch (err) {

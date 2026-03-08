@@ -19,6 +19,7 @@ import {
   JSONParserErrorGroup,
 } from "./util/errors.js";
 import maybe from "./util/maybe.js";
+import { registerSchemaResources, usesDynamicIdScope } from "./util/schema-resources.js";
 import type { ParserOptions } from "./options.js";
 import { getJsonSchemaRefParserDefaultOptions } from "./options.js";
 import type {
@@ -115,6 +116,8 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
       const $ref = this.$refs._add(args.path);
       $ref.value = args.schema;
       $ref.pathType = pathType;
+      $ref.dynamicIdScope = usesDynamicIdScope($ref.value);
+      registerSchemaResources(this.$refs, $ref.path!, $ref.value, $ref.pathType, $ref.dynamicIdScope);
       promise = Promise.resolve(args.schema);
     } else {
       // Parse the schema file/url
