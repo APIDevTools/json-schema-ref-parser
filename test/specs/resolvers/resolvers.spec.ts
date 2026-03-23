@@ -200,8 +200,8 @@ describe("options.resolve", () => {
 
   it("should expose the original relative $ref to custom resolvers", async () => {
     const rootPath = path.abs("test/specs/resolvers/resolvers.yaml");
-    const rootUrl = path.abs("test/specs/resolvers/resolvers.yaml");
-    const petUrl = path.abs("test/specs/resolvers/definitions/pet.yaml");
+    const rootUrl = path.unixify(path.abs("test/specs/resolvers/resolvers.yaml"));
+    const petUrl = path.unixify(path.abs("test/specs/resolvers/definitions/pet.yaml"));
     let canReadInfo: Pick<FileInfo, "url" | "reference" | "baseUrl" | "hash"> | undefined;
     let readInfo: Pick<FileInfo, "url" | "reference" | "baseUrl" | "hash"> | undefined;
 
