@@ -140,6 +140,19 @@ export interface FileInfo {
   url: string;
 
   /**
+   * The unresolved `$ref` value exactly as it appeared in the parent schema, without the hash.
+   * This is useful for custom resolvers that need to preserve relative reference semantics instead
+   * of relying on the already-resolved `url`.
+   */
+  reference?: string;
+
+  /**
+   * The URL that `reference` was resolved against to produce `url`.
+   * This may include a JSON Pointer fragment when the reference originated from a nested location.
+   */
+  baseUrl?: string;
+
+  /**
    * The hash (URL fragment) of the file URL, including the # symbol. If the URL doesn't have a hash, then this will be an empty string.
    */
   hash: string;

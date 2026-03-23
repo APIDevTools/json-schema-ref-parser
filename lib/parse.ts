@@ -12,14 +12,24 @@ import type $Refs from "./refs.js";
 import type { ParserOptions } from "./options.js";
 import type { FileInfo, JSONSchema } from "./types/index.js";
 
+interface ParseTarget {
+  url: string;
+  reference?: string;
+  baseUrl?: string;
+}
+
 /**
  * Reads and parses the specified file path or URL.
  */
 async function parse<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-  path: string,
+  target: string | ParseTarget,
   $refs: $Refs<S, O>,
   options: O,
 ) {
+  let path = typeof target === "string" ? target : target.url;
+  const baseUrl = typeof target === "string" ? undefined : target.baseUrl;
+  let reference = typeof target === "string" ? undefined : target.reference;
+
   // Remove the URL fragment, if any
   const hashIndex = path.indexOf("#");
   let hash = "";
@@ -27,6 +37,12 @@ async function parse<S extends object = JSONSchema, O extends ParserOptions<S> =
     hash = path.substring(hashIndex);
     // Remove the URL fragment, if any
     path = path.substring(0, hashIndex);
+  }
+  if (reference) {
+    const referenceHashIndex = reference.indexOf("#");
+    if (referenceHashIndex >= 0) {
+      reference = reference.substring(0, referenceHashIndex);
+    }
   }
 
   // Add a new $Ref for this file, even though we don't have the value yet.
@@ -38,6 +54,8 @@ async function parse<S extends object = JSONSchema, O extends ParserOptions<S> =
     url: path,
     hash,
     extension: url.getExtension(path),
+    ...(reference !== undefined ? { reference } : {}),
+    ...(baseUrl !== undefined ? { baseUrl } : {}),
   } as FileInfo;
 
   // Read the file and then parse the data

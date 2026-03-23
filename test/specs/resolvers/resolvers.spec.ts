@@ -198,6 +198,101 @@ describe("options.resolve", () => {
     expect(schema).to.deep.equal(dereferencedSchema);
   });
 
+  it("should expose the original relative $ref to custom resolvers", async () => {
+    const rootPath = path.abs("test/specs/resolvers/resolvers.yaml");
+    const rootUrl = path.abs("test/specs/resolvers/resolvers.yaml");
+    const petUrl = path.abs("test/specs/resolvers/definitions/pet.yaml");
+    let canReadInfo: Pick<FileInfo, "url" | "reference" | "baseUrl" | "hash"> | undefined;
+    let readInfo: Pick<FileInfo, "url" | "reference" | "baseUrl" | "hash"> | undefined;
+
+    const schema = await $RefParser.dereference(
+      rootPath,
+      {
+        type: "object",
+        properties: {
+          pet: {
+            $ref: "definitions/pet.yaml",
+          },
+        },
+      },
+      {
+        resolve: {
+          relativeFile: {
+            order: 1,
+            canRead(file: FileInfo) {
+              canReadInfo = {
+                url: file.url,
+                reference: file.reference,
+                baseUrl: file.baseUrl,
+                hash: file.hash,
+              };
+              return file.reference === "definitions/pet.yaml";
+            },
+            async read(file: FileInfo) {
+              readInfo = {
+                url: file.url,
+                reference: file.reference,
+                baseUrl: file.baseUrl,
+                hash: file.hash,
+              };
+
+              return {
+                title: "pet",
+                type: "object",
+                properties: {
+                  name: {
+                    type: "string",
+                  },
+                  age: {
+                    type: "number",
+                  },
+                  species: {
+                    type: "string",
+                    enum: ["cat", "dog", "bird", "fish"],
+                  },
+                },
+              };
+            },
+          },
+        },
+      },
+    );
+
+    expect(canReadInfo).to.deep.equal({
+      url: petUrl,
+      reference: "definitions/pet.yaml",
+      baseUrl: `${rootUrl}#/properties/pet`,
+      hash: "",
+    });
+    expect(readInfo).to.deep.equal({
+      url: petUrl,
+      reference: "definitions/pet.yaml",
+      baseUrl: `${rootUrl}#/properties/pet`,
+      hash: "",
+    });
+    expect(schema).to.deep.equal({
+      type: "object",
+      properties: {
+        pet: {
+          title: "pet",
+          type: "object",
+          properties: {
+            name: {
+              type: "string",
+            },
+            age: {
+              type: "number",
+            },
+            species: {
+              type: "string",
+              enum: ["cat", "dog", "bird", "fish"],
+            },
+          },
+        },
+      },
+    });
+  });
+
   it("should use a custom resolver that calls a callback", async () => {
     const schema = await $RefParser.dereference(path.abs("test/specs/resolvers/resolvers.yaml"), {
       resolve: {

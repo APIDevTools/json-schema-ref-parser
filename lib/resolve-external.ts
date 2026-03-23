@@ -129,7 +129,19 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
 
   // Parse the $referenced file/url
   try {
-    const result = await parse(resolvedPath, $refs, options);
+    const reference = ($ref as JSONSchema).$ref;
+    const parseTarget: { url: string; baseUrl: string; reference?: string } = {
+      url: resolvedPath,
+      baseUrl: resolutionBase,
+    };
+    if (typeof reference === "string") {
+      parseTarget.reference = reference;
+    }
+    const result = await parse(
+      parseTarget,
+      $refs,
+      options,
+    );
 
     // Crawl the parsed value
     // console.log('Resolving $ref pointers in %s', withoutHash);
