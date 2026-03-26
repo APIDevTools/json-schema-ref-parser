@@ -331,9 +331,11 @@ describe("Historical GitHub Issues", () => {
       };
       const parser = new $RefParser();
       const result = await parser.dereference(schema);
-      expect(result).to.have.property("title", "Top Level Type");
-      expect(result).to.have.property("type", "object");
-      expect(result.properties.prop1).to.have.property("type", "string");
+      expect((result as any).allOf).to.have.length(1);
+      expect((result as any).allOf[0]).to.equal((result as any).$defs.TopLevelType);
+      expect((result as any).allOf[0]).to.have.property("title", "Top Level Type");
+      expect((result as any).allOf[0]).to.have.property("type", "object");
+      expect((result as any).allOf[0].properties.prop1).to.have.property("type", "string");
       // This is not actually circular
       expect(parser.$refs.circular).to.equal(false);
     });
@@ -800,6 +802,80 @@ describe("Historical GitHub Issues", () => {
       // Both should be the same object reference
       expect(result.properties.billing_address).to.equal(result.properties.shipping_address);
     });
+
+    it("Issue #145: 2020-12 plain-name fragments declared via $anchor should resolve", async () => {
+      const schema = {
+        $schema: "https://json-schema.org/draft/2020-12/schema",
+        $defs: {
+          Name: {
+            $anchor: "nameAnchor",
+            type: "string",
+            minLength: 1,
+          },
+        },
+        type: "object",
+        properties: {
+          name: { $ref: "#nameAnchor" },
+        },
+      };
+      const parser = new $RefParser();
+      const result = await parser.dereference(structuredClone(schema));
+      expect((result as any).properties.name).to.equal((result as any).$defs.Name);
+      expect((result as any).properties.name).to.deep.equal({
+        $anchor: "nameAnchor",
+        type: "string",
+        minLength: 1,
+      });
+    });
+
+    it("Issue #145: bundling anchored refs should rewrite them to internal JSON Pointers", async () => {
+      const schema = {
+        $schema: "https://json-schema.org/draft/2020-12/schema",
+        $defs: {
+          Name: {
+            $anchor: "nameAnchor",
+            type: "string",
+            minLength: 1,
+          },
+        },
+        type: "object",
+        properties: {
+          name: { $ref: "#nameAnchor" },
+        },
+      };
+      const parser = new $RefParser();
+      const result = await parser.bundle(structuredClone(schema));
+      expect((result as any).properties.name).to.deep.equal({ $ref: "#/$defs/Name" });
+    });
+
+    it("Issue #145: 2020-12 $ref siblings should remain constraints instead of merging schemas", async () => {
+      const schema = {
+        $schema: "https://json-schema.org/draft/2020-12/schema",
+        properties: {
+          native_prop: {},
+        },
+        $ref: "#/$defs/Def",
+        $defs: {
+          Def: {
+            properties: {
+              refed_prop: {},
+            },
+          },
+        },
+      };
+      const parser = new $RefParser();
+      const result = await parser.dereference(structuredClone(schema));
+      expect((result as any).properties).to.deep.equal({
+        native_prop: {},
+      });
+      expect((result as any).allOf).to.have.length(1);
+      expect((result as any).allOf[0]).to.equal((result as any).$defs.Def);
+      expect((result as any).allOf[0]).to.deep.equal({
+        properties: {
+          refed_prop: {},
+        },
+      });
+    });
   });
 
   // ============================================================================
@@ -1204,6 +1280,13 @@ describe("Historical GitHub Issues", () => {
       expect(result.properties.normal).to.deep.equal({ type: "string" });
       // Verify no prototype pollution occurred
       expect(({} as any).polluted).to.be.undefined;
+    });
+
+    it("Issue #419: dereferencing __proto__ input should not pollute Object.prototype", async () => {
+      const schema = JSON.parse('{"__proto__":{"exec":"rm -rf /"}}');
+      const parser = new $RefParser();
+      await parser.dereference(schema);
+      expect(({} as any).exec).to.be.undefined;
     });
 
     it("Issue #21: multiple refs to same external path should all resolve", async () => {

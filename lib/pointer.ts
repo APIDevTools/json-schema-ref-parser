@@ -308,7 +308,7 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
 ) {
   // Is the value a JSON reference? (and allowed?)
 
-  if ($Ref.isAllowed$Ref(pointer.value, options)) {
+  if ($Ref.isAllowed$Ref(pointer.value, options, pointer.$ref.dynamicIdScope)) {
     const resolutionBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.path;
     const $refPath = url.resolve(resolutionBase, pointer.value.$ref);
 
@@ -326,7 +326,7 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
       if ($Ref.isExtended$Ref(pointer.value)) {
         // This JSON reference "extends" the resolved value, rather than simply pointing to it.
         // So the resolved path does NOT change.  Just the value does.
-        pointer.value = $Ref.dereference(pointer.value, resolved.value, options);
+        pointer.value = $Ref.dereference(pointer.value, resolved.value, options, pointer.$ref.dynamicIdScope);
         if (pointer.$ref.dynamicIdScope) {
           pointer.scopeBase = getSchemaBasePath(pointer.scopeBase, pointer.value);
         }

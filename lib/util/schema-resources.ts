@@ -38,7 +38,7 @@ export function registerSchemaResources<S extends object = JSONSchema, O extends
 
   const seen = new Set<object>();
 
-  const visit = (node: unknown, scopeBase: string) => {
+  const visit = (node: unknown, scopeBase: string, pointerTokens: string[]) => {
     if (!node || typeof node !== "object" || ArrayBuffer.isView(node) || seen.has(node)) {
       return;
     }
@@ -46,16 +46,18 @@ export function registerSchemaResources<S extends object = JSONSchema, O extends
     seen.add(node);
 
     const nextScopeBase = getSchemaBasePath(scopeBase, node);
+    const resourcePointerTokens = nextScopeBase === scopeBase ? pointerTokens : [];
     if (nextScopeBase !== scopeBase) {
       $refs._addAlias(nextScopeBase, node as S, pathType, dynamicIdScope);
     }
+    registerAnchorAliases($refs, nextScopeBase, resourcePointerTokens, node);
 
     for (const key of Object.keys(node)) {
-      visit((node as Record<string, unknown>)[key], nextScopeBase);
+      visit((node as Record<string, unknown>)[key], nextScopeBase, [...resourcePointerTokens, key]);
     }
   };
 
-  visit(value, basePath);
+  visit(value, basePath, []);
 }
 
 function getSchemaId(value: unknown): string | undefined {
@@ -70,4 +72,38 @@ function getSchemaId(value: unknown): string | undefined {
   }
 
   return undefined;
+}
+
+function registerAnchorAliases<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  $refs: $Refs<S, O>,
+  scopeBase: string,
+  pointerTokens: string[],
+  value: unknown,
+) {
+  if (!value || typeof value !== "object" || ArrayBuffer.isView(value)) {
+    return;
+  }
+
+  const resourceBase = url.stripHash(scopeBase);
+  const targetPath = pointerTokens.length > 0 ? joinPointerPath(resourceBase, pointerTokens) : `${resourceBase}#`;
+  const anchors = [
+    (value as { $anchor?: unknown }).$anchor,
+    (value as { $dynamicAnchor?: unknown }).$dynamicAnchor,
+  ];
+
+  for (const anchor of anchors) {
+    if (typeof anchor === "string" && anchor.length > 0) {
+      $refs._addExactAlias(`${resourceBase}#${anchor}`, targetPath);
+    }
+  }
+}
+
+function joinPointerPath(basePath: string, tokens: string[]) {
+  let path = `${basePath}#`;
+
+  for (const token of tokens) {
+    path += `/${token.replace(/~/g, "~0").replace(/\//g, "~1")}`;
+  }
+
+  return path;
 }

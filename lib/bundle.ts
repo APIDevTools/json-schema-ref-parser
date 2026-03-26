@@ -97,7 +97,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
 
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
     const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
-    if ($Ref.isAllowed$Ref(obj)) {
+    if ($Ref.isAllowed$Ref(obj, options, dynamicIdScope)) {
       inventory$Ref(parent, key, path, currentScopeBase, dynamicIdScope, pathFromRoot, indirections, inventory, $refs, options);
     } else {
       // Crawl the object in a specific order that's optimized for bundling.
@@ -122,7 +122,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         const keyPathFromRoot = Pointer.join(pathFromRoot, key);
         const value = obj[key];
 
-        if ($Ref.isAllowed$Ref(value)) {
+        if ($Ref.isAllowed$Ref(value, options, dynamicIdScope)) {
           const valueScopeBase = dynamicIdScope ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
           inventory$Ref(
             obj,

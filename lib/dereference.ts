@@ -94,7 +94,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       processedObjects.add(obj);
       const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
 
-      if ($Ref.isAllowed$Ref(obj, options)) {
+      if ($Ref.isAllowed$Ref(obj, options, dynamicIdScope)) {
         dereferenced = dereference$Ref(
           obj,
           path,
@@ -125,7 +125,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           const value = obj[key];
           let circular;
 
-          if ($Ref.isAllowed$Ref(value, options)) {
+          if ($Ref.isAllowed$Ref(value, options, dynamicIdScope)) {
             const valueScopeBase = dynamicIdScope ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
             dereferenced = dereference$Ref(
               value,
@@ -257,18 +257,10 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
     // If the cached object however is _not_ circular and there are additional keys alongside our
     // `$ref` pointer here we should merge them back in and return that.
     if (!cache.circular) {
-      const refKeys = Object.keys($ref);
-      if (refKeys.length > 1) {
-        const extraKeys = {};
-        for (const key of refKeys) {
-          if (key !== "$ref" && !(key in cache.value)) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            extraKeys[key] = $ref[key];
-          }
-        }
+      if (Object.keys($ref).length > 1) {
         return {
           circular: cache.circular,
-          value: Object.assign({}, cache.value, extraKeys),
+          value: $Ref.dereference($ref, cache.value, options, dynamicIdScope),
         };
       }
 
@@ -318,7 +310,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   }
 
   // Dereference the JSON reference
-  let dereferencedValue = $Ref.dereference($ref, pointer.value, options);
+  let dereferencedValue = $Ref.dereference($ref, pointer.value, options, dynamicIdScope);
 
   // Crawl the dereferenced value (unless it's circular)
   if (!circular) {
