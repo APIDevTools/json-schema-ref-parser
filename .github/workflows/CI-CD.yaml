@@ -25,7 +25,6 @@ jobs:
           - macos-latest
           - windows-latest
         node:
-          - 20
           - lts/*
           - current
 
