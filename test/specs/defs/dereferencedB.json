@@ -30,13 +30,8 @@
               }
             },
             {
-              "type": "object",
-              "allOf": [
-                {
-                  "type": "number",
-                  "format": "float"
-                }
-              ]
+              "type": "number",
+              "format": "float"
             }
           ]
         }
@@ -81,58 +76,44 @@
           }
         },
         {
-          "type": "object",
-          "allOf": [
-            {
-              "type": "number",
-              "format": "float"
-            }
-          ]
+          "type": "number",
+          "format": "float"
         }
       ]
     }
   },
-  "allOf": [
-    {
+  "type": "object",
+  "properties": {
+    "fee": {
       "type": "object",
       "properties": {
-        "fee": {
+        "modificationFee": {
           "type": "object",
           "properties": {
-            "modificationFee": {
-              "type": "object",
-              "properties": {
-                "amount": {
-                  "type": "number",
-                  "format": "float"
-                }
-              }
+            "amount": {
+              "type": "number",
+              "format": "float"
+            }
+          }
+        }
+      }
+    },
+    "purchaseRate": {
+      "allOf": [
+        {
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number",
+              "format": "float"
             }
           }
         },
-        "purchaseRate": {
-          "allOf": [
-            {
-              "type": "object",
-              "properties": {
-                "amount": {
-                  "type": "number",
-                  "format": "float"
-                }
-              }
-            },
-            {
-              "type": "object",
-              "allOf": [
-                {
-                  "type": "number",
-                  "format": "float"
-                }
-              ]
-            }
-          ]
+        {
+          "type": "number",
+          "format": "float"
         }
-      }
+      ]
     }
-  ]
+  }
 }

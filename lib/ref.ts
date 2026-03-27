@@ -199,17 +199,10 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    * @param options
    * @returns
    */
-  static isAllowed$Ref<S extends object = JSONSchema>(
-    value: unknown,
-    options?: ParserOptions<S>,
-    allowPlainNameFragments = false,
-  ) {
+  static isAllowed$Ref<S extends object = JSONSchema>(value: unknown, options?: ParserOptions<S>) {
     if (this.is$Ref(value)) {
       if (value.$ref.substring(0, 2) === "#/" || value.$ref === "#") {
         // It's a JSON Pointer reference, which is always allowed
-        return true;
-      } else if (allowPlainNameFragments && value.$ref[0] === "#") {
-        // JSON Schema 2019-09+ allows plain-name fragments declared via $anchor/$dynamicAnchor
         return true;
       } else if (value.$ref[0] !== "#" && (!options || options.resolve?.external)) {
         // It's an external reference, which is allowed by the options
@@ -293,12 +286,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
     $ref: $Ref<S, O>,
     resolvedValue: S,
     options?: O,
-    useSpecCompliantRefSiblings = false,
   ): S {
-    if ($Ref.isExtended$Ref($ref) && useSpecCompliantRefSiblings) {
-      return preserveRefSiblings($ref, resolvedValue) as S;
-    }
-
     if (resolvedValue && typeof resolvedValue === "object" && $Ref.isExtended$Ref($ref)) {
       const merged = {} as Partial<S>;
       for (const key of Object.keys($ref)) {
@@ -335,27 +323,6 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
       return resolvedValue;
     }
   }
-}
-
-function preserveRefSiblings<T>(refValue: Record<string, any>, resolvedValue: T): T {
-  const preserved = {} as Record<string, any>;
-  const existingAllOf = "allOf" in refValue ? refValue.allOf : undefined;
-
-  for (const key of Object.keys(refValue)) {
-    if (key !== "$ref" && key !== "allOf") {
-      preserved[key] = refValue[key];
-    }
-  }
-
-  const allOf = [resolvedValue];
-  if (Array.isArray(existingAllOf)) {
-    allOf.push(...existingAllOf);
-  } else if (existingAllOf !== undefined) {
-    allOf.push(existingAllOf);
-  }
-
-  preserved.allOf = allOf;
-  return preserved as T;
 }
 
 function deepMerge<T>(target: Partial<T>, source: Partial<T>): T {

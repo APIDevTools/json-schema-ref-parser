@@ -112,7 +112,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    */
   _get$Ref(path: string) {
     path = url.resolve(this._root$Ref.path!, path);
-    return this._getRef(this._exactAliases[path] || path);
+    return this._getRef(path);
   }
 
   /**
@@ -149,15 +149,6 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     return $ref;
   }
 
-  _addExactAlias(path: string, targetPath: string) {
-    if (!path || this._exactAliases[path]) {
-      return this._exactAliases[path];
-    }
-
-    this._exactAliases[path] = targetPath;
-    return targetPath;
-  }
-
   /**
    * Resolves the given JSON reference.
    *
@@ -169,14 +160,13 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    */
   _resolve(path: string, pathFromRoot: string, options?: O) {
     const absPath = url.resolve(this._root$Ref.path!, path);
-    const canonicalPath = this._exactAliases[absPath] || absPath;
-    const $ref = this._getRef(canonicalPath);
+    const $ref = this._getRef(absPath);
 
     if (!$ref) {
       throw new Error(`Error resolving $ref pointer "${path}". \n"${url.stripHash(absPath)}" not found.`);
     }
 
-    return $ref.resolve(canonicalPath, options, path, pathFromRoot);
+    return $ref.resolve(absPath, options, path, pathFromRoot);
   }
 
   /**
@@ -188,8 +178,6 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
   _$refs: $RefsMap<S, O> = {};
 
   _aliases: $RefsMap<S, O> = {};
-
-  _exactAliases: Record<string, string> = {};
 
   /**
    * The {@link $Ref} object that is the root of the JSON schema.
@@ -209,7 +197,6 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
 
     this._$refs = {};
     this._aliases = {};
-    this._exactAliases = {};
 
     // @ts-ignore
     this._root$Ref = null;
