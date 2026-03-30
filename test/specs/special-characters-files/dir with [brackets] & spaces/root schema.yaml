@@ -1,0 +1,4 @@
+type: object
+properties:
+  item:
+    $ref: "./defs [value] %.json#/definitions/value"

@@ -29,11 +29,14 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
   }
 
   try {
+    const rootScopeBase = parser.$refs._root$Ref.dynamicIdScope
+      ? getSchemaBasePath(parser.$refs._root$Ref.path!, parser.schema)
+      : parser.$refs._root$Ref.path!;
     // console.log('Resolving $ref pointers in %s', parser.$refs._root$Ref.path);
     const promises = crawl(
       parser.schema,
       parser.$refs._root$Ref.path + "#",
-      parser.$refs._root$Ref.path!,
+      rootScopeBase,
       parser.$refs._root$Ref.dynamicIdScope,
       parser.$refs,
       options,
@@ -75,7 +78,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
 
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
     seen.add(obj); // Track previously seen objects to avoid infinite recursion
-    const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
+    const currentScopeBase = scopeBase;
     if ($Ref.isExternal$Ref(obj)) {
       promises.push(resolve$Ref<S, O>(obj, path, currentScopeBase, dynamicIdScope, $refs, options));
     }
@@ -85,7 +88,9 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       const keyPath = Pointer.join(path, key);
       const value = obj[key as keyof typeof obj] as string | JSONSchema | Buffer | undefined;
       const childScopeBase =
-        dynamicIdScope && $Ref.isExternal$Ref(value) ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
+        dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
+          ? getSchemaBasePath(currentScopeBase, value)
+          : currentScopeBase;
       promises = promises.concat(crawl(value, keyPath, childScopeBase, dynamicIdScope, $refs, options, seen, external));
     }
   }

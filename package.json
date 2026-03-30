@@ -15,7 +15,7 @@
     "test": "vitest --coverage",
     "test:specific": "vitest invalid",
     "test:node": "yarn test",
-    "test:browser": "cross-env BROWSER=\"true\" yarn test",
+    "test:browser": "node ./test/fixtures/run-browser-tests.mjs",
     "test:update": "vitest -u",
     "test:watch": "vitest -w"
   },

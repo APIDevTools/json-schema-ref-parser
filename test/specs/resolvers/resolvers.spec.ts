@@ -293,6 +293,79 @@ describe("options.resolve", () => {
     });
   });
 
+  it("should resolve Windows drive-letter paths through custom file resolvers", async () => {
+    // Adapted from stoplightio/json-ref-resolver resolver.spec.ts: "windows file paths"
+    if (typeof window !== "undefined") {
+      return;
+    }
+
+    const source = {
+      schema: {
+        $ref: "../b.json#/inner",
+      },
+    };
+
+    const remotes: Record<string, unknown> = {
+      "c:/b.json": {
+        inner: {
+          bName: "b",
+          nested: {
+            $ref: "./models/c.json",
+          },
+        },
+      },
+      "c:/models/c.json": {
+        cName: "c",
+        network: {
+          $ref: "D:\\network.json#/inner",
+        },
+      },
+      "d:/network.json": {
+        inner: {
+          dName: "d",
+        },
+      },
+    };
+
+    const seenUrls: string[] = [];
+    const parser = new $RefParser();
+    const schema = await parser.dereference(
+      "c:/My Documents/spec.json",
+      structuredClone(source),
+      {
+        resolve: {
+          file: {
+            order: 1,
+            canRead: true,
+            read(file: FileInfo) {
+              seenUrls.push(file.url);
+
+              const remote = remotes[file.url];
+              if (remote === undefined) {
+                throw new Error(`Unexpected file URL: ${file.url}`);
+              }
+
+              return structuredClone(remote);
+            },
+          },
+        },
+      } as ParserOptions,
+    );
+
+    expect(seenUrls).toEqual(["c:/b.json", "c:/models/c.json", "d:/network.json"]);
+    expect(schema).toEqual({
+      schema: {
+        bName: "b",
+        nested: {
+          cName: "c",
+          network: {
+            dName: "d",
+          },
+        },
+      },
+    });
+  });
+
   it("should use a custom resolver that calls a callback", async () => {
     const schema = await $RefParser.dereference(path.abs("test/specs/resolvers/resolvers.yaml"), {
       resolve: {
@@ -453,6 +526,62 @@ describe("options.resolve", () => {
       } as ParserOptions,
     );
     expect(parsed).to.equal("custom://Path/Is/Case/Sensitive");
+  });
+
+  it("should resolve external refs with unescaped URI characters", async () => {
+    // Adapted from whitlockjc/json-refs test-json-refs.js:
+    // "should handle references with unescaped URI characters"
+    let receivedUrl: string | undefined;
+    const schema = await $RefParser.dereference(
+      {
+        $ref: "https://example.com/schemas/{id}/person schema.json",
+      },
+      {
+        resolve: {
+          http: {
+            order: 1,
+            canRead: /^https?:\/\//i,
+            safeUrlResolver: false,
+            read(file: FileInfo) {
+              receivedUrl = file.url;
+              return { type: "string" };
+            },
+          },
+        },
+      } as ParserOptions,
+    );
+
+    expect(receivedUrl).toBe("https://example.com/schemas/%7Bid%7D/person%20schema.json");
+    expect(schema).toEqual({ type: "string" });
+  });
+
+  it("should resolve external refs with escaped URI characters", async () => {
+    // Adapted from whitlockjc/json-refs test-json-refs.js:
+    // "should handle references with escaped URI characters"
+    const ref = "https://example.com/schemas/%7Bid%7D/person%20schema.json";
+    let receivedUrl: string | undefined;
+
+    const schema = await $RefParser.dereference(
+      {
+        $ref: ref,
+      },
+      {
+        resolve: {
+          http: {
+            order: 1,
+            canRead: /^https?:\/\//i,
+            safeUrlResolver: false,
+            read(file: FileInfo) {
+              receivedUrl = file.url;
+              return { type: "string" };
+            },
+          },
+        },
+      } as ParserOptions,
+    );
+
+    expect(receivedUrl).toBe(ref);
+    expect(schema).toEqual({ type: "string" });
   });
 
   it("should block unsafe URLs when safeUrlResolver is true (default)", async () => {

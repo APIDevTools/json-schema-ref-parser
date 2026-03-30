@@ -95,7 +95,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
-    if (this.$ref.dynamicIdScope) {
+    if (this.$ref.dynamicIdScope && !isAliasedResource(this.$ref)) {
       this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
     }
 
@@ -196,7 +196,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
-    if (this.$ref.dynamicIdScope) {
+    if (this.$ref.dynamicIdScope && !isAliasedResource(this.$ref)) {
       this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
     }
 
@@ -327,18 +327,16 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
         // This JSON reference "extends" the resolved value, rather than simply pointing to it.
         // So the resolved path does NOT change.  Just the value does.
         pointer.value = $Ref.dereference(pointer.value, resolved.value, options);
-        if (pointer.$ref.dynamicIdScope) {
-          pointer.scopeBase = getSchemaBasePath(pointer.scopeBase, pointer.value);
-        }
         return false;
       } else {
         // Resolve the reference
         pointer.$ref = resolved.$ref;
         pointer.path = resolved.path;
         pointer.value = resolved.value;
-        pointer.scopeBase = pointer.$ref.dynamicIdScope
-          ? getSchemaBasePath(pointer.$ref.path!, pointer.value)
-          : pointer.$ref.path!;
+        // `pointer.$ref.path` is already the canonical location of the resolved resource.
+        // Re-applying the resource's own `$id` here would duplicate nested path segments
+        // such as `nested/nested/foo.json`.
+        pointer.scopeBase = pointer.$ref.path!;
       }
 
       return true;
@@ -384,4 +382,8 @@ function unwrapOrThrow(value: unknown) {
 
 function isRootPath(pathFromRoot: string | unknown): boolean {
   return typeof pathFromRoot == "string" && Pointer.parse(pathFromRoot).length == 0;
+}
+
+function isAliasedResource($ref: $Ref<any, any>) {
+  return Boolean($ref.path && $ref.path in $ref.$refs._aliases);
 }

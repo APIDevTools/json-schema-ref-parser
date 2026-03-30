@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import $RefParser from "../../../lib/index.js";
-import type { Options } from "../../../lib/options.js";
+import type { Options, ParserOptions } from "../../../lib/options.js";
 
 describe("Edge cases and option behaviors", () => {
   describe("mutateInputSchema: false", () => {
@@ -171,6 +171,145 @@ describe("Edge cases and option behaviors", () => {
       // so preservedProperties should work
       expect(name.type).to.equal("string");
       expect(name.description).to.equal("User name");
+    });
+  });
+
+  describe("dereference.mergeKeys", () => {
+    it("should deep-merge extended $ref siblings by default", async () => {
+      const schema = {
+        definitions: {
+          Address: {
+            type: "object",
+            properties: {
+              street: { type: "string" },
+              metadata: {
+                type: "object",
+                properties: {
+                  zone: { type: "string" },
+                  country: { type: "string" },
+                },
+              },
+            },
+            required: ["street"],
+          },
+        },
+        properties: {
+          shipping: {
+            $ref: "#/definitions/Address",
+            properties: {
+              postalCode: { type: "string" },
+              metadata: {
+                properties: {
+                  zone: { const: "west" },
+                },
+              },
+            },
+            required: ["postalCode"],
+          },
+        },
+      };
+
+      const result = await $RefParser.dereference(structuredClone(schema));
+      const shipping = (result as any).properties.shipping;
+
+      expect(shipping.properties.street).toEqual({ type: "string" });
+      expect(shipping.properties.postalCode).toEqual({ type: "string" });
+      expect(shipping.properties.metadata.properties.country).toEqual({ type: "string" });
+      expect(shipping.properties.metadata.properties.zone).toEqual({ type: "string", const: "west" });
+      expect(shipping.required).toEqual(["postalCode"]);
+    });
+
+    it("should not deep-merge overlapping keys when mergeKeys is false", async () => {
+      const schema = {
+        definitions: {
+          Address: {
+            type: "object",
+            properties: {
+              street: { type: "string" },
+              metadata: {
+                type: "object",
+                properties: {
+                  zone: { type: "string" },
+                },
+              },
+            },
+            required: ["street"],
+          },
+        },
+        properties: {
+          shipping: {
+            $ref: "#/definitions/Address",
+            properties: {
+              postalCode: { type: "string" },
+              metadata: {
+                properties: {
+                  zone: { const: "west" },
+                },
+              },
+            },
+            required: ["postalCode"],
+          },
+        },
+      };
+
+      const result = await $RefParser.dereference(structuredClone(schema), {
+        dereference: { mergeKeys: false },
+      });
+      const shipping = (result as any).properties.shipping;
+
+      expect(shipping.properties.street).toBeUndefined();
+      expect(shipping.properties.postalCode).toEqual({ type: "string" });
+      expect(shipping.properties.metadata).toEqual({
+        properties: {
+          zone: { const: "west" },
+        },
+      });
+      expect(shipping.required).toEqual(["postalCode"]);
+    });
+
+    it("should overwrite nested arrays when merging extended $ref siblings", async () => {
+      const schema = {
+        definitions: {
+          StatusModel: {
+            type: "object",
+            properties: {
+              status: {
+                type: "string",
+                enum: ["draft", "published"],
+              },
+              labels: {
+                type: "array",
+                examples: ["base"],
+              },
+            },
+          },
+        },
+        properties: {
+          article: {
+            $ref: "#/definitions/StatusModel",
+            properties: {
+              status: {
+                enum: ["archived"],
+              },
+              labels: {
+                examples: ["override"],
+              },
+            },
+          },
+        },
+      };
+
+      const result = await $RefParser.dereference(structuredClone(schema));
+      const article = (result as any).properties.article;
+
+      expect(article.properties.status).toEqual({
+        type: "string",
+        enum: ["archived"],
+      });
+      expect(article.properties.labels).toEqual({
+        type: "array",
+        examples: ["override"],
+      });
     });
   });
 
@@ -452,6 +591,68 @@ describe("Edge cases and option behaviors", () => {
     });
   });
 
+  describe("falsy $ref targets", () => {
+    it("should dereference local refs to 0, false, empty string, and null", async () => {
+      const schema = {
+        type: "object",
+        properties: {
+          zero: { $ref: "#/definitions/zero" },
+          nope: { $ref: "#/definitions/nope" },
+          empty: { $ref: "#/definitions/empty" },
+          nil: { $ref: "#/definitions/nil" },
+        },
+        definitions: {
+          zero: 0,
+          nope: false,
+          empty: "",
+          nil: null,
+        },
+      };
+
+      const result = await $RefParser.dereference(structuredClone(schema));
+
+      expect((result as any).properties.zero).toBe(0);
+      expect((result as any).properties.nope).toBe(false);
+      expect((result as any).properties.empty).toBe("");
+      expect((result as any).properties.nil).toBe(null);
+    });
+
+    it("should dereference external refs to 0, false, empty string, and null", async () => {
+      // Adapted from stoplightio/json-ref-resolver resolver.spec.ts: remote falsy JSON pointers
+      const schema = {
+        type: "object",
+        properties: {
+          zero: { $ref: "custom://falsy.json#/zero" },
+          nope: { $ref: "custom://falsy.json#/nope" },
+          empty: { $ref: "custom://falsy.json#/empty" },
+          nil: { $ref: "custom://falsy.json#/nil" },
+        },
+      };
+
+      const result = await $RefParser.dereference(structuredClone(schema), {
+        resolve: {
+          custom: {
+            order: 1,
+            canRead: /^custom:\/\//i,
+            read() {
+              return {
+                zero: 0,
+                nope: false,
+                empty: "",
+                nil: null,
+              };
+            },
+          },
+        },
+      } as ParserOptions);
+
+      expect((result as any).properties.zero).toBe(0);
+      expect((result as any).properties.nope).toBe(false);
+      expect((result as any).properties.empty).toBe("");
+      expect((result as any).properties.nil).toBe(null);
+    });
+  });
+
   describe("empty and minimal schemas", () => {
     it("should handle an empty object schema", async () => {
       const parser = new $RefParser();
@@ -541,6 +742,39 @@ describe("Edge cases and option behaviors", () => {
       const result = await parser.dereference(structuredClone(schema));
       // The $ref points to the string "string" (the type value)
       expect((result as any).properties.streetType).to.equal("string");
+    });
+  });
+
+  describe("adapted upstream local-ref regressions", () => {
+    it("should resolve definitions whose container has a similar name", async () => {
+      // Adapted from whitlockjc/json-refs test-json-refs.js:
+      // "should handle definition contains the same name as its own"
+      const schema = {
+        definitions: {
+          SameName: {
+            type: "string",
+            minLength: 1,
+          },
+          SameNameContain: {
+            type: "object",
+            properties: {
+              name: {
+                $ref: "#/definitions/SameName",
+              },
+            },
+          },
+        },
+        properties: {
+          container: {
+            $ref: "#/definitions/SameNameContain",
+          },
+        },
+      };
+
+      const result = await $RefParser.dereference(structuredClone(schema));
+
+      expect((result as any).definitions.SameNameContain.properties.name).toBe((result as any).definitions.SameName);
+      expect((result as any).properties.container).toBe((result as any).definitions.SameNameContain);
     });
   });
 });

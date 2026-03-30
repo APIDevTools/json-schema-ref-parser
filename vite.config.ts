@@ -3,9 +3,11 @@
 import { defineConfig } from "vitest/config";
 
 const isBrowser = process.env.BROWSER === "true";
+const browserBaseUrl = process.env.TEST_HTTP_BASE_URL || "http://localhost:3000/";
 export default defineConfig({
   test: {
     environment: isBrowser ? "jsdom" : "node",
+    environmentOptions: isBrowser ? { jsdom: { url: browserBaseUrl } } : undefined,
     dir: "test",
     exclude: ["**/__IGNORED__/**"],
     watch: false,

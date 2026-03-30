@@ -21,11 +21,14 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
   options: O,
 ) {
   const start = Date.now();
+  const rootScopeBase = parser.$refs._root$Ref.dynamicIdScope
+    ? getSchemaBasePath(parser.$refs._root$Ref.path!, parser.schema)
+    : parser.$refs._root$Ref.path!;
   // console.log('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
   const dereferenced = crawl<S, O>(
     parser.schema,
     parser.$refs._root$Ref.path!,
-    parser.$refs._root$Ref.path!,
+    rootScopeBase,
     parser.$refs._root$Ref.dynamicIdScope,
     "#",
     new Set(),
@@ -92,7 +95,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
       parents.add(obj);
       processedObjects.add(obj);
-      const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
+      const currentScopeBase = scopeBase;
 
       if ($Ref.isAllowed$Ref(obj, options)) {
         dereferenced = dereference$Ref(
@@ -123,14 +126,17 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           }
 
           const value = obj[key];
+          const childScopeBase =
+            dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
+              ? getSchemaBasePath(currentScopeBase, value)
+              : currentScopeBase;
           let circular;
 
           if ($Ref.isAllowed$Ref(value, options)) {
-            const valueScopeBase = dynamicIdScope ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
             dereferenced = dereference$Ref(
               value,
               keyPath,
-              valueScopeBase,
+              childScopeBase,
               dynamicIdScope,
               keyPathFromRoot,
               parents,
@@ -183,7 +189,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
               dereferenced = crawl(
                 value,
                 keyPath,
-                currentScopeBase,
+                childScopeBase,
                 dynamicIdScope,
                 keyPathFromRoot,
                 parents,

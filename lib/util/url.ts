@@ -426,6 +426,10 @@ export function fromFileSystemPath(path: string) {
  * Converts a URL to a local filesystem path.
  */
 export function toFileSystemPath(path: string | undefined, keepFileProtocol?: boolean): string {
+  // Bare "%" characters are valid in filesystem paths, but they make `decodeURI` throw.
+  // Escape only the non-encoded ones so percent-encoded sequences still decode normally.
+  path = path!.replace(/%(?![0-9A-Fa-f]{2})/g, "%25");
+
   // Step 1: `decodeURI` will decode characters such as Cyrillic characters, spaces, etc.
   path = decodeURI(path!);
 

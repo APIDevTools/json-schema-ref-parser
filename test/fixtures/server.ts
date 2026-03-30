@@ -10,6 +10,7 @@ import path from "path";
 
 const __dirname = dirname(__filename);
 const root = path.join(__dirname, "..", "..");
+const serverPort = Number(process.env.TEST_HTTP_PORT) || 3000;
 const setup = async () => {
   const server = http
     .createServer(function (request, response) {
@@ -55,7 +56,7 @@ const setup = async () => {
         }
       });
     })
-    .listen(3000);
+    .listen(serverPort);
 
   return () => {
     // teardown

@@ -35,6 +35,9 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
   options: O,
 ) {
   // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
+  const rootScopeBase = parser.$refs._root$Ref.dynamicIdScope
+    ? getSchemaBasePath(parser.$refs._root$Ref.path!, parser.schema)
+    : parser.$refs._root$Ref.path!;
 
   // Build an inventory of all $ref pointers in the JSON Schema
   const inventory: InventoryEntry[] = [];
@@ -42,7 +45,7 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
     parser,
     "schema",
     parser.$refs._root$Ref.path + "#",
-    parser.$refs._root$Ref.path!,
+    rootScopeBase,
     parser.$refs._root$Ref.dynamicIdScope,
     "#",
     0,
@@ -96,7 +99,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   const isExcludedPath = bundleOptions.excludedPathMatcher || (() => false);
 
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
-    const currentScopeBase = dynamicIdScope ? getSchemaBasePath(scopeBase, obj) : scopeBase;
+    const currentScopeBase = scopeBase;
     if ($Ref.isAllowed$Ref(obj)) {
       inventory$Ref(parent, key, path, currentScopeBase, dynamicIdScope, pathFromRoot, indirections, inventory, $refs, options);
     } else {
@@ -121,14 +124,17 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         const keyPath = Pointer.join(path, key);
         const keyPathFromRoot = Pointer.join(pathFromRoot, key);
         const value = obj[key];
+        const childScopeBase =
+          dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
+            ? getSchemaBasePath(currentScopeBase, value)
+            : currentScopeBase;
 
         if ($Ref.isAllowed$Ref(value)) {
-          const valueScopeBase = dynamicIdScope ? getSchemaBasePath(currentScopeBase, value) : currentScopeBase;
           inventory$Ref(
             obj,
             key,
             keyPath,
-            valueScopeBase,
+            childScopeBase,
             dynamicIdScope,
             keyPathFromRoot,
             indirections,
@@ -137,7 +143,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
             options,
           );
         } else {
-          crawl(obj, key, keyPath, currentScopeBase, dynamicIdScope, keyPathFromRoot, indirections, inventory, $refs, options);
+          crawl(obj, key, keyPath, childScopeBase, dynamicIdScope, keyPathFromRoot, indirections, inventory, $refs, options);
         }
 
         // We need to ensure that we have an object to work with here because we may be crawling
