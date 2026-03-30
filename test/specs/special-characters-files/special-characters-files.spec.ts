@@ -5,7 +5,7 @@ import path from "../../utils/path.js";
 const isBrowser = typeof window !== "undefined";
 
 function normalizePathForAssertion(entry: string) {
-  return decodeURIComponent(entry)
+  return decodeURIComponent(entry.replace(/%(?![0-9A-Fa-f]{2})/g, "%25"))
     .replace(/\\/g, "/")
     .replace(/^file:\/\/\/([A-Z]):/, (_match, drive: string) => `file:///${drive.toLowerCase()}:`)
     .replace(/^([A-Z]):/, (_match, drive: string) => `${drive.toLowerCase()}:`);
