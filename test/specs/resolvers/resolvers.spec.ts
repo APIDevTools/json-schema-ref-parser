@@ -56,6 +56,10 @@ async function withSelfSignedHttpsServer(run: (schemaUrl: string) => Promise<voi
   }
 }
 
+function normalizeWindowsDriveUrl(path: string) {
+  return path.replace(/\\/g, "/").replace(/^([A-Z]):/, (_, drive: string) => `${drive.toLowerCase()}:`);
+}
+
 describe("options.resolve", () => {
   it('should not resolve external links if "resolve.external" is disabled', async () => {
     const schema = await $RefParser.dereference(path.abs("test/specs/resolvers/resolvers.yaml"), {
@@ -338,9 +342,10 @@ describe("options.resolve", () => {
             order: 1,
             canRead: true,
             read(file: FileInfo) {
-              seenUrls.push(file.url);
+              const normalizedUrl = normalizeWindowsDriveUrl(file.url);
+              seenUrls.push(normalizedUrl);
 
-              const remote = remotes[file.url];
+              const remote = remotes[normalizedUrl];
               if (remote === undefined) {
                 throw new Error(`Unexpected file URL: ${file.url}`);
               }
