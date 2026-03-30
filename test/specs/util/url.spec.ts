@@ -37,6 +37,13 @@ if (!process.env.BROWSER) {
         .and.toSatisfy((msg: string) => msg.startsWith("Y:/A/Random/Path"));
     });
 
+    it("should treat forward-slash drive-letter paths as absolute", async () => {
+      const result = $url.fromFileSystemPath("C:/A/Random/Path/file.json");
+      expect(result)
+        .to.be.a("string")
+        .and.toSatisfy((msg: string) => msg.startsWith("C:/A/Random/Path/file.json"));
+    });
+
     it("should handle relative paths", async () => {
       const result = $url.fromFileSystemPath("Path\\file.json");
       const pwd = convertPathToPosix(cwd());

@@ -7,7 +7,7 @@ const jsonPointerTilde = /~0/g;
 
 import { isWindows } from "./is-windows.js";
 
-const isAbsoluteWin32Path = /^[a-zA-Z]:\\/;
+const isAbsoluteWin32Path = /^[a-zA-Z]:[\\/]/;
 
 // RegExp patterns to URL-encode special characters in local filesystem paths
 const urlEncodePatterns = [
