@@ -1,0 +1,5 @@
+minimumReleaseAgeExclude:
+  - '@types/node@25.9.3'
+peerDependencyRules:
+  allowedVersions:
+    eslint: '10'

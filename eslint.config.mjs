@@ -16,10 +16,8 @@ const globalToUse = {
 
 const ignores = [
   ".lintstagedrc.js",
-  "**/.yarn/**/*",
   "**/dist/**/*",
   "public/js/*",
-  ".yarn/js/*",
   "dist/**/*",
   "coverage/**/*",
 ];

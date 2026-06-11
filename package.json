@@ -7,14 +7,14 @@
   "module": "dist/lib/index.js",
   "main": "dist/lib/index.js",
   "scripts": {
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "pnpm build",
     "lint": "eslint lib",
     "build": "rimraf dist && tsc",
     "typecheck": "tsc --noEmit",
     "prettier": "prettier --write \"**/*.+(js|jsx|ts|tsx|har||json|css|md)\"",
     "test": "vitest --coverage",
     "test:specific": "vitest invalid",
-    "test:node": "yarn test",
+    "test:node": "pnpm test",
     "test:browser": "node ./test/fixtures/run-browser-tests.mjs",
     "test:update": "vitest -u",
     "test:watch": "vitest -w"
@@ -72,32 +72,32 @@
     "@types/json-schema": "^7.0.15"
   },
   "dependencies": {
-    "js-yaml": "^4.1.1"
+    "js-yaml": "^4.2.0"
   },
   "devDependencies": {
-    "@eslint/compat": "^2.0.3",
+    "@eslint/compat": "^2.1.0",
     "@eslint/js": "^10.0.1",
     "@types/eslint": "^9.6.1",
     "@types/js-yaml": "^4.0.9",
     "@types/json-schema": "^7.0.15",
-    "@types/node": "^25",
-    "@typescript-eslint/eslint-plugin": "^8.57.2",
-    "@typescript-eslint/parser": "^8.57.2",
-    "@vitest/coverage-v8": "^4.1.2",
+    "@types/node": "^25.9.3",
+    "@typescript-eslint/eslint-plugin": "^8.61.0",
+    "@typescript-eslint/parser": "^8.61.0",
+    "@vitest/coverage-v8": "^4.1.8",
     "cross-env": "^10.1.0",
-    "eslint": "^10.1.0",
+    "eslint": "^10.4.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-prettier": "^5.5.5",
-    "eslint-plugin-promise": "^7.2.1",
+    "eslint-plugin-prettier": "^5.5.6",
+    "eslint-plugin-promise": "^7.3.0",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "globals": "^17.4.0",
-    "jsdom": "^29.0.1",
-    "prettier": "^3.8.1",
+    "globals": "^17.6.0",
+    "jsdom": "^29.1.1",
+    "prettier": "^3.8.4",
     "rimraf": "^6.1.3",
-    "typescript": "^6.0.2",
-    "typescript-eslint": "^8.57.2",
-    "vitest": "^4.1.2"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0",
+    "vitest": "^4.1.8"
   },
   "release": {
     "branches": [
@@ -110,5 +110,5 @@
       "@semantic-release/github"
     ]
   },
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "pnpm@11.5.3"
 }

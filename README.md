@@ -15,7 +15,7 @@ Install using [npm](https://docs.npmjs.com/about-npm/):
 
 ```bash
 npm install @apidevtools/json-schema-ref-parser
-yarn add @apidevtools/json-schema-ref-parser
+pnpm add @apidevtools/json-schema-ref-parser
 bun add @apidevtools/json-schema-ref-parser
 ```
 
@@ -142,10 +142,10 @@ To build/test the project locally on your computer:
    `git clone https://github.com/APIDevTools/json-schema-ref-parser.git`
 
 2. **Install dependencies**<br>
-   `yarn install`
+   `pnpm install`
 
 3. **Run the tests**<br>
-   `yarn test`
+   `pnpm test`
 
 ## License
 

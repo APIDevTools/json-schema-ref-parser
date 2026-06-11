@@ -28,8 +28,13 @@ async function getOpenPort() {
 }
 
 const port = await getOpenPort();
-const child = spawn(process.execPath, [".yarn/releases/yarn-4.13.0.cjs", "test"], {
+const packageManager = process.env.npm_execpath;
+const command = packageManager ? process.execPath : "pnpm";
+const args = packageManager ? [packageManager, "test"] : ["test"];
+
+const child = spawn(command, args, {
   stdio: "inherit",
+  shell: !packageManager && process.platform === "win32",
   env: {
     ...process.env,
     BROWSER: "true",

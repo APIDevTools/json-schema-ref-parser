@@ -7,25 +7,25 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 ### Building
 
 ```bash
-yarn build          # Compile TypeScript to dist/
-yarn typecheck      # Run TypeScript type checking without emitting files
+pnpm build          # Compile TypeScript to dist/
+pnpm typecheck      # Run TypeScript type checking without emitting files
 ```
 
 ### Testing
 
 ```bash
-yarn test           # Run all tests with coverage (Vitest)
-yarn test:node      # Run tests in Node.js environment
-yarn test:browser   # Run tests in browser environment (jsdom)
-yarn test:watch     # Run tests in watch mode
-yarn test:update    # Update test snapshots
+pnpm test           # Run all tests with coverage (Vitest)
+pnpm test:node      # Run tests in Node.js environment
+pnpm test:browser   # Run tests in browser environment (jsdom)
+pnpm test:watch     # Run tests in watch mode
+pnpm test:update    # Update test snapshots
 ```
 
 ### Code Quality
 
 ```bash
-yarn lint           # Run ESLint on lib/ directory
-yarn prettier       # Format all code files
+pnpm lint           # Run ESLint on lib/ directory
+pnpm prettier       # Format all code files
 ```
 
 ### Running Individual Tests
@@ -33,13 +33,13 @@ yarn prettier       # Format all code files
 To run a single test file:
 
 ```bash
-npx vitest test/specs/circular/circular.spec.ts
+pnpm exec vitest test/specs/circular/circular.spec.ts
 ```
 
 To run tests matching a pattern:
 
 ```bash
-npx vitest --grep "circular"
+pnpm exec vitest --grep "circular"
 ```
 
 ## Architecture Overview
