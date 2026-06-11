@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { describe, it, beforeEach } from "vitest";
+import { afterEach, beforeEach, describe, it, vi } from "vitest";
 import $RefParser from "../../lib/index.js";
 
 import { expect } from "vitest";
@@ -142,6 +142,60 @@ describe("HTTP options", () => {
           );
         }
       }
+    });
+  });
+
+  describe.skipIf(isBrowser)("http.safeUrlResolver redirects", () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("should block unsafe redirect targets before fetching them", async () => {
+      const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(null, {
+          status: 302,
+          headers: { location: "http://127.0.0.1/secret.json" },
+        }),
+      );
+
+      try {
+        const parser = new $RefParser();
+        await parser.parse("https://example.com/redirect.json");
+        throw new Error("The unsafe redirect was followed. That should NOT have happened!");
+      } catch (err) {
+        expect(err).to.be.an.instanceOf(Error);
+        expect((err as Error).message).to.contain("Unsafe URL blocked by safeUrlResolver");
+      }
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect((fetchMock.mock.calls[0]?.[1] as RequestInit | undefined)?.redirect).to.equal("manual");
+    });
+
+    it("should allow unsafe redirect targets when safeUrlResolver is false", async () => {
+      const fetchMock = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValueOnce(
+          new Response(null, {
+            status: 302,
+            headers: { location: "http://127.0.0.1/schema.json" },
+          }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ type: "string" }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          }),
+        );
+
+      const parser = new $RefParser();
+      const schema = await parser.parse("https://example.com/redirect.json", {
+        resolve: { http: { safeUrlResolver: false } },
+      });
+
+      expect(schema).to.deep.equal({ type: "string" });
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect((fetchMock.mock.calls[0]?.[1] as RequestInit | undefined)?.redirect).to.equal("manual");
+      expect((fetchMock.mock.calls[1]?.[1] as RequestInit | undefined)?.redirect).to.equal("manual");
     });
   });
 

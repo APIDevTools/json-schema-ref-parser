@@ -21,6 +21,47 @@ describe("Return the extension of a URL", () => {
 });
 
 if (!process.env.BROWSER) {
+  describe("Detect unsafe URLs", () => {
+    const unsafeUrls = [
+      "http://localhost/schema.json",
+      "http://localhost./schema.json",
+      "http://127.0.0.1/schema.json",
+      "http://0.0.0.0:9099/schema.json",
+      "http://0.1.2.3/schema.json",
+      "http://10.0.0.1/schema.json",
+      "http://172.16.0.1/schema.json",
+      "http://192.168.1.1/schema.json",
+      "http://169.254.169.254/latest/meta-data/",
+      "http://[::]/schema.json",
+      "http://[::1]:9099/schema.json",
+      "http://[0:0:0:0:0:0:0:1]:9099/schema.json",
+      "http://[::ffff:127.0.0.1]:9099/schema.json",
+      "http://[::ffff:7f00:1]:9099/schema.json",
+      "http://[::ffff:169.254.169.254]/latest/meta-data/",
+      "http://[::ffff:a9fe:a9fe]/latest/meta-data/",
+      "http://[fc00::1]/schema.json",
+      "http://[fe80::1]/schema.json",
+      "http://service.local/schema.json",
+    ];
+
+    const safeUrls = [
+      "https://example.com/schema.json",
+      "https://api.example.com/schema.json",
+      "https://8.8.8.8/schema.json",
+      "https://[2001:4860:4860::8888]/schema.json",
+    ];
+
+    it.each(unsafeUrls)("should block %s", (unsafeUrl) => {
+      expect($url.isUnsafeUrl(unsafeUrl)).to.equal(true);
+    });
+
+    it.each(safeUrls)("should allow %s", (safeUrl) => {
+      expect($url.isUnsafeUrl(safeUrl)).to.equal(false);
+    });
+  });
+}
+
+if (!process.env.BROWSER) {
   describe("Handle Windows file paths", () => {
     beforeAll(function (this: any) {
       vi.spyOn(isWin, "isWindows").mockReturnValue(true);

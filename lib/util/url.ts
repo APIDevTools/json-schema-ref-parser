@@ -18,6 +18,8 @@ const urlEncodePatterns = [
 // RegExp patterns to URL-decode special characters for local filesystem paths
 const urlDecodePatterns = [/%23/g, "#", /%24/g, "$", /%26/g, "&", /%2C/g, ",", /%40/g, "@"];
 
+const unsafeDomainSuffixes = [".localhost", ".local", ".internal", ".intranet", ".corp", ".home", ".lan"];
+
 export const parse = (u: string | URL) => new URL(u);
 
 /**
@@ -211,60 +213,11 @@ export function isUnsafeUrl(path: string | unknown): boolean {
     return false;
   }
 
-  // Local/internal network addresses
-  const localPatterns = [
-    // Localhost variations
-    "localhost",
-    "127.0.0.1",
-    "::1",
-
-    // Private IP ranges (RFC 1918)
-    "10.",
-    "172.16.",
-    "172.17.",
-    "172.18.",
-    "172.19.",
-    "172.20.",
-    "172.21.",
-    "172.22.",
-    "172.23.",
-    "172.24.",
-    "172.25.",
-    "172.26.",
-    "172.27.",
-    "172.28.",
-    "172.29.",
-    "172.30.",
-    "172.31.",
-    "192.168.",
-
-    // Link-local addresses
-    "169.254.",
-
-    // Internal domains
-    ".local",
-    ".internal",
-    ".intranet",
-    ".corp",
-    ".home",
-    ".lan",
-  ];
-
   try {
     // Try to parse as URL
     const url = new URL(normalizedPath.startsWith("//") ? "http:" + normalizedPath : normalizedPath);
 
-    const hostname = url.hostname.toLowerCase();
-
-    // Check against local patterns
-    for (const pattern of localPatterns) {
-      if (hostname === pattern || hostname.startsWith(pattern) || hostname.endsWith(pattern)) {
-        return true;
-      }
-    }
-
-    // Check for IP addresses in private ranges
-    if (isPrivateIP(hostname)) {
+    if (isUnsafeHostname(url.hostname)) {
       return true;
     }
 
@@ -281,11 +234,8 @@ export function isUnsafeUrl(path: string | unknown): boolean {
       return false;
     }
 
-    // Check for localhost patterns in non-URL strings
-    for (const pattern of localPatterns) {
-      if (normalizedPath.includes(pattern)) {
-        return true;
-      }
+    if (containsUnsafeHostname(normalizedPath)) {
+      return true;
     }
   }
 
@@ -293,27 +243,196 @@ export function isUnsafeUrl(path: string | unknown): boolean {
 }
 
 /**
- * Helper function to check if an IP address is in a private range
+ * Helper function to check if a hostname is local or resolves to a non-public literal address.
  */
-function isPrivateIP(ip: string): boolean {
-  const ipRegex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-  const match = ip.match(ipRegex);
+function isUnsafeHostname(hostname: string): boolean {
+  const normalizedHostname = normalizeHostname(hostname);
 
-  if (!match) {
-    return false;
+  if (!normalizedHostname) {
+    return true;
   }
 
-  const [, a, b, c, d] = match.map(Number);
-
-  // Validate IP format
-  if (a > 255 || b > 255 || c > 255 || d > 255) {
-    return false;
+  if (normalizedHostname === "localhost" || unsafeDomainSuffixes.some((suffix) => normalizedHostname.endsWith(suffix))) {
+    return true;
   }
 
-  // Private IP ranges
+  const ipv4 = parseIPv4Address(normalizedHostname);
+  if (ipv4) {
+    return isUnsafeIPv4Address(ipv4);
+  }
+
+  const ipv6 = parseIPv6Address(normalizedHostname);
+  if (ipv6) {
+    return isUnsafeIPv6Address(ipv6);
+  }
+
+  return false;
+}
+
+function normalizeHostname(hostname: string): string {
+  let normalizedHostname = hostname.trim().toLowerCase();
+
+  if (normalizedHostname.startsWith("[") && normalizedHostname.endsWith("]")) {
+    normalizedHostname = normalizedHostname.slice(1, -1);
+  }
+
+  while (normalizedHostname.endsWith(".")) {
+    normalizedHostname = normalizedHostname.slice(0, -1);
+  }
+
+  return normalizedHostname;
+}
+
+function parseIPv4Address(ip: string): number[] | undefined {
+  const parts = ip.split(".");
+
+  if (parts.length !== 4) {
+    return undefined;
+  }
+
+  const octets = parts.map((part) => {
+    if (!/^\d+$/.test(part)) {
+      return Number.NaN;
+    }
+
+    return Number(part);
+  });
+
+  if (octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255)) {
+    return undefined;
+  }
+
+  return octets;
+}
+
+/**
+ * Helper function to check if an IPv4 address is in a non-public range.
+ */
+function isUnsafeIPv4Address([a, b, c, d]: number[]): boolean {
   return (
-    a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254) // Link-local
+    a === 0 ||
+    a === 10 ||
+    a === 127 ||
+    (a === 100 && b >= 64 && b <= 127) ||
+    (a === 169 && b === 254) ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 0 && c === 0) ||
+    (a === 192 && b === 168) ||
+    (a === 198 && (b === 18 || b === 19)) ||
+    a >= 224 ||
+    (a === 255 && b === 255 && c === 255 && d === 255)
   );
+}
+
+function parseIPv6Address(ip: string): number[] | undefined {
+  if (!ip.includes(":")) {
+    return undefined;
+  }
+
+  let normalizedIP = ip;
+  const lastSeparator = normalizedIP.lastIndexOf(":");
+  const possibleIPv4 = normalizedIP.slice(lastSeparator + 1);
+
+  if (possibleIPv4.includes(".")) {
+    const ipv4 = parseIPv4Address(possibleIPv4);
+
+    if (!ipv4) {
+      return undefined;
+    }
+
+    const firstGroup = ipv4[0] * 256 + ipv4[1];
+    const secondGroup = ipv4[2] * 256 + ipv4[3];
+    normalizedIP = `${normalizedIP.slice(0, lastSeparator + 1)}${firstGroup.toString(16)}:${secondGroup.toString(16)}`;
+  }
+
+  const halves = normalizedIP.split("::");
+
+  if (halves.length > 2) {
+    return undefined;
+  }
+
+  const head = parseIPv6Groups(halves[0]);
+  const tail = halves.length === 2 ? parseIPv6Groups(halves[1]) : [];
+
+  if (!head || !tail) {
+    return undefined;
+  }
+
+  if (halves.length === 1) {
+    return head.length === 8 ? head : undefined;
+  }
+
+  const missingGroups = 8 - head.length - tail.length;
+
+  if (missingGroups < 1) {
+    return undefined;
+  }
+
+  return [...head, ...Array<number>(missingGroups).fill(0), ...tail];
+}
+
+function parseIPv6Groups(groups: string): number[] | undefined {
+  if (!groups) {
+    return [];
+  }
+
+  const parsedGroups = groups.split(":").map((group) => {
+    if (!/^[\da-f]{1,4}$/i.test(group)) {
+      return Number.NaN;
+    }
+
+    return Number.parseInt(group, 16);
+  });
+
+  if (parsedGroups.some((group) => !Number.isInteger(group) || group < 0 || group > 0xffff)) {
+    return undefined;
+  }
+
+  return parsedGroups;
+}
+
+/**
+ * Helper function to check if an IPv6 address is in a non-public range.
+ */
+function isUnsafeIPv6Address(groups: number[]): boolean {
+  if (groups.length !== 8) {
+    return false;
+  }
+
+  const isUnspecified = groups.every((group) => group === 0);
+  const isLoopback = groups.slice(0, 7).every((group) => group === 0) && groups[7] === 1;
+  const isUniqueLocal = (groups[0] & 0xfe00) === 0xfc00;
+  const isLinkLocal = (groups[0] & 0xffc0) === 0xfe80;
+  const isMulticast = (groups[0] & 0xff00) === 0xff00;
+
+  if (isUnspecified || isLoopback || isUniqueLocal || isLinkLocal || isMulticast) {
+    return true;
+  }
+
+  const mappedIPv4 = getMappedIPv4Address(groups);
+
+  return mappedIPv4 ? isUnsafeIPv4Address(mappedIPv4) : false;
+}
+
+function getMappedIPv4Address(groups: number[]): number[] | undefined {
+  const firstFiveGroupsAreZero = groups.slice(0, 5).every((group) => group === 0);
+  const firstSixGroupsAreZero = firstFiveGroupsAreZero && groups[5] === 0;
+  const isIPv4Mapped = firstFiveGroupsAreZero && groups[5] === 0xffff;
+
+  if (!firstSixGroupsAreZero && !isIPv4Mapped) {
+    return undefined;
+  }
+
+  return [Math.floor(groups[6] / 256), groups[6] % 256, Math.floor(groups[7] / 256), groups[7] % 256];
+}
+
+function containsUnsafeHostname(value: string): boolean {
+  const candidates = value
+    .split(/[\s/?#]+/)
+    .map((candidate) => candidate.replace(/^[a-z][\d+.a-z-]*:\/\//i, "").replace(/:\d+$/, ""))
+    .filter(Boolean);
+
+  return candidates.some((candidate) => isUnsafeHostname(candidate));
 }
 
 /**

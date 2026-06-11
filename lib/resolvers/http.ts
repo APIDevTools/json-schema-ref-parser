@@ -80,6 +80,10 @@ async function download<S extends object = JSONSchema>(
   redirects.push(u.href);
 
   try {
+    if (httpOptions.safeUrlResolver && url.isUnsafeUrl(u.href)) {
+      throw new Error(`Unsafe URL blocked by safeUrlResolver: ${u.href}`);
+    }
+
     const res = await get(u, httpOptions);
     if (res.status >= 400) {
       const error = new Error(`HTTP ERROR ${res.status}`) as Error & { status?: number };
@@ -92,12 +96,16 @@ async function download<S extends object = JSONSchema>(
         ) as Error & { status?: number };
         error.status = res.status;
         throw new ResolverError(error);
-      } else if (!("location" in res.headers) || !res.headers.location) {
-        const error = new Error(`HTTP ${res.status} redirect with no location header`) as Error & { status?: number };
-        error.status = res.status;
-        throw error;
       } else {
-        const redirectTo = url.resolve(u.href, res.headers.location as string);
+        const location = getHeader(res, "location");
+
+        if (!location) {
+          const error = new Error(`HTTP ${res.status} redirect with no location header`) as Error & { status?: number };
+          error.status = res.status;
+          throw error;
+        }
+
+        const redirectTo = url.resolve(u.href, location);
         return download(redirectTo, httpOptions, redirects);
       }
     } else {
@@ -130,6 +138,7 @@ async function get<S extends object = JSONSchema>(u: RequestInfo | URL, httpOpti
     method: "GET",
     headers: httpOptions.headers || {},
     credentials: httpOptions.withCredentials ? "include" : "same-origin",
+    redirect: "manual",
     signal: controller ? controller.signal : null,
   });
   if (timeoutId) {
@@ -137,4 +146,8 @@ async function get<S extends object = JSONSchema>(u: RequestInfo | URL, httpOpti
   }
 
   return response;
+}
+
+function getHeader(response: Response, name: string): string | null {
+  return response.headers.get(name);
 }
