@@ -316,5 +316,28 @@ describe("$Refs object", () => {
       $refs.set("external.yaml#/foo/bar/baz", { hello: "world" });
       expect($refs.get("external.yaml#/foo/bar/baz")).to.deep.equal({ hello: "world" });
     });
+
+    it("should reject prototype-polluting JSON Pointer path tokens", async () => {
+      const $refs = await $RefParser.resolve(path.abs("test/specs/external/external.yaml"));
+      const dangerousPaths = [
+        "external.yaml#/__proto__/polluted",
+        "external.yaml#/constructor/prototype/polluted",
+        "external.yaml#/prototype/polluted",
+      ];
+
+      for (const $ref of dangerousPaths) {
+        try {
+          $refs.set($ref, "polluted");
+          helper.shouldNotGetCalled();
+        } catch (err) {
+          expect(err).to.be.an.instanceOf(Error);
+          expect((err as Error).message).to.contain("Unsafe JSON Pointer token");
+        } finally {
+          delete (Object.prototype as Record<string, unknown>).polluted;
+        }
+
+        expect(({} as Record<string, unknown>).polluted).to.be.undefined;
+      }
+    });
   });
 });

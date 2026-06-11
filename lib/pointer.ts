@@ -13,6 +13,7 @@ const slashes = /\//g;
 const tildes = /~/g;
 const escapedSlash = /~1/g;
 const escapedTilde = /~0/g;
+const unsafeSetTokens = new Set(["__proto__", "constructor", "prototype"]);
 
 /**
  * This class represents a single JSON pointer and its resolved value.
@@ -194,6 +195,8 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       return value;
     }
 
+    assertSafeSetTokens(this.path, tokens);
+
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
     if (this.$ref.dynamicIdScope && !isAliasedResource(this.$ref)) {
@@ -370,6 +373,16 @@ function setValue(pointer: Pointer, token: string, value: JSONSchema4Type | JSON
     );
   }
   return value;
+}
+
+function assertSafeSetTokens(pointerPath: string, tokens: string[]) {
+  for (const token of tokens) {
+    if (unsafeSetTokens.has(token)) {
+      throw new JSONParserError(
+        `Error assigning $ref pointer "${pointerPath}". \nUnsafe JSON Pointer token "${token}" cannot be used for assignment.`,
+      );
+    }
+  }
 }
 
 function unwrapOrThrow(value: unknown) {
