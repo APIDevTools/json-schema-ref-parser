@@ -20,6 +20,7 @@ export interface InventoryEntry {
   circular: any;
   extended: any;
   external: any;
+  nestedResource: boolean;
   indirections: any;
 }
 /**
@@ -194,6 +195,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   const file = url.stripHash(pointer.path);
   const hash = url.getHash(pointer.path);
   const external = file !== $refs._root$Ref.path && !$refs._aliases[file];
+  const nestedResource = Boolean($refs._aliases[file]) && pointer.$ref.value !== $refs._root$Ref.value;
   const extended = $Ref.isExtended$Ref($ref);
   indirections += pointer.indirections;
 
@@ -219,6 +221,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
     circular: pointer.circular, // Is this $ref pointer DIRECTLY circular? (i.e. it references itself)
     extended, // Does this $ref extend its resolved value? (i.e. it has extra properties, in addition to "$ref")
     external, // Does this $ref pointer point to a file other than the main JSON Schema file?
+    nestedResource, // Does this $ref resolve to an embedded schema resource with its own $id?
     indirections, // The number of indirect references that were traversed to resolve the value
   });
 
@@ -316,8 +319,10 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     if (!entry.external) {
       // This $ref already resolves to the main JSON Schema file.
       // When optimizeInternalRefs is false, preserve the original internal ref path
-      // instead of rewriting it to the fully resolved hash.
-      if (bundleOpts.optimizeInternalRefs !== false) {
+      // instead of rewriting it to the fully resolved hash. References to nested
+      // resources must also retain their resource URI so that "#" does not point
+      // at the document root instead.
+      if (bundleOpts.optimizeInternalRefs !== false && !entry.nestedResource) {
         entry.$ref.$ref = entry.hash;
       }
     } else if (entry.file === file && entry.hash === hash) {
