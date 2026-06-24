@@ -72,13 +72,12 @@
     "@types/json-schema": "^7.0.15"
   },
   "dependencies": {
-    "js-yaml": "^4.2.0"
+    "js-yaml": "^5.1.0"
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.0",
     "@eslint/js": "^10.0.1",
     "@types/eslint": "^9.6.1",
-    "@types/js-yaml": "^4.0.9",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^25.9.3",
     "@typescript-eslint/eslint-plugin": "^8.61.0",

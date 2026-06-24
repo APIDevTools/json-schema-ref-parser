@@ -1,8 +1,6 @@
+import { JSON_SCHEMA, load } from "js-yaml";
+import type { FileInfo, Plugin } from "../types/index.js";
 import { ParserError } from "../util/errors.js";
-import yaml from "js-yaml";
-import { JSON_SCHEMA } from "js-yaml";
-import type { FileInfo } from "../types/index.js";
-import type { Plugin } from "../types/index.js";
 
 export default {
   /**
@@ -39,12 +37,17 @@ export default {
     }
 
     if (typeof data === "string") {
+      // Handle empty strings - js-yaml 5.x throws an error for empty input
+      if (data.trim() === "") {
+        return undefined;
+      }
+
       try {
-        return yaml.load(data, { schema: JSON_SCHEMA });
+        return load(data, { schema: JSON_SCHEMA });
       } catch {
         try {
           // fallback to non JSON_SCHEMA
-          return yaml.load(data);
+          return load(data);
         } catch (e: any) {
           throw new ParserError(e?.message || "Parser Error", file.url);
         }
