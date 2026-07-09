@@ -3,7 +3,7 @@ const bundledSchema = {
     Pet: {
       example: {
         breed: "dog",
-        name: null,
+        name: "",
       },
       properties: {
         breed: {
