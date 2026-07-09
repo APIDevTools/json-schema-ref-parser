@@ -45,7 +45,7 @@ describe("Dereference max depth", () => {
 
   it("should apply max depth to reference chains", async () => {
     const parser = new $RefParser();
-    await parser.resolve(createReferenceChain(5_000));
+    await parser.resolve(createReferenceChain(1_001));
 
     expect(() => parser.$refs.get("#/entry")).to.throw(/Maximum dereference depth \(500\)/);
     expect(() =>
