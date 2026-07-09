@@ -103,6 +103,79 @@ describe("OpenAPI 3.0 schema patterns", () => {
     });
   });
 
+  describe("OpenAPI 3.1 response refs with apiKey security", () => {
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Xquik API", version: "1.0" },
+      paths: {
+        "/api/v1/x/tweets/search": {
+          get: {
+            operationId: "searchTweets",
+            parameters: [
+              {
+                name: "q",
+                in: "query",
+                required: true,
+                schema: { type: "string" },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "Search results",
+                content: {
+                  "application/json": {
+                    schema: { $ref: "#/components/schemas/TweetSearchResponse" },
+                  },
+                },
+              },
+            },
+            security: [{ apiKey: [] }],
+          },
+        },
+      },
+      components: {
+        securitySchemes: {
+          apiKey: {
+            type: "apiKey",
+            in: "header",
+            name: "x-api-key",
+          },
+        },
+        schemas: {
+          TweetSearchResponse: {
+            type: "object",
+            properties: {
+              data: {
+                type: "array",
+                items: { $ref: "#/components/schemas/Tweet" },
+              },
+            },
+          },
+          Tweet: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              text: { type: "string" },
+            },
+          },
+        },
+      },
+    };
+
+    it("should dereference nested response schemas and preserve apiKey metadata", async () => {
+      const parser = new $RefParser();
+      const result = await parser.dereference(structuredClone(schema));
+
+      const responseSchema = (result as any).paths["/api/v1/x/tweets/search"].get.responses["200"].content[
+        "application/json"
+      ].schema;
+      expect(responseSchema).to.equal((result as any).components.schemas.TweetSearchResponse);
+      expect(responseSchema.properties.data.items).to.equal((result as any).components.schemas.Tweet);
+      expect((result as any).components.securitySchemes.apiKey.name).to.equal("x-api-key");
+      expect(parser.$refs.circular).to.equal(false);
+    });
+  });
+
   describe("oneOf discriminator pattern", () => {
     const schema = {
       type: "object",
@@ -200,16 +273,10 @@ describe("OpenAPI 3.0 schema patterns", () => {
       type: "object",
       properties: {
         owner: {
-          anyOf: [
-            { $ref: "#/definitions/Person" },
-            { type: "null" },
-          ],
+          anyOf: [{ $ref: "#/definitions/Person" }, { type: "null" }],
         },
         address: {
-          anyOf: [
-            { $ref: "#/definitions/Address" },
-            { type: "null" },
-          ],
+          anyOf: [{ $ref: "#/definitions/Address" }, { type: "null" }],
         },
       },
       definitions: {
@@ -218,10 +285,7 @@ describe("OpenAPI 3.0 schema patterns", () => {
           properties: {
             name: { type: "string" },
             address: {
-              anyOf: [
-                { $ref: "#/definitions/Address" },
-                { type: "null" },
-              ],
+              anyOf: [{ $ref: "#/definitions/Address" }, { type: "null" }],
             },
           },
         },
