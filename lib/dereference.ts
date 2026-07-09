@@ -318,7 +318,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
 
   // Check for circular references
   const directCircular = pointer.circular;
-  let circular = directCircular || parents.has(pointer.value);
+  let circular = directCircular || pointer.chainCircular || parents.has(pointer.value);
   if (circular) {
     foundCircularReference(path, $refs, options);
   }
@@ -352,7 +352,7 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
     dereferencedValue = $ref;
   }
 
-  if (directCircular) {
+  if (directCircular && dereferencedValue !== $ref) {
     // The pointer is a DIRECT circular reference (i.e. it references itself).
     // So replace the $ref path with the absolute path from the JSON Schema root
     dereferencedValue.$ref = pathFromRoot;

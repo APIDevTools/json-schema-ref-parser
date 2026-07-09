@@ -155,10 +155,18 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    * @param path - The path being resolved, optionally with a JSON pointer in the hash
    * @param pathFromRoot - The path of `obj` from the schema root
    * @param [options]
+   * @param visitedRefPaths - the active paths in the current reference chain
+   * @param resolveFinalReference - whether to follow a `$ref` at the resolved value
    * @returns
    * @protected
    */
-  _resolve(path: string, pathFromRoot: string, options?: O) {
+  _resolve(
+    path: string,
+    pathFromRoot: string,
+    options?: O,
+    visitedRefPaths?: Set<string>,
+    resolveFinalReference = true,
+  ) {
     const absPath = url.resolve(this._root$Ref.path!, path);
     const $ref = this._getRef(absPath);
 
@@ -166,7 +174,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
       throw new Error(`Error resolving $ref pointer "${path}". \n"${url.stripHash(absPath)}" not found.`);
     }
 
-    return $ref.resolve(absPath, options, path, pathFromRoot);
+    return $ref.resolve(absPath, options, path, pathFromRoot, visitedRefPaths, resolveFinalReference);
   }
 
   /**

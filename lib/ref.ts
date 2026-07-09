@@ -120,12 +120,21 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    * @param options
    * @param friendlyPath - The original user-specified path (used for error messages)
    * @param pathFromRoot - The path of `obj` from the schema root
+   * @param visitedRefPaths - the active paths in the current reference chain
+   * @param resolveFinalReference - whether to follow a `$ref` at the resolved value
    * @returns
    */
-  resolve(path: string, options?: O, friendlyPath?: string, pathFromRoot?: string) {
+  resolve(
+    path: string,
+    options?: O,
+    friendlyPath?: string,
+    pathFromRoot?: string,
+    visitedRefPaths?: Set<string>,
+    resolveFinalReference = true,
+  ) {
     const pointer = new Pointer<S, O>(this, path, friendlyPath);
     try {
-      const resolved = pointer.resolve(this.value, options, pathFromRoot);
+      const resolved = pointer.resolve(this.value, options, pathFromRoot, visitedRefPaths, resolveFinalReference);
       if (resolved.value === nullSymbol) {
         resolved.value = null;
       }

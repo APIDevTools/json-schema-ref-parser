@@ -56,6 +56,10 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    */
   circular: boolean;
   /**
+   * Indicates whether the pointer encountered a cycle elsewhere in its reference chain.
+   */
+  chainCircular: boolean;
+  /**
    * The number of indirect references that were traversed to resolve the value.
    * Resolving a single pointer may require resolving multiple $Refs.
    */
@@ -74,6 +78,8 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
     this.circular = false;
 
+    this.chainCircular = false;
+
     this.indirections = 0;
   }
 
@@ -90,7 +96,13 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    * the {@link Pointer#$ref} and {@link Pointer#path} will reflect the resolution path
    * of the resolved value.
    */
-  resolve(obj: S, options?: O, pathFromRoot?: string) {
+  resolve(
+    obj: S,
+    options?: O,
+    pathFromRoot?: string,
+    visitedRefPaths = new Set<string>(),
+    resolveFinalReference = true,
+  ) {
     const tokens = Pointer.parse(this.path, this.originalPath);
     const found: string[] = [];
 
@@ -108,15 +120,17 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       // This prevents false circular detection when e.g. a root schema has both
       // $ref: "#/$defs/Foo" and $defs: { Foo: {...} } as siblings.
       const wasCircular = this.circular;
+      const wasChainCircular = this.chainCircular;
       const isExtendedRef = $Ref.isExtended$Ref(this.value);
-      if (resolveIf$Ref(this, options, pathFromRoot)) {
+      if (resolveIf$Ref(this, options, pathFromRoot, visitedRefPaths)) {
         // The $ref path has changed, so append the remaining tokens to the path
         this.path = Pointer.join(this.path, tokens.slice(i));
-      } else if (!wasCircular && this.circular && isExtendedRef) {
+      } else if (isExtendedRef) {
         // resolveIf$Ref set circular=true on an extended $ref during token walking.
         // Since we still have tokens to process, the object should be walked by its
         // properties, not treated as a circular self-reference.
-        this.circular = false;
+        this.circular = wasCircular;
+        this.chainCircular = wasChainCircular;
       }
 
       const token = tokens[i];
@@ -134,6 +148,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
           }
         }
         if (didFindSubstringSlashMatch) {
+          this.chainCircular = wasChainCircular;
           continue;
         }
 
@@ -144,6 +159,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
           // We use a `null` symbol for internal tracking to differentiate between a general `null`
           // value and our expected `null` value.
           this.value = nullSymbol;
+          this.chainCircular = wasChainCircular;
           continue;
         }
 
@@ -160,6 +176,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
         this.value = this.value[token];
       }
 
+      this.chainCircular = wasChainCircular;
       found.push(token);
       if (this.$ref.dynamicIdScope) {
         this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
@@ -168,8 +185,20 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
     // Resolve the final value
     const finalResolutionBase = this.$ref.dynamicIdScope ? this.scopeBase : this.path;
-    if (!this.value || (this.value.$ref && url.resolve(finalResolutionBase, this.value.$ref) !== pathFromRoot)) {
-      resolveIf$Ref(this, options, pathFromRoot);
+    if (resolveFinalReference) {
+      const finalRefPath = this.value?.$ref ? url.resolve(finalResolutionBase, this.value.$ref) : undefined;
+      const canonicalPathFromRoot =
+        typeof pathFromRoot === "string" ? url.resolve(this.$ref.$refs._root$Ref.path!, pathFromRoot) : pathFromRoot;
+
+      if (
+        $Ref.isAllowed$Ref(this.value, options) &&
+        finalRefPath === canonicalPathFromRoot &&
+        finalRefPath !== this.path
+      ) {
+        this.chainCircular = true;
+      } else if (!this.value || finalRefPath) {
+        resolveIf$Ref(this, options, pathFromRoot, visitedRefPaths);
+      }
     }
 
     return this;
@@ -305,32 +334,74 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
  * @returns - Returns `true` if the resolution path changed
  */
 function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-  pointer: Pointer,
+  pointer: Pointer<S, O>,
   options: O | undefined,
   pathFromRoot?: string,
+  visitedRefPaths = new Set<string>(),
 ) {
-  // Is the value a JSON reference? (and allowed?)
+  let pathChanged = false;
+  let currentPathFromRoot = pathFromRoot;
+  const addedPaths: string[] = [];
 
-  if ($Ref.isAllowed$Ref(pointer.value, options)) {
-    const resolutionBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.path;
-    const $refPath = url.resolve(resolutionBase, pointer.value.$ref);
+  try {
+    // Pure reference chains can be followed iteratively. Extended refs still use
+    // the existing one-hop behavior because their values must be merged on return.
+    while ($Ref.isAllowed$Ref(pointer.value, options)) {
+      const extended = $Ref.isExtended$Ref(pointer.value);
+      const sourceValue = pointer.value;
+      const parentPath = pointer.path;
+      const resolutionBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.path;
+      const $refPath = url.resolve(resolutionBase, pointer.value.$ref);
 
-    if ($refPath === pointer.path && !isRootPath(pathFromRoot)) {
-      // The value is a reference to itself, so there's nothing to do.
-      pointer.circular = true;
-    } else {
-      const resolved = pointer.$ref.$refs._resolve($refPath, pointer.path, options);
+      if ($refPath === pointer.path && !isRootPath(currentPathFromRoot)) {
+        // The value is a reference to itself, so there's nothing to do.
+        pointer.circular = true;
+        pointer.chainCircular = true;
+        return pathChanged;
+      }
+
+      const canonicalPathFromRoot =
+        typeof currentPathFromRoot === "string"
+          ? url.resolve(pointer.$ref.$refs._root$Ref.path!, currentPathFromRoot)
+          : currentPathFromRoot;
+      if ($refPath === canonicalPathFromRoot && $refPath !== pointer.path) {
+        pointer.chainCircular = true;
+        return pathChanged;
+      }
+
+      if (visitedRefPaths.has($refPath)) {
+        pointer.chainCircular = true;
+        return pathChanged;
+      }
+
+      const maxDepth = options?.dereference?.maxDepth ?? 500;
+      if (visitedRefPaths.size >= maxDepth) {
+        throw new RangeError(
+          `Maximum dereference depth (${maxDepth}) exceeded at ${pointer.path}. ` +
+            `This likely indicates an extremely deep or recursive schema. ` +
+            `You can increase this limit with the dereference.maxDepth option.`,
+        );
+      }
+
+      visitedRefPaths.add($refPath);
+      addedPaths.push($refPath);
+
+      const resolved = pointer.$ref.$refs._resolve($refPath, parentPath, options, visitedRefPaths, extended);
       if (resolved === null) {
-        return false;
+        return pathChanged;
       }
 
       pointer.indirections += resolved.indirections + 1;
+      pointer.chainCircular ||= resolved.circular || resolved.chainCircular;
 
-      if ($Ref.isExtended$Ref(pointer.value)) {
+      if (extended) {
         // This JSON reference "extends" the resolved value, rather than simply pointing to it.
         // So the resolved path does NOT change.  Just the value does.
-        pointer.value = $Ref.dereference(pointer.value, resolved.value, options);
-        return false;
+        if (pointer.chainCircular) {
+          return pathChanged;
+        }
+        pointer.value = $Ref.dereference(sourceValue, resolved.value, options);
+        return pathChanged;
       } else {
         // Resolve the reference
         pointer.$ref = resolved.$ref;
@@ -339,13 +410,18 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
         // `pointer.$ref.path` is already the canonical location of the resolved resource.
         // Re-applying the resource's own `$id` here would duplicate nested path segments
         // such as `nested/nested/foo.json`.
-        pointer.scopeBase = pointer.$ref.path!;
+        pointer.scopeBase = resolved.scopeBase;
+        currentPathFromRoot = parentPath;
+        pathChanged = true;
       }
+    }
 
-      return true;
+    return pathChanged;
+  } finally {
+    for (const path of addedPaths) {
+      visitedRefPaths.delete(path);
     }
   }
-  return undefined;
 }
 export default Pointer;
 

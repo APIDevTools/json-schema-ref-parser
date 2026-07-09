@@ -43,6 +43,29 @@ describe("Dereference max depth", () => {
     expect(result.type).toBe("object");
   });
 
+  it("should apply max depth to reference chains", async () => {
+    const parser = new $RefParser();
+    await parser.resolve(createReferenceChain(5_000));
+
+    expect(() => parser.$refs.get("#/entry")).to.throw(/Maximum dereference depth \(500\)/);
+    expect(() =>
+      parser.$refs.get("#/entry", {
+        dereference: { maxDepth: 1_000 },
+      }),
+    ).to.throw(/Maximum dereference depth \(1000\)/);
+
+    expect(
+      parser.$refs.get("#/entry", {
+        dereference: { maxDepth: 6_000 },
+      }),
+    ).to.deep.equal({ type: "string" });
+
+    const dereferenced = await new $RefParser().dereference(createReferenceChain(600), {
+      dereference: { maxDepth: 1_000 },
+    });
+    expect(dereferenced.entry).to.deep.equal({ type: "string" });
+  });
+
   it("should dereference normally when within max depth", async () => {
     const schema = {
       type: "object",
@@ -58,3 +81,16 @@ describe("Dereference max depth", () => {
     expect(result.properties.name.type).toBe("string");
   });
 });
+
+function createReferenceChain(length: number) {
+  const definitions: Record<string, { $ref: string } | { type: string }> = {};
+  for (let index = 0; index < length; index++) {
+    definitions[`node${index}`] =
+      index === length - 1 ? { type: "string" } : { $ref: `#/definitions/node${index + 1}` };
+  }
+
+  return {
+    definitions,
+    entry: { $ref: "#/definitions/node0" },
+  };
+}

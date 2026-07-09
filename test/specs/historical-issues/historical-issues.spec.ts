@@ -132,7 +132,7 @@ describe("Historical GitHub Issues", () => {
       expect(bundled.definitions.node.properties.child.$ref).to.equal("#/definitions/node");
     });
 
-    it("Issue #271: immediately circular schema should be caught by maxDepth instead of stack overflow", async () => {
+    it("Issue #271: immediately circular schema should be detected without stack overflow", async () => {
       const schema = {
         components: {
           schemas: {
@@ -144,15 +144,10 @@ describe("Historical GitHub Issues", () => {
         },
       };
       const parser = new $RefParser();
-      // An immediately self-referencing $ref will hit maxDepth, but should NOT
-      // cause an uncontrolled stack overflow. The maxDepth error is the expected behavior.
-      try {
-        await parser.dereference(schema);
-        helper.shouldNotGetCalled();
-      } catch (err: any) {
-        // Should throw a controlled maxDepth error, not an uncontrolled stack overflow
-        expect(err.message).to.contain("dereference depth");
-      }
+      const result = await parser.dereference(schema);
+
+      expect(result).to.deep.equal(schema);
+      expect(parser.$refs.circular).to.equal(true);
     });
 
     it("Issue #104: circular='ignore' should mark circular flag and leave circular $refs as-is", async () => {
