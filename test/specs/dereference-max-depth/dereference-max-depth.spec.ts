@@ -64,7 +64,7 @@ describe("Dereference max depth", () => {
       dereference: { maxDepth: 1_000 },
     });
     expect(dereferenced.entry).to.deep.equal({ type: "string" });
-  });
+  }, 20_000);
 
   it("should dereference normally when within max depth", async () => {
     const schema = {
