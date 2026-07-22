@@ -10,7 +10,9 @@ This is the default export of JSON Schema $Ref Parser. You can creates instances
 ##### Methods
 
 - [`dereference()`](#dereferenceschema-options-callback)
+- [`dereferenceSync()`](#dereferencesyncschema-options)
 - [`bundle()`](#bundleschema-options-callback)
+- [`bundleSync()`](#bundlesyncschema-options)
 - [`parse()`](#parseschema-options-callback)
 - [`resolve()`](#resolveschema-options-callback)
 
@@ -73,6 +75,27 @@ console.log(schema.definitions.person.properties.firstName); // => {type: "strin
 schema.definitions.thing === schema.definitions.batmobile; // => true
 ```
 
+### `dereferenceSync(schema, [options])`
+
+- **schema** (_required_) - `object`<br>
+  A JSON Schema object. Unlike [`dereference`](#dereferenceschema-options-callback), file paths and URLs are **not** supported.
+
+- **options** (_optional_) - `object`<br>
+  See [options](options.md) for the full list of options
+
+- **Return Value:** `object`<br>
+  The dereferenced schema object
+
+Synchronously dereferences all `$ref` pointers in the given JSON Schema object, replacing each reference with its resolved value — the same behavior as [`dereference`](#dereferenceschema-options-callback), but without any `async`/`await` or Promises.
+
+Because resolving external references requires I/O (reading files or downloading URLs), this method only accepts a schema **object**, and the schema must not contain any external `$ref` pointers — it throws an error if either constraint is violated. Internal `$ref` pointers (`#/...`) and references to embedded schema resources (sub-schemas with their own `$id`) are fully supported. Since no I/O is performed, this method behaves identically in Node.js and browsers.
+
+```javascript
+const schema = $RefParser.dereferenceSync(mySchemaObject);
+
+console.log(schema.definitions.person.properties.firstName); // => {type: "string"}
+```
+
 ### `bundle(schema, [options], [callback])`
 
 - **schema** (_required_) - `string` or `object`<br>
@@ -94,6 +117,25 @@ This also eliminates the risk of [circular references](README.md#circular-refs),
 ```javascript
 let schema = await $RefParser.bundle("my-schema.yaml");
 console.log(schema.definitions.person); // => {$ref: "#/definitions/schemas~1people~1Bruce-Wayne.json"}
+```
+
+### `bundleSync(schema, [options])`
+
+- **schema** (_required_) - `object`<br>
+  A JSON Schema object. Unlike [`bundle`](#bundleschema-options-callback), file paths and URLs are **not** supported.
+
+- **options** (_optional_) - `object`<br>
+  See [options](options.md) for the full list of options
+
+- **Return Value:** `object`<br>
+  The bundled schema object
+
+Synchronously bundles all `$ref` pointers in the given JSON Schema object, producing a schema that only has _internal_ `$ref` pointers — the same behavior as [`bundle`](#bundleschema-options-callback), but without any `async`/`await` or Promises.
+
+The same constraints as [`dereferenceSync`](#dereferencesyncschema-options) apply: the schema must be an **object** and must not contain any external `$ref` pointers, since resolving those requires I/O. Since no I/O is performed, this method behaves identically in Node.js and browsers.
+
+```javascript
+const schema = $RefParser.bundleSync(mySchemaObject);
 ```
 
 ### `parse(schema, [options], [callback])`

@@ -63,6 +63,8 @@ JavaScript objects.
 - Maintains object reference equality &mdash; `$ref` pointers to the same value always resolve to the same object
   instance
 - Compatible with Node LTS and beyond, and all major web browsers on Windows, Mac, and Linux
+- Offers synchronous `dereferenceSync` and `bundleSync` methods for schema objects that don't contain external
+  `$ref` pointers &mdash; no `async`/`await` required
 
 ## Example
 
@@ -80,6 +82,13 @@ try {
 } catch (err) {
   console.error(err);
 }
+```
+
+If your schema is already a JavaScript object and doesn't contain any external `$ref` pointers, you can skip
+`async`/`await` entirely:
+
+```javascript
+const schema = $RefParser.dereferenceSync(mySchema);
 ```
 
 For more detailed examples, please see the [API Documentation](https://apidevtools.com/json-schema-ref-parser/docs/)
