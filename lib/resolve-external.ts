@@ -2,7 +2,7 @@ import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import parse from "./parse.js";
 import * as url from "./util/url.js";
-import { isHandledError } from "./util/errors.js";
+import { isHandledError, JSONParserError } from "./util/errors.js";
 import { getSchemaBasePath } from "./util/schema-resources.js";
 import type $Refs from "./refs.js";
 import type { ParserOptions } from "./options.js";
@@ -142,11 +142,7 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
     if (typeof reference === "string") {
       parseTarget.reference = reference;
     }
-    const result = await parse(
-      parseTarget,
-      $refs,
-      options,
-    );
+    const result = await parse(parseTarget, $refs, options);
 
     // Crawl the parsed value
     // console.log('Resolving $ref pointers in %s', withoutHash);
@@ -176,4 +172,83 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
     return [];
   }
 }
+/**
+ * Synchronously crawls the JSON schema and throws if it contains any external JSON reference
+ * whose value is not already available in {@link $RefParser#$refs}. The synchronous API cannot
+ * perform the I/O required to resolve external references, so they must either be absent or
+ * already registered (e.g. embedded schema resources with their own `$id`).
+ *
+ * @param parser
+ * @param options
+ */
+export function assertNoUnresolvedExternalRefs<
+  S extends object = JSONSchema,
+  O extends ParserOptions<S> = ParserOptions<S>,
+>(parser: $RefParser<S, O>, options: O, method: "dereference" | "bundle") {
+  if (!options.resolve?.external) {
+    // External references won't be resolved, so there's nothing to check
+    return;
+  }
+
+  const rootScopeBase = parser.$refs._root$Ref.dynamicIdScope
+    ? getSchemaBasePath(parser.$refs._root$Ref.path!, parser.schema)
+    : parser.$refs._root$Ref.path!;
+  crawlForUnresolvedExternalRefs(
+    parser.schema,
+    parser.$refs._root$Ref.path + "#",
+    rootScopeBase,
+    parser.$refs._root$Ref.dynamicIdScope,
+    parser.$refs,
+    options,
+    method,
+    new Set(),
+  );
+}
+
+/**
+ * Recursively crawls the given value, and throws for any external JSON reference that is not
+ * already resolved in `$refs`. Mirrors the traversal and path-resolution rules of {@link crawl}
+ * and {@link resolve$Ref}, but never performs I/O.
+ */
+function crawlForUnresolvedExternalRefs<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+  obj: string | Buffer | S | undefined | null,
+  path: string,
+  scopeBase: string,
+  dynamicIdScope: boolean,
+  $refs: $Refs<S, O>,
+  options: O,
+  method: "dereference" | "bundle",
+  seen: Set<any>,
+) {
+  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
+    seen.add(obj); // Track previously seen objects to avoid infinite recursion
+
+    if ($Ref.isExternal$Ref(obj)) {
+      const reference = (obj as JSONSchema).$ref!;
+      const shouldResolveOnCwd = options.dereference?.externalReferenceResolution === "root";
+      const resolutionBase = shouldResolveOnCwd ? url.cwd() : dynamicIdScope ? scopeBase : path;
+      const resolvedPath = url.resolve(resolutionBase, reference);
+      const withoutHash = url.stripHash(resolvedPath);
+
+      if (!$refs._get$Ref(withoutHash)) {
+        throw new JSONParserError(
+          `Cannot resolve external reference "${reference}" synchronously; use the asynchronous ${method} method instead`,
+          decodeURI(url.stripHash(path)),
+        );
+      }
+    }
+
+    const keys = Object.keys(obj) as string[];
+    for (const key of keys) {
+      const keyPath = Pointer.join(path, key);
+      const value = obj[key as keyof typeof obj] as string | JSONSchema | Buffer | undefined;
+      const childScopeBase =
+        dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
+          ? getSchemaBasePath(scopeBase, value)
+          : scopeBase;
+      crawlForUnresolvedExternalRefs(value, keyPath, childScopeBase, dynamicIdScope, $refs, options, method, seen);
+    }
+  }
+}
+
 export default resolveExternal;

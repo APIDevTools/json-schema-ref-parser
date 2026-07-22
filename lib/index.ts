@@ -1,7 +1,8 @@
 import $Refs from "./refs.js";
 import _parse from "./parse.js";
 import normalizeArgs from "./normalize-args.js";
-import resolveExternal from "./resolve-external.js";
+import type { NormalizedArguments } from "./normalize-args.js";
+import resolveExternal, { assertNoUnresolvedExternalRefs } from "./resolve-external.js";
 import _bundle from "./bundle.js";
 import _dereference from "./dereference.js";
 import * as url from "./util/url.js";
@@ -300,6 +301,43 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   }
 
   /**
+   * Synchronously bundles all `$ref` pointers in the given JSON Schema object, producing a schema that only has internal `$ref` pointers.
+   *
+   * Unlike `bundle()`, this method only accepts a schema **object** (not a file path or URL), and the schema must not contain any external `$ref` pointers, since resolving external references requires I/O. Because no I/O is performed, this method works the same in Node.js and browsers.
+   *
+   * @param schema A JSON Schema object
+   * @param options (optional)
+   * @returns The bundled schema object
+   */
+  public static bundleSync<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+    schema: S | JSONSchema | unknown,
+    options?: O,
+  ): S;
+  static bundleSync<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(): S {
+    const instance = new $RefParser<S, O>();
+    return instance.bundleSync.apply(instance, arguments as any);
+  }
+
+  /**
+   * Synchronously bundles all `$ref` pointers in the given JSON Schema object, producing a schema that only has internal `$ref` pointers.
+   *
+   * Unlike `bundle()`, this method only accepts a schema **object** (not a file path or URL), and the schema must not contain any external `$ref` pointers, since resolving external references requires I/O. Because no I/O is performed, this method works the same in Node.js and browsers.
+   *
+   * @param schema A JSON Schema object
+   * @param options (optional)
+   * @returns The bundled schema object
+   */
+  public bundleSync(schema: S | JSONSchema | unknown, options?: O): S;
+  bundleSync() {
+    const args = normalizeArgs<S, O>(arguments);
+
+    this.resolveSync(args, "bundle");
+    _bundle<S, O>(this, args.options);
+    finalize(this);
+    return this.schema!;
+  }
+
+  /**
    * Bundles all referenced files/URLs into a single schema that only has internal `$ref` pointers. This lets you split-up your schema however you want while you're building it, but easily combine all those files together when it's time to package or distribute the schema to other people. The resulting schema size will be small, since it will still contain internal JSON references rather than being fully-dereferenced.
    *
    * This also eliminates the risk of circular references, so the schema can be safely serialized using `JSON.stringify()`.
@@ -372,6 +410,70 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   }
 
   /**
+   * Synchronously dereferences all `$ref` pointers in the given JSON Schema object, replacing each reference with its resolved value.
+   *
+   * Unlike `dereference()`, this method only accepts a schema **object** (not a file path or URL), and the schema must not contain any external `$ref` pointers, since resolving external references requires I/O. Because no I/O is performed, this method works the same in Node.js and browsers.
+   *
+   * @param schema A JSON Schema object
+   * @param options (optional)
+   * @returns The dereferenced schema object
+   */
+  public static dereferenceSync<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
+    schema: S | JSONSchema | unknown,
+    options?: O,
+  ): S;
+  static dereferenceSync<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(): S {
+    const instance = new $RefParser<S, O>();
+    return instance.dereferenceSync.apply(instance, arguments as any);
+  }
+
+  /**
+   * Synchronously dereferences all `$ref` pointers in the given JSON Schema object, replacing each reference with its resolved value.
+   *
+   * Unlike `dereference()`, this method only accepts a schema **object** (not a file path or URL), and the schema must not contain any external `$ref` pointers, since resolving external references requires I/O. Because no I/O is performed, this method works the same in Node.js and browsers.
+   *
+   * @param schema A JSON Schema object
+   * @param options (optional)
+   * @returns The dereferenced schema object
+   */
+  public dereferenceSync(schema: S | JSONSchema | unknown, options?: O): S;
+  dereferenceSync() {
+    const args = normalizeArgs<S, O>(arguments);
+
+    this.resolveSync(args, "dereference");
+    _dereference(this, args.options);
+    finalize(this);
+    return this.schema!;
+  }
+
+  /**
+   * Synchronously resolves the given schema object, so that all of its internal `$ref` pointers can be
+   * dereferenced or bundled without performing any I/O. Throws if the schema is not an object, or if it
+   * contains any external `$ref` pointers, since resolving those requires I/O.
+   */
+  private resolveSync(args: NormalizedArguments<S, O>, method: "dereference" | "bundle") {
+    if (!args.schema || typeof args.schema !== "object") {
+      throw new Error(
+        `Expected a schema object. ${method}Sync only supports schema objects; to ${method} a file path or URL, use the asynchronous ${method} method instead. Got ${args.path || args.schema}`,
+      );
+    }
+
+    // Reset everything
+    this.schema = null;
+    this.$refs = new $Refs();
+
+    const path = url.resolve(url.cwd(), args.path);
+    const $ref = this.$refs._add(path);
+    $ref.value = args.schema;
+    $ref.pathType = "http";
+    $ref.dynamicIdScope = usesDynamicIdScope($ref.value);
+    registerSchemaResources(this.$refs, $ref.path!, $ref.value, $ref.pathType, $ref.dynamicIdScope);
+    this.schema = args.schema;
+
+    assertNoUnresolvedExternalRefs(this, args.options, method);
+  }
+
+  /**
    * Dereferences all `$ref` pointers in the JSON Schema, replacing each reference with its resolved value. This results in a schema object that does not contain any `$ref` pointers. Instead, it's a normal JavaScript object tree that can easily be crawled and used just like any other JavaScript object. This is great for programmatic usage, especially when using tools that don't understand JSON references.
    *
    * The dereference method maintains object reference equality, meaning that all `$ref` pointers that point to the same object will be replaced with references to the same object. Again, this is great for programmatic usage, but it does introduce the risk of circular references, so be careful if you intend to serialize the schema using `JSON.stringify()`. Consider using the bundle method instead, which does not create circular references.
@@ -421,7 +523,9 @@ function finalize<S extends object = JSONSchema, O extends ParserOptions<S> = Pa
 export const parse = $RefParser.parse;
 export const resolve = $RefParser.resolve;
 export const bundle = $RefParser.bundle;
+export const bundleSync = $RefParser.bundleSync;
 export const dereference = $RefParser.dereference;
+export const dereferenceSync = $RefParser.dereferenceSync;
 
 export {
   UnmatchedResolverError,
