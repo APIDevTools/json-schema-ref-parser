@@ -127,9 +127,7 @@ describe("Invalid syntax", () => {
             {
               name: ParserError.name,
               message: (message: any) =>
-                message.includes(
-                  "invalid.yaml: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line (1:1)",
-                ),
+                message.includes("invalid.yaml: deficient indentation") && message.includes("1 | foo: [bar"),
               path: [],
               source: (message: any) => message.endsWith("test/specs/invalid/invalid.yaml"),
             },
@@ -269,7 +267,7 @@ describe("Invalid syntax", () => {
 
       // Because the JSON and YAML parsers were disabled, the invalid YAML file got parsed as plain text
       expect(schema).to.deep.equal({
-        foo: ":\n",
+        foo: "foo: [bar\n",
       });
     });
 
@@ -318,9 +316,7 @@ describe("Invalid syntax", () => {
             {
               name: ParserError.name,
               message: (message: any) =>
-                message.includes(
-                  "invalid.yaml: incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line (1:1)",
-                ),
+                message.includes("invalid.yaml: deficient indentation") && message.includes("1 | foo: [bar"),
               path: ["foo"],
               // source: message => message.endsWith("/test/") || message.startsWith("http://localhost"),
             },
@@ -397,7 +393,7 @@ describe("Invalid syntax", () => {
           { foo: { $ref: path.rel("test/specs/invalid/invalid.yaml") } },
           { continueOnError: true, parse: { yaml: false, json: false } },
         );
-        expect(result).to.deep.equal({ foo: ":\n" });
+        expect(result).to.deep.equal({ foo: "foo: [bar\n" });
       });
     });
   });

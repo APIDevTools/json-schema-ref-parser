@@ -86,7 +86,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     const keys = Object.keys(obj) as string[];
     for (const key of keys) {
       const keyPath = Pointer.join(path, key);
-      const value = obj[key as keyof typeof obj] as string | JSONSchema | Buffer | undefined;
+      const value = obj[key as keyof typeof obj] as string | S | Buffer | undefined;
       const childScopeBase =
         dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
           ? getSchemaBasePath(currentScopeBase, value)
@@ -142,11 +142,7 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
     if (typeof reference === "string") {
       parseTarget.reference = reference;
     }
-    const result = await parse(
-      parseTarget,
-      $refs,
-      options,
-    );
+    const result = await parse(parseTarget, $refs, options);
 
     // Crawl the parsed value
     // console.log('Resolving $ref pointers in %s', withoutHash);

@@ -102,7 +102,18 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
     const currentScopeBase = scopeBase;
     if ($Ref.isAllowed$Ref(obj)) {
-      inventory$Ref(parent, key, path, currentScopeBase, dynamicIdScope, pathFromRoot, indirections, inventory, $refs, options);
+      inventory$Ref(
+        parent,
+        key,
+        path,
+        currentScopeBase,
+        dynamicIdScope,
+        pathFromRoot,
+        indirections,
+        inventory,
+        $refs,
+        options,
+      );
     } else {
       // Crawl the object in a specific order that's optimized for bundling.
       // This is important because it determines how `pathFromRoot` gets built,
@@ -144,7 +155,18 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
             options,
           );
         } else {
-          crawl(obj, key, keyPath, childScopeBase, dynamicIdScope, keyPathFromRoot, indirections, inventory, $refs, options);
+          crawl(
+            obj,
+            key,
+            keyPath,
+            childScopeBase,
+            dynamicIdScope,
+            keyPathFromRoot,
+            indirections,
+            inventory,
+            $refs,
+            options,
+          );
         }
 
         // We need to ensure that we have an object to work with here because we may be crawling

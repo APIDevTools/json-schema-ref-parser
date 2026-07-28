@@ -190,9 +190,7 @@ describe("JSON Schema Draft 7 advanced features", () => {
       const parser = new $RefParser();
       const result = await parser.dereference(structuredClone(schema));
 
-      expect((result as any).dependencies.creditCard).to.equal(
-        (result as any).definitions.BillingRequired,
-      );
+      expect((result as any).dependencies.creditCard).to.equal((result as any).definitions.BillingRequired);
       // billingAddress refs should share the same object
       expect((result as any).properties.billingAddress).to.equal((result as any).definitions.Address);
     });
@@ -338,16 +336,10 @@ describe("JSON Schema Draft 7 advanced features", () => {
       type: "object",
       properties: {
         status: {
-          allOf: [
-            { $ref: "#/definitions/StatusEnum" },
-            { description: "The current status" },
-          ],
+          allOf: [{ $ref: "#/definitions/StatusEnum" }, { description: "The current status" }],
         },
         priority: {
-          allOf: [
-            { $ref: "#/definitions/PriorityConst" },
-            { default: "medium" },
-          ],
+          allOf: [{ $ref: "#/definitions/PriorityConst" }, { default: "medium" }],
         },
       },
       definitions: {

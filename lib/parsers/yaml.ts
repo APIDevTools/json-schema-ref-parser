@@ -1,8 +1,12 @@
 import { ParserError } from "../util/errors.js";
-import yaml from "js-yaml";
-import { JSON_SCHEMA } from "js-yaml";
+import { binaryTag, CORE_SCHEMA, load, loadAll, mergeTag, omapTag, pairsTag, setTag, timestampTag } from "js-yaml";
 import type { FileInfo } from "../types/index.js";
 import type { Plugin } from "../types/index.js";
+
+// Match js-yaml v4's default schema for the fallback parser. In v4, JSON_SCHEMA
+// and CORE_SCHEMA behaved identically; v5's CORE_SCHEMA preserves that behavior,
+// including null values for omitted mapping values and strings for date-like data.
+const legacyDefaultSchema = CORE_SCHEMA.withTags(timestampTag, mergeTag, binaryTag, omapTag, pairsTag, setTag);
 
 export default {
   /**
@@ -40,12 +44,21 @@ export default {
 
     if (typeof data === "string") {
       try {
-        return yaml.load(data, { schema: JSON_SCHEMA });
+        return load(data, { schema: CORE_SCHEMA });
       } catch {
         try {
-          // fallback to non JSON_SCHEMA
-          return yaml.load(data);
+          // Fall back to js-yaml v4's extended default schema.
+          return load(data, { schema: legacyDefaultSchema });
         } catch (e: any) {
+          // js-yaml v5 throws for empty streams, whereas v4 returned undefined.
+          // Preserve the parser's allowEmpty behavior for blank/comment-only files.
+          try {
+            if (loadAll(data, { schema: CORE_SCHEMA }).length === 0) {
+              return undefined;
+            }
+          } catch {
+            // Preserve the more useful fallback parser error below.
+          }
           throw new ParserError(e?.message || "Parser Error", file.url);
         }
       }

@@ -200,16 +200,10 @@ describe("OpenAPI 3.0 schema patterns", () => {
       type: "object",
       properties: {
         owner: {
-          anyOf: [
-            { $ref: "#/definitions/Person" },
-            { type: "null" },
-          ],
+          anyOf: [{ $ref: "#/definitions/Person" }, { type: "null" }],
         },
         address: {
-          anyOf: [
-            { $ref: "#/definitions/Address" },
-            { type: "null" },
-          ],
+          anyOf: [{ $ref: "#/definitions/Address" }, { type: "null" }],
         },
       },
       definitions: {
@@ -218,10 +212,7 @@ describe("OpenAPI 3.0 schema patterns", () => {
           properties: {
             name: { type: "string" },
             address: {
-              anyOf: [
-                { $ref: "#/definitions/Address" },
-                { type: "null" },
-              ],
+              anyOf: [{ $ref: "#/definitions/Address" }, { type: "null" }],
             },
           },
         },

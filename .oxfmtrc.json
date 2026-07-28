@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 120,
+  "arrowParens": "always",
+  "semi": true,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "coverage",
+    "dist",
+    "node_modules",
+    "test/__snapshots__",
+    "test/specs/defs/dereferencedB.json",
+    "test/specs/defs/dereferencedA.json",
+    "test/specs/invalid/invalid.json"
+  ]
+}
