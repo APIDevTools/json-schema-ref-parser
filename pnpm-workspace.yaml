@@ -1,5 +1,3 @@
 minimumReleaseAgeExclude:
-  - '@types/node@25.9.3'
-peerDependencyRules:
-  allowedVersions:
-    eslint: '10'
+  - "@types/node@26.1.2"
+  - "jsdom@30.0.0"

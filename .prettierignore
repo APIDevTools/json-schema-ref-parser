@@ -4,3 +4,4 @@ node_modules
 test/__snapshots__
 test/specs/defs/dereferencedB.json
 test/specs/defs/dereferencedA.json
+test/specs/invalid/invalid.json
