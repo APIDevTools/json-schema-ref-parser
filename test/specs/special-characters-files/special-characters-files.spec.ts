@@ -14,9 +14,7 @@ function normalizePathForAssertion(entry: string) {
 describe.skipIf(isBrowser)("Special-character file paths", () => {
   // Adapted replacement for the repo's previously ignored filename regression, using
   // a cross-platform-safe subset of special characters.
-  const schemaPath = path.rel(
-    "test/specs/special-characters-files/dir with [brackets] & spaces/root schema.yaml",
-  );
+  const schemaPath = path.rel("test/specs/special-characters-files/dir with [brackets] & spaces/root schema.yaml");
 
   it("should resolve external refs from filenames with spaces and special characters", async () => {
     const parser = new $RefParser();

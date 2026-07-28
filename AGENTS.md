@@ -24,8 +24,8 @@ pnpm test:update    # Update test snapshots
 ### Code Quality
 
 ```bash
-pnpm lint           # Run ESLint on lib/ directory
-pnpm prettier       # Format all code files
+pnpm lint           # Run Oxlint on lib/ directory
+pnpm format         # Format all code files with Oxfmt
 ```
 
 ### Running Individual Tests

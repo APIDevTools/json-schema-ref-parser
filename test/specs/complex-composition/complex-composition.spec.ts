@@ -338,10 +338,7 @@ describe("Complex schema composition patterns", () => {
       type: "object",
       properties: {
         request: {
-          oneOf: [
-            { $ref: "#/definitions/V1Request" },
-            { $ref: "#/definitions/V2Request" },
-          ],
+          oneOf: [{ $ref: "#/definitions/V1Request" }, { $ref: "#/definitions/V2Request" }],
         },
       },
       definitions: {

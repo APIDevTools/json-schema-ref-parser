@@ -252,7 +252,10 @@ function isUnsafeHostname(hostname: string): boolean {
     return true;
   }
 
-  if (normalizedHostname === "localhost" || unsafeDomainSuffixes.some((suffix) => normalizedHostname.endsWith(suffix))) {
+  if (
+    normalizedHostname === "localhost" ||
+    unsafeDomainSuffixes.some((suffix) => normalizedHostname.endsWith(suffix))
+  ) {
     return true;
   }
 

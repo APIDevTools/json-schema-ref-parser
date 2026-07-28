@@ -11,10 +11,7 @@ describe("Recursive data structure schemas", () => {
           properties: {
             value: { type: "integer" },
             next: {
-              oneOf: [
-                { $ref: "#/definitions/LinkedListNode" },
-                { type: "null" },
-              ],
+              oneOf: [{ $ref: "#/definitions/LinkedListNode" }, { type: "null" }],
             },
           },
           required: ["value"],
@@ -243,10 +240,7 @@ describe("Recursive data structure schemas", () => {
               items: { $ref: "#/definitions/Comment" },
             },
             parentComment: {
-              oneOf: [
-                { $ref: "#/definitions/Comment" },
-                { type: "null" },
-              ],
+              oneOf: [{ $ref: "#/definitions/Comment" }, { type: "null" }],
             },
           },
         },

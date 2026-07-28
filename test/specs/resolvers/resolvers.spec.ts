@@ -333,29 +333,25 @@ describe("options.resolve", () => {
 
     const seenUrls: string[] = [];
     const parser = new $RefParser();
-    const schema = await parser.dereference(
-      "c:/My Documents/spec.json",
-      structuredClone(source),
-      {
-        resolve: {
-          file: {
-            order: 1,
-            canRead: true,
-            read(file: FileInfo) {
-              const normalizedUrl = normalizeWindowsDriveUrl(file.url);
-              seenUrls.push(normalizedUrl);
+    const schema = await parser.dereference("c:/My Documents/spec.json", structuredClone(source), {
+      resolve: {
+        file: {
+          order: 1,
+          canRead: true,
+          read(file: FileInfo) {
+            const normalizedUrl = normalizeWindowsDriveUrl(file.url);
+            seenUrls.push(normalizedUrl);
 
-              const remote = remotes[normalizedUrl];
-              if (remote === undefined) {
-                throw new Error(`Unexpected file URL: ${file.url}`);
-              }
+            const remote = remotes[normalizedUrl];
+            if (remote === undefined) {
+              throw new Error(`Unexpected file URL: ${file.url}`);
+            }
 
-              return structuredClone(remote);
-            },
+            return structuredClone(remote);
           },
         },
-      } as ParserOptions,
-    );
+      },
+    } as ParserOptions);
 
     expect(seenUrls).toEqual(["c:/b.json", "c:/models/c.json", "d:/network.json"]);
     expect(schema).toEqual({
