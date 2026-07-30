@@ -64,9 +64,16 @@ describe("$Refs object", () => {
   });
 
   describe("values", () => {
-    it("should be the same as `toJSON()`", async () => {
+    it("should return the same data as `toJSON()`", async () => {
       const $refs = await $RefParser.resolve(path.abs("test/specs/external/external.yaml"));
-      expect($refs.values).to.equal($refs.toJSON);
+      expect($refs.toJSON()).to.deep.equal($refs.values());
+    });
+
+    it("should serialize correctly when nested in another object", async () => {
+      const $refs = await $RefParser.resolve(path.abs("test/specs/external/external.yaml"));
+      const serialized = JSON.parse(JSON.stringify({ $refs }));
+
+      expect(serialized.$refs).to.deep.equal($refs.values());
     });
 
     it("should return the paths and values of all resolved files", async () => {
@@ -188,6 +195,13 @@ describe("$Refs object", () => {
       const $refs = await $RefParser.resolve(path.abs("test/specs/external/external.yaml"));
       // @ts-expect-error TS(2554): Expected 2 arguments, but got 1.
       expect($refs.exists("foo bar")).to.equal(false);
+    });
+
+    it("should return false instead of treating a collected pointer error as a match", async () => {
+      const $refs = await $RefParser.resolve({ definitions: {} });
+
+      expect($refs.exists("#/definitions/missing", { continueOnError: true } as any)).to.equal(false);
+      expect($refs.get("#/definitions/missing", { continueOnError: true } as any)).to.equal(undefined);
     });
   });
 

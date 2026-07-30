@@ -1,7 +1,7 @@
 import type { FileInfo } from "../types/index.js";
 import type { Plugin } from "../types/index.js";
 
-const BINARY_REGEXP = /\.(jpeg|jpg|gif|png|bmp|ico)$/i;
+const BINARY_REGEXP = /\.(jpeg|jpg|gif|png|bmp|ico)(?:[?#].*)?$/i;
 
 export default {
   /**

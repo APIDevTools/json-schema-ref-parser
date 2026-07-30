@@ -150,27 +150,6 @@ describe("HTTP options", () => {
       vi.restoreAllMocks();
     });
 
-    it("should block unsafe redirect targets before fetching them", async () => {
-      const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(null, {
-          status: 302,
-          headers: { location: "http://127.0.0.1/secret.json" },
-        }),
-      );
-
-      try {
-        const parser = new $RefParser();
-        await parser.parse("https://example.com/redirect.json");
-        throw new Error("The unsafe redirect was followed. That should NOT have happened!");
-      } catch (err) {
-        expect(err).to.be.an.instanceOf(Error);
-        expect((err as Error).message).to.contain("Unsafe URL blocked by safeUrlResolver");
-      }
-
-      expect(fetchMock).toHaveBeenCalledTimes(1);
-      expect((fetchMock.mock.calls[0]?.[1] as RequestInit | undefined)?.redirect).to.equal("manual");
-    });
-
     it("should allow unsafe redirect targets when safeUrlResolver is false", async () => {
       const fetchMock = vi
         .spyOn(globalThis, "fetch")

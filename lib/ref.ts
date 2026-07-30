@@ -52,6 +52,9 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    */
   dynamicIdScope = false;
 
+  /** Whether this resource uses draft-04's legacy `id` keyword. */
+  legacyIdScope = false;
+
   /**
    * List of all errors. Undefined if no errors.
    */
@@ -150,7 +153,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
       }
 
       if (err instanceof InvalidPointerError) {
-        err.source = decodeURI(stripHash(pathFromRoot));
+        err.source = safelyDecodeURI(stripHash(pathFromRoot || friendlyPath || path));
       }
 
       this.addError(err);
@@ -297,31 +300,29 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
     options?: O,
   ): S {
     if (resolvedValue && typeof resolvedValue === "object" && $Ref.isExtended$Ref($ref)) {
-      const merged = {} as Partial<S>;
+      const merged = {} as Record<string, unknown>;
       for (const key of Object.keys($ref)) {
         if (key !== "$ref") {
-          // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-          merged[key] = $ref[key];
+          defineDataProperty(merged, key, ($ref as unknown as Record<string, unknown>)[key]);
         }
       }
 
       const mergeKeys = options?.dereference?.mergeKeys ?? true;
+      const resolvedObject = resolvedValue as Record<string, unknown>;
 
-      for (const _key of Object.keys(resolvedValue)) {
-        const key = _key as keyof S;
-        if (!(key in merged)) {
-          merged[key] = resolvedValue[key];
+      for (const key of Object.keys(resolvedObject)) {
+        if (!Object.hasOwn(merged, key)) {
+          defineDataProperty(merged, key, resolvedObject[key]);
         } else {
-          // TODO: this behavior should be configurable from options on the CLI
           // Key is already in merged, so we should merge them if both are objects
           if (
             mergeKeys &&
             typeof merged[key] === "object" &&
             merged[key] !== null &&
-            typeof resolvedValue[key] === "object" &&
-            resolvedValue[key] !== null
+            typeof resolvedObject[key] === "object" &&
+            resolvedObject[key] !== null
           ) {
-            merged[key] = deepMerge<(typeof merged)[keyof S]>(resolvedValue[key], merged[key]);
+            defineDataProperty(merged, key, deepMerge(resolvedObject[key], merged[key]));
           }
         }
       }
@@ -334,37 +335,74 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
   }
 }
 
-function deepMerge<T>(target: Partial<T>, source: Partial<T>): T {
-  //return {...target, ...source};
+function safelyDecodeURI(value: string): string {
+  try {
+    return decodeURI(value);
+  } catch {
+    return value;
+  }
+}
 
+function deepMerge<T>(target: T, source: T): T {
   // If either isn't an object, just return source (overwrite)
   if (typeof target !== "object" || target === null) {
-    return source as T;
+    return source;
   }
   if (typeof source !== "object" || source === null) {
     return source;
   }
+  if (Array.isArray(source)) {
+    return cloneEnumerableProperties(source) as T;
+  }
 
   // Ensure we don't mutate target directly
-  const output = Array.isArray(target) ? [...target] : { ...target };
+  const output = cloneEnumerableProperties(target);
+  const targetObject = target as Record<string, unknown>;
+  const sourceObject = source as Record<string, unknown>;
 
-  for (const key of Object.keys(source)) {
-    // @ts-expect-error
-    if (Array.isArray(source[key])) {
-      // If it's an array, replace entirely (you can customize this to concat instead)
-      // @ts-expect-error
-      output[key] = [...source[key]];
-      // @ts-expect-error
-    } else if (typeof source[key] === "object" && source[key] !== null) {
-      // @ts-expect-error
-      output[key] = deepMerge(target[key], source[key]);
+  for (const key of Object.keys(sourceObject)) {
+    const sourceValue = sourceObject[key];
+    let mergedValue: unknown;
+
+    if (Array.isArray(sourceValue)) {
+      // Arrays from the extending value replace the target array entirely.
+      mergedValue = cloneEnumerableProperties(sourceValue);
+    } else if (typeof sourceValue === "object" && sourceValue !== null) {
+      const targetValue = Object.hasOwn(targetObject, key) ? targetObject[key] : undefined;
+      mergedValue = deepMerge(targetValue, sourceValue);
     } else {
-      // @ts-expect-error
-      output[key] = source[key];
+      mergedValue = sourceValue;
     }
+
+    defineDataProperty(output, key, mergedValue);
   }
 
   return output as T;
+}
+
+/**
+ * Creates a shallow copy using only enumerable own properties. Defining each key as a data
+ * property is important for JSON keys such as `__proto__`, which must not invoke Object.prototype's
+ * legacy prototype setter.
+ */
+function cloneEnumerableProperties(value: object): Record<string, unknown> | unknown[] {
+  const clone: Record<string, unknown> | unknown[] = Array.isArray(value) ? new Array(value.length) : {};
+  const source = value as Record<string, unknown>;
+
+  for (const key of Object.keys(source)) {
+    defineDataProperty(clone, key, source[key]);
+  }
+
+  return clone;
+}
+
+function defineDataProperty(target: object, key: string, value: unknown): void {
+  Object.defineProperty(target, key, {
+    configurable: true,
+    enumerable: true,
+    value,
+    writable: true,
+  });
 }
 
 export default $Ref;

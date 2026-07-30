@@ -29,7 +29,7 @@ export default {
   /**
    * Parses the given file as JSON
    */
-  async parse(file: FileInfo): Promise<object | undefined> {
+  async parse(file: FileInfo): Promise<unknown> {
     let data = file.data;
     if (Buffer.isBuffer(data)) {
       data = data.toString();
@@ -38,23 +38,16 @@ export default {
     if (typeof data === "string") {
       if (data.trim().length === 0) {
         return; // This mirrors the YAML behavior
-      } else {
-        try {
-          return JSON.parse(data);
-        } catch (e: any) {
-          if (this.allowBOM) {
-            try {
-              // find the first curly brace
-              const firstCurlyBrace = data.indexOf("{");
-              // remove any characters before the first curly brace
-              data = data.slice(firstCurlyBrace);
-              return JSON.parse(data);
-            } catch (e: any) {
-              throw new ParserError(e.message, file.url);
-            }
-          }
-          throw new ParserError(e.message, file.url);
-        }
+      }
+
+      if (this.allowBOM && data.charCodeAt(0) === 0xfeff) {
+        data = data.slice(1);
+      }
+
+      try {
+        return JSON.parse(data);
+      } catch (e: any) {
+        throw new ParserError(e.message, file.url);
       }
     } else {
       // data is already a JavaScript value (object, array, number, null, NaN, etc.)

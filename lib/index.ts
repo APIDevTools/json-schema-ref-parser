@@ -19,7 +19,7 @@ import {
   JSONParserErrorGroup,
 } from "./util/errors.js";
 import maybe from "./util/maybe.js";
-import { registerSchemaResources, usesDynamicIdScope } from "./util/schema-resources.js";
+import { getSchemaIdMode, registerSchemaResources, usesDynamicIdScope } from "./util/schema-resources.js";
 import type { ParserOptions } from "./options.js";
 import { getJsonSchemaRefParserDefaultOptions } from "./options.js";
 import type {
@@ -33,7 +33,7 @@ import type {
 } from "./types/index.js";
 import { isUnsafeUrl } from "./util/url.js";
 
-export type RefParserSchema = string | JSONSchema;
+export type RefParserSchema = string | JSONSchema | boolean;
 
 /**
  * This class parses a JSON schema, builds a map of its JSON references and their resolved values,
@@ -48,7 +48,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @type {object}
    * @readonly
    */
-  public schema: S | null = null;
+  public schema: S | boolean | null = null;
 
   /**
    * The resolved JSON references
@@ -69,6 +69,8 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param [callback] - An error-first callback. The second parameter is the parsed JSON schema object.
    * @returns - The returned promise resolves with the parsed JSON schema object.
    */
+  public parse(schema: boolean, options?: O): Promise<boolean>;
+  public parse(path: string, schema: boolean, options: O): Promise<boolean>;
   public parse(schema: S | string | unknown): Promise<S>;
   public parse(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
   public parse(schema: S | string | unknown, options: O): Promise<S>;
@@ -79,7 +81,8 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     const args = normalizeArgs<S, O>(arguments as any);
     let promise;
 
-    if (!args.path && !args.schema) {
+    const hasSchema = args.schema !== undefined && args.schema !== null;
+    if (!args.path && !hasSchema) {
       const err = new Error(`Expected a file path, URL, or object. Got ${args.path || args.schema}`);
       return maybe(args.callback, Promise.reject(err));
     }
@@ -98,25 +101,19 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     if (url.isFileSystemPath(args.path)) {
       args.path = url.fromFileSystemPath(args.path);
       pathType = "file";
-    } else if (!args.path && args.schema && "$id" in args.schema && args.schema.$id) {
-      // when schema id has defined an URL should use that hostname to request the references,
-      // instead of using the current page URL
-      const params = url.parse(args.schema.$id as string);
-      const port = params.port ?? (params.protocol === "https:" ? 443 : 80);
-
-      args.path = `${params.protocol}//${params.hostname}:${port}`;
     }
 
     // Resolve the absolute path of the schema
     args.path = url.resolve(url.cwd(), args.path);
 
-    if (args.schema && typeof args.schema === "object") {
+    if (hasSchema && (typeof args.schema === "object" || typeof args.schema === "boolean")) {
       // A schema object was passed-in.
       // So immediately add a new $Ref with the schema object as its value
       const $ref = this.$refs._add(args.path);
       $ref.value = args.schema;
       $ref.pathType = pathType;
       $ref.dynamicIdScope = usesDynamicIdScope($ref.value);
+      $ref.legacyIdScope = getSchemaIdMode($ref.value);
       registerSchemaResources(this.$refs, $ref.path!, $ref.value, $ref.pathType, $ref.dynamicIdScope);
       promise = Promise.resolve(args.schema);
     } else {
@@ -127,7 +124,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     try {
       const result = await promise;
 
-      if (result !== null && typeof result === "object" && !Buffer.isBuffer(result)) {
+      if (typeof result === "boolean" || (result !== null && typeof result === "object" && !Buffer.isBuffer(result))) {
         this.schema = result;
         return maybe(args.callback, Promise.resolve(this.schema!));
       } else if (args.options.continueOnError) {
@@ -149,6 +146,15 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     }
   }
 
+  public static parse<O extends ParserOptions<JSONSchema> = ParserOptions<JSONSchema>>(
+    schema: boolean,
+    options?: O,
+  ): Promise<boolean>;
+  public static parse<O extends ParserOptions<JSONSchema> = ParserOptions<JSONSchema>>(
+    path: string,
+    schema: boolean,
+    options: O,
+  ): Promise<boolean>;
   public static parse<S extends object = JSONSchema>(schema: S | string | unknown): Promise<S>;
   public static parse<S extends object = JSONSchema>(
     schema: S | string | unknown,
@@ -267,6 +273,15 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param options (optional)
    * @param callback (optional) A callback that will receive the bundled schema object
    */
+  public static bundle<O extends ParserOptions<JSONSchema> = ParserOptions<JSONSchema>>(
+    schema: boolean,
+    options?: O,
+  ): Promise<boolean>;
+  public static bundle<O extends ParserOptions<JSONSchema> = ParserOptions<JSONSchema>>(
+    path: string,
+    schema: boolean,
+    options: O,
+  ): Promise<boolean>;
   public static bundle<S extends object = JSONSchema>(schema: S | string | unknown): Promise<S>;
   public static bundle<S extends object = JSONSchema>(
     schema: S | string | unknown,
@@ -291,9 +306,10 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     schema: S | string | unknown,
     options: O,
     callback: SchemaCallback<S>,
-  ): Promise<S>;
+  ): Promise<void>;
   static bundle<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>():
     | Promise<S>
+    | Promise<boolean>
     | Promise<void> {
     const instance = new $RefParser<S, O>();
     return instance.bundle.apply(instance, arguments as any);
@@ -310,21 +326,23 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param options (optional)
    * @param callback (optional) A callback that will receive the bundled schema object
    */
+  public bundle(schema: boolean, options?: O): Promise<boolean>;
+  public bundle(path: string, schema: boolean, options: O): Promise<boolean>;
   public bundle(schema: S | string | unknown): Promise<S>;
   public bundle(schema: S | string | unknown, callback: SchemaCallback<S>): Promise<void>;
   public bundle(schema: S | string | unknown, options: O): Promise<S>;
   public bundle(schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
   public bundle(path: string, schema: S | string | unknown, options: O): Promise<S>;
   public bundle(path: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
-  async bundle() {
+  async bundle(): Promise<S | boolean | void> {
     const args = normalizeArgs<S, O>(arguments);
     try {
       await this.resolve(args.path, args.schema, args.options);
       _bundle<S, O>(this, args.options);
       finalize(this);
-      return maybe(args.callback, Promise.resolve(this.schema!));
+      return maybe(args.callback, Promise.resolve(this.schema!)) as Promise<S | boolean | void>;
     } catch (err) {
-      return maybe(args.callback, Promise.reject(err));
+      return maybe(args.callback, Promise.reject(err)) as Promise<S | boolean | void>;
     }
   }
 
@@ -339,6 +357,15 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param options (optional)
    * @param callback (optional) A callback that will receive the dereferenced schema object
    */
+  public static dereference<O extends ParserOptions<JSONSchema> = ParserOptions<JSONSchema>>(
+    schema: boolean,
+    options?: O,
+  ): Promise<boolean>;
+  public static dereference<O extends ParserOptions<JSONSchema> = ParserOptions<JSONSchema>>(
+    path: string,
+    schema: boolean,
+    options: O,
+  ): Promise<boolean>;
   public static dereference<S extends object = JSONSchema>(schema: S | string | unknown): Promise<S>;
   public static dereference<S extends object = JSONSchema>(
     schema: S | string | unknown,
@@ -366,6 +393,7 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   ): Promise<void>;
   static dereference<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>():
     | Promise<S>
+    | Promise<boolean>
     | Promise<void> {
     const instance = new $RefParser<S, O>();
     return instance.dereference.apply(instance, arguments as any);
@@ -383,6 +411,8 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
    * @param options (optional)
    * @param callback (optional) A callback that will receive the dereferenced schema object
    */
+  public dereference(schema: boolean, options?: O): Promise<boolean>;
+  public dereference(path: string, schema: boolean, options: O): Promise<boolean>;
   public dereference(
     path: string,
     schema: S | string | unknown,
@@ -394,16 +424,16 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   public dereference(path: string, schema: S | string | unknown, options: O): Promise<S>;
   public dereference(schema: S | string | unknown, options: O): Promise<S>;
   public dereference(schema: S | string | unknown): Promise<S>;
-  async dereference() {
+  async dereference(): Promise<S | boolean | void> {
     const args = normalizeArgs<S, O>(arguments);
 
     try {
       await this.resolve(args.path, args.schema, args.options);
       _dereference(this, args.options);
       finalize(this);
-      return maybe<S>(args.callback, Promise.resolve(this.schema!) as Promise<S>);
+      return maybe(args.callback, Promise.resolve(this.schema!)) as Promise<S | boolean | void>;
     } catch (err) {
-      return maybe<S>(args.callback, Promise.reject(err));
+      return maybe(args.callback, Promise.reject(err)) as Promise<S | boolean | void>;
     }
   }
 }

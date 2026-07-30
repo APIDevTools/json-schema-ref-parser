@@ -325,6 +325,13 @@ function merge(target: any, source: any) {
  * @returns
  */
 function isMergeable(val: any) {
-  return val && typeof val === "object" && !Array.isArray(val) && !(val instanceof RegExp) && !(val instanceof Date);
+  return (
+    val &&
+    typeof val === "object" &&
+    !Array.isArray(val) &&
+    !(val instanceof RegExp) &&
+    !(val instanceof Date) &&
+    !(typeof Headers !== "undefined" && val instanceof Headers)
+  );
 }
 export default $RefParserOptions;

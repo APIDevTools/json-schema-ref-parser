@@ -1,7 +1,7 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
-import { getSchemaBasePath } from "./util/schema-resources.js";
+import { getSchemaBasePath, getSchemaIdMode } from "./util/schema-resources.js";
 import type $Refs from "./refs.js";
 import type { DereferenceOptions, ParserOptions } from "./options.js";
 import { type $RefParser, type JSONSchema } from "./index.js";
@@ -22,7 +22,7 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
 ) {
   const start = Date.now();
   const rootScopeBase = parser.$refs._root$Ref.dynamicIdScope
-    ? getSchemaBasePath(parser.$refs._root$Ref.path!, parser.schema)
+    ? getSchemaBasePath(parser.$refs._root$Ref.path!, parser.schema, parser.$refs._root$Ref.legacyIdScope)
     : parser.$refs._root$Ref.path!;
   // console.log('Dereferencing $ref pointers in %s', parser.$refs._root$Ref.path);
   const dereferenced = crawl<S, O>(
@@ -30,6 +30,7 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
     parser.$refs._root$Ref.path!,
     rootScopeBase,
     parser.$refs._root$Ref.dynamicIdScope,
+    parser.$refs._root$Ref.legacyIdScope,
     "#",
     new Set(),
     new Set(),
@@ -63,6 +64,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   path: string,
   scopeBase: string,
   dynamicIdScope: boolean,
+  legacyIdScope: boolean,
   pathFromRoot: string,
   parents: Set<any>,
   processedObjects: Set<any>,
@@ -126,9 +128,10 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           }
 
           const value = obj[key];
+          const childLegacyIdScope = getSchemaIdMode(value, legacyIdScope);
           const childScopeBase =
             dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
-              ? getSchemaBasePath(currentScopeBase, value)
+              ? getSchemaBasePath(currentScopeBase, value, childLegacyIdScope)
               : currentScopeBase;
           let circular;
 
@@ -191,6 +194,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
                 keyPath,
                 childScopeBase,
                 dynamicIdScope,
+                childLegacyIdScope,
                 keyPathFromRoot,
                 parents,
                 processedObjects,
@@ -261,49 +265,38 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
     // cached with everything we need already and we don't need to re-process anything inside it.
     //
     // If the cached object however is _not_ circular and there are additional keys alongside our
-    // `$ref` pointer here we should merge them back in and return that.
+    // `$ref` pointer here, fall through and process it normally. Extended references create a new
+    // value, so returning the cached target (or merging it ad hoc) would make their result depend on
+    // which reference happened to be visited first.
     if (!cache.circular) {
-      const refKeys = Object.keys($ref);
-      if (refKeys.length > 1) {
-        const extraKeys = {};
-        for (const key of refKeys) {
-          if (key !== "$ref" && !(key in cache.value)) {
-            // @ts-expect-error TS(7053): Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            extraKeys[key] = $ref[key];
-          }
-        }
-        return {
-          circular: cache.circular,
-          value: Object.assign({}, cache.value, extraKeys),
-        };
-      }
-
-      return cache;
-    }
-
-    // If both our cached value and our incoming `$ref` are the same then we can return what we
-    // got out of the cache, otherwise we should re-process this value. We need to do this because
-    // the current dereference caching mechanism doesn't take into account that `$ref` are neither
-    // unique or reference the same file.
-    //
-    // For example if `schema.yaml` references `definitions/child.yaml` and
-    // `definitions/parent.yaml` references `child.yaml` then `$ref: 'child.yaml'` may get cached
-    // for `definitions/child.yaml`, resulting in `schema.yaml` being having an invalid reference
-    // to `child.yaml`.
-    //
-    // This check is not perfect and the design of the dereference caching mechanism needs a total
-    // overhaul.
-    if (typeof cache.value === "object" && "$ref" in cache.value && "$ref" in $ref) {
-      if (cache.value.$ref === $ref.$ref) {
-        // Fire onCircular for cached circular refs so callers are notified of every occurrence
-        foundCircularReference(path, $refs, options);
+      if (!$Ref.isExtended$Ref($ref)) {
         return cache;
-      } else {
-        // no-op - fall through to re-process (handles external ref edge case)
       }
     } else {
-      foundCircularReference(path, $refs, options);
-      return cache;
+      // If both our cached value and our incoming `$ref` are the same then we can return what we
+      // got out of the cache, otherwise we should re-process this value. We need to do this because
+      // the current dereference caching mechanism doesn't take into account that `$ref` are neither
+      // unique or reference the same file.
+      //
+      // For example if `schema.yaml` references `definitions/child.yaml` and
+      // `definitions/parent.yaml` references `child.yaml` then `$ref: 'child.yaml'` may get cached
+      // for `definitions/child.yaml`, resulting in `schema.yaml` being having an invalid reference
+      // to `child.yaml`.
+      //
+      // This check is not perfect and the design of the dereference caching mechanism needs a total
+      // overhaul.
+      if (typeof cache.value === "object" && "$ref" in cache.value && "$ref" in $ref) {
+        if (cache.value.$ref === $ref.$ref) {
+          // Fire onCircular for cached circular refs so callers are notified of every occurrence
+          foundCircularReference(path, $refs, options);
+          return cache;
+        } else {
+          // no-op - fall through to re-process (handles external ref edge case)
+        }
+      } else {
+        foundCircularReference(path, $refs, options);
+        return cache;
+      }
     }
   }
 
@@ -328,12 +321,17 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
 
   // Crawl the dereferenced value (unless it's circular)
   if (!circular) {
+    // Pointer resolution has already applied every $id scope along the resolved path. Re-applying
+    // the resolved value's $id here would duplicate relative folder-changing identifiers.
+    const dereferencedScopeBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.$ref.path!;
+
     // Determine if the dereferenced value is circular
     const dereferenced = crawl(
       dereferencedValue,
       pointer.path,
-      pointer.$ref.path!,
+      dereferencedScopeBase,
       pointer.$ref.dynamicIdScope,
+      pointer.legacyIdScope,
       pathFromRoot,
       parents,
       processedObjects,

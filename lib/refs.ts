@@ -67,10 +67,9 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    * @param [options]
    * @returns
    */
-  exists(path: string, options: any) {
+  exists(path: string, options?: O) {
     try {
-      this._resolve(path, "", options);
-      return true;
+      return this._resolve(path, "", options) !== null;
     } catch {
       return false;
     }
@@ -83,8 +82,8 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    * @param [options]
    * @returns - Returns the resolved value
    */
-  get(path: string, options?: O): JSONSchema4Type | JSONSchema6Type | JSONSchema7Type {
-    return this._resolve(path, "", options)!.value;
+  get(path: string, options?: O): JSONSchema4Type | JSONSchema6Type | JSONSchema7Type | undefined {
+    return this._resolve(path, "", options)?.value;
   }
 
   /**
@@ -132,7 +131,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     return $ref;
   }
 
-  _addAlias(path: string, value: S, pathType?: string | unknown, dynamicIdScope = false) {
+  _addAlias(path: string, value: S, pathType?: string | unknown, dynamicIdScope = false, legacyIdScope = false) {
     const withoutHash = url.stripHash(path);
 
     if (!withoutHash || this._$refs[withoutHash] || this._aliases[withoutHash]) {
@@ -144,6 +143,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     $ref.pathType = pathType;
     $ref.value = value;
     $ref.dynamicIdScope = dynamicIdScope;
+    $ref.legacyIdScope = legacyIdScope;
 
     this._aliases[withoutHash] = $ref;
     return $ref;
@@ -229,7 +229,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    *
    * @returns {object}
    */
-  toJSON = this.values;
+  toJSON = () => this.values();
 
   private _getRef(path: string) {
     const withoutHash = url.stripHash(path);

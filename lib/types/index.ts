@@ -11,7 +11,10 @@ import type { ParserOptions } from "../options.js";
 
 export type JSONSchema = JSONSchema4 | JSONSchema6 | JSONSchema7;
 export type JSONSchemaObject = JSONSchema4Object | JSONSchema6Object | JSONSchema7Object;
-export type SchemaCallback<S extends object = JSONSchema> = (err: Error | null, schema?: S | object | null) => any;
+export type SchemaCallback<S extends object = JSONSchema> = (
+  err: Error | null,
+  schema?: S | object | boolean | null,
+) => any;
 export type $RefsCallback<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> = (
   err: Error | null,
   $refs?: $Refs<S, O>,

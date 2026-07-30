@@ -30,7 +30,7 @@
               }
             },
             {
-              "type": "number",
+              "type": "object",
               "format": "float"
             }
           ]
@@ -76,7 +76,7 @@
           }
         },
         {
-          "type": "number",
+          "type": "object",
           "format": "float"
         }
       ]
@@ -110,7 +110,7 @@
           }
         },
         {
-          "type": "number",
+          "type": "object",
           "format": "float"
         }
       ]

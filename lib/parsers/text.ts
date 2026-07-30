@@ -2,7 +2,7 @@ import { ParserError } from "../util/errors.js";
 import type { FileInfo } from "../types/index.js";
 import type { Plugin } from "../types/index.js";
 
-const TEXT_REGEXP = /\.(txt|htm|html|md|xml|js|min|map|css|scss|less|svg)$/i;
+const TEXT_REGEXP = /\.(txt|htm|html|md|xml|js|min|map|css|scss|less|svg)(?:[?#].*)?$/i;
 
 export default {
   /**

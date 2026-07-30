@@ -107,11 +107,21 @@ export class JSONParserErrorGroup<
   static getParserErrors<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
     parser: $RefParser<S, O>,
   ) {
-    const errors = [];
+    const errors: $Ref<S, O>["errors"] = [];
+    const footprints = new Set<string>();
 
-    for (const $ref of Object.values(parser.$refs._$refs) as $Ref<S, O>[]) {
+    const refs = [
+      ...(Object.values(parser.$refs._$refs) as $Ref<S, O>[]),
+      ...(Object.values(parser.$refs._aliases) as $Ref<S, O>[]),
+    ];
+    for (const $ref of refs) {
       if ($ref.errors) {
-        errors.push(...$ref.errors);
+        for (const error of $ref.errors) {
+          if (!footprints.has(error.footprint)) {
+            footprints.add(error.footprint);
+            errors.push(error);
+          }
+        }
       }
     }
 
@@ -194,7 +204,7 @@ export class TimeoutError extends JSONParserError {
 }
 
 export class InvalidPointerError extends JSONParserError {
-  code = "EUNMATCHEDRESOLVER" as JSONParserErrorType;
+  code = "EINVALIDPOINTER" as JSONParserErrorType;
   name = "InvalidPointerError";
   constructor(pointer: string, path: string) {
     super(`Invalid $ref pointer "${pointer}". Pointers must begin with "#/"`, stripHash(path));

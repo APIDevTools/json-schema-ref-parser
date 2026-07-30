@@ -1,7 +1,7 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
-import { getSchemaBasePath } from "./util/schema-resources.js";
+import { getSchemaBasePath, getSchemaId, getSchemaIdMode } from "./util/schema-resources.js";
 import type $Refs from "./refs.js";
 import type $RefParser from "./index.js";
 import type { ParserOptions } from "./index.js";
@@ -22,6 +22,11 @@ export interface InventoryEntry {
   external: any;
   nestedResource: boolean;
   indirections: any;
+  scopeBase: string;
+  dynamicIdScope: boolean;
+  nestedIdScope: boolean;
+  targetResourceBase: string;
+  targetResourceId?: string;
 }
 /**
  * Bundles all external JSON references into the main JSON schema, thus resulting in a schema that
@@ -37,32 +42,34 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
 ) {
   // console.log('Bundling $ref pointers in %s', parser.$refs._root$Ref.path);
   const rootScopeBase = parser.$refs._root$Ref.dynamicIdScope
-    ? getSchemaBasePath(parser.$refs._root$Ref.path!, parser.schema)
+    ? getSchemaBasePath(parser.$refs._root$Ref.path!, parser.schema, parser.$refs._root$Ref.legacyIdScope)
     : parser.$refs._root$Ref.path!;
 
   // Build an inventory of all $ref pointers in the JSON Schema
   const inventory: InventoryEntry[] = [];
+  const embeddedResourcePaths = new Set([url.stripHash(parser.$refs._root$Ref.path!), url.stripHash(rootScopeBase)]);
   crawl<S, O>(
     parser,
     "schema",
     parser.$refs._root$Ref.path + "#",
     rootScopeBase,
     parser.$refs._root$Ref.dynamicIdScope,
+    parser.$refs._root$Ref.legacyIdScope,
+    false,
     "#",
     0,
     inventory,
     parser.$refs,
     options,
+    embeddedResourcePaths,
+    new Set(),
   );
 
   // Get the root schema's $id (if any) for qualifying refs inside sub-schemas with their own $id
-  const rootId =
-    parser.schema && typeof parser.schema === "object" && "$id" in (parser.schema as any)
-      ? (parser.schema as any).$id
-      : undefined;
+  const rootId = getSchemaId(parser.schema, parser.$refs._root$Ref.legacyIdScope);
 
   // Remap all $ref pointers
-  remap<S, O>(inventory, options, rootId);
+  remap<S, O>(inventory, options, rootId, rootScopeBase);
 
   // Fix any $ref paths that traverse through other $refs (which is invalid per JSON Schema spec)
   const bundleOptions = (options.bundle || {}) as BundleOptions;
@@ -89,30 +96,43 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   path: string,
   scopeBase: string,
   dynamicIdScope: boolean,
+  legacyIdScope: boolean,
+  nestedIdScope: boolean,
   pathFromRoot: string,
   indirections: number,
   inventory: InventoryEntry[],
   $refs: $Refs<S, O>,
   options: O,
+  embeddedResourcePaths: Set<string>,
+  seen: Set<object>,
 ) {
   const obj = key === null ? parent : parent[key as keyof typeof parent];
   const bundleOptions = (options.bundle || {}) as BundleOptions;
   const isExcludedPath = bundleOptions.excludedPathMatcher || (() => false);
 
-  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
+  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot) && !seen.has(obj)) {
+    // Input schemas are normally JSON trees, but callers can pass pre-circular
+    // JavaScript objects. Tracking identities keeps those cycles intact without
+    // recursively walking them until the call stack overflows. It also avoids
+    // repeatedly inventorying shared object instances.
+    seen.add(obj);
+
     const currentScopeBase = scopeBase;
-    if ($Ref.isAllowed$Ref(obj)) {
+    if ($Ref.isAllowed$Ref(obj, options)) {
       inventory$Ref(
         parent,
         key,
         path,
         currentScopeBase,
         dynamicIdScope,
+        nestedIdScope,
         pathFromRoot,
         indirections,
         inventory,
         $refs,
         options,
+        embeddedResourcePaths,
+        seen,
       );
     } else {
       // Crawl the object in a specific order that's optimized for bundling.
@@ -136,23 +156,34 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         const keyPath = Pointer.join(path, key);
         const keyPathFromRoot = Pointer.join(pathFromRoot, key);
         const value = obj[key];
+        const childLegacyIdScope = getSchemaIdMode(value, legacyIdScope);
         const childScopeBase =
           dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
-            ? getSchemaBasePath(currentScopeBase, value)
+            ? getSchemaBasePath(currentScopeBase, value, childLegacyIdScope)
             : currentScopeBase;
+        const childHasSchemaIdentifier = dynamicIdScope && hasSchemaIdentifier(value, childLegacyIdScope);
+        const childNestedIdScope = nestedIdScope || childHasSchemaIdentifier;
+        let childEmbeddedResourcePaths = embeddedResourcePaths;
+        if (childHasSchemaIdentifier) {
+          childEmbeddedResourcePaths = new Set(embeddedResourcePaths);
+          childEmbeddedResourcePaths.add(url.stripHash(childScopeBase));
+        }
 
-        if ($Ref.isAllowed$Ref(value)) {
+        if ($Ref.isAllowed$Ref(value, options)) {
           inventory$Ref(
             obj,
             key,
             keyPath,
             childScopeBase,
             dynamicIdScope,
+            childNestedIdScope,
             keyPathFromRoot,
             indirections,
             inventory,
             $refs,
             options,
+            childEmbeddedResourcePaths,
+            seen,
           );
         } else {
           crawl(
@@ -161,11 +192,15 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
             keyPath,
             childScopeBase,
             dynamicIdScope,
+            childLegacyIdScope,
+            childNestedIdScope,
             keyPathFromRoot,
             indirections,
             inventory,
             $refs,
             options,
+            childEmbeddedResourcePaths,
+            seen,
           );
         }
 
@@ -200,14 +235,19 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   path: string,
   scopeBase: string,
   dynamicIdScope: boolean,
+  nestedIdScope: boolean,
   pathFromRoot: string,
   indirections: number,
   inventory: InventoryEntry[],
   $refs: $Refs<S, O>,
   options: O,
+  embeddedResourcePaths: Set<string>,
+  seen: Set<object>,
 ) {
   const $ref = $refKey === null ? $refParent : $refParent[$refKey];
-  const $refPath = url.resolve(dynamicIdScope ? scopeBase : path, $ref.$ref);
+  const shouldResolveOnCwd = $Ref.isExternal$Ref($ref) && options.dereference?.externalReferenceResolution === "root";
+  const resolutionBase = shouldResolveOnCwd ? url.cwd() : dynamicIdScope ? scopeBase : path;
+  const $refPath = url.resolve(resolutionBase, $ref.$ref);
   const pointer = $refs._resolve($refPath, pathFromRoot, options);
   if (pointer === null) {
     return;
@@ -216,8 +256,16 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   const depth = parsed.length;
   const file = url.stripHash(pointer.path);
   const hash = url.getHash(pointer.path);
-  const external = file !== $refs._root$Ref.path && !$refs._aliases[file];
-  const nestedResource = Boolean($refs._aliases[file]) && pointer.$ref.value !== $refs._root$Ref.value;
+  const alias = $refs._aliases[file];
+  const aliasIsInRootSchema = Boolean(alias && containsObject($refs._root$Ref.value, pointer.$ref.value));
+  const external = file !== $refs._root$Ref.path && !embeddedResourcePaths.has(file) && !aliasIsInRootSchema;
+  const nestedResource = Boolean(alias) && pointer.$ref.value !== $refs._root$Ref.value;
+  const targetResourceId = getSchemaId(pointer.$ref.value, pointer.$ref.legacyIdScope);
+  const targetResourceBase = alias
+    ? pointer.$ref.path!
+    : pointer.$ref.dynamicIdScope
+      ? getSchemaBasePath(pointer.$ref.path!, pointer.$ref.value, pointer.$ref.legacyIdScope)
+      : pointer.$ref.path!;
   const extended = $Ref.isExtended$Ref($ref);
   indirections += pointer.indirections;
 
@@ -245,21 +293,38 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
     external, // Does this $ref pointer point to a file other than the main JSON Schema file?
     nestedResource, // Does this $ref resolve to an embedded schema resource with its own $id?
     indirections, // The number of indirect references that were traversed to resolve the value
+    scopeBase, // The active schema-resource base at the location of this $ref
+    dynamicIdScope, // Whether this $ref uses nested JSON Schema $id scopes
+    nestedIdScope, // Whether this $ref will remain inside a non-root $id scope after bundling
+    targetResourceBase, // The canonical URI of the resource containing the target
+    ...(targetResourceId === undefined ? {} : { targetResourceId }),
   });
 
   // Recursively crawl the resolved value
   if (!existingEntry || external) {
+    const resolvedScopeBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.$ref.path!;
+    const resolvedNestedIdScope =
+      nestedIdScope || (pointer.$ref.dynamicIdScope && hasSchemaIdentifier(pointer.value, pointer.legacyIdScope));
+    const resolvedEmbeddedResourcePaths = new Set(embeddedResourcePaths);
+    if (pointer.value === pointer.$ref.value && hasSchemaIdentifier(pointer.$ref.value, pointer.$ref.legacyIdScope)) {
+      resolvedEmbeddedResourcePaths.add(url.stripHash(pointer.$ref.path!));
+      resolvedEmbeddedResourcePaths.add(url.stripHash(resolvedScopeBase));
+    }
     crawl(
       pointer.value,
       null,
       pointer.path,
-      pointer.$ref.path!,
+      resolvedScopeBase,
       pointer.$ref.dynamicIdScope,
+      pointer.legacyIdScope,
+      resolvedNestedIdScope,
       pathFromRoot,
       indirections + 1,
       inventory,
       $refs,
       options,
+      resolvedEmbeddedResourcePaths,
+      seen,
     );
   }
 }
@@ -290,6 +355,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   inventory: InventoryEntry[],
   options: O,
   rootId?: string,
+  rootScopeBase?: string,
 ) {
   // Group & sort all the $ref pointers, so they're in the order that we need to dereference/remap them
   inventory.sort((a: InventoryEntry, b: InventoryEntry) => {
@@ -344,26 +410,22 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       // instead of rewriting it to the fully resolved hash. References to nested
       // resources must also retain their resource URI so that "#" does not point
       // at the document root instead.
-      if (bundleOpts.optimizeInternalRefs !== false && !entry.nestedResource) {
-        entry.$ref.$ref = entry.hash;
+      if (bundleOpts.optimizeInternalRefs !== false) {
+        const targetResourceBase = url.stripHash(entry.targetResourceBase);
+        const locationResourceBase = url.stripHash(entry.scopeBase);
+        if (targetResourceBase !== locationResourceBase) {
+          entry.$ref.$ref = referenceToResource(entry);
+        } else if (!entry.nestedResource) {
+          entry.$ref.$ref = entry.hash;
+        }
       }
     } else if (entry.file === file && entry.hash === hash) {
       // This $ref points to the same value as the previous $ref, so remap it to the same path
-      if (rootId && isInsideIdScope(inventory, entry)) {
-        // This entry is inside a sub-schema with its own $id, so a bare root-relative JSON Pointer
-        // would be resolved relative to that $id, not the document root. Qualify with the root $id.
-        entry.$ref.$ref = rootId + pathFromRoot;
-      } else {
-        entry.$ref.$ref = pathFromRoot;
-      }
+      entry.$ref.$ref = qualifyPathFromRoot(entry, pathFromRoot, rootId, rootScopeBase);
     } else if (entry.file === file && entry.hash.indexOf(hash + "/") === 0) {
       // This $ref points to a sub-value of the previous $ref, so remap it beneath that path
       const subPath = Pointer.join(pathFromRoot, Pointer.parse(entry.hash.replace(hash, "#")));
-      if (rootId && isInsideIdScope(inventory, entry)) {
-        entry.$ref.$ref = rootId + subPath;
-      } else {
-        entry.$ref.$ref = subPath;
-      }
+      entry.$ref.$ref = qualifyPathFromRoot(entry, subPath, rootId, rootScopeBase);
     } else {
       // We've moved to a new file or new hash
       file = entry.file;
@@ -463,8 +525,17 @@ function resolvePathThroughRefs(schema: any, refPath: string): string {
       return refPath;
     }
 
-    // If the current value is a $ref, follow it
-    if ("$ref" in current && typeof current.$ref === "string" && current.$ref.startsWith("#/")) {
+    const decoded = seg.replace(/~1/g, "/").replace(/~0/g, "~");
+
+    // If the next token is an own sibling of an extended $ref, the pointer
+    // addresses that sibling directly and must not be rewritten through the
+    // $ref target. Only follow the $ref when the literal object has no such key.
+    if (
+      !Object.prototype.hasOwnProperty.call(current, decoded) &&
+      "$ref" in current &&
+      typeof current.$ref === "string" &&
+      current.$ref.startsWith("#/")
+    ) {
       // Follow the $ref and restart the path from its target
       const targetSegments = current.$ref.slice(2).split("/");
       resolvedSegments.length = 0;
@@ -475,7 +546,6 @@ function resolvePathThroughRefs(schema: any, refPath: string): string {
       }
     }
 
-    const decoded = seg.replace(/~1/g, "/").replace(/~0/g, "~");
     const idx = Array.isArray(current) ? parseInt(decoded) : decoded;
     current = current[idx];
     resolvedSegments.push(seg);
@@ -509,25 +579,73 @@ function walkPath(schema: any, path: string): any {
 }
 
 /**
- * Checks whether the given inventory entry is located inside a sub-schema that has its own $id.
- * If so, root-relative JSON Pointer $refs placed at this location would be resolved against
- * the $id base URI rather than the document root, making them invalid.
+ * Qualifies a root-relative JSON Pointer when it is emitted inside a nested schema resource.
+ * A fragment-only reference there would resolve against the nested resource rather than the
+ * bundled document root.
  */
-function isInsideIdScope(inventory: InventoryEntry[], entry: InventoryEntry): boolean {
-  for (const other of inventory) {
-    // Skip root-level entries
-    if (other.pathFromRoot === "#" || other.pathFromRoot === "#/") {
-      continue;
-    }
-    // Check if the other entry is an ancestor of the current entry
-    if (entry.pathFromRoot.startsWith(other.pathFromRoot + "/")) {
-      // Check if the ancestor's resolved value has a $id
-      if (other.value && typeof other.value === "object" && "$id" in other.value) {
-        return true;
-      }
-    }
+function qualifyPathFromRoot(
+  entry: InventoryEntry,
+  pathFromRoot: string,
+  rootId?: string,
+  rootScopeBase?: string,
+): string {
+  if (!entry.dynamicIdScope || !entry.nestedIdScope || !rootScopeBase) {
+    return pathFromRoot;
   }
-  return false;
+
+  // A fragment-only reference inside a nested schema resource resolves against
+  // that resource's $id. Point back to the root resource explicitly instead.
+  // Prefer the root's declared $id when it resolves correctly from this scope;
+  // otherwise use the canonical root resource URI.
+  let rootResource = rootScopeBase;
+  if (rootId && url.stripHash(url.resolve(entry.scopeBase, rootId)) === url.stripHash(rootScopeBase)) {
+    rootResource = rootId;
+  }
+
+  return url.stripHash(rootResource) + pathFromRoot;
+}
+
+function referenceToResource(entry: InventoryEntry): string {
+  let resourceReference = url.stripHash(entry.targetResourceBase);
+  if (
+    typeof entry.$ref.$ref === "string" &&
+    url.stripHash(url.resolve(entry.scopeBase, entry.$ref.$ref)) === resourceReference
+  ) {
+    return entry.$ref.$ref;
+  }
+  if (
+    entry.targetResourceId &&
+    url.stripHash(url.resolve(entry.scopeBase, entry.targetResourceId)) === resourceReference
+  ) {
+    resourceReference = entry.targetResourceId;
+  }
+
+  return entry.hash === "#" ? resourceReference : resourceReference + entry.hash;
+}
+
+function hasSchemaIdentifier(value: unknown, legacyIdScope = false): boolean {
+  return getSchemaId(value, legacyIdScope) !== undefined;
+}
+
+function containsObject(root: unknown, target: unknown): boolean {
+  if (!target || typeof target !== "object") {
+    return false;
+  }
+
+  const seen = new Set<object>();
+  const visit = (value: unknown): boolean => {
+    if (value === target) {
+      return true;
+    }
+    if (!value || typeof value !== "object" || ArrayBuffer.isView(value) || seen.has(value)) {
+      return false;
+    }
+
+    seen.add(value);
+    return Object.keys(value).some((key) => visit((value as Record<string, unknown>)[key]));
+  };
+
+  return visit(root);
 }
 
 export default bundle;

@@ -16,29 +16,29 @@ export default {
             $id: "text_assets",
             oneOf: [
               {
-                $ref: "#/properties/actions/properties/prevAction/properties/definitions/asset",
+                $ref: "#/definitions/asset",
               },
               {
-                $ref: "#/properties/actions/properties/prevAction/properties/definitions/asset",
+                $ref: "#/definitions/asset",
               },
             ],
             definitions: {
               switchWrapper: {
                 type: "object",
-                $ref: "#/properties/actions/properties/prevAction/properties/definitions/switch",
+                $ref: "#/definitions/switch",
               },
               asset: {
                 type: "object",
                 $id: "asset_action",
                 properties: {
                   label: {
-                    $ref: "#/properties/actions/properties/prevAction/properties",
+                    $ref: "text_assets",
                   },
                 },
               },
               switch: {
                 type: "array",
-                $ref: "#/properties/actions/properties/prevAction/properties/definitions/asset",
+                $ref: "#/definitions/asset",
               },
             },
           },

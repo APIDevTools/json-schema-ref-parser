@@ -1,6 +1,18 @@
 import * as url from "../util/url.js";
 import { ResolverError } from "../util/errors.js";
 import type { FileInfo, HTTPResolverOptions, JSONSchema } from "../types/index.js";
+import type { LookupFunction } from "node:net";
+import type { Agent } from "undici";
+
+interface UndiciModule {
+  Agent: new (options?: { connect?: { lookup: LookupFunction }; autoSelectFamily?: boolean }) => Agent;
+  fetch(input: URL | string, init?: RequestInit & { dispatcher?: Agent }): Promise<unknown>;
+}
+
+interface PinnedTransport {
+  dispatcher: Agent;
+  fetch: UndiciModule["fetch"];
+}
 
 export default {
   /**
@@ -78,13 +90,20 @@ async function download<S extends object = JSONSchema>(
   u = url.parse(u);
   const redirects = _redirects || [];
   redirects.push(u.href);
+  let pendingResponse: PendingResponse | undefined;
 
   try {
-    if (httpOptions.safeUrlResolver && url.isUnsafeUrl(u.href)) {
-      throw new Error(`Unsafe URL blocked by safeUrlResolver: ${u.href}`);
+    let resolvedAddresses: url.ResolvedUrlAddress[] | undefined;
+    if (httpOptions.safeUrlResolver) {
+      const safety = await url.resolveUrlSafety(u.href);
+      if (safety.unsafe) {
+        throw new Error(`Unsafe URL blocked by safeUrlResolver: ${u.href}`);
+      }
+      resolvedAddresses = safety.addresses;
     }
 
-    const res = await get(u, httpOptions);
+    pendingResponse = await get(u, httpOptions, resolvedAddresses);
+    const res = pendingResponse.response;
     if (res.status >= 400) {
       const error = new Error(`HTTP ERROR ${res.status}`) as Error & { status?: number };
       error.status = res.status;
@@ -106,7 +125,9 @@ async function download<S extends object = JSONSchema>(
         }
 
         const redirectTo = url.resolve(u.href, location);
-        return download(redirectTo, httpOptions, redirects);
+        const redirectOptions =
+          url.parse(redirectTo).origin === u.origin ? httpOptions : withoutSensitiveHeaders(httpOptions);
+        return download(redirectTo, redirectOptions, redirects);
       }
     } else {
       if (res.body) {
@@ -115,39 +136,141 @@ async function download<S extends object = JSONSchema>(
       }
       return Buffer.alloc(0);
     }
-  } catch (err: any) {
-    const e = err as Error;
-    e.message = `Error downloading ${u.href}: ${e.message}`;
-    throw new ResolverError(e, u.href);
+  } catch (err: unknown) {
+    const cause = err instanceof Error ? err : new Error(String(err));
+    const wrappedError = new Error(`Error downloading ${u.href}: ${cause.message}`, { cause });
+
+    if ("code" in cause) {
+      (wrappedError as Error & { code?: unknown }).code = cause.code;
+    }
+
+    throw new ResolverError(wrappedError, u.href);
+  } finally {
+    pendingResponse?.cancelTimeout();
   }
+}
+
+interface PendingResponse {
+  response: Response;
+  cancelTimeout(): void;
 }
 
 /**
  * Sends an HTTP GET request.
- * The promise resolves with the HTTP Response object.
+ * The promise resolves with the HTTP Response object and a timeout cleanup
+ * function. The caller keeps the timeout active until it has consumed the
+ * response body.
  */
-async function get<S extends object = JSONSchema>(u: RequestInfo | URL, httpOptions: HTTPResolverOptions<S>) {
-  let controller: any;
-  let timeoutId: any;
+async function get<S extends object = JSONSchema>(
+  u: URL,
+  httpOptions: HTTPResolverOptions<S>,
+  resolvedAddresses?: readonly url.ResolvedUrlAddress[],
+): Promise<PendingResponse> {
+  const pinnedTransport =
+    resolvedAddresses && resolvedAddresses.length > 0 ? await createPinnedTransport(u, resolvedAddresses) : undefined;
+  const dispatcher = pinnedTransport?.dispatcher;
+  let controller: AbortController | undefined;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
   if (httpOptions.timeout && typeof AbortController !== "undefined") {
-    controller = new AbortController();
-    timeoutId = setTimeout(() => controller.abort(), httpOptions.timeout);
+    const abortController = new AbortController();
+    controller = abortController;
+    timeoutId = setTimeout(() => abortController.abort(), httpOptions.timeout);
   }
 
-  const response = await fetch(u, {
-    method: "GET",
-    headers: httpOptions.headers || {},
-    credentials: httpOptions.withCredentials ? "include" : "same-origin",
-    redirect: "manual",
-    signal: controller ? controller.signal : null,
-  });
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
+  const cancelTimeout = () => {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+      timeoutId = undefined;
+    }
+    if (dispatcher && !dispatcher.destroyed) {
+      void dispatcher.destroy().catch(() => undefined);
+    }
+  };
 
-  return response;
+  try {
+    const requestOptions: RequestInit & { dispatcher?: Agent } = {
+      method: "GET",
+      headers: httpOptions.headers || {},
+      credentials: httpOptions.withCredentials ? "include" : "same-origin",
+      redirect: "manual",
+      signal: controller ? controller.signal : null,
+    };
+    if (dispatcher) {
+      requestOptions.dispatcher = dispatcher;
+    }
+
+    const response = pinnedTransport
+      ? ((await pinnedTransport.fetch(u, requestOptions)) as Response)
+      : await fetch(u, requestOptions);
+
+    return { response, cancelTimeout };
+  } catch (error) {
+    cancelTimeout();
+    throw error;
+  }
+}
+
+/**
+ * Creates a per-request dispatcher whose DNS callback can only return addresses
+ * from the validation lookup. The URL hostname is still used for the Host
+ * header and TLS SNI/certificate verification.
+ */
+async function createPinnedTransport(
+  requestUrl: URL,
+  resolvedAddresses: readonly url.ResolvedUrlAddress[],
+): Promise<PinnedTransport> {
+  // Keep the Node-only implementation out of browser module graphs.
+  const undiciModuleName = "undici";
+  const undici = (await import(undiciModuleName)) as UndiciModule;
+  const expectedHostname = normalizeLookupHostname(requestUrl.hostname);
+  const pinnedAddresses = resolvedAddresses.map(({ address, family }) => ({ address, family }));
+
+  const lookup: LookupFunction = (hostname, options, callback) => {
+    const normalizedHostname = normalizeLookupHostname(hostname);
+    const requestedFamily = options.family === "IPv4" ? 4 : options.family === "IPv6" ? 6 : options.family || 0;
+    const candidates = pinnedAddresses.filter(({ family }) => requestedFamily === 0 || family === requestedFamily);
+
+    if (normalizedHostname !== expectedHostname || candidates.length === 0) {
+      const error = new Error(`No validated address is available for ${hostname}`) as NodeJS.ErrnoException;
+      error.code = "ENOTFOUND";
+      callback(error, "", 0);
+    } else if (options.all) {
+      callback(null, candidates);
+    } else {
+      const selected = candidates[0];
+      callback(null, selected.address, selected.family);
+    }
+  };
+
+  return {
+    dispatcher: new undici.Agent({
+      connect: { lookup },
+      autoSelectFamily: true,
+    }),
+    fetch: (input, init) => undici.fetch(input, init),
+  };
+}
+
+function normalizeLookupHostname(hostname: string): string {
+  return hostname
+    .replace(/^\[|\]$/g, "")
+    .replace(/\.+$/, "")
+    .toLowerCase();
 }
 
 function getHeader(response: Response, name: string): string | null {
   return response.headers.get(name);
+}
+
+function withoutSensitiveHeaders<S extends object>(httpOptions: HTTPResolverOptions<S>): HTTPResolverOptions<S> {
+  if (!httpOptions.headers) {
+    return httpOptions;
+  }
+
+  const headers = new Headers(httpOptions.headers);
+  headers.delete("authorization");
+  headers.delete("proxy-authorization");
+  headers.delete("cookie");
+
+  return { ...httpOptions, headers };
 }

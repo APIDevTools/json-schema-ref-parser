@@ -18,6 +18,36 @@ describe("Return the extension of a URL", () => {
     const extension = $url.getExtension("/file.yml?foo=bar");
     expect(extension).to.equal(".yml");
   });
+
+  it("should return the extension without the hash", () => {
+    expect($url.getExtension("/file.yml#section.json")).to.equal(".yml");
+  });
+
+  it("should ignore dots in query strings and hashes", () => {
+    expect($url.getExtension("/file?format=.json")).to.equal("");
+    expect($url.getExtension("/file#section.json")).to.equal("");
+    expect($url.getExtension("https://example.com/schema")).to.equal("");
+  });
+});
+
+describe("Resolve URL fragments", () => {
+  it("should preserve literal percent signs without throwing", () => {
+    expect($url.resolve("https://example.com/schema.json", "#/properties/rate%")).to.equal(
+      "https://example.com/schema.json#/properties/rate%",
+    );
+  });
+
+  it("should decode valid escapes alongside literal percent signs", () => {
+    expect($url.resolve("https://example.com/schema.json", "#/properties/a%2Fb%")).to.equal(
+      "https://example.com/schema.json#/properties/a/b%",
+    );
+  });
+
+  it("should fall back safely for malformed UTF-8 escapes", () => {
+    expect($url.resolve("https://example.com/schema.json", "#/properties/bad%E0%A4%A")).to.equal(
+      "https://example.com/schema.json#/properties/bad%E0%A4%A",
+    );
+  });
 });
 
 if (!process.env.BROWSER) {
@@ -116,5 +146,9 @@ describe("Handle Linux file paths", () => {
     expect(result)
       .to.be.a("string")
       .and.toSatisfy((msg: string) => msg.startsWith("Path/file.json"));
+  });
+
+  it("should treat the file URL scheme case-insensitively", () => {
+    expect($url.toFileSystemPath("FILE:///a/random/Path/file.json")).to.equal("/a/random/Path/file.json");
   });
 });

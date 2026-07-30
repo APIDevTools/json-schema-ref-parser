@@ -3,7 +3,7 @@ import Pointer from "./pointer.js";
 import parse from "./parse.js";
 import * as url from "./util/url.js";
 import { isHandledError } from "./util/errors.js";
-import { getSchemaBasePath } from "./util/schema-resources.js";
+import { getSchemaBasePath, getSchemaIdMode } from "./util/schema-resources.js";
 import type $Refs from "./refs.js";
 import type { ParserOptions } from "./options.js";
 import type { JSONSchema } from "./types/index.js";
@@ -30,7 +30,7 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
 
   try {
     const rootScopeBase = parser.$refs._root$Ref.dynamicIdScope
-      ? getSchemaBasePath(parser.$refs._root$Ref.path!, parser.schema)
+      ? getSchemaBasePath(parser.$refs._root$Ref.path!, parser.schema, parser.$refs._root$Ref.legacyIdScope)
       : parser.$refs._root$Ref.path!;
     // console.log('Resolving $ref pointers in %s', parser.$refs._root$Ref.path);
     const promises = crawl(
@@ -38,6 +38,7 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
       parser.$refs._root$Ref.path + "#",
       rootScopeBase,
       parser.$refs._root$Ref.dynamicIdScope,
+      parser.$refs._root$Ref.legacyIdScope,
       parser.$refs,
       options,
     );
@@ -64,10 +65,11 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
  * then the corresponding promise will internally reference an array of promises.
  */
 function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
-  obj: string | Buffer | S | undefined | null,
+  obj: string | boolean | Buffer | S | undefined | null,
   path: string,
   scopeBase: string,
   dynamicIdScope: boolean,
+  legacyIdScope: boolean,
   $refs: $Refs<S, O>,
   options: O,
   seen?: Set<any>,
@@ -87,11 +89,14 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     for (const key of keys) {
       const keyPath = Pointer.join(path, key);
       const value = obj[key as keyof typeof obj] as string | S | Buffer | undefined;
+      const childLegacyIdScope = getSchemaIdMode(value, legacyIdScope);
       const childScopeBase =
         dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
-          ? getSchemaBasePath(currentScopeBase, value)
+          ? getSchemaBasePath(currentScopeBase, value, childLegacyIdScope)
           : currentScopeBase;
-      promises = promises.concat(crawl(value, keyPath, childScopeBase, dynamicIdScope, $refs, options, seen, external));
+      promises = promises.concat(
+        crawl(value, keyPath, childScopeBase, dynamicIdScope, childLegacyIdScope, $refs, options, seen, external),
+      );
     }
   }
 
@@ -147,11 +152,17 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
     // Crawl the parsed value
     // console.log('Resolving $ref pointers in %s', withoutHash);
     const parsedRef = $refs._get$Ref(withoutHash);
+    const parsedDynamicIdScope = parsedRef?.dynamicIdScope ?? false;
+    const parsedLegacyIdScope = parsedRef?.legacyIdScope ?? false;
+    const parsedScopeBase = parsedDynamicIdScope
+      ? getSchemaBasePath(withoutHash, result, parsedLegacyIdScope)
+      : withoutHash;
     const promises = crawl(
       result,
       withoutHash + "#",
-      withoutHash,
-      parsedRef?.dynamicIdScope ?? false,
+      parsedScopeBase,
+      parsedDynamicIdScope,
+      parsedLegacyIdScope,
       $refs,
       options,
       new Set(),

@@ -3,7 +3,7 @@ import type { ParserOptions } from "./options.js";
 import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import { JSONParserError, InvalidPointerError, MissingPointerError, isHandledError } from "./util/errors.js";
-import { getSchemaBasePath } from "./util/schema-resources.js";
+import { getSchemaBasePath, getSchemaIdMode } from "./util/schema-resources.js";
 import type { JSONSchema } from "./index.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 
@@ -45,6 +45,9 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    */
   scopeBase: string;
 
+  /** Whether the current schema scope uses draft-04's legacy `id` keyword. */
+  legacyIdScope: boolean;
+
   /**
    * The value of the JSON pointer.
    * Can be any JSON type, not just objects. Unknown file types are represented as Buffers (byte arrays).
@@ -73,6 +76,8 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     this.originalPath = friendlyPath || path;
 
     this.scopeBase = $ref.path || url.stripHash(path);
+
+    this.legacyIdScope = $ref.legacyIdScope;
 
     this.value = undefined;
 
@@ -109,7 +114,8 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
     if (this.$ref.dynamicIdScope && !isAliasedResource(this.$ref)) {
-      this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
+      this.legacyIdScope = getSchemaIdMode(this.value, this.legacyIdScope);
+      this.scopeBase = getSchemaBasePath(this.scopeBase, this.value, this.legacyIdScope);
     }
 
     for (let i = 0; i < tokens.length; i++) {
@@ -134,6 +140,17 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       }
 
       const token = tokens[i];
+
+      if (this.value === null || (typeof this.value !== "object" && typeof this.value !== "function")) {
+        this.value = null;
+
+        const path = this.$ref.path || "";
+        const targetRef = this.path.replace(path, "");
+        const targetFound = Pointer.join("", found);
+        const parentPath = pathFromRoot?.replace(path, "");
+
+        throw new MissingPointerError(token, safelyDecodeURI(this.originalPath), targetRef, targetFound, parentPath);
+      }
 
       if (this.value[token] === undefined || (this.value[token] === null && i === tokens.length - 1)) {
         // one final case is if the entry itself includes slashes, and was parsed out as a token - we can join the remaining tokens and try again
@@ -171,7 +188,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
         const targetFound = Pointer.join("", found);
         const parentPath = pathFromRoot?.replace(path, "");
 
-        throw new MissingPointerError(token, decodeURI(this.originalPath), targetRef, targetFound, parentPath);
+        throw new MissingPointerError(token, safelyDecodeURI(this.originalPath), targetRef, targetFound, parentPath);
       } else {
         this.value = this.value[token];
       }
@@ -179,7 +196,8 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       this.chainCircular = wasChainCircular;
       found.push(token);
       if (this.$ref.dynamicIdScope) {
-        this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
+        this.legacyIdScope = getSchemaIdMode(this.value, this.legacyIdScope);
+        this.scopeBase = getSchemaBasePath(this.scopeBase, this.value, this.legacyIdScope);
       }
     }
 
@@ -229,7 +247,8 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     // Crawl the object, one token at a time
     this.value = unwrapOrThrow(obj);
     if (this.$ref.dynamicIdScope && !isAliasedResource(this.$ref)) {
-      this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
+      this.legacyIdScope = getSchemaIdMode(this.value, this.legacyIdScope);
+      this.scopeBase = getSchemaBasePath(this.scopeBase, this.value, this.legacyIdScope);
     }
 
     for (let i = 0; i < tokens.length - 1; i++) {
@@ -245,7 +264,8 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       }
 
       if (this.$ref.dynamicIdScope) {
-        this.scopeBase = getSchemaBasePath(this.scopeBase, this.value);
+        this.legacyIdScope = getSchemaIdMode(this.value, this.legacyIdScope);
+        this.scopeBase = getSchemaBasePath(this.scopeBase, this.value, this.legacyIdScope);
       }
     }
 
@@ -319,6 +339,14 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     }
 
     return base;
+  }
+}
+
+function safelyDecodeURI(value: string) {
+  try {
+    return decodeURI(value);
+  } catch {
+    return value;
   }
 }
 
@@ -411,6 +439,7 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
         // Re-applying the resource's own `$id` here would duplicate nested path segments
         // such as `nested/nested/foo.json`.
         pointer.scopeBase = resolved.scopeBase;
+        pointer.legacyIdScope = resolved.legacyIdScope;
         currentPathFromRoot = parentPath;
         pathChanged = true;
       }

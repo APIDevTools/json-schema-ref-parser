@@ -6,7 +6,7 @@ import type { JSONSchema, SchemaCallback } from "./index.js";
 // In the future, I'd like to deprecate the api and accept only named parameters in index.ts
 export interface NormalizedArguments<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>> {
   path: string;
-  schema: S;
+  schema: S | boolean | undefined;
   options: O & Options<S>;
   callback: SchemaCallback<S>;
 }

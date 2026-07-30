@@ -35,15 +35,29 @@ export function resolve(from: string, to: string) {
   if (resolvedUrl.hostname === "aaa.nonexistanturl.com") {
     // `from` is a relative URL.
     const { pathname, search, hash } = resolvedUrl;
-    return pathname + search + decodeURIComponent(hash) + endSpaces;
+    return pathname + search + safeDecodeURIComponent(hash) + endSpaces;
   }
   const resolved = resolvedUrl.toString() + endSpaces;
   // if there is a #, we want to split on the first one only, and decode the part after
   if (resolved.includes("#")) {
     const [base, hash] = resolved.split("#", 2);
-    return base + "#" + decodeURIComponent(hash || "");
+    return base + "#" + safeDecodeURIComponent(hash || "");
   }
   return resolved;
+}
+
+function safeDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    try {
+      // Preserve literal or malformed percent signs while continuing to decode
+      // any valid percent-encoded characters in the same fragment.
+      return decodeURIComponent(value.replace(/%(?![\dA-F]{2})/gi, "%25"));
+    } catch {
+      return value;
+    }
+  }
 }
 
 /**
@@ -101,9 +115,12 @@ export function getProtocol(path: string | undefined) {
  * @returns
  */
 export function getExtension(path: string) {
-  const lastDot = path.lastIndexOf(".");
-  if (lastDot >= 0) {
-    return stripQuery(path.substring(lastDot).toLowerCase());
+  const pathEnd = path.search(/[?#]/);
+  const pathname = pathEnd >= 0 ? path.substring(0, pathEnd) : path;
+  const lastSlash = Math.max(pathname.lastIndexOf("/"), pathname.lastIndexOf("\\"));
+  const lastDot = pathname.lastIndexOf(".");
+  if (lastDot > lastSlash) {
+    return pathname.substring(lastDot).toLowerCase();
   }
   return "";
 }
@@ -240,6 +257,75 @@ export function isUnsafeUrl(path: string | unknown): boolean {
   }
 
   return false;
+}
+
+/**
+ * Determines whether an HTTP(S) URL is unsafe, including hostnames that resolve
+ * to a non-public IP address. DNS resolution is only available in Node.js; in a
+ * browser, {@link isUnsafeUrl} remains the source of truth and the browser's
+ * own network security model applies.
+ *
+ * DNS lookup failures are allowed to propagate so callers fail closed rather
+ * than fetching a hostname whose addresses could not be validated.
+ */
+export interface ResolvedUrlAddress {
+  address: string;
+  family: number;
+}
+
+export interface UrlSafetyResult {
+  unsafe: boolean;
+  addresses?: ResolvedUrlAddress[];
+}
+
+/**
+ * Checks a URL and, in Node.js, returns the exact public addresses that were
+ * validated. Callers that perform the request must pin their connection to
+ * these addresses; resolving the hostname again would reintroduce a DNS
+ * rebinding race between validation and connection establishment.
+ */
+export async function resolveUrlSafety(path: string | unknown): Promise<UrlSafetyResult> {
+  if (isUnsafeUrl(path)) {
+    return { unsafe: true };
+  }
+
+  if (
+    typeof path !== "string" ||
+    typeof process === "undefined" ||
+    !process.versions?.node ||
+    typeof window !== "undefined"
+  ) {
+    return { unsafe: false };
+  }
+
+  const parsedUrl = new URL(path.startsWith("//") ? `http:${path}` : path);
+  if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+    return { unsafe: false };
+  }
+
+  // Keep the Node-only dependency out of browser module graphs. The import is
+  // never evaluated outside Node.js.
+  const dnsModuleName = "node:dns/promises";
+  const dns = (await import(dnsModuleName)) as {
+    lookup(
+      hostname: string,
+      options: { all: true; verbatim: true },
+    ): Promise<Array<{ address: string; family: number }>>;
+  };
+  const addresses: ResolvedUrlAddress[] = await dns.lookup(normalizeHostname(parsedUrl.hostname), {
+    all: true,
+    verbatim: true,
+  });
+
+  if (addresses.length === 0 || addresses.some(({ address }) => isUnsafeHostname(address))) {
+    return { unsafe: true };
+  }
+
+  return { unsafe: false, addresses };
+}
+
+export async function isUnsafeUrlWithDns(path: string | unknown): Promise<boolean> {
+  return (await resolveUrlSafety(path)).unsafe;
 }
 
 /**
@@ -567,7 +653,7 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
   let isFileUrl = path.toLowerCase().startsWith("file://");
   if (isFileUrl) {
     // Strip-off the protocol, and the initial "/", if there is one
-    path = path.replace(/^file:\/\//, "").replace(/^\//, "");
+    path = path.replace(/^file:\/\//i, "").replace(/^\//, "");
 
     // insert a colon (":") after the drive letter on Windows
     if (isWindows() && path[1] === "/") {

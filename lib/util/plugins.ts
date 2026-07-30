@@ -42,12 +42,8 @@ export function filter<S extends object = JSONSchema, O extends ParserOptions<S>
  * Sorts the given plugins, in place, by their `order` property.
  */
 export function sort(plugins: Plugin[]) {
-  for (const plugin of plugins) {
-    plugin.order = plugin.order || Number.MAX_SAFE_INTEGER;
-  }
-
   return plugins.sort((a: Plugin, b: Plugin) => {
-    return a.order! - b.order!;
+    return (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER);
   });
 }
 
@@ -71,46 +67,57 @@ export async function run<S extends object = JSONSchema, O extends ParserOptions
   file: FileInfo,
   $refs: $Refs<S, O>,
 ) {
-  let plugin: Plugin;
-  let lastError: PluginResult<S>;
+  let lastError: PluginResult<S> | undefined;
   let index = 0;
 
   return new Promise<PluginResult<S>>((resolve, reject) => {
     runNextPlugin();
 
     function runNextPlugin() {
-      plugin = plugins[index++];
+      const plugin = plugins[index++];
       if (!plugin) {
         // There are no more functions, so re-throw the last error
         return reject(lastError);
       }
+
+      let settled = false;
+      let callbackCalled = false;
+
+      const callback = (err: PluginResult<S>["error"], result: PluginResult<S>["result"]) => {
+        callbackCalled = true;
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        if (err) {
+          onError(plugin, err);
+        } else {
+          onSuccess(plugin, result);
+        }
+      };
 
       try {
         // console.log('  %s', plugin.name);
         const result = getResult(plugin, method, file, callback, $refs);
         if (result && typeof result.then === "function") {
           // A promise was returned
-          result.then(onSuccess, onError);
+          result.then(
+            (value: PluginResult<S>["result"]) => callback(undefined, value),
+            (error: PluginResult<S>["error"]) => callback(error, undefined),
+          );
         } else if (result !== undefined) {
           // A synchronous result was returned
-          onSuccess(result);
-        } else if (index === plugins.length) {
-          throw new Error("No promise has been returned or callback has been called.");
+          callback(undefined, result);
+        } else if (!callbackCalled && !acceptsCallback(plugin, method)) {
+          callback(new Error("No promise has been returned or callback has been called."), undefined);
         }
       } catch (e) {
-        onError(e);
+        callback(e, undefined);
       }
     }
 
-    function callback(err: PluginResult<S>["error"], result: PluginResult<S>["result"]) {
-      if (err) {
-        onError(err);
-      } else {
-        onSuccess(result);
-      }
-    }
-
-    function onSuccess(result: PluginResult<S>["result"]) {
+    function onSuccess(plugin: Plugin, result: PluginResult<S>["result"]) {
       // console.log('    success');
       resolve({
         plugin,
@@ -118,7 +125,7 @@ export async function run<S extends object = JSONSchema, O extends ParserOptions
       });
     }
 
-    function onError(error: PluginResult<S>["error"]) {
+    function onError(plugin: Plugin, error: PluginResult<S>["error"]) {
       // console.log('    %s', err.message || err);
       lastError = {
         plugin,
@@ -127,6 +134,14 @@ export async function run<S extends object = JSONSchema, O extends ParserOptions
       runNextPlugin();
     }
   });
+}
+
+function acceptsCallback<S extends object = JSONSchema>(
+  plugin: Plugin,
+  method: keyof Plugin | keyof ResolverOptions<S>,
+) {
+  const value = plugin[method as keyof Plugin];
+  return typeof value === "function" && value.length >= 2;
 }
 
 /**
@@ -153,7 +168,10 @@ function getResult<S extends object = JSONSchema, O extends ParserOptions<S> = P
     // allow a "shorthand" syntax, where the user can match
     // files by RegExp or by file extension.
     if (value instanceof RegExp) {
-      return value.test(file.url);
+      value.lastIndex = 0;
+      const matches = value.test(file.url);
+      value.lastIndex = 0;
+      return matches;
     } else if (typeof value === "string") {
       return value === file.extension;
     } else if (Array.isArray(value)) {
