@@ -16,7 +16,7 @@ const urlEncodePatterns = [
 ] as [RegExp, string][];
 
 // RegExp patterns to URL-decode special characters for local filesystem paths
-const urlDecodePatterns = [/%23/g, "#", /%24/g, "$", /%26/g, "&", /%2C/g, ",", /%40/g, "@"];
+const urlDecodePatterns = [/%23/g, "#", /%24/g, "$", /%26/g, "&", /%2C/g, ",", /%3F/g, "?", /%40/g, "@"];
 
 const unsafeDomainSuffixes = [".localhost", ".local", ".internal", ".intranet", ".corp", ".home", ".lan"];
 

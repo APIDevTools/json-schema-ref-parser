@@ -152,3 +152,19 @@ describe("Handle Linux file paths", () => {
     expect($url.toFileSystemPath("FILE:///a/random/Path/file.json")).to.equal("/a/random/Path/file.json");
   });
 });
+
+describe("Round-trip special characters in filesystem paths", () => {
+  it("should round-trip a literal question mark", () => {
+    const original = "/a/random/Path/defs?1.json";
+    const encoded = $url.fromFileSystemPath(original);
+    expect(encoded).to.equal("/a/random/Path/defs%3F1.json");
+    expect($url.toFileSystemPath(encoded)).to.equal(original);
+  });
+
+  it("should round-trip a literal hash", () => {
+    const original = "/a/random/Path/defs#1.json";
+    const encoded = $url.fromFileSystemPath(original);
+    expect(encoded).to.equal("/a/random/Path/defs%231.json");
+    expect($url.toFileSystemPath(encoded)).to.equal(original);
+  });
+});
