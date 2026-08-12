@@ -638,15 +638,25 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
   // Escape only the non-encoded ones so percent-encoded sequences still decode normally.
   path = path!.replace(/%(?![0-9A-Fa-f]{2})/g, "%25");
 
-  // Step 1: `decodeURI` will decode characters such as Cyrillic characters, spaces, etc.
-  path = decodeURI(path!);
-
-  // Step 2: Manually decode characters that are not decoded by `decodeURI`.
-  // This includes characters such as "#" and "?", which have special meaning in URLs,
-  // but are just normal characters in a filesystem path.
+  // Step 1: Manually decode characters that `decodeURI` intentionally leaves alone
+  // (they're URI-reserved) but are just normal characters in a filesystem path,
+  // e.g. "#" and "?". This MUST run before `decodeURI`, not after: `fromFileSystemPath`
+  // percent-escapes a literal "%" as "%25", so a real filename containing the literal
+  // text "%3F" round-trips as "%253F". If `decodeURI` runs first, "%25" -> "%" reveals
+  // a literal "%3F" substring that didn't exist in the encoded form, and this pass
+  // would then wrongly decode that revealed text a second time (%3F -> "?"), silently
+  // reading the wrong file. Running this pass first, the literal "%253F" doesn't
+  // contain the substring "%3F" (it's "%25" followed by "3F"), so it's untouched here
+  // and correctly decoded once by `decodeURI` below (%25 -> %). Each escape in the
+  // original filename is consumed exactly once, either here or by `decodeURI`, never
+  // both. Case-insensitive: percent-encoding hex digits are case-insensitive per
+  // RFC 3986 §2.1, so "%3f" must decode the same as "%3F".
   for (let i = 0; i < urlDecodePatterns.length; i += 2) {
-    path = path.replace(urlDecodePatterns[i], urlDecodePatterns[i + 1] as string);
+    path = path.replace(new RegExp((urlDecodePatterns[i] as RegExp).source, "gi"), urlDecodePatterns[i + 1] as string);
   }
+
+  // Step 2: `decodeURI` will decode characters such as Cyrillic characters, spaces, etc.
+  path = decodeURI(path!);
 
   // Step 3: If it's a "file://" URL, then format it consistently
   // or convert it to a local filesystem path
