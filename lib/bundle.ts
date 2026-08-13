@@ -110,7 +110,13 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   const bundleOptions = (options.bundle || {}) as BundleOptions;
   const isExcludedPath = bundleOptions.excludedPathMatcher || (() => false);
 
-  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot) && !seen.has(obj)) {
+  if (
+    obj &&
+    typeof obj === "object" &&
+    !ArrayBuffer.isView(obj) &&
+    !isExcludedPath(pathFromRoot, obj) &&
+    !seen.has(obj)
+  ) {
     // Input schemas are normally JSON trees, but callers can pass pre-circular
     // JavaScript objects. Tracking identities keeps those cycles intact without
     // recursively walking them until the call stack overflows. It also avoids
@@ -155,7 +161,11 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       for (const key of keys) {
         const keyPath = Pointer.join(path, key);
         const keyPathFromRoot = Pointer.join(pathFromRoot, key);
+
         const value = obj[key];
+        if (isExcludedPath(keyPathFromRoot, value)) {
+          continue;
+        }
         const childLegacyIdScope = getSchemaIdMode(value, legacyIdScope);
         const childScopeBase =
           dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)

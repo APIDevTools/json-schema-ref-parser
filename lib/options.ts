@@ -17,9 +17,10 @@ export interface BundleOptions {
   /**
    * A function, called for each path, which can return true to stop this path and all
    * subpaths from being processed further. This is useful in schemas where some
-   * subpaths contain literal $ref keys that should not be changed.
+   * subpaths contain literal $ref keys that should not be changed. The value at the
+   * current path is supplied so callers can distinguish references from containers.
    */
-  excludedPathMatcher?(path: string): boolean;
+  excludedPathMatcher?(path: string, value?: unknown): boolean;
 
   /**
    * Callback invoked during bundling.
@@ -54,9 +55,10 @@ export interface DereferenceOptions {
   /**
    * A function, called for each path, which can return true to stop this path and all
    * subpaths from being dereferenced further. This is useful in schemas where some
-   * subpaths contain literal $ref keys that should not be dereferenced.
+   * subpaths contain literal $ref keys that should not be dereferenced. The value at
+   * the current path is supplied so callers can distinguish references from containers.
    */
-  excludedPathMatcher?(path: string): boolean;
+  excludedPathMatcher?(path: string, value?: unknown): boolean;
 
   /**
    * Callback invoked during circular reference detection.
@@ -125,6 +127,31 @@ export interface DereferenceOptions {
   cloneReferences?: boolean;
 }
 
+export type ResolveOptions<S extends object = JSONSchema> = {
+  /**
+   * Determines whether external $ref pointers will be resolved. If this option is disabled, then external `$ref` pointers will simply be ignored.
+   */
+  external?: boolean;
+
+  /**
+   * A function, called for each path, which can return true to stop this path and all
+   * subpaths from being resolved further. This is useful in schemas where some subpaths
+   * contain literal external $ref keys that should not be downloaded. The value at the
+   * current path is supplied so callers can distinguish references from containers.
+   */
+  excludedPathMatcher?(path: string, value?: unknown): boolean;
+
+  file?: Partial<ResolverOptions<S>> | boolean;
+  http?: HTTPResolverOptions<S> | boolean;
+} & {
+  [key: string]:
+    | Partial<ResolverOptions<S>>
+    | HTTPResolverOptions<S>
+    | boolean
+    | ((path: string, value?: unknown) => boolean)
+    | undefined;
+};
+
 /**
  * Options that determine how JSON schemas are parsed, resolved, and dereferenced.
  *
@@ -150,16 +177,7 @@ export interface $RefParserOptions<S extends object = JSONSchema> {
    *
    * JSON Schema `$Ref` Parser comes with built-in support for HTTP and HTTPS, as well as support for local files (when running in Node.js). You can configure or disable either of these built-in resolvers. You can also add your own custom resolvers if you want.
    */
-  resolve: {
-    /**
-     * Determines whether external $ref pointers will be resolved. If this option is disabled, then external `$ref` pointers will simply be ignored.
-     */
-    external?: boolean;
-    file?: Partial<ResolverOptions<S>> | boolean;
-    http?: HTTPResolverOptions<S> | boolean;
-  } & {
-    [key: string]: Partial<ResolverOptions<S>> | HTTPResolverOptions<S> | boolean | undefined;
-  };
+  resolve: ResolveOptions<S>;
 
   /**
    * By default, JSON Schema $Ref Parser throws the first error it encounters. Setting `continueOnError` to `true`

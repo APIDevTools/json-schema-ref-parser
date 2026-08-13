@@ -14,7 +14,7 @@ paths:
       - name: q1
         in: query
         example:
-          $ref: "#/literal-q1"
+          $ref: "./literal-q1-does-not-exist.yaml"
       - name: q2
         in: query
         examples:
@@ -37,7 +37,7 @@ paths:
         content:
           application/json:
             example:
-              $ref: "#/literal-example"
+              $ref: "https://example.com/literal-example-that-should-not-be-downloaded.json"
 components:
   examples:
     query-example:
@@ -51,7 +51,7 @@ components:
   parameters:
     a:
       example:
-        $ref: "#/literal-param-component-example"
+        $ref: "./literal-param-component-example-does-not-exist.yaml"
     b:
       examples:
         example1:

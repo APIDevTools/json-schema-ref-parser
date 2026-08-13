@@ -94,7 +94,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   const isExcludedPath = derefOptions.excludedPathMatcher || (() => false);
 
   if (derefOptions?.circular === "ignore" || !processedObjects.has(obj)) {
-    if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
+    if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot, obj)) {
       parents.add(obj);
       processedObjects.add(obj);
       const currentScopeBase = scopeBase;
@@ -123,11 +123,10 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           const keyPath = Pointer.join(path, key);
           const keyPathFromRoot = Pointer.join(pathFromRoot, key);
 
-          if (isExcludedPath(keyPathFromRoot)) {
+          const value = obj[key];
+          if (isExcludedPath(keyPathFromRoot, value)) {
             continue;
           }
-
-          const value = obj[key];
           const childLegacyIdScope = getSchemaIdMode(value, legacyIdScope);
           const childScopeBase =
             dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
