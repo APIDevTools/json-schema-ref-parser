@@ -169,7 +169,7 @@ Test utilities:
 
 1. **TypeScript Strict Mode**: Project uses strict TypeScript including exactOptionalPropertyTypes
 2. **JSON Schema Support**: Compatible with JSON Schema v4, v6, and v7
-3. **Minimum Node Version**: Requires Node >= 20 (for native fetch support)
+3. **Minimum Node Version**: Requires Node >= 22.19.0
 4. **Circular JSON**: Dereferenced schemas may contain circular references (not JSON.stringify safe)
 5. **Path Normalization**: Always converts filesystem paths to POSIX format internally
 6. **URL Safety**: HTTP resolver has safeUrlResolver option to block internal URLs (default: unsafe allowed)
