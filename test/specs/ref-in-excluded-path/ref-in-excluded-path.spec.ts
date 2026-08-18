@@ -103,4 +103,47 @@ describe("Schema with literal $refs in examples", () => {
 
     expect(schema).to.deep.equal(expectedSchema);
   });
+
+  it("should supply root-relative paths while resolving", async () => {
+    const matcher = (schemaPath: string) => schemaPath === "#/example";
+    const schema = await $RefParser.dereference(path.rel("test/specs/ref-in-excluded-path/matcher-paths/exact.yaml"), {
+      resolve: { excludedPathMatcher: matcher },
+      dereference: { excludedPathMatcher: matcher },
+    });
+
+    expect(schema).to.deep.equal({
+      example: { $ref: "./does-not-exist.yaml" },
+    });
+  });
+
+  it("should not include the source file path in matcher paths", async () => {
+    const matcher = (schemaPath: string) => schemaPath.includes("/example/");
+    const schema = await $RefParser.dereference(
+      path.rel("test/specs/ref-in-excluded-path/matcher-paths/example/schema.yaml"),
+      {
+        resolve: { excludedPathMatcher: matcher },
+      },
+    );
+
+    expect(schema).to.deep.equal({
+      property: { type: "string" },
+    });
+  });
+
+  it("should retain the logical path while crawling an external document", async () => {
+    const matcher = (schemaPath: string) => schemaPath === "#/wrapper/example";
+    const schema = await $RefParser.dereference(
+      path.rel("test/specs/ref-in-excluded-path/matcher-paths/external-root.yaml"),
+      {
+        resolve: { excludedPathMatcher: matcher },
+        dereference: { excludedPathMatcher: matcher },
+      },
+    );
+
+    expect(schema).to.deep.equal({
+      wrapper: {
+        example: { $ref: "./does-not-exist.yaml" },
+      },
+    });
+  });
 });
