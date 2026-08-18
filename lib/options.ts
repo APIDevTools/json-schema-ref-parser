@@ -21,6 +21,9 @@ export interface BundleOptions {
    * subpaths from being processed further. This is useful in schemas where some
    * subpaths contain literal $ref keys that should not be changed. The value at the
    * current path is supplied so callers can distinguish references from containers.
+   *
+   * @param path - The root-relative JSON Pointer of the current value
+   * @param value - The value at the current path
    */
   excludedPathMatcher?(path: string, value?: unknown): boolean;
 
@@ -59,6 +62,9 @@ export interface DereferenceOptions {
    * subpaths from being dereferenced further. This is useful in schemas where some
    * subpaths contain literal $ref keys that should not be dereferenced. The value at
    * the current path is supplied so callers can distinguish references from containers.
+   *
+   * @param path - The root-relative JSON Pointer of the current value
+   * @param value - The value at the current path
    */
   excludedPathMatcher?(path: string, value?: unknown): boolean;
 
@@ -140,6 +146,9 @@ export type ResolveOptions<S extends object = JSONSchema> = {
    * subpaths from being resolved further. This is useful in schemas where some subpaths
    * contain literal external $ref keys that should not be downloaded. The value at the
    * current path is supplied so callers can distinguish references from containers.
+   *
+   * @param path - The root-relative JSON Pointer of the current value
+   * @param value - The value at the current path
    */
   excludedPathMatcher?(path: string, value?: unknown): boolean;
 
