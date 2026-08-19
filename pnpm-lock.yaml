@@ -169,9 +169,6 @@ importers:
       js-yaml:
         specifier: ^5.4.2
         version: 5.4.2
-      undici:
-        specifier: ^8.10.2
-        version: 8.10.2
     devDependencies:
       '@types/json-schema':
         specifier: ^7.0.15

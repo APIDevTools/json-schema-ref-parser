@@ -1,18 +1,24 @@
 import * as url from "../util/url.js";
 import { ResolverError } from "../util/errors.js";
 import type { FileInfo, HTTPResolverOptions, JSONSchema } from "../types/index.js";
+import type { IncomingMessage } from "node:http";
+import type { RequestOptions, request as httpsRequest } from "node:https";
 import type { LookupFunction } from "node:net";
-import type { Agent } from "undici";
 
-interface UndiciModule {
-  Agent: new (options?: { connect?: { lookup: LookupFunction }; autoSelectFamily?: boolean }) => Agent;
-  fetch(input: URL | string, init?: RequestInit & { dispatcher?: Agent }): Promise<unknown>;
-}
+const DEFAULT_MAX_CONTENT_LENGTH = 50 * 1024 * 1024;
 
-interface PinnedTransport {
-  dispatcher: Agent;
-  fetch: UndiciModule["fetch"];
-}
+const FORBIDDEN_PINNED_REQUEST_HEADERS = [
+  "connection",
+  "content-length",
+  "expect",
+  "host",
+  "keep-alive",
+  "proxy-connection",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
+];
 
 export default {
   /**
@@ -52,6 +58,11 @@ export default {
    * Set this to `false` if you want to allow unsafe URLs (e.g., `127.0.0.1`, localhost, and other internal URLs).
    */
   safeUrlResolver: true,
+
+  /**
+   * The maximum size of a downloaded file (in bytes). Larger responses are rejected.
+   */
+  maxContentLength: DEFAULT_MAX_CONTENT_LENGTH,
 
   /**
    * Determines whether this resolver can read a given file reference.
@@ -116,7 +127,7 @@ async function download<S extends object = JSONSchema>(
         error.status = res.status;
         throw new ResolverError(error);
       } else {
-        const location = getHeader(res, "location");
+        const location = res.getHeader("location");
 
         if (!location) {
           const error = new Error(`HTTP ${res.status} redirect with no location header`) as Error & { status?: number };
@@ -130,11 +141,7 @@ async function download<S extends object = JSONSchema>(
         return download(redirectTo, redirectOptions, redirects);
       }
     } else {
-      if (res.body) {
-        const buf = await res.arrayBuffer();
-        return Buffer.from(buf);
-      }
-      return Buffer.alloc(0);
+      return await res.readBody(httpOptions.maxContentLength ?? DEFAULT_MAX_CONTENT_LENGTH);
     }
   } catch (err: unknown) {
     const cause = err instanceof Error ? err : new Error(String(err));
@@ -147,21 +154,25 @@ async function download<S extends object = JSONSchema>(
     throw new ResolverError(wrappedError, u.href);
   } finally {
     pendingResponse?.cancelTimeout();
-    const response = pendingResponse?.response;
-    if (response?.body && !response.bodyUsed) {
-      await response.body.cancel().catch(() => undefined);
-    }
+    await pendingResponse?.response.discard();
   }
 }
 
+interface HttpResponse {
+  status: number;
+  getHeader(name: string): string | null;
+  readBody(maxContentLength: number): Promise<Buffer>;
+  discard(): Promise<void>;
+}
+
 interface PendingResponse {
-  response: Response;
+  response: HttpResponse;
   cancelTimeout(): void;
 }
 
 /**
  * Sends an HTTP GET request.
- * The promise resolves with the HTTP Response object and a timeout cleanup
+ * The promise resolves with the HTTP response and a timeout cleanup
  * function. The caller keeps the timeout active until it has consumed the
  * response body.
  */
@@ -170,9 +181,6 @@ async function get<S extends object = JSONSchema>(
   httpOptions: HTTPResolverOptions<S>,
   resolvedAddresses?: readonly url.ResolvedUrlAddress[],
 ): Promise<PendingResponse> {
-  const pinnedTransport =
-    resolvedAddresses && resolvedAddresses.length > 0 ? await createPinnedTransport(u, resolvedAddresses) : undefined;
-  const dispatcher = pinnedTransport?.dispatcher;
   let controller: AbortController | undefined;
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   if (httpOptions.timeout && typeof AbortController !== "undefined") {
@@ -186,26 +194,21 @@ async function get<S extends object = JSONSchema>(
       clearTimeout(timeoutId);
       timeoutId = undefined;
     }
-    if (dispatcher && !dispatcher.destroyed) {
-      void dispatcher.destroy().catch(() => undefined);
-    }
   };
 
   try {
-    const requestOptions: RequestInit & { dispatcher?: Agent } = {
-      method: "GET",
-      headers: httpOptions.headers || {},
-      credentials: httpOptions.withCredentials ? "include" : "same-origin",
-      redirect: "manual",
-      signal: controller ? controller.signal : null,
-    };
-    if (dispatcher) {
-      requestOptions.dispatcher = dispatcher;
-    }
-
-    const response = pinnedTransport
-      ? ((await pinnedTransport.fetch(u, requestOptions)) as Response)
-      : await fetch(u, requestOptions);
+    const response =
+      resolvedAddresses && resolvedAddresses.length > 0
+        ? await pinnedGet(u, httpOptions, resolvedAddresses, controller?.signal)
+        : fromFetchResponse(
+            await fetch(u, {
+              method: "GET",
+              headers: httpOptions.headers || {},
+              credentials: httpOptions.withCredentials ? "include" : "same-origin",
+              redirect: "manual",
+              signal: controller ? controller.signal : null,
+            }),
+          );
 
     return { response, cancelTimeout };
   } catch (error) {
@@ -214,28 +217,172 @@ async function get<S extends object = JSONSchema>(
   }
 }
 
+function fromFetchResponse(response: Response): HttpResponse {
+  return {
+    status: response.status,
+    getHeader: (name) => response.headers.get(name),
+    readBody: (maxContentLength) => readFetchBody(response, maxContentLength),
+    async discard() {
+      if (response.body && !response.bodyUsed) {
+        await response.body.cancel().catch(() => undefined);
+      }
+    },
+  };
+}
+
+async function readFetchBody(response: Response, maxContentLength: number): Promise<Buffer> {
+  assertContentLengthWithin(response.headers.get("content-length"), maxContentLength);
+  if (!response.body) {
+    return Buffer.alloc(0);
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      return Buffer.concat(chunks, received);
+    }
+    received += value.byteLength;
+    if (received > maxContentLength) {
+      await reader.cancel().catch(() => undefined);
+      throw contentTooLargeError(maxContentLength);
+    }
+    chunks.push(value);
+  }
+}
+
 /**
- * Creates a per-request dispatcher whose DNS callback can only return addresses
- * from the validation lookup. The URL hostname is still used for the Host
- * header and TLS SNI/certificate verification.
+ * Sends the request with Node's own HTTP client, with DNS resolution pinned to
+ * the addresses that passed the safety check, so a second lookup (e.g. a DNS
+ * rebind) can't send the connection elsewhere. The URL hostname is still used
+ * for TLS SNI/certificate verification.
  */
-async function createPinnedTransport(
-  requestUrl: URL,
+async function pinnedGet<S extends object>(
+  u: URL,
+  httpOptions: HTTPResolverOptions<S>,
   resolvedAddresses: readonly url.ResolvedUrlAddress[],
-): Promise<PinnedTransport> {
+  signal: AbortSignal | undefined,
+): Promise<HttpResponse> {
   // Keep the Node-only implementation out of browser module graphs.
-  const undiciModuleName = "undici";
-  const undici = (await import(undiciModuleName)) as UndiciModule;
-  const expectedHostname = normalizeLookupHostname(requestUrl.hostname);
+  const httpModuleName = u.protocol === "https:" ? "node:https" : "node:http";
+  const { request } = (await import(httpModuleName)) as { request: typeof httpsRequest };
+
+  const requestOptions: RequestOptions & { autoSelectFamily: boolean } = {
+    method: "GET",
+    headers: pinnedRequestHeaders(httpOptions.headers),
+    lookup: createPinnedLookup(u.hostname, resolvedAddresses),
+    agent: false,
+    autoSelectFamily: true,
+  };
+  if (signal) {
+    requestOptions.signal = signal;
+  }
+
+  const res = await new Promise<IncomingMessage>((resolve, reject) => {
+    const req = request(u, requestOptions, resolve);
+    req.on("error", reject);
+    req.end();
+  });
+  res.on("error", () => undefined);
+
+  const status = res.statusCode;
+  if (status === undefined || status < 200 || status > 599) {
+    res.destroy();
+    throw new Error(`Invalid HTTP status code: ${status}`);
+  }
+
+  return {
+    status,
+    getHeader(name) {
+      const value = res.headers[name.toLowerCase()];
+      return Array.isArray(value) ? value.join(", ") : (value ?? null);
+    },
+    readBody: (maxContentLength) => readIncomingBody(res, maxContentLength),
+    async discard() {
+      if (!res.destroyed) {
+        res.destroy();
+      }
+    },
+  };
+}
+
+function pinnedRequestHeaders(headers: HTTPResolverOptions["headers"]): Record<string, string> {
+  const merged = new Headers({ accept: "*/*", "user-agent": "node" });
+  new Headers(headers ?? undefined).forEach((value, name) => merged.set(name, value));
+  for (const name of FORBIDDEN_PINNED_REQUEST_HEADERS) {
+    merged.delete(name);
+  }
+  merged.set("accept-encoding", "identity");
+
+  const result: Record<string, string> = {};
+  merged.forEach((value, name) => {
+    result[name] = value;
+  });
+  return result;
+}
+
+async function readIncomingBody(res: IncomingMessage, maxContentLength: number): Promise<Buffer> {
+  assertIdentityEncoding(res.headers["content-encoding"]);
+  assertContentLengthWithin(res.headers["content-length"], maxContentLength);
+  const incompleteBodyError = new Error("The connection was closed before the response body was complete");
+  if (res.destroyed) {
+    throw incompleteBodyError;
+  }
+
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let received = 0;
+    res.on("data", (chunk: Buffer) => {
+      received += chunk.length;
+      if (received > maxContentLength) {
+        res.destroy(contentTooLargeError(maxContentLength));
+      } else {
+        chunks.push(chunk);
+      }
+    });
+    res.on("end", () => resolve(Buffer.concat(chunks, received)));
+    res.on("error", reject);
+    res.on("close", () => reject(incompleteBodyError));
+  });
+}
+
+function assertIdentityEncoding(contentEncoding: string | undefined) {
+  const codings = (contentEncoding ?? "")
+    .split(",")
+    .map((coding) => coding.trim().toLowerCase())
+    .filter((coding) => coding && coding !== "identity");
+  if (codings.length > 0) {
+    throw new Error(`Unsupported content-encoding: ${codings.join(", ")}`);
+  }
+}
+
+function assertContentLengthWithin(contentLength: string | null | undefined, maxContentLength: number) {
+  if (contentLength && Number(contentLength) > maxContentLength) {
+    throw contentTooLargeError(maxContentLength);
+  }
+}
+
+function contentTooLargeError(maxContentLength: number): Error {
+  return new Error(`Response body exceeds the maxContentLength of ${maxContentLength} bytes`);
+}
+
+/**
+ * Builds a DNS lookup that can only return addresses from the validation
+ * lookup, and refuses any other hostname.
+ */
+function createPinnedLookup(hostname: string, resolvedAddresses: readonly url.ResolvedUrlAddress[]): LookupFunction {
+  const expectedHostname = normalizeLookupHostname(hostname);
   const pinnedAddresses = resolvedAddresses.map(({ address, family }) => ({ address, family }));
 
-  const lookup: LookupFunction = (hostname, options, callback) => {
-    const normalizedHostname = normalizeLookupHostname(hostname);
+  return (lookupHostname, options, callback) => {
+    const normalizedHostname = normalizeLookupHostname(lookupHostname);
     const requestedFamily = options.family === "IPv4" ? 4 : options.family === "IPv6" ? 6 : options.family || 0;
     const candidates = pinnedAddresses.filter(({ family }) => requestedFamily === 0 || family === requestedFamily);
 
     if (normalizedHostname !== expectedHostname || candidates.length === 0) {
-      const error = new Error(`No validated address is available for ${hostname}`) as NodeJS.ErrnoException;
+      const error = new Error(`No validated address is available for ${lookupHostname}`) as NodeJS.ErrnoException;
       error.code = "ENOTFOUND";
       callback(error, "", 0);
     } else if (options.all) {
@@ -245,14 +392,6 @@ async function createPinnedTransport(
       callback(null, selected.address, selected.family);
     }
   };
-
-  return {
-    dispatcher: new undici.Agent({
-      connect: { lookup },
-      autoSelectFamily: true,
-    }),
-    fetch: (input, init) => undici.fetch(input, init),
-  };
 }
 
 function normalizeLookupHostname(hostname: string): string {
@@ -260,10 +399,6 @@ function normalizeLookupHostname(hostname: string): string {
     .replace(/^\[|\]$/g, "")
     .replace(/\.+$/, "")
     .toLowerCase();
-}
-
-function getHeader(response: Response, name: string): string | null {
-  return response.headers.get(name);
 }
 
 function withoutSensitiveHeaders<S extends object>(httpOptions: HTTPResolverOptions<S>): HTTPResolverOptions<S> {
