@@ -15,6 +15,13 @@ const escapedSlash = /~1/g;
 const escapedTilde = /~0/g;
 const unsafeSetTokens = new Set(["__proto__", "constructor", "prototype"]);
 
+export interface PointerResolutionOptions {
+  /** Whether to follow a `$ref` at the resolved value. */
+  resolveFinalReference?: boolean;
+  /** Returns whether references within a value should remain unresolved. */
+  shouldSkipReferenceResolution?: (value: unknown) => boolean;
+}
+
 /**
  * This class represents a single JSON pointer and its resolved value.
  *
@@ -68,6 +75,12 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    */
   indirections: number;
 
+  /** Whether pointer traversal crossed into a value that was skipped during resolution. */
+  crossedResolutionExclusion: boolean;
+
+  /** Whether the target could only be reached by following a reference whose resolution was skipped. */
+  referenceResolutionBlocked: boolean;
+
   constructor($ref: $Ref<S, O>, path: string, friendlyPath?: string) {
     this.$ref = $ref;
 
@@ -86,6 +99,10 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     this.chainCircular = false;
 
     this.indirections = 0;
+
+    this.crossedResolutionExclusion = false;
+
+    this.referenceResolutionBlocked = false;
   }
 
   /**
@@ -106,8 +123,9 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     options?: O,
     pathFromRoot?: string,
     visitedRefPaths = new Set<string>(),
-    resolveFinalReference = true,
+    resolutionOptions: PointerResolutionOptions = {},
   ) {
+    const { resolveFinalReference = true, shouldSkipReferenceResolution = () => false } = resolutionOptions;
     const tokens = Pointer.parse(this.path, this.originalPath);
     const found: string[] = [];
 
@@ -117,6 +135,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       this.legacyIdScope = getSchemaIdMode(this.value, this.legacyIdScope);
       this.scopeBase = getSchemaBasePath(this.scopeBase, this.value, this.legacyIdScope);
     }
+    this.crossedResolutionExclusion = shouldSkipReferenceResolution(this.value);
 
     for (let i = 0; i < tokens.length; i++) {
       // During token walking, if the current value is an extended $ref (has sibling keys
@@ -128,15 +147,22 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       const wasCircular = this.circular;
       const wasChainCircular = this.chainCircular;
       const isExtendedRef = $Ref.isExtended$Ref(this.value);
-      if (resolveIf$Ref(this, options, pathFromRoot, visitedRefPaths)) {
-        // The $ref path has changed, so append the remaining tokens to the path
-        this.path = Pointer.join(this.path, tokens.slice(i));
-      } else if (isExtendedRef) {
-        // resolveIf$Ref set circular=true on an extended $ref during token walking.
-        // Since we still have tokens to process, the object should be walked by its
-        // properties, not treated as a circular self-reference.
-        this.circular = wasCircular;
-        this.chainCircular = wasChainCircular;
+      if (!this.crossedResolutionExclusion) {
+        if (resolveIf$Ref(this, options, pathFromRoot, visitedRefPaths, resolutionOptions)) {
+          // The $ref path has changed, so append the remaining tokens to the path
+          this.path = Pointer.join(this.path, tokens.slice(i));
+        } else if (isExtendedRef) {
+          // resolveIf$Ref set circular=true on an extended $ref during token walking.
+          // Since we still have tokens to process, the object should be walked by its
+          // properties, not treated as a circular self-reference.
+          this.circular = wasCircular;
+          this.chainCircular = wasChainCircular;
+        }
+
+        if (this.referenceResolutionBlocked) {
+          return this;
+        }
+        this.crossedResolutionExclusion ||= shouldSkipReferenceResolution(this.value);
       }
 
       const token = tokens[i];
@@ -166,6 +192,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
         }
         if (didFindSubstringSlashMatch) {
           this.chainCircular = wasChainCircular;
+          this.crossedResolutionExclusion ||= shouldSkipReferenceResolution(this.value);
           continue;
         }
 
@@ -178,6 +205,11 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
           this.value = nullSymbol;
           this.chainCircular = wasChainCircular;
           continue;
+        }
+
+        if (this.crossedResolutionExclusion && $Ref.isAllowed$Ref(this.value, options)) {
+          this.referenceResolutionBlocked = true;
+          return this;
         }
 
         this.value = null;
@@ -199,11 +231,12 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
         this.legacyIdScope = getSchemaIdMode(this.value, this.legacyIdScope);
         this.scopeBase = getSchemaBasePath(this.scopeBase, this.value, this.legacyIdScope);
       }
+      this.crossedResolutionExclusion ||= shouldSkipReferenceResolution(this.value);
     }
 
     // Resolve the final value
     const finalResolutionBase = this.$ref.dynamicIdScope ? this.scopeBase : this.path;
-    if (resolveFinalReference) {
+    if (resolveFinalReference && !this.crossedResolutionExclusion) {
       const finalRefPath = this.value?.$ref ? url.resolve(finalResolutionBase, this.value.$ref) : undefined;
       const canonicalPathFromRoot =
         typeof pathFromRoot === "string" ? url.resolve(this.$ref.$refs._root$Ref.path!, pathFromRoot) : pathFromRoot;
@@ -215,7 +248,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       ) {
         this.chainCircular = true;
       } else if (!this.value || finalRefPath) {
-        resolveIf$Ref(this, options, pathFromRoot, visitedRefPaths);
+        resolveIf$Ref(this, options, pathFromRoot, visitedRefPaths, resolutionOptions);
       }
     }
 
@@ -366,6 +399,7 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   options: O | undefined,
   pathFromRoot?: string,
   visitedRefPaths = new Set<string>(),
+  resolutionOptions: PointerResolutionOptions = {},
 ) {
   let pathChanged = false;
   let currentPathFromRoot = pathFromRoot;
@@ -375,6 +409,11 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
     // Pure reference chains can be followed iteratively. Extended refs still use
     // the existing one-hop behavior because their values must be merged on return.
     while ($Ref.isAllowed$Ref(pointer.value, options)) {
+      if (resolutionOptions.shouldSkipReferenceResolution?.(pointer.value)) {
+        pointer.crossedResolutionExclusion = true;
+        return pathChanged;
+      }
+
       const extended = $Ref.isExtended$Ref(pointer.value);
       const sourceValue = pointer.value;
       const parentPath = pointer.path;
@@ -414,8 +453,17 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
       visitedRefPaths.add($refPath);
       addedPaths.push($refPath);
 
-      const resolved = pointer.$ref.$refs._resolve($refPath, parentPath, options, visitedRefPaths, extended);
+      const resolved = pointer.$ref.$refs._resolve($refPath, parentPath, options, visitedRefPaths, {
+        ...resolutionOptions,
+        resolveFinalReference: extended,
+      });
       if (resolved === null) {
+        return pathChanged;
+      }
+
+      pointer.crossedResolutionExclusion ||= resolved.crossedResolutionExclusion;
+      pointer.referenceResolutionBlocked ||= resolved.referenceResolutionBlocked;
+      if (pointer.referenceResolutionBlocked) {
         return pathChanged;
       }
 
@@ -442,6 +490,10 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
         pointer.legacyIdScope = resolved.legacyIdScope;
         currentPathFromRoot = parentPath;
         pathChanged = true;
+      }
+
+      if (pointer.crossedResolutionExclusion) {
+        return pathChanged;
       }
     }
 

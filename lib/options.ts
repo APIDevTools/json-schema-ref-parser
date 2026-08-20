@@ -146,6 +146,8 @@ export type ResolveOptions<S extends object = JSONSchema> = {
    * subpaths from being resolved further. This is useful in schemas where some subpaths
    * contain literal external $ref keys that should not be downloaded. The value at the
    * current path is supplied so callers can distinguish references from containers.
+   * References within values excluded during resolution remain unresolved during a following
+   * bundle or dereference stage, including when reached through an internal $ref.
    *
    * @param path - The root-relative JSON Pointer of the current value
    * @param value - The value at the current path

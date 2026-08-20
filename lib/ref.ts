@@ -1,4 +1,4 @@
-import Pointer, { nullSymbol } from "./pointer.js";
+import Pointer, { nullSymbol, type PointerResolutionOptions } from "./pointer.js";
 import type { JSONParserError, MissingPointerError, ParserError, ResolverError } from "./util/errors.js";
 import { InvalidPointerError, isHandledError, normalizeError } from "./util/errors.js";
 import { safePointerToPath, stripHash, getHash } from "./util/url.js";
@@ -124,7 +124,7 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    * @param friendlyPath - The original user-specified path (used for error messages)
    * @param pathFromRoot - The path of `obj` from the schema root
    * @param visitedRefPaths - the active paths in the current reference chain
-   * @param resolveFinalReference - whether to follow a `$ref` at the resolved value
+   * @param resolutionOptions - internal controls for pointer traversal
    * @returns
    */
   resolve(
@@ -133,11 +133,11 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
     friendlyPath?: string,
     pathFromRoot?: string,
     visitedRefPaths?: Set<string>,
-    resolveFinalReference = true,
+    resolutionOptions?: PointerResolutionOptions,
   ) {
     const pointer = new Pointer<S, O>(this, path, friendlyPath);
     try {
-      const resolved = pointer.resolve(this.value, options, pathFromRoot, visitedRefPaths, resolveFinalReference);
+      const resolved = pointer.resolve(this.value, options, pathFromRoot, visitedRefPaths, resolutionOptions);
       if (resolved.value === nullSymbol) {
         resolved.value = null;
       }

@@ -2,6 +2,7 @@ import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 import type { ParserOptions } from "./options.js";
+import type { PointerResolutionOptions } from "./pointer.js";
 import convertPathToPosix from "./util/convert-path-to-posix.js";
 import type { JSONSchema } from "./index.js";
 
@@ -156,7 +157,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
    * @param pathFromRoot - The path of `obj` from the schema root
    * @param [options]
    * @param visitedRefPaths - the active paths in the current reference chain
-   * @param resolveFinalReference - whether to follow a `$ref` at the resolved value
+   * @param resolutionOptions - internal controls for pointer traversal
    * @returns
    * @protected
    */
@@ -165,7 +166,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     pathFromRoot: string,
     options?: O,
     visitedRefPaths?: Set<string>,
-    resolveFinalReference = true,
+    resolutionOptions?: PointerResolutionOptions,
   ) {
     const absPath = url.resolve(this._root$Ref.path!, path);
     const $ref = this._getRef(absPath);
@@ -174,7 +175,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
       throw new Error(`Error resolving $ref pointer "${path}". \n"${url.stripHash(absPath)}" not found.`);
     }
 
-    return $ref.resolve(absPath, options, path, pathFromRoot, visitedRefPaths, resolveFinalReference);
+    return $ref.resolve(absPath, options, path, pathFromRoot, visitedRefPaths, resolutionOptions);
   }
 
   /**

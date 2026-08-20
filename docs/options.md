@@ -86,7 +86,7 @@ const excludedPathMatcher = (path, value) => {
 };
 ```
 
-Returning `true` stops that path and its descendants from being processed by that stage.
+Returning `true` stops that path and its descendants from being processed by that stage. Since resolution runs before bundling or dereferencing, references within a value excluded by `resolve.excludedPathMatcher` remain unresolved during the following stage for the rest of that operation. Internal references may still access properties that physically exist within the excluded value, but `$ref` properties inside it are not followed.
 
 ## `dereference` Options
 

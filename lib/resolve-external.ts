@@ -4,6 +4,7 @@ import parse from "./parse.js";
 import * as url from "./util/url.js";
 import { isHandledError } from "./util/errors.js";
 import { getSchemaBasePath, getSchemaIdMode } from "./util/schema-resources.js";
+import { markValueExcludedDuringResolution, resetResolutionExclusions } from "./util/resolution-exclusions.js";
 import type $Refs from "./refs.js";
 import type { ParserOptions, ResolveOptions } from "./options.js";
 import type { JSONSchema } from "./types/index.js";
@@ -23,6 +24,8 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
   parser: $RefParser<S, O>,
   options: O,
 ) {
+  resetResolutionExclusions(parser.$refs);
+
   if (!options.resolve?.external) {
     // Nothing to resolve, so exit early
     return Promise.resolve();
@@ -83,13 +86,12 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   const resolveOptions = (options.resolve || {}) as ResolveOptions<S>;
   const isExcludedPath = resolveOptions.excludedPathMatcher || (() => false);
 
-  if (
-    obj &&
-    typeof obj === "object" &&
-    !ArrayBuffer.isView(obj) &&
-    !isExcludedPath(pathFromRoot, obj) &&
-    !seen.has(obj)
-  ) {
+  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
+    if (isExcludedPath(pathFromRoot, obj)) {
+      markValueExcludedDuringResolution($refs, obj);
+      return promises;
+    }
+
     seen.add(obj); // Track previously seen objects to avoid infinite recursion
     const currentScopeBase = scopeBase;
     if ($Ref.isExternal$Ref(obj)) {
@@ -103,6 +105,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
 
       const value = obj[key as keyof typeof obj] as string | S | Buffer | undefined;
       if (isExcludedPath(keyPathFromRoot, value)) {
+        markValueExcludedDuringResolution($refs, value);
         continue;
       }
 

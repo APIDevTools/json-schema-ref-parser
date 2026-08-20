@@ -2,6 +2,7 @@ import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
 import { getSchemaBasePath, getSchemaId, getSchemaIdMode } from "./util/schema-resources.js";
+import { wasExcludedDuringResolution } from "./util/resolution-exclusions.js";
 import type $Refs from "./refs.js";
 import type $RefParser from "./index.js";
 import type { ParserOptions } from "./index.js";
@@ -114,6 +115,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     obj &&
     typeof obj === "object" &&
     !ArrayBuffer.isView(obj) &&
+    !wasExcludedDuringResolution($refs, obj) &&
     !isExcludedPath(pathFromRoot, obj) &&
     !seen.has(obj)
   ) {
@@ -163,7 +165,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         const keyPathFromRoot = Pointer.join(pathFromRoot, key);
 
         const value = obj[key];
-        if (isExcludedPath(keyPathFromRoot, value)) {
+        if (wasExcludedDuringResolution($refs, value) || isExcludedPath(keyPathFromRoot, value)) {
           continue;
         }
         const childLegacyIdScope = getSchemaIdMode(value, legacyIdScope);
@@ -258,10 +260,24 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   const shouldResolveOnCwd = $Ref.isExternal$Ref($ref) && options.dereference?.externalReferenceResolution === "root";
   const resolutionBase = shouldResolveOnCwd ? url.cwd() : dynamicIdScope ? scopeBase : path;
   const $refPath = url.resolve(resolutionBase, $ref.$ref);
-  const pointer = $refs._resolve($refPath, pathFromRoot, options);
-  if (pointer === null) {
+
+  // Walk values skipped during resolution as literal data. This lets internal pointers reach
+  // properties that physically exist without resolving nested references in the skipped subtree.
+  let pointer = $refs._resolve($refPath, pathFromRoot, options, undefined, {
+    shouldSkipReferenceResolution: (value) => wasExcludedDuringResolution($refs, value),
+    resolveFinalReference: false,
+  });
+  if (pointer === null || pointer.referenceResolutionBlocked) {
     return;
   }
+
+  if (!pointer.crossedResolutionExclusion) {
+    pointer = $refs._resolve($refPath, pathFromRoot, options);
+    if (pointer === null) {
+      return;
+    }
+  }
+
   const parsed = Pointer.parse(pathFromRoot);
   const depth = parsed.length;
   const file = url.stripHash(pointer.path);
