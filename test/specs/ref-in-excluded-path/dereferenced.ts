@@ -18,7 +18,7 @@ export default {
     parameters: {
       a: {
         example: {
-          $ref: "#/literal-param-component-example",
+          $ref: "./literal-param-component-example-does-not-exist.yaml",
         },
       },
       b: {
@@ -53,7 +53,7 @@ export default {
         },
         {
           example: {
-            $ref: "#/literal-q1",
+            $ref: "./literal-q1-does-not-exist.yaml",
           },
           in: "query",
           name: "q1",
@@ -97,7 +97,7 @@ export default {
           content: {
             "application/json": {
               example: {
-                $ref: "#/literal-example",
+                $ref: "https://example.com/literal-example-that-should-not-be-downloaded.json",
               },
             },
           },

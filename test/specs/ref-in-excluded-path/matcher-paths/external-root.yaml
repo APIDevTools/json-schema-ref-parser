@@ -1,0 +1,2 @@
+wrapper:
+  $ref: "./external.yaml"

@@ -2,6 +2,7 @@ import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
 import { getSchemaBasePath, getSchemaIdMode } from "./util/schema-resources.js";
+import { wasExcludedDuringResolution } from "./util/resolution-exclusions.js";
 import type $Refs from "./refs.js";
 import type { DereferenceOptions, ParserOptions } from "./options.js";
 import { type $RefParser, type JSONSchema } from "./index.js";
@@ -94,7 +95,13 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   const isExcludedPath = derefOptions.excludedPathMatcher || (() => false);
 
   if (derefOptions?.circular === "ignore" || !processedObjects.has(obj)) {
-    if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot)) {
+    if (
+      obj &&
+      typeof obj === "object" &&
+      !ArrayBuffer.isView(obj) &&
+      !wasExcludedDuringResolution($refs, obj) &&
+      !isExcludedPath(pathFromRoot, obj)
+    ) {
       parents.add(obj);
       processedObjects.add(obj);
       const currentScopeBase = scopeBase;
@@ -123,11 +130,10 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           const keyPath = Pointer.join(path, key);
           const keyPathFromRoot = Pointer.join(pathFromRoot, key);
 
-          if (isExcludedPath(keyPathFromRoot)) {
+          const value = obj[key];
+          if (wasExcludedDuringResolution($refs, value) || isExcludedPath(keyPathFromRoot, value)) {
             continue;
           }
-
-          const value = obj[key];
           const childLegacyIdScope = getSchemaIdMode(value, legacyIdScope);
           const childScopeBase =
             dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
@@ -300,13 +306,36 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
     }
   }
 
-  const pointer = $refs._resolve($refPath, path, options);
+  // Walk values skipped during resolution as literal data. This lets internal pointers reach
+  // properties that physically exist without resolving nested references in the skipped subtree.
+  let pointer = $refs._resolve($refPath, path, options, undefined, {
+    shouldSkipReferenceResolution: (value) => wasExcludedDuringResolution($refs, value),
+    resolveFinalReference: false,
+  });
 
   if (pointer === null) {
     return {
       circular: false,
       value: null,
     };
+  }
+
+  if (pointer.referenceResolutionBlocked) {
+    return {
+      circular: false,
+      value: $ref,
+    };
+  }
+
+  const crossedResolutionExclusion = pointer.crossedResolutionExclusion;
+  if (!crossedResolutionExclusion) {
+    pointer = $refs._resolve($refPath, path, options);
+    if (pointer === null) {
+      return {
+        circular: false,
+        value: null,
+      };
+    }
   }
 
   // Check for circular references
@@ -319,8 +348,9 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   // Dereference the JSON reference
   let dereferencedValue = $Ref.dereference($ref, pointer.value, options);
 
-  // Crawl the dereferenced value (unless it's circular)
-  if (!circular) {
+  // Crawl the dereferenced value unless it is circular or was reached through a resolution
+  // exclusion. Values reached through an exclusion remain literal so nested $refs are not processed.
+  if (!circular && !crossedResolutionExclusion) {
     // Pointer resolution has already applied every $id scope along the resolved path. Re-applying
     // the resolved value's $id here would duplicate relative folder-changing identifiers.
     const dereferencedScopeBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.$ref.path!;

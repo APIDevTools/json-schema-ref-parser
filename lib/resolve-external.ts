@@ -4,8 +4,9 @@ import parse from "./parse.js";
 import * as url from "./util/url.js";
 import { isHandledError } from "./util/errors.js";
 import { getSchemaBasePath, getSchemaIdMode } from "./util/schema-resources.js";
+import { markValueExcludedDuringResolution, resetResolutionExclusions } from "./util/resolution-exclusions.js";
 import type $Refs from "./refs.js";
-import type { ParserOptions } from "./options.js";
+import type { ParserOptions, ResolveOptions } from "./options.js";
 import type { JSONSchema } from "./types/index.js";
 import type $RefParser from "./index.js";
 
@@ -23,6 +24,8 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
   parser: $RefParser<S, O>,
   options: O,
 ) {
+  resetResolutionExclusions(parser.$refs);
+
   if (!options.resolve?.external) {
     // Nothing to resolve, so exit early
     return Promise.resolve();
@@ -36,6 +39,7 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
     const promises = crawl(
       parser.schema,
       parser.$refs._root$Ref.path + "#",
+      "#",
       rootScopeBase,
       parser.$refs._root$Ref.dynamicIdScope,
       parser.$refs._root$Ref.legacyIdScope,
@@ -53,6 +57,7 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
  *
  * @param obj - The value to crawl. If it's not an object or array, it will be ignored.
  * @param path - The full path of `obj`, possibly with a JSON Pointer in the hash
+ * @param pathFromRoot - The logical JSON Pointer path of `obj` from the schema root
  * @param {boolean} external - Whether `obj` was found in an external document.
  * @param $refs
  * @param options
@@ -67,6 +72,7 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
 function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   obj: string | boolean | Buffer | S | undefined | null,
   path: string,
+  pathFromRoot: string,
   scopeBase: string,
   dynamicIdScope: boolean,
   legacyIdScope: boolean,
@@ -77,25 +83,50 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
 ) {
   seen ||= new Set();
   let promises: any = [];
+  const resolveOptions = (options.resolve || {}) as ResolveOptions<S>;
+  const isExcludedPath = resolveOptions.excludedPathMatcher || (() => false);
 
   if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
+    if (isExcludedPath(pathFromRoot, obj)) {
+      markValueExcludedDuringResolution($refs, obj);
+      return promises;
+    }
+
     seen.add(obj); // Track previously seen objects to avoid infinite recursion
     const currentScopeBase = scopeBase;
     if ($Ref.isExternal$Ref(obj)) {
-      promises.push(resolve$Ref<S, O>(obj, path, currentScopeBase, dynamicIdScope, $refs, options));
+      promises.push(resolve$Ref<S, O>(obj, path, pathFromRoot, currentScopeBase, dynamicIdScope, $refs, options));
     }
 
     const keys = Object.keys(obj) as string[];
     for (const key of keys) {
       const keyPath = Pointer.join(path, key);
+      const keyPathFromRoot = Pointer.join(pathFromRoot, key);
+
       const value = obj[key as keyof typeof obj] as string | S | Buffer | undefined;
+      if (isExcludedPath(keyPathFromRoot, value)) {
+        markValueExcludedDuringResolution($refs, value);
+        continue;
+      }
+
       const childLegacyIdScope = getSchemaIdMode(value, legacyIdScope);
       const childScopeBase =
         dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
           ? getSchemaBasePath(currentScopeBase, value, childLegacyIdScope)
           : currentScopeBase;
       promises = promises.concat(
-        crawl(value, keyPath, childScopeBase, dynamicIdScope, childLegacyIdScope, $refs, options, seen, external),
+        crawl(
+          value,
+          keyPath,
+          keyPathFromRoot,
+          childScopeBase,
+          dynamicIdScope,
+          childLegacyIdScope,
+          $refs,
+          options,
+          seen,
+          external,
+        ),
       );
     }
   }
@@ -108,6 +139,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
  *
  * @param $ref - The JSON Reference to resolve
  * @param path - The full path of `$ref`, possibly with a JSON Pointer in the hash
+ * @param pathFromRoot - The logical JSON Pointer path of `$ref` from the schema root
  * @param $refs
  * @param options
  *
@@ -118,6 +150,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
 async function resolve$Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   $ref: S,
   path: string,
+  pathFromRoot: string,
   scopeBase: string,
   dynamicIdScope: boolean,
   $refs: $Refs<S, O>,
@@ -160,6 +193,7 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
     const promises = crawl(
       result,
       withoutHash + "#",
+      pathFromRoot,
       parsedScopeBase,
       parsedDynamicIdScope,
       parsedLegacyIdScope,
