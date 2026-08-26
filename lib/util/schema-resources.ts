@@ -49,7 +49,7 @@ export function registerSchemaResources<S extends object = JSONSchema, O extends
 
   const seen = new Set<object>();
 
-  const visit = (node: unknown, scopeBase: string, inheritedLegacyId: boolean) => {
+  const visit = (node: unknown, scopeBase: string, inheritedLegacyId: boolean, sourcePath: string) => {
     if (!node || typeof node !== "object" || ArrayBuffer.isView(node) || seen.has(node)) {
       return;
     }
@@ -59,15 +59,19 @@ export function registerSchemaResources<S extends object = JSONSchema, O extends
     const legacyId = getSchemaIdMode(node, inheritedLegacyId);
     const nextScopeBase = getSchemaBasePath(scopeBase, node, legacyId);
     if (nextScopeBase !== scopeBase) {
-      $refs._addAlias(nextScopeBase, node as S, pathType, dynamicIdScope, legacyId);
+      $refs._addAlias(nextScopeBase, node as S, pathType, dynamicIdScope, legacyId, sourcePath);
     }
 
     for (const key of Object.keys(node)) {
-      visit((node as Record<string, unknown>)[key], nextScopeBase, legacyId);
+      visit((node as Record<string, unknown>)[key], nextScopeBase, legacyId, joinPointer(sourcePath, key));
     }
   };
 
-  visit(value, basePath, false);
+  visit(value, basePath, false, basePath + "#");
+}
+
+function joinPointer(path: string, key: string) {
+  return path + "/" + key.replace(/~/g, "~0").replace(/\//g, "~1");
 }
 
 export function getSchemaId(value: unknown, inheritedLegacyId = false): string | undefined {
