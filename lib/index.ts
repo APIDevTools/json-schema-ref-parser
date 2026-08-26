@@ -20,7 +20,7 @@ import {
 } from "./util/errors.js";
 import maybe from "./util/maybe.js";
 import { getSchemaIdMode, registerSchemaResources, usesDynamicIdScope } from "./util/schema-resources.js";
-import type { ParserOptions } from "./options.js";
+import type { ExcludedPathMatcher, ParserOptions } from "./options.js";
 import { getJsonSchemaRefParserDefaultOptions } from "./options.js";
 import type {
   $RefsCallback,
@@ -463,6 +463,7 @@ export {
   ParserError,
   UnmatchedParserError,
   ParserOptions,
+  ExcludedPathMatcher,
   $RefsCallback,
   isHandledError,
   JSONParserErrorGroup,

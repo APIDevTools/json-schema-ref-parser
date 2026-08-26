@@ -7,19 +7,25 @@ import httpResolver from "./resolvers/http.js";
 
 import type { HTTPResolverOptions, JSONSchema, JSONSchemaObject, Plugin, ResolverOptions } from "./types/index.js";
 
-export type DeepPartial<T> = T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>;
-    }
-  : T;
+export type DeepPartial<T> = T extends (...args: never[]) => unknown
+  ? T
+  : T extends object
+    ? {
+        [P in keyof T]?: DeepPartial<T[P]>;
+      }
+    : T;
+
+/** Stops an operation from processing a root-relative schema occurrence and its descendants. */
+export type ExcludedPathMatcher = (path: string, value?: unknown) => boolean;
 
 export interface BundleOptions {
   /**
    * A function, called for each path, which can return true to stop this path and all
    * subpaths from being processed further. This is useful in schemas where some
-   * subpaths contain literal $ref keys that should not be changed.
+   * subpaths contain literal $ref keys that should not be changed. The current value
+   * is supplied as the second argument.
    */
-  excludedPathMatcher?(path: string): boolean;
+  excludedPathMatcher?: ExcludedPathMatcher;
 
   /**
    * Callback invoked during bundling.
@@ -54,9 +60,10 @@ export interface DereferenceOptions {
   /**
    * A function, called for each path, which can return true to stop this path and all
    * subpaths from being dereferenced further. This is useful in schemas where some
-   * subpaths contain literal $ref keys that should not be dereferenced.
+   * subpaths contain literal $ref keys that should not be dereferenced. The current
+   * value is supplied as the second argument.
    */
-  excludedPathMatcher?(path: string): boolean;
+  excludedPathMatcher?: ExcludedPathMatcher;
 
   /**
    * Callback invoked during circular reference detection.
@@ -155,11 +162,27 @@ export interface $RefParserOptions<S extends object = JSONSchema> {
      * Determines whether external $ref pointers will be resolved. If this option is disabled, then external `$ref` pointers will simply be ignored.
      */
     external?: boolean;
+
     file?: Partial<ResolverOptions<S>> | boolean;
     http?: HTTPResolverOptions<S> | boolean;
   } & {
     [key: string]: Partial<ResolverOptions<S>> | HTTPResolverOptions<S> | boolean | undefined;
   };
+
+  /**
+   * A function, called for each root-relative path before references at that occurrence are
+   * resolved. Returning `true` stops that occurrence and all of its descendants from being
+   * crawled or fetched. The current value lets callers distinguish structural references from
+   * literal `$ref` data.
+   *
+   * This option is top-level because `resolve` is also an open map of custom resolver plugins;
+   * placing a callback in that map would make arbitrary function-valued plugins type-check even
+   * though the runtime ignores them.
+   *
+   * This matcher affects resolution only. Configure the bundle or dereference matcher as well
+   * when the same occurrence should remain unchanged during those later stages.
+   */
+  resolveExcludedPathMatcher?: ExcludedPathMatcher;
 
   /**
    * By default, JSON Schema $Ref Parser throws the first error it encounters. Setting `continueOnError` to `true`

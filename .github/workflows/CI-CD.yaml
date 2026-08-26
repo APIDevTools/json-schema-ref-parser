@@ -50,6 +50,9 @@ jobs:
       - name: Run linter
         run: pnpm lint
 
+      - name: Run type checker
+        run: pnpm typecheck
+
       - name: Run Node tests
         run: pnpm test:node
 

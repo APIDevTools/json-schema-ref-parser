@@ -131,7 +131,14 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     return $ref;
   }
 
-  _addAlias(path: string, value: S, pathType?: string | unknown, dynamicIdScope = false, legacyIdScope = false) {
+  _addAlias(
+    path: string,
+    value: S,
+    pathType?: string | unknown,
+    dynamicIdScope = false,
+    legacyIdScope = false,
+    sourcePath?: string,
+  ) {
     const withoutHash = url.stripHash(path);
 
     if (!withoutHash || this._$refs[withoutHash] || this._aliases[withoutHash]) {
@@ -144,6 +151,7 @@ export default class $Refs<S extends object = JSONSchema, O extends ParserOption
     $ref.value = value;
     $ref.dynamicIdScope = dynamicIdScope;
     $ref.legacyIdScope = legacyIdScope;
+    $ref.sourcePath = sourcePath;
 
     this._aliases[withoutHash] = $ref;
     return $ref;

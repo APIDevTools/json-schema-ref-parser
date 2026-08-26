@@ -27,6 +27,9 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    */
   path: undefined | string;
 
+  /** The physical document occurrence represented by a canonical resource alias. */
+  sourcePath: undefined | string;
+
   /**
    * The resolved value of the JSON reference.
    * Can be any JSON type, not just objects. Unknown file types are represented as Buffers (byte arrays).

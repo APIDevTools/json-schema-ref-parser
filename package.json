@@ -10,7 +10,7 @@
     "prepublishOnly": "pnpm build",
     "lint": "oxlint lib",
     "build": "rimraf dist && tsc",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p test/types/tsconfig.json",
     "format": "oxfmt \"**/*.{js,jsx,ts,tsx,har,json,css,md}\"",
     "test": "vitest --coverage",
     "test:specific": "vitest invalid",

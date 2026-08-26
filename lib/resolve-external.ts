@@ -1,6 +1,7 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import parse from "./parse.js";
+import resolveExternalWithMatcher from "./resolve-external/with-matcher.js";
 import * as url from "./util/url.js";
 import { isHandledError } from "./util/errors.js";
 import { getSchemaBasePath, getSchemaIdMode } from "./util/schema-resources.js";
@@ -23,9 +24,20 @@ function resolveExternal<S extends object = JSONSchema, O extends ParserOptions<
   parser: $RefParser<S, O>,
   options: O,
 ) {
+  const nestedMatcher = (options.resolve as Record<string, unknown> | undefined)?.excludedPathMatcher;
+  if (typeof nestedMatcher === "function") {
+    return Promise.reject(
+      new TypeError("Use the top-level resolveExcludedPathMatcher option; resolve keys are resolver plugins."),
+    );
+  }
+
   if (!options.resolve?.external) {
     // Nothing to resolve, so exit early
     return Promise.resolve();
+  }
+
+  if (options.resolveExcludedPathMatcher) {
+    return resolveExternalWithMatcher(parser, options, options.resolveExcludedPathMatcher);
   }
 
   try {
