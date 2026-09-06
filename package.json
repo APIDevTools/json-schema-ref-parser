@@ -76,6 +76,7 @@
     "undici": "^8.10.0"
   },
   "devDependencies": {
+    "@oxlint/plugins": "1.78.0",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^26.2.0",
     "@vitest/coverage-v8": "^4.1.10",
