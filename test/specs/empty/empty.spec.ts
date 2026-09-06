@@ -51,4 +51,17 @@ describe("Empty schema", () => {
       expect(err.message).to.contain("Parsed value is empty");
     }
   });
+
+  it.each(["json", "yaml"])("should report null as empty when parse.%s.allowEmpty is disabled", async (type) => {
+    await expect(
+      $RefParser.parse(`memory://schema.${type}`, {
+        resolve: {
+          file: false,
+          http: false,
+          memory: { canRead: true, read: "null" },
+        },
+        parse: { [type]: { allowEmpty: false } },
+      }),
+    ).rejects.toThrow(`Error parsing "memory://schema.${type}" as ${type}. \nParsed value is empty`);
+  });
 });

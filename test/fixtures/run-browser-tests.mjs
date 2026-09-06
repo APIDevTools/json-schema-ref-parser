@@ -1,5 +1,6 @@
 import { createServer } from "node:net";
 import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 async function getOpenPort() {
   const probe = createServer();
@@ -28,13 +29,10 @@ async function getOpenPort() {
 }
 
 const port = await getOpenPort();
-const packageManager = process.env.npm_execpath;
-const command = packageManager ? process.execPath : "pnpm";
-const args = packageManager ? [packageManager, "test"] : ["test"];
+const vitest = fileURLToPath(new URL("vitest.mjs", import.meta.resolve("vitest/package.json")));
 
-const child = spawn(command, args, {
+const child = spawn(process.execPath, [vitest, "--coverage"], {
   stdio: "inherit",
-  shell: !packageManager && process.platform === "win32",
   env: {
     ...process.env,
     BROWSER: "true",

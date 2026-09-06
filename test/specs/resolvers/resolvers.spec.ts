@@ -478,6 +478,33 @@ describe("options.resolve", () => {
     }
   });
 
+  it.each([Object.assign(new Error("Custom resolver failed"), { code: "ECONNRESET" }), "Custom resolver failed"])(
+    "should preserve custom resolver failure details (%s)",
+    async (cause) => {
+      await expect(
+        $RefParser.parse("memory://schema.json", {
+          resolve: {
+            file: false,
+            http: false,
+            memory: {
+              canRead: true,
+              read() {
+                throw cause;
+              },
+            },
+          },
+        }),
+      ).rejects.toMatchObject({
+        name: "ResolverError",
+        code: "ERESOLVER",
+        message: "Custom resolver failed",
+        source: "memory://schema.json",
+        cause,
+        ...(cause instanceof Error ? { ioErrorCode: "ECONNRESET" } : {}),
+      });
+    },
+  );
+
   it("should throw a grouped error if no resolver can be matched and continueOnError is true", async () => {
     const parser = new $RefParser();
     try {

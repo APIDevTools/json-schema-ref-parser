@@ -12,9 +12,11 @@ export interface NormalizedArguments<S extends object = JSONSchema, O extends Pa
 }
 /**
  * Normalizes the given arguments, accounting for optional args.
+ * Operations that delegate to parse can defer cloning until that call.
  */
 export function normalizeArgs<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   _args: Partial<IArguments>,
+  cloneSchema = true,
 ): NormalizedArguments<S, O> {
   let path;
   let schema;
@@ -46,15 +48,11 @@ export function normalizeArgs<S extends object = JSONSchema, O extends ParserOpt
     options = args[1];
   }
 
-  try {
-    options = getNewOptions<S, O>(options);
-  } catch (e) {
-    console.error(`JSON Schema Ref Parser: Error normalizing options: ${e}`);
-  }
+  options = getNewOptions<S, O>(options);
 
-  if (!options.mutateInputSchema && typeof schema === "object") {
+  if (cloneSchema && !options.mutateInputSchema && typeof schema === "object") {
     // Make a deep clone of the schema, so that we don't alter the original object
-    schema = JSON.parse(JSON.stringify(schema));
+    schema = structuredClone(schema);
   }
 
   return {

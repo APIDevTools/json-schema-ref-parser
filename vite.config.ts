@@ -14,9 +14,8 @@ export default defineConfig({
     globalSetup: isBrowser ? ["./test/fixtures/server.ts"] : [],
     testTimeout: 5000,
     globals: true,
-    passWithNoTests: true,
     reporters: ["verbose"],
-    coverage: { reporter: ["lcov", "html", "text"] },
+    coverage: { include: ["lib/**/*.ts"], reporter: ["lcov", "html", "text"] },
     snapshotSerializers: ["./test/utils/serializeJson.ts"],
   },
 });

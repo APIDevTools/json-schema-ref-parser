@@ -147,6 +147,10 @@ async function download<S extends object = JSONSchema>(
     throw new ResolverError(wrappedError, u.href);
   } finally {
     pendingResponse?.cancelTimeout();
+    const response = pendingResponse?.response;
+    if (response?.body && !response.bodyUsed) {
+      await response.body.cancel().catch(() => undefined);
+    }
   }
 }
 

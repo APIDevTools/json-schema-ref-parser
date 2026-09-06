@@ -70,8 +70,8 @@ export class JSONParserError extends Error {
   public source: string | undefined;
   public path: Array<string | number> | null;
   public readonly code: JSONParserErrorType;
-  public constructor(message: string, source?: string) {
-    super();
+  public constructor(message: string, source?: string, options?: ErrorOptions) {
+    super(undefined, options);
 
     this.code = "EUNKNOWN";
     this.name = "JSONParserError";
@@ -144,8 +144,8 @@ export class JSONParserErrorGroup<
 export class ParserError extends JSONParserError {
   code = "EPARSER" as JSONParserErrorType;
   name = "ParserError";
-  constructor(message: any, source: any) {
-    super(`Error parsing ${source}: ${message}`, source);
+  constructor(message: any, source: any, options?: ErrorOptions) {
+    super(`Error parsing ${source}: ${message}`, source, options);
   }
 }
 
@@ -162,8 +162,8 @@ export class ResolverError extends JSONParserError {
   code = "ERESOLVER" as JSONParserErrorType;
   name = "ResolverError";
   ioErrorCode?: string;
-  constructor(ex: Error | any, source?: string) {
-    super(ex.message || `Error reading file "${source}"`, source);
+  constructor(ex: Error | any, source?: string, options?: ErrorOptions) {
+    super(ex.message || `Error reading file "${source}"`, source, options);
     if ("code" in ex) {
       this.ioErrorCode = String(ex.code);
     }

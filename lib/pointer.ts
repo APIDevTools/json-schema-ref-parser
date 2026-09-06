@@ -152,12 +152,16 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
         throw new MissingPointerError(token, safelyDecodeURI(this.originalPath), targetRef, targetFound, parentPath);
       }
 
-      if (this.value[token] === undefined || (this.value[token] === null && i === tokens.length - 1)) {
+      if (
+        !Object.hasOwn(this.value, token) ||
+        this.value[token] === undefined ||
+        (this.value[token] === null && i === tokens.length - 1)
+      ) {
         // one final case is if the entry itself includes slashes, and was parsed out as a token - we can join the remaining tokens and try again
         let didFindSubstringSlashMatch = false;
         for (let j = tokens.length - 1; j > i; j--) {
           const joinedToken = tokens.slice(i, j + 1).join("/");
-          if (this.value[joinedToken] !== undefined) {
+          if (Object.hasOwn(this.value, joinedToken) && this.value[joinedToken] !== undefined) {
             this.value = this.value[joinedToken];
             i = j;
             didFindSubstringSlashMatch = true;
@@ -172,7 +176,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
         // If the token we're looking for ended up not containing any slashes but is
         // actually instead pointing to an existing `null` value then we should use that
         // `null` value.
-        if (token in this.value && this.value[token] === null) {
+        if (Object.hasOwn(this.value, token) && this.value[token] === null) {
           // We use a `null` symbol for internal tracking to differentiate between a general `null`
           // value and our expected `null` value.
           this.value = nullSymbol;
@@ -255,7 +259,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       resolveIf$Ref(this, options);
 
       token = tokens[i];
-      if (this.value && this.value[token] !== undefined) {
+      if (this.value && Object.hasOwn(this.value, token) && this.value[token] !== undefined) {
         // The token exists
         this.value = this.value[token];
       } else {

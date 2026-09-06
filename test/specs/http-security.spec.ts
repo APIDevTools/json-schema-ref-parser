@@ -173,15 +173,16 @@ describe.skipIf(isBrowser)("HTTP request security", () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
       requestSignal = init?.signal ?? null;
 
-      return Promise.resolve({
-        status: 200,
-        body: {},
-        headers: new Headers({ "content-type": "application/json" }),
-        arrayBuffer: () =>
-          new Promise<ArrayBuffer>((_resolve, reject) => {
-            requestSignal?.addEventListener("abort", () => reject(requestSignal?.reason), { once: true });
+      return Promise.resolve(
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              requestSignal?.addEventListener("abort", () => controller.error(requestSignal?.reason), { once: true });
+            },
           }),
-      } as unknown as Response);
+          { headers: { "content-type": "application/json" } },
+        ),
+      );
     });
 
     const parser = new $RefParser();
@@ -211,5 +212,24 @@ describe.skipIf(isBrowser)("HTTP request security", () => {
     ).rejects.toThrow("network failed");
 
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it.each([302, 404])("cancels an unused HTTP %i response body", async (status) => {
+    const cancel = vi.fn();
+    const body = new ReadableStream({ cancel });
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response(body, { status, headers: { location: "/target.json" } }))
+      .mockResolvedValueOnce(new Response('{"type":"string"}'));
+
+    const parsing = $RefParser.parse("https://example.com/schema.json", {
+      resolve: { http: { safeUrlResolver: false } },
+    });
+
+    if (status === 302) {
+      await expect(parsing).resolves.toEqual({ type: "string" });
+    } else {
+      await expect(parsing).rejects.toThrow("HTTP ERROR 404");
+    }
+    expect(cancel).toHaveBeenCalledOnce();
   });
 });

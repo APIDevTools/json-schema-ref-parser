@@ -202,8 +202,9 @@ export interface $RefParserOptions<S extends object = JSONSchema> {
   dereference: DereferenceOptions;
 
   /**
-   * Whether to clone the schema before dereferencing it.
-   * This is useful when you want to dereference the same schema multiple times, but you don't want to modify the original schema.
+   * Whether operations may modify the input schema. Set to `false` to work on a
+   * copy instead. The input must then be structured-cloneable; shared objects
+   * and circular references are preserved in the copy.
    * Default: `true` due to mutating the input being the default behavior historically
    */
   mutateInputSchema?: boolean;

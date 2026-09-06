@@ -6,6 +6,19 @@ import { expect } from "vitest";
 import type { Options } from "../../../lib/options";
 
 describe("dereference.preservedProperties", () => {
+  it.each([null, false, 0, "literal"])("handles the primitive target %j", async (target) => {
+    const schema = {
+      definitions: { target },
+      value: { $ref: "#/definitions/target", description: "Keep if the target is an object" },
+    };
+
+    const result = await $RefParser.dereference(schema, {
+      dereference: { preservedProperties: ["description"] },
+    });
+
+    expect(result.value).toBe(target);
+  });
+
   it("should preserve properties", async () => {
     const parser = new $RefParser();
     const schema = pathUtils.rel("test/specs/dereference-preservedProperties/dereference-preservedProperties.yaml");

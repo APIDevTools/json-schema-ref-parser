@@ -119,7 +119,8 @@ async function readFile<S extends object = JSONSchema, O extends ParserOptions<S
     else if (err.error instanceof ResolverError) {
       throw err.error;
     } else {
-      throw new ResolverError(err, file.url);
+      const cause = err.error instanceof Error ? err.error : new Error(String(err.error));
+      throw new ResolverError(cause, file.url, { cause: err.error });
     }
   }
 }
@@ -169,7 +170,7 @@ async function parseFile<S extends object = JSONSchema, O extends ParserOptions<
     } else if (err.error instanceof ParserError) {
       throw err.error;
     } else {
-      throw new ParserError(err.error.message, file.url);
+      throw new ParserError(err.error?.message ?? String(err.error), file.url, { cause: err.error });
     }
   }
 }
@@ -183,6 +184,7 @@ async function parseFile<S extends object = JSONSchema, O extends ParserOptions<
 function isEmpty(value: any) {
   return (
     value === undefined ||
+    value === null ||
     (typeof value === "object" && Object.keys(value).length === 0) ||
     (typeof value === "string" && value.trim().length === 0) ||
     (Buffer.isBuffer(value) && value.length === 0)

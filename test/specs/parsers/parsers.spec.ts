@@ -245,6 +245,35 @@ describe("References to non-JSON files", () => {
     }
   });
 
+  it.each([new Error("Custom parser failed"), "Custom parser failed"])(
+    "should preserve custom parser failure details (%s)",
+    async (cause) => {
+      await expect(
+        $RefParser.parse("memory://schema.json", {
+          resolve: {
+            file: false,
+            http: false,
+            memory: { canRead: true, read: "ignored" },
+          },
+          parse: {
+            json: {
+              parse() {
+                throw cause;
+              },
+            },
+            yaml: false,
+          },
+        }),
+      ).rejects.toMatchObject({
+        name: "ParserError",
+        code: "EPARSER",
+        message: "Error parsing memory://schema.json: Custom parser failed",
+        source: "memory://schema.json",
+        cause,
+      });
+    },
+  );
+
   it("should throw a grouped error if no parser can be matched and continueOnError is true", async () => {
     try {
       const parser = new $RefParser();

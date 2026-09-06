@@ -183,7 +183,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
               // If we have data to preserve and our dereferenced object is still an object then
               // we need copy back our preserved data into our dereferenced schema.
               if (derefOptions?.preservedProperties) {
-                if (preserved.size && typeof obj[key] === "object" && !Array.isArray(obj[key])) {
+                if (preserved.size && obj[key] !== null && typeof obj[key] === "object" && !Array.isArray(obj[key])) {
                   preserved.forEach((value, prop) => {
                     obj[key][prop] = value;
                   });

@@ -1,6 +1,7 @@
 import $Refs from "./refs.js";
 import _parse from "./parse.js";
 import normalizeArgs from "./normalize-args.js";
+import type { NormalizedArguments } from "./normalize-args.js";
 import resolveExternal from "./resolve-external.js";
 import _bundle from "./bundle.js";
 import _dereference from "./dereference.js";
@@ -78,7 +79,12 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   public parse(path: string, schema: S | string | unknown, options: O): Promise<S>;
   public parse(path: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
   async parse() {
-    const args = normalizeArgs<S, O>(arguments as any);
+    let args: NormalizedArguments<S, O>;
+    try {
+      args = normalizeArgs<S, O>(arguments);
+    } catch (err) {
+      return rejectNormalizationError<S | boolean>(arguments, err);
+    }
     let promise;
 
     const hasSchema = args.schema !== undefined && args.schema !== null;
@@ -205,7 +211,12 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   public resolve(path: string, schema: S | string | unknown, options: O): Promise<$Refs<S, O>>;
   public resolve(path: string, schema: S | string | unknown, options: O, callback: $RefsCallback<S, O>): Promise<void>;
   async resolve() {
-    const args = normalizeArgs<S, O>(arguments);
+    let args: NormalizedArguments<S, O>;
+    try {
+      args = normalizeArgs<S, O>(arguments, false);
+    } catch (err) {
+      return rejectNormalizationError<$Refs<S, O>>(arguments, err);
+    }
 
     try {
       await this.parse(args.path, args.schema, args.options);
@@ -335,7 +346,12 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   public bundle(path: string, schema: S | string | unknown, options: O): Promise<S>;
   public bundle(path: string, schema: S | string | unknown, options: O, callback: SchemaCallback<S>): Promise<void>;
   async bundle(): Promise<S | boolean | void> {
-    const args = normalizeArgs<S, O>(arguments);
+    let args: NormalizedArguments<S, O>;
+    try {
+      args = normalizeArgs<S, O>(arguments, false);
+    } catch (err) {
+      return rejectNormalizationError<S | boolean>(arguments, err);
+    }
     try {
       await this.resolve(args.path, args.schema, args.options);
       _bundle<S, O>(this, args.options);
@@ -425,7 +441,12 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   public dereference(schema: S | string | unknown, options: O): Promise<S>;
   public dereference(schema: S | string | unknown): Promise<S>;
   async dereference(): Promise<S | boolean | void> {
-    const args = normalizeArgs<S, O>(arguments);
+    let args: NormalizedArguments<S, O>;
+    try {
+      args = normalizeArgs<S, O>(arguments, false);
+    } catch (err) {
+      return rejectNormalizationError<S | boolean>(arguments, err);
+    }
 
     try {
       await this.resolve(args.path, args.schema, args.options);
@@ -438,6 +459,11 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
   }
 }
 export default $RefParser;
+
+function rejectNormalizationError<T>(args: IArguments, err: unknown): Promise<T> | void {
+  const callback = args[args.length - 1];
+  return maybe<T>(typeof callback === "function" ? callback : undefined, Promise.reject(err));
+}
 
 function finalize<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   parser: $RefParser<S, O>,
