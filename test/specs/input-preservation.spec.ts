@@ -78,6 +78,22 @@ describe("mutateInputSchema: false", () => {
 });
 
 describe("option normalization errors", () => {
+  it.each(operations)("%s delivers schema initialization errors to its callback exactly once", async (operation) => {
+    const error = new Error("Cannot read schema identifier");
+    const schema = {
+      get $id() {
+        throw error;
+      },
+    };
+    const callback = vi.fn<(error: unknown) => void>();
+    const received = new Promise<unknown>((resolve) => callback.mockImplementation(resolve));
+
+    await expect(new $RefParser()[operation](schema, callback)).resolves.toBeUndefined();
+
+    expect(await received).toBe(error);
+    expect(callback).toHaveBeenCalledExactlyOnceWith(error);
+  });
+
   it.each(operations)("%s rejects with the original option error", async (operation) => {
     const error = new Error("Cannot read bundle options");
     const options = {

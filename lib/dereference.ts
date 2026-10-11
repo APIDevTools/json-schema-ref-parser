@@ -1,11 +1,17 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
-import { getSchemaBasePath, getSchemaIdMode } from "./util/schema-resources.js";
+import { getSchemaBasePath } from "./util/schema-resources.js";
 import type $Refs from "./refs.js";
 import type { DereferenceOptions, ParserOptions } from "./options.js";
 import { type $RefParser, type JSONSchema } from "./index.js";
 import { TimeoutError } from "./util/errors.js";
+import {
+  getReferenceLocation,
+  locateChild,
+  locateMergedValue,
+  type ReferenceLocation,
+} from "./util/reference-location.js";
 
 export default dereference;
 
@@ -33,7 +39,7 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
     parser.$refs._root$Ref.legacyIdScope,
     "#",
     new Set(),
-    new Set(),
+    new Map(),
     new Map(),
     parser.$refs,
     options,
@@ -51,7 +57,7 @@ function dereference<S extends object = JSONSchema, O extends ParserOptions<S> =
  * @param path - The full path of `obj`, possibly with a JSON Pointer in the hash
  * @param pathFromRoot - The path of `obj` from the schema root
  * @param parents - An array of the parent objects that have already been dereferenced
- * @param processedObjects - An array of all the objects that have already been processed
+ * @param processedObjects - Circular outcomes for objects that have already been processed
  * @param dereferencedCache - An map of all the dereferenced objects
  * @param $refs
  * @param options
@@ -67,12 +73,13 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   legacyIdScope: boolean,
   pathFromRoot: string,
   parents: Set<any>,
-  processedObjects: Set<any>,
+  processedObjects: Map<object, boolean>,
   dereferencedCache: any,
   $refs: $Refs<S, O>,
   options: O,
   startTime: number,
   depth: number,
+  location?: ReferenceLocation,
 ) {
   let dereferenced;
   const result = {
@@ -96,15 +103,22 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   if (derefOptions?.circular === "ignore" || !processedObjects.has(obj)) {
     if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !isExcludedPath(pathFromRoot, obj)) {
       parents.add(obj);
-      processedObjects.add(obj);
-      const currentScopeBase = scopeBase;
+      processedObjects.set(obj, false);
+      const currentLocation = location ||
+        getReferenceLocation($refs, obj) || {
+          value: obj,
+          path,
+          scopeBase,
+          dynamicIdScope,
+          legacyIdScope,
+        };
 
       if ($Ref.isAllowed$Ref(obj, options)) {
         dereferenced = dereference$Ref(
           obj,
-          path,
-          currentScopeBase,
-          dynamicIdScope,
+          currentLocation.path,
+          currentLocation.scopeBase,
+          currentLocation.dynamicIdScope,
           pathFromRoot,
           parents,
           processedObjects,
@@ -113,6 +127,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           options,
           startTime,
           depth,
+          currentLocation,
         );
         result.circular = dereferenced.circular;
         result.value = dereferenced.value;
@@ -133,19 +148,15 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
             continue;
           }
 
-          const childLegacyIdScope = getSchemaIdMode(value, legacyIdScope);
-          const childScopeBase =
-            dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
-              ? getSchemaBasePath(currentScopeBase, value, childLegacyIdScope)
-              : currentScopeBase;
+          const childLocation = locateChild($refs, currentLocation, key, value);
           let circular;
 
           if ($Ref.isAllowed$Ref(value, options)) {
             dereferenced = dereference$Ref(
               value,
-              keyPath,
-              childScopeBase,
-              dynamicIdScope,
+              childLocation.path,
+              childLocation.scopeBase,
+              childLocation.dynamicIdScope,
               keyPathFromRoot,
               parents,
               processedObjects,
@@ -154,6 +165,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
               options,
               startTime,
               depth,
+              childLocation,
             );
             circular = dereferenced.circular;
             // Avoid pointless mutations; breaks frozen objects to no profit
@@ -196,10 +208,10 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
             if (!parents.has(value)) {
               dereferenced = crawl(
                 value,
-                keyPath,
-                childScopeBase,
-                dynamicIdScope,
-                childLegacyIdScope,
+                childLocation.path,
+                childLocation.scopeBase,
+                childLocation.dynamicIdScope,
+                childLocation.legacyIdScope,
                 keyPathFromRoot,
                 parents,
                 processedObjects,
@@ -208,6 +220,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
                 options,
                 startTime,
                 depth + 1,
+                childLocation,
               );
               circular = dereferenced.circular;
               // Avoid pointless mutations; breaks frozen objects to no profit
@@ -225,7 +238,10 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       }
 
       parents.delete(obj);
+      processedObjects.set(obj, result.circular);
     }
+  } else {
+    result.circular = processedObjects.get(obj) || false;
   }
 
   return result;
@@ -238,7 +254,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
  * @param path - The full path of `$ref`, possibly with a JSON Pointer in the hash
  * @param pathFromRoot - The path of `$ref` from the schema root
  * @param parents - An array of the parent objects that have already been dereferenced
- * @param processedObjects - An array of all the objects that have already been dereferenced
+ * @param processedObjects - Circular outcomes for objects that have already been dereferenced
  * @param dereferencedCache - An map of all the dereferenced objects
  * @param $refs
  * @param options
@@ -251,12 +267,13 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
   dynamicIdScope: boolean,
   pathFromRoot: string,
   parents: Set<any>,
-  processedObjects: any,
+  processedObjects: Map<object, boolean>,
   dereferencedCache: any,
   $refs: $Refs<S, O>,
   options: O,
   startTime: number,
   depth: number,
+  location: ReferenceLocation,
 ) {
   const isExternalRef = $Ref.isExternal$Ref($ref);
   const shouldResolveOnCwd = isExternalRef && options?.dereference?.externalReferenceResolution === "root";
@@ -265,18 +282,11 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
 
   const cache = dereferencedCache.get($refPath);
 
-  if (cache) {
-    // If the object we found is circular we can immediately return it because it would have been
-    // cached with everything we need already and we don't need to re-process anything inside it.
-    //
-    // If the cached object however is _not_ circular and there are additional keys alongside our
-    // `$ref` pointer here, fall through and process it normally. Extended references create a new
-    // value, so returning the cached target (or merging it ad hoc) would make their result depend on
-    // which reference happened to be visited first.
+  // Extended references must merge and crawl their own siblings even when the cached target is
+  // circular. Returning the cached target directly would silently discard those properties.
+  if (cache && !$Ref.isExtended$Ref($ref)) {
     if (!cache.circular) {
-      if (!$Ref.isExtended$Ref($ref)) {
-        return cache;
-      }
+      return cache;
     } else {
       // If both our cached value and our incoming `$ref` are the same then we can return what we
       // got out of the cache, otherwise we should re-process this value. We need to do this because
@@ -323,20 +333,22 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
 
   // Dereference the JSON reference
   let dereferencedValue = $Ref.dereference($ref, pointer.value, options);
+  const targetLocation = pointer.location!;
+  const dereferencedLocation = $Ref.isExtended$Ref($ref)
+    ? locateMergedValue($refs, dereferencedValue, targetLocation, location, options.dereference?.mergeKeys ?? true)
+    : targetLocation;
 
   // Crawl the dereferenced value (unless it's circular)
   if (!circular) {
     // Pointer resolution has already applied every $id scope along the resolved path. Re-applying
     // the resolved value's $id here would duplicate relative folder-changing identifiers.
-    const dereferencedScopeBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.$ref.path!;
-
     // Determine if the dereferenced value is circular
     const dereferenced = crawl(
       dereferencedValue,
-      pointer.path,
-      dereferencedScopeBase,
-      pointer.$ref.dynamicIdScope,
-      pointer.legacyIdScope,
+      dereferencedLocation.path,
+      dereferencedLocation.scopeBase,
+      dereferencedLocation.dynamicIdScope,
+      dereferencedLocation.legacyIdScope,
       pathFromRoot,
       parents,
       processedObjects,
@@ -345,9 +357,13 @@ function dereference$Ref<S extends object = JSONSchema, O extends ParserOptions<
       options,
       startTime,
       depth + 1,
+      dereferencedLocation,
     );
     circular = dereferenced.circular;
     dereferencedValue = dereferenced.value;
+    if (circular && cache?.circular) {
+      foundCircularReference(path, $refs, options);
+    }
   }
 
   if (circular && !directCircular && options.dereference?.circular === "ignore") {

@@ -47,17 +47,29 @@ export function registerSchemaResources<S extends object = JSONSchema, O extends
     return;
   }
 
-  const seen = new Set<object>();
+  const seen = new Map<object, Set<string>>();
+  // Object cycles must still terminate when a relative identifier keeps changing the scope.
+  const parents = new Set<object>();
 
   const visit = (node: unknown, scopeBase: string, inheritedLegacyId: boolean, sourcePath: string) => {
-    if (!node || typeof node !== "object" || ArrayBuffer.isView(node) || seen.has(node)) {
+    if (!node || typeof node !== "object" || ArrayBuffer.isView(node) || parents.has(node)) {
       return;
     }
 
-    seen.add(node);
-
     const legacyId = getSchemaIdMode(node, inheritedLegacyId);
     const nextScopeBase = getSchemaBasePath(scopeBase, node, legacyId);
+    const scopeKey = `${legacyId}:${nextScopeBase}`;
+    const scopes = seen.get(node);
+    if (scopes?.has(scopeKey)) {
+      return;
+    }
+    if (scopes) {
+      scopes.add(scopeKey);
+    } else {
+      seen.set(node, new Set([scopeKey]));
+    }
+    parents.add(node);
+
     if (nextScopeBase !== scopeBase) {
       $refs._addAlias(nextScopeBase, node as S, pathType, dynamicIdScope, legacyId, sourcePath);
     }
@@ -65,13 +77,14 @@ export function registerSchemaResources<S extends object = JSONSchema, O extends
     for (const key of Object.keys(node)) {
       visit((node as Record<string, unknown>)[key], nextScopeBase, legacyId, joinPointer(sourcePath, key));
     }
+    parents.delete(node);
   };
 
   visit(value, basePath, false, basePath + "#");
 }
 
 function joinPointer(path: string, key: string) {
-  return path + "/" + key.replace(/~/g, "~0").replace(/\//g, "~1");
+  return path + "/" + key.replace(/%/g, "%25").replace(/~/g, "~0").replace(/\//g, "~1");
 }
 
 export function getSchemaId(value: unknown, inheritedLegacyId = false): string | undefined {

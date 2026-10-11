@@ -29,24 +29,24 @@ export const parse = (u: string | URL) => new URL(u);
  */
 export function resolve(from: string, to: string) {
   // we use a non-existent URL to check if its a relative URL
-  const fromUrl = new URL(convertPathToPosix(from), "https://aaa.nonexistanturl.com");
-  const resolvedUrl = new URL(convertPathToPosix(to), fromUrl);
+  const fromUrl = new URL(normalizePathSeparators(from), "https://aaa.nonexistanturl.com");
+  const resolvedUrl = new URL(normalizePathSeparators(to), fromUrl);
   const endSpaces = to.match(/(\s*)$/)?.[1] || "";
   if (resolvedUrl.hostname === "aaa.nonexistanturl.com") {
     // `from` is a relative URL.
     const { pathname, search, hash } = resolvedUrl;
-    return pathname + search + safeDecodeURIComponent(hash) + endSpaces;
+    return pathname + search + hash + endSpaces;
   }
-  const resolved = resolvedUrl.toString() + endSpaces;
-  // if there is a #, we want to split on the first one only, and decode the part after
-  if (resolved.includes("#")) {
-    const [base, hash] = resolved.split("#", 2);
-    return base + "#" + safeDecodeURIComponent(hash || "");
-  }
-  return resolved;
+  return resolvedUrl.toString() + endSpaces;
 }
 
-function safeDecodeURIComponent(value: string): string {
+function normalizePathSeparators(value: string): string {
+  // Backslashes in the query or fragment are data, not Windows path separators.
+  const pathEnd = value.search(/[?#]/);
+  return pathEnd < 0 ? convertPathToPosix(value) : convertPathToPosix(value.slice(0, pathEnd)) + value.slice(pathEnd);
+}
+
+export function safeDecodeURIComponent(value: string): string {
   try {
     return decodeURIComponent(value);
   } catch {
@@ -703,6 +703,7 @@ export function toFileSystemPath(path: string | undefined, keepFileProtocol?: bo
  * @returns
  */
 export function safePointerToPath(pointer: string) {
+  pointer = safeDecodeURIComponent(pointer);
   if (pointer.length <= 1 || pointer[0] !== "#" || pointer[1] !== "/") {
     return [];
   }

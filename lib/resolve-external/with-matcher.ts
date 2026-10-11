@@ -302,7 +302,7 @@ async function completeExternalDocumentInventory<S extends object, O extends Par
       ref.dynamicIdScope,
       ref.legacyIdScope,
       undefined,
-      new WeakSet(),
+      new WeakMap(),
       context,
     );
   }
@@ -310,7 +310,7 @@ async function completeExternalDocumentInventory<S extends object, O extends Par
 
 /**
  * Crawls physical document occurrences. An active ancestry chain protects incomplete subtrees
- * containing exclusions; complete subtrees retain the legacy one-visit identity optimization.
+ * containing exclusions; complete subtrees are visited once per object and URI scope.
  */
 async function crawlPhysicalOccurrence<S extends object, O extends ParserOptions<S>>(
   value: unknown,
@@ -319,7 +319,7 @@ async function crawlPhysicalOccurrence<S extends object, O extends ParserOptions
   dynamicIdScope: boolean,
   legacyIdScope: boolean,
   activeObjects: ObjectChain | undefined,
-  seen: WeakSet<object>,
+  seen: WeakMap<object, Set<string>>,
   context: ResolveContext<S, O>,
 ) {
   if (
@@ -333,11 +333,17 @@ async function crawlPhysicalOccurrence<S extends object, O extends ParserOptions
   }
 
   const hasExcludedDescendant = context.excludedAncestorPaths.has(path);
-  if (!hasExcludedDescendant && seen.has(value)) {
+  const scopeKey = `${legacyIdScope}:${scopeBase}`;
+  const scopes = seen.get(value);
+  if (!hasExcludedDescendant && scopes?.has(scopeKey)) {
     return;
   }
   if (!hasExcludedDescendant) {
-    seen.add(value);
+    if (scopes) {
+      scopes.add(scopeKey);
+    } else {
+      seen.set(value, new Set([scopeKey]));
+    }
   }
 
   const nextActiveObjects: ObjectChain = {

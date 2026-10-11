@@ -4,6 +4,12 @@ import $Ref from "./ref.js";
 import * as url from "./util/url.js";
 import { JSONParserError, InvalidPointerError, MissingPointerError, isHandledError } from "./util/errors.js";
 import { getSchemaBasePath, getSchemaIdMode } from "./util/schema-resources.js";
+import {
+  getReferenceLocation,
+  locateChild,
+  locateMergedValue,
+  type ReferenceLocation,
+} from "./util/reference-location.js";
 import type { JSONSchema } from "./index.js";
 import type { JSONSchema4Type, JSONSchema6Type, JSONSchema7Type } from "json-schema";
 
@@ -47,6 +53,9 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
   /** Whether the current schema scope uses draft-04's legacy `id` keyword. */
   legacyIdScope: boolean;
+
+  /** URI provenance of a value, including children assembled by extended references. */
+  location?: ReferenceLocation;
 
   /**
    * The value of the JSON pointer.
@@ -117,6 +126,15 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       this.legacyIdScope = getSchemaIdMode(this.value, this.legacyIdScope);
       this.scopeBase = getSchemaBasePath(this.scopeBase, this.value, this.legacyIdScope);
     }
+    this.setLocation(
+      getReferenceLocation(this.$ref.$refs, this.value) || {
+        value: this.value,
+        path: this.$ref.path!,
+        scopeBase: this.scopeBase,
+        dynamicIdScope: this.$ref.dynamicIdScope,
+        legacyIdScope: this.legacyIdScope,
+      },
+    );
 
     for (let i = 0; i < tokens.length; i++) {
       // During token walking, if the current value is an extended $ref (has sibling keys
@@ -163,6 +181,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
           const joinedToken = tokens.slice(i, j + 1).join("/");
           if (Object.hasOwn(this.value, joinedToken) && this.value[joinedToken] !== undefined) {
             this.value = this.value[joinedToken];
+            this.setLocation(locateChild(this.$ref.$refs, this.location!, joinedToken, this.value));
             i = j;
             didFindSubstringSlashMatch = true;
             break;
@@ -180,6 +199,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
           // We use a `null` symbol for internal tracking to differentiate between a general `null`
           // value and our expected `null` value.
           this.value = nullSymbol;
+          this.setLocation(locateChild(this.$ref.$refs, this.location!, token, null));
           this.chainCircular = wasChainCircular;
           continue;
         }
@@ -199,14 +219,11 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
       this.chainCircular = wasChainCircular;
       found.push(token);
-      if (this.$ref.dynamicIdScope) {
-        this.legacyIdScope = getSchemaIdMode(this.value, this.legacyIdScope);
-        this.scopeBase = getSchemaBasePath(this.scopeBase, this.value, this.legacyIdScope);
-      }
+      this.setLocation(locateChild(this.$ref.$refs, this.location!, token, this.value));
     }
 
     // Resolve the final value
-    const finalResolutionBase = this.$ref.dynamicIdScope ? this.scopeBase : this.path;
+    const finalResolutionBase = this.location?.dynamicIdScope ? this.scopeBase : this.location?.path || this.path;
     if (resolveFinalReference) {
       const finalRefPath = this.value?.$ref ? url.resolve(finalResolutionBase, this.value.$ref) : undefined;
       const canonicalPathFromRoot =
@@ -254,6 +271,15 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
       this.legacyIdScope = getSchemaIdMode(this.value, this.legacyIdScope);
       this.scopeBase = getSchemaBasePath(this.scopeBase, this.value, this.legacyIdScope);
     }
+    this.setLocation(
+      getReferenceLocation(this.$ref.$refs, this.value) || {
+        value: this.value,
+        path: this.$ref.path!,
+        scopeBase: this.scopeBase,
+        dynamicIdScope: this.$ref.dynamicIdScope,
+        legacyIdScope: this.legacyIdScope,
+      },
+    );
 
     for (let i = 0; i < tokens.length - 1; i++) {
       resolveIf$Ref(this, options);
@@ -267,10 +293,7 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
         this.value = setValue(this, token, {});
       }
 
-      if (this.$ref.dynamicIdScope) {
-        this.legacyIdScope = getSchemaIdMode(this.value, this.legacyIdScope);
-        this.scopeBase = getSchemaBasePath(this.scopeBase, this.value, this.legacyIdScope);
-      }
+      this.setLocation(locateChild(this.$ref.$refs, this.location!, token, this.value));
     }
 
     // Set the value of the final token
@@ -280,6 +303,12 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
 
     // Return the updated object
     return obj;
+  }
+
+  setLocation(location: ReferenceLocation) {
+    this.location = location;
+    this.scopeBase = location.scopeBase;
+    this.legacyIdScope = location.legacyIdScope;
   }
 
   /**
@@ -296,7 +325,9 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
    */
   static parse(path: string, originalPath?: string): string[] {
     // Get the JSON pointer from the path's hash
-    const pointer = url.getHash(path).substring(1);
+    // URI fragment escaping is separate from JSON Pointer escaping. Decode it
+    // exactly once here, after URL resolution and before splitting the tokens.
+    const pointer = url.safeDecodeURIComponent(url.getHash(path).substring(1));
 
     // If there's no pointer, then there are no tokens,
     // so return an empty array
@@ -337,9 +368,9 @@ class Pointer<S extends object = JSONSchema, O extends ParserOptions<S> = Parser
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i];
       // Encode the token, according to RFC 6901
-      // RFC 6901 only requires encoding ~ as ~0 and / as ~1
-      // We do NOT use encodeURIComponent as it encodes characters like $ which should remain literal
-      base += "/" + token.replace(tildes, "~0").replace(slashes, "~1");
+      // Escape literal percent signs so URI decoding cannot reinterpret a key
+      // such as "%41". Keep URI-safe characters like "$" readable.
+      base += "/" + token.replace(/%/g, "%25").replace(tildes, "~0").replace(slashes, "~1");
     }
 
     return base;
@@ -382,7 +413,9 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
       const extended = $Ref.isExtended$Ref(pointer.value);
       const sourceValue = pointer.value;
       const parentPath = pointer.path;
-      const resolutionBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.path;
+      const resolutionBase = pointer.location?.dynamicIdScope
+        ? pointer.scopeBase
+        : pointer.location?.path || pointer.path;
       const $refPath = url.resolve(resolutionBase, pointer.value.$ref);
 
       if ($refPath === pointer.path && !isRootPath(currentPathFromRoot)) {
@@ -433,6 +466,15 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
           return pathChanged;
         }
         pointer.value = $Ref.dereference(sourceValue, resolved.value, options);
+        pointer.setLocation(
+          locateMergedValue(
+            pointer.$ref.$refs,
+            pointer.value,
+            resolved.location!,
+            pointer.location!,
+            options?.dereference?.mergeKeys ?? true,
+          ),
+        );
         return pathChanged;
       } else {
         // Resolve the reference
@@ -444,6 +486,7 @@ function resolveIf$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
         // such as `nested/nested/foo.json`.
         pointer.scopeBase = resolved.scopeBase;
         pointer.legacyIdScope = resolved.legacyIdScope;
+        pointer.location = resolved.location!;
         currentPathFromRoot = parentPath;
         pathChanged = true;
       }

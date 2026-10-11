@@ -31,22 +31,55 @@ describe("Return the extension of a URL", () => {
 });
 
 describe("Resolve URL fragments", () => {
+  it("should preserve backslashes in query strings and fragments", () => {
+    expect($url.resolve("https://example.com/schema.json", "?value=a\\b#/definitions/a\\b")).to.equal(
+      "https://example.com/schema.json?value=a\\b#/definitions/a\\b",
+    );
+  });
+
+  it("should preserve hash characters inside the fragment", () => {
+    expect($url.resolve("https://example.com/schema.json", "#/definitions/a#b#c")).to.equal(
+      "https://example.com/schema.json#/definitions/a#b#c",
+    );
+  });
+
   it("should preserve literal percent signs without throwing", () => {
     expect($url.resolve("https://example.com/schema.json", "#/properties/rate%")).to.equal(
       "https://example.com/schema.json#/properties/rate%",
     );
   });
 
-  it("should decode valid escapes alongside literal percent signs", () => {
+  it("should preserve valid escapes alongside literal percent signs", () => {
     expect($url.resolve("https://example.com/schema.json", "#/properties/a%2Fb%")).to.equal(
-      "https://example.com/schema.json#/properties/a/b%",
+      "https://example.com/schema.json#/properties/a%2Fb%",
     );
   });
 
-  it("should fall back safely for malformed UTF-8 escapes", () => {
+  it("should preserve malformed UTF-8 escapes", () => {
     expect($url.resolve("https://example.com/schema.json", "#/properties/bad%E0%A4%A")).to.equal(
       "https://example.com/schema.json#/properties/bad%E0%A4%A",
     );
+  });
+
+  it("should not repeatedly decode escaped fragments", () => {
+    const resolved = $url.resolve("https://example.com/schema.json", "#/properties/%2541");
+    expect($url.resolve("https://example.com/schema.json", resolved)).to.equal(
+      "https://example.com/schema.json#/properties/%2541",
+    );
+  });
+});
+
+describe("Convert pointer fragments to error paths", () => {
+  it("should decode URI escapes exactly once before parsing pointer tokens", () => {
+    expect($url.safePointerToPath("#%2Fproperties%2F%2541")).toEqual(["properties", "%41"]);
+  });
+
+  it("should decode valid escapes alongside literal percent signs", () => {
+    expect($url.safePointerToPath("#/properties/a%20b%")).toEqual(["properties", "a b%"]);
+  });
+
+  it("should preserve malformed UTF-8 escapes", () => {
+    expect($url.safePointerToPath("#/properties/bad%E0%A4%A")).toEqual(["properties", "bad%E0%A4%A"]);
   });
 });
 

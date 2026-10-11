@@ -97,37 +97,37 @@ export class $RefParser<S extends object = JSONSchema, O extends ParserOptions<S
     this.schema = null;
     this.$refs = new $Refs();
 
-    // If the path is a filesystem path, then convert it to a URL.
-    // NOTE: According to the JSON Reference spec, these should already be URLs,
-    // but, in practice, many people use local filesystem paths instead.
-    // So we're being generous here and doing the conversion automatically.
-    // This is not intended to be a 100% bulletproof solution.
-    // If it doesn't work for your use-case, then use a URL instead.
-    let pathType = "http";
-    if (url.isFileSystemPath(args.path)) {
-      args.path = url.fromFileSystemPath(args.path);
-      pathType = "file";
-    }
-
-    // Resolve the absolute path of the schema
-    args.path = url.resolve(url.cwd(), args.path);
-
-    if (hasSchema && (typeof args.schema === "object" || typeof args.schema === "boolean")) {
-      // A schema object was passed-in.
-      // So immediately add a new $Ref with the schema object as its value
-      const $ref = this.$refs._add(args.path);
-      $ref.value = args.schema;
-      $ref.pathType = pathType;
-      $ref.dynamicIdScope = usesDynamicIdScope($ref.value);
-      $ref.legacyIdScope = getSchemaIdMode($ref.value);
-      registerSchemaResources(this.$refs, $ref.path!, $ref.value, $ref.pathType, $ref.dynamicIdScope);
-      promise = Promise.resolve(args.schema);
-    } else {
-      // Parse the schema file/url
-      promise = _parse<S, typeof args.options>(args.path, this.$refs, args.options);
-    }
-
     try {
+      // If the path is a filesystem path, then convert it to a URL.
+      // NOTE: According to the JSON Reference spec, these should already be URLs,
+      // but, in practice, many people use local filesystem paths instead.
+      // So we're being generous here and doing the conversion automatically.
+      // This is not intended to be a 100% bulletproof solution.
+      // If it doesn't work for your use-case, then use a URL instead.
+      let pathType = "http";
+      if (url.isFileSystemPath(args.path)) {
+        args.path = url.fromFileSystemPath(args.path);
+        pathType = "file";
+      }
+
+      // Resolve the absolute path of the schema
+      args.path = url.resolve(url.cwd(), args.path);
+
+      if (hasSchema && (typeof args.schema === "object" || typeof args.schema === "boolean")) {
+        // A schema object was passed-in.
+        // So immediately add a new $Ref with the schema object as its value
+        const $ref = this.$refs._add(args.path);
+        $ref.value = args.schema;
+        $ref.pathType = pathType;
+        $ref.dynamicIdScope = usesDynamicIdScope($ref.value);
+        $ref.legacyIdScope = getSchemaIdMode($ref.value);
+        registerSchemaResources(this.$refs, $ref.path!, $ref.value, $ref.pathType, $ref.dynamicIdScope);
+        promise = Promise.resolve(args.schema);
+      } else {
+        // Parse the schema file/url
+        promise = _parse<S, typeof args.options>(args.path, this.$refs, args.options);
+      }
+
       const result = await promise;
 
       if (typeof result === "boolean" || (result !== null && typeof result === "object" && !Buffer.isBuffer(result))) {

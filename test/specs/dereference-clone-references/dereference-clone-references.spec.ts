@@ -3,6 +3,19 @@ import $RefParser from "../../../lib/index.js";
 import path from "../../utils/path.js";
 
 describe("dereference.cloneReferences (issue #349)", () => {
+  it("preserves circular targets that were already visited before the reference", async () => {
+    const result = await $RefParser.dereference(
+      {
+        $defs: { target: { properties: { self: { $ref: "#/$defs/target" } } } },
+        value: { $ref: "#/$defs/target" },
+      },
+      { dereference: { cloneReferences: true } },
+    );
+
+    expect(result.value).toBe(result.$defs.target);
+    expect(result.value.properties.self).toBe(result.value);
+  });
+
   it("should share references by default", async () => {
     const parser = new $RefParser();
     const schema = await parser.dereference(path.rel("test/specs/dereference-clone-references/schema.json"));

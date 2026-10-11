@@ -84,14 +84,26 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   legacyIdScope: boolean,
   $refs: $Refs<S, O>,
   options: O,
-  seen?: Set<any>,
+  seen?: Map<object, Set<string>>,
   external?: boolean,
+  parents = new Set<object>(),
 ) {
-  seen ||= new Set();
+  seen ||= new Map();
   let promises: any = [];
 
-  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !seen.has(obj)) {
-    seen.add(obj); // Track previously seen objects to avoid infinite recursion
+  if (obj && typeof obj === "object" && !ArrayBuffer.isView(obj) && !parents.has(obj)) {
+    // Shared values can resolve differently in another resource; only active ancestors form object cycles.
+    const scopeKey = `${legacyIdScope}:${scopeBase}`;
+    const scopes = seen.get(obj);
+    if (scopes?.has(scopeKey)) {
+      return promises;
+    }
+    if (scopes) {
+      scopes.add(scopeKey);
+    } else {
+      seen.set(obj, new Set([scopeKey]));
+    }
+    parents.add(obj);
     const currentScopeBase = scopeBase;
     if ($Ref.isExternal$Ref(obj)) {
       promises.push(resolve$Ref<S, O>(obj, path, currentScopeBase, dynamicIdScope, $refs, options));
@@ -107,9 +119,21 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           ? getSchemaBasePath(currentScopeBase, value, childLegacyIdScope)
           : currentScopeBase;
       promises = promises.concat(
-        crawl(value, keyPath, childScopeBase, dynamicIdScope, childLegacyIdScope, $refs, options, seen, external),
+        crawl(
+          value,
+          keyPath,
+          childScopeBase,
+          dynamicIdScope,
+          childLegacyIdScope,
+          $refs,
+          options,
+          seen,
+          external,
+          parents,
+        ),
       );
     }
+    parents.delete(obj);
   }
 
   return promises;
@@ -177,7 +201,7 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
       parsedLegacyIdScope,
       $refs,
       options,
-      new Set(),
+      new Map(),
       true,
     );
 

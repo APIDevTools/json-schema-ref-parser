@@ -29,6 +29,64 @@ function createOrderSchema(extendedFirst: boolean) {
 }
 
 describe("extended $ref dereferencing", () => {
+  it("preserves cached circular identity and notifications when cloning extended references", async () => {
+    const circularPaths: string[] = [];
+    const result = await $RefParser.dereference(
+      {
+        plain: { $ref: targetRef },
+        extended: {
+          $ref: targetRef,
+          description: "sibling description",
+          sibling: { $ref: "#/$defs/sibling" },
+        },
+        $defs: {
+          target: { type: "object", properties: { self: { $ref: targetRef } } },
+          sibling: { type: "string" },
+        },
+      },
+      { dereference: { cloneReferences: true, onCircular: (path) => circularPaths.push(path) } },
+    );
+
+    expect(result.extended.description).toBe("sibling description");
+    expect(result.extended.sibling).toEqual({ type: "string" });
+    expect(result.extended.properties.self).toBe(result.plain);
+    expect(circularPaths.some((path) => path.endsWith("#/extended"))).toBe(true);
+  });
+
+  it("can remove a cached target's cycle by overriding its circular property", async () => {
+    const circularPaths: string[] = [];
+    const result = await $RefParser.dereference(
+      {
+        plain: { $ref: targetRef },
+        extended: { $ref: targetRef, properties: { value: { type: "string" } } },
+        $defs: { target: { type: "object", properties: { self: { $ref: targetRef } } } },
+      },
+      { dereference: { mergeKeys: false, cloneReferences: true, onCircular: (path) => circularPaths.push(path) } },
+    );
+
+    expect(result.extended).toEqual({ type: "object", properties: { value: { type: "string" } } });
+    expect(circularPaths.some((path) => path.endsWith("#/extended"))).toBe(false);
+  });
+
+  it.each([false, true])(
+    "preserves siblings of cached circular targets (extended first: %s)",
+    async (extendedFirst) => {
+      const plain = { $ref: targetRef };
+      const extended = { $ref: targetRef, description: "sibling description" };
+      const result = await $RefParser.dereference({
+        ...(extendedFirst ? { extended, plain } : { plain, extended }),
+        $defs: {
+          target: { type: "object", properties: { self: { $ref: targetRef } } },
+        },
+      });
+
+      expect(result.extended.description).toBe("sibling description");
+      expect(result.plain).not.toHaveProperty("description");
+      expect(result.plain.properties.self).toBe(result.plain);
+      expect(result.extended.properties.self).toBe(result.plain);
+    },
+  );
+
   it("is independent of whether a plain reference populated the cache first", async () => {
     const plainFirst = (await $RefParser.dereference(createOrderSchema(false))) as any;
     const extendedFirst = (await $RefParser.dereference(createOrderSchema(true))) as any;

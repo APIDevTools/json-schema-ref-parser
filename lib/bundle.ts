@@ -511,7 +511,7 @@ function fixRefsThroughRefs(inventory: InventoryEntry[], schema: any) {
     }
 
     const refValue = entry.$ref.$ref;
-    if (typeof refValue !== "string" || !refValue.startsWith("#/")) {
+    if (typeof refValue !== "string" || !isInternalPointer(refValue)) {
       continue;
     }
 
@@ -528,11 +528,11 @@ function fixRefsThroughRefs(inventory: InventoryEntry[], schema: any) {
  * Returns the corrected path that doesn't traverse through any $ref.
  */
 function resolvePathThroughRefs(schema: any, refPath: string): string {
-  if (!refPath.startsWith("#/")) {
+  if (!isInternalPointer(refPath)) {
     return refPath;
   }
 
-  const segments = refPath.slice(2).split("/");
+  const segments = Pointer.parse(refPath);
   let current = schema;
   const resolvedSegments: string[] = [];
 
@@ -542,19 +542,17 @@ function resolvePathThroughRefs(schema: any, refPath: string): string {
       return refPath;
     }
 
-    const decoded = seg.replace(/~1/g, "/").replace(/~0/g, "~");
-
     // If the next token is an own sibling of an extended $ref, the pointer
     // addresses that sibling directly and must not be rewritten through the
     // $ref target. Only follow the $ref when the literal object has no such key.
     if (
-      !Object.prototype.hasOwnProperty.call(current, decoded) &&
+      !Object.prototype.hasOwnProperty.call(current, seg) &&
       "$ref" in current &&
       typeof current.$ref === "string" &&
-      current.$ref.startsWith("#/")
+      isInternalPointer(current.$ref)
     ) {
       // Follow the $ref and restart the path from its target
-      const targetSegments = current.$ref.slice(2).split("/");
+      const targetSegments = Pointer.parse(current.$ref);
       resolvedSegments.length = 0;
       resolvedSegments.push(...targetSegments);
       current = walkPath(schema, current.$ref);
@@ -563,36 +561,36 @@ function resolvePathThroughRefs(schema: any, refPath: string): string {
       }
     }
 
-    const idx = Array.isArray(current) ? parseInt(decoded) : decoded;
-    current = current[idx];
+    current = current[seg];
     resolvedSegments.push(seg);
   }
 
-  const result = "#/" + resolvedSegments.join("/");
-  return result;
+  return Pointer.join("#", resolvedSegments);
 }
 
 /**
  * Walks a JSON pointer path through a schema object, returning the value at that path.
  */
 function walkPath(schema: any, path: string): any {
-  if (!path.startsWith("#/")) {
+  if (!isInternalPointer(path)) {
     return undefined;
   }
 
-  const segments = path.slice(2).split("/");
+  const segments = Pointer.parse(path);
   let current = schema;
 
   for (const seg of segments) {
     if (current === null || current === undefined || typeof current !== "object") {
       return undefined;
     }
-    const decoded = seg.replace(/~1/g, "/").replace(/~0/g, "~");
-    const idx = Array.isArray(current) ? parseInt(decoded) : decoded;
-    current = current[idx];
+    current = current[seg];
   }
 
   return current;
+}
+
+function isInternalPointer(path: string): boolean {
+  return path[0] === "#" && url.safeDecodeURIComponent(path.substring(1)).startsWith("/");
 }
 
 /**

@@ -216,8 +216,9 @@ class $Ref<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOpt
    */
   static isAllowed$Ref<S extends object = JSONSchema>(value: unknown, options?: ParserOptions<S>) {
     if (this.is$Ref(value)) {
-      if (value.$ref.substring(0, 2) === "#/" || value.$ref === "#") {
+      if (value.$ref.substring(0, 2) === "#/" || /^#%2f/i.test(value.$ref) || value.$ref === "#") {
         // It's a JSON Pointer reference, which is always allowed
+        // The leading separator may be URI-escaped; Pointer.parse decodes it.
         return true;
       } else if (value.$ref[0] !== "#" && (!options || options.resolve?.external)) {
         // It's an external reference, which is allowed by the options
@@ -354,7 +355,9 @@ function deepMerge<T>(target: T, source: T): T {
   if (typeof source !== "object" || source === null) {
     return source;
   }
-  if (Array.isArray(source)) {
+  // Arrays are replacement values, including when an object replaces a target
+  // array. Merging object keys into an array would hide them during serialization.
+  if (Array.isArray(source) || Array.isArray(target)) {
     return cloneEnumerableProperties(source) as T;
   }
 
