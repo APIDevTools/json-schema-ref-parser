@@ -72,8 +72,7 @@
     "@types/json-schema": "^7.0.15"
   },
   "dependencies": {
-    "js-yaml": "^5.4.2",
-    "undici": "^8.10.2"
+    "js-yaml": "^5.4.2"
   },
   "devDependencies": {
     "@types/json-schema": "^7.0.15",
