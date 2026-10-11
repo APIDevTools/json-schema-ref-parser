@@ -51,7 +51,9 @@ export interface HTTPResolverOptions<S extends object = JSONSchema> extends Part
   safeUrlResolver?: boolean;
 
   /**
-   * The maximum size (in bytes) of a downloaded file. Larger responses are rejected. The default is 50 MB.
+   * The maximum size (in bytes) of a downloaded file, including its decompressed contents.
+   * With safeUrlResolver enabled in Node.js, this also limits the encoded body and each intermediate decoding stage.
+   * Larger responses are rejected. The default is 50 MiB.
    */
   maxContentLength?: number;
 }

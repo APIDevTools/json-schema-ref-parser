@@ -4,8 +4,12 @@ import type { FileInfo, HTTPResolverOptions, JSONSchema } from "../types/index.j
 import type { IncomingMessage } from "node:http";
 import type { RequestOptions, request as httpsRequest } from "node:https";
 import type { LookupFunction } from "node:net";
+import type * as NodeStream from "node:stream";
+import type * as StreamPromises from "node:stream/promises";
+import type * as Zlib from "node:zlib";
 
 const DEFAULT_MAX_CONTENT_LENGTH = 50 * 1024 * 1024;
+const MAX_CONTENT_ENCODINGS = 5;
 
 const FORBIDDEN_PINNED_REQUEST_HEADERS = [
   "connection",
@@ -60,7 +64,7 @@ export default {
   safeUrlResolver: true,
 
   /**
-   * The maximum size of a downloaded file (in bytes). Larger responses are rejected.
+   * The maximum size of a downloaded file (in bytes), including its decompressed contents.
    */
   maxContentLength: DEFAULT_MAX_CONTENT_LENGTH,
 
@@ -281,8 +285,21 @@ async function pinnedGet<S extends object>(
   }
 
   const res = await new Promise<IncomingMessage>((resolve, reject) => {
-    const req = request(u, requestOptions, resolve);
+    let receivedResponse = false;
+    const req = request(u, requestOptions, (response) => {
+      receivedResponse = true;
+      resolve(response);
+    });
     req.on("error", reject);
+    req.on("upgrade", (_response, socket) => {
+      socket.destroy();
+      reject(new Error("Unexpected HTTP protocol upgrade"));
+    });
+    req.on("close", () => {
+      if (!receivedResponse) {
+        reject(new Error("The connection was closed before an HTTP response was received"));
+      }
+    });
     req.end();
   });
   res.on("error", () => undefined);
@@ -299,7 +316,7 @@ async function pinnedGet<S extends object>(
       const value = res.headers[name.toLowerCase()];
       return Array.isArray(value) ? value.join(", ") : (value ?? null);
     },
-    readBody: (maxContentLength) => readIncomingBody(res, maxContentLength),
+    readBody: (maxContentLength) => readIncomingBody(res, maxContentLength, signal),
     async discard() {
       if (!res.destroyed) {
         res.destroy();
@@ -309,12 +326,11 @@ async function pinnedGet<S extends object>(
 }
 
 function pinnedRequestHeaders(headers: HTTPResolverOptions["headers"]): Record<string, string> {
-  const merged = new Headers({ accept: "*/*", "user-agent": "node" });
+  const merged = new Headers({ accept: "*/*", "accept-encoding": "gzip, deflate, br", "user-agent": "node" });
   new Headers(headers ?? undefined).forEach((value, name) => merged.set(name, value));
   for (const name of FORBIDDEN_PINNED_REQUEST_HEADERS) {
     merged.delete(name);
   }
-  merged.set("accept-encoding", "identity");
 
   const result: Record<string, string> = {};
   merged.forEach((value, name) => {
@@ -323,39 +339,120 @@ function pinnedRequestHeaders(headers: HTTPResolverOptions["headers"]): Record<s
   return result;
 }
 
-async function readIncomingBody(res: IncomingMessage, maxContentLength: number): Promise<Buffer> {
-  assertIdentityEncoding(res.headers["content-encoding"]);
+async function readIncomingBody(
+  res: IncomingMessage,
+  maxContentLength: number,
+  signal: AbortSignal | undefined,
+): Promise<Buffer> {
   assertContentLengthWithin(res.headers["content-length"], maxContentLength);
-  const incompleteBodyError = new Error("The connection was closed before the response body was complete");
-  if (res.destroyed) {
-    throw incompleteBodyError;
-  }
-
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    let received = 0;
-    res.on("data", (chunk: Buffer) => {
-      received += chunk.length;
-      if (received > maxContentLength) {
-        res.destroy(contentTooLargeError(maxContentLength));
-      } else {
-        chunks.push(chunk);
-      }
-    });
-    res.on("end", () => resolve(Buffer.concat(chunks, received)));
-    res.on("error", reject);
-    res.on("close", () => reject(incompleteBodyError));
-  });
-}
-
-function assertIdentityEncoding(contentEncoding: string | undefined) {
-  const codings = (contentEncoding ?? "")
+  const codings = (res.statusCode === 204 || res.statusCode === 205 ? "" : (res.headers["content-encoding"] ?? ""))
     .split(",")
     .map((coding) => coding.trim().toLowerCase())
     .filter((coding) => coding && coding !== "identity");
-  if (codings.length > 0) {
-    throw new Error(`Unsupported content-encoding: ${codings.join(", ")}`);
+  if (codings.length > MAX_CONTENT_ENCODINGS) {
+    throw new Error(`Too many content-encodings: maximum allowed is ${MAX_CONTENT_ENCODINGS}`);
   }
+  for (const coding of codings) {
+    if (!["gzip", "x-gzip", "deflate", "x-deflate", "br", "zstd"].includes(coding)) {
+      throw new Error(`Unsupported content-encoding: ${coding}`);
+    }
+  }
+
+  // Variable imports keep Node's stream and decompression modules out of browser graphs.
+  const streamModuleName = "node:stream";
+  const pipelineModuleName = "node:stream/promises";
+  const zlibModuleName = "node:zlib";
+  const [{ Duplex, Transform, Writable }, { pipeline }, zlib] = await Promise.all([
+    import(streamModuleName) as Promise<typeof NodeStream>,
+    import(pipelineModuleName) as Promise<typeof StreamPromises>,
+    import(zlibModuleName) as Promise<typeof Zlib>,
+  ]);
+  const incompleteBodyError = new Error("The connection was closed before the response body was complete");
+  if (res.destroyed) {
+    throw res.errored ?? incompleteBodyError;
+  }
+
+  const limitSize = () => {
+    let received = 0;
+    return new Transform({
+      transform(chunk: Buffer, _encoding, callback) {
+        received += chunk.length;
+        callback(received > maxContentLength ? contentTooLargeError(maxContentLength) : null, chunk);
+      },
+    });
+  };
+  const transforms: NodeStream.Duplex[] = [limitSize()];
+  for (const coding of codings.reverse()) {
+    const decoder =
+      coding === "gzip" || coding === "x-gzip"
+        ? zlib.createGunzip()
+        : coding === "deflate" || coding === "x-deflate"
+          ? createDeflateDecoder(zlib, Duplex)
+          : coding === "br"
+            ? zlib.createBrotliDecompress()
+            : zlib.createZstdDecompress();
+    // Bound every decoding stage, including intermediate representations in stacked encodings.
+    transforms.push(decoder, limitSize());
+  }
+
+  const chunks: Buffer[] = [];
+  let received = 0;
+  const collector = new Writable({
+    write(chunk: Buffer, _encoding, callback) {
+      chunks.push(chunk);
+      received += chunk.length;
+      callback();
+    },
+  });
+  try {
+    // Keep the timeout effective even after the network body ends but decoding is still in progress.
+    await pipeline([res, ...transforms, collector], signal ? { signal } : {});
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ERR_STREAM_PREMATURE_CLOSE") {
+      throw incompleteBodyError;
+    }
+    throw error;
+  }
+  return Buffer.concat(chunks, received);
+}
+
+/** Some HTTP servers label raw DEFLATE streams as deflate, without the zlib wrapper. */
+function createDeflateDecoder(zlib: typeof Zlib, Duplex: typeof NodeStream.Duplex): NodeStream.Duplex {
+  let decoder: NodeStream.Transform | undefined;
+  return new Duplex({
+    read() {
+      decoder?.resume();
+    },
+    write(chunk: Buffer, encoding, callback) {
+      if (!decoder) {
+        if (chunk.length === 0) {
+          callback();
+          return;
+        }
+        decoder = (chunk[0] & 0x0f) === 0x08 ? zlib.createInflate() : zlib.createInflateRaw();
+        decoder.on("data", (decoded: Buffer) => {
+          if (!this.push(decoded)) {
+            decoder?.pause();
+          }
+        });
+        decoder.on("end", () => this.push(null));
+        decoder.on("error", (error) => this.destroy(error));
+      }
+      decoder.write(chunk, encoding, callback);
+    },
+    final(callback) {
+      if (decoder) {
+        decoder.end(callback);
+      } else {
+        this.push(null);
+        callback();
+      }
+    },
+    destroy(error, callback) {
+      decoder?.destroy();
+      callback(error);
+    },
+  });
 }
 
 function assertContentLengthWithin(contentLength: string | null | undefined, maxContentLength: number) {

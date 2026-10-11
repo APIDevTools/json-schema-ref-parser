@@ -183,7 +183,7 @@ describe.skipIf(isBrowser)("HTTP request security", () => {
     expect(autoSelectFamily).toBe(true);
   });
 
-  it("requests identity encoding and strips connection headers", async () => {
+  it("preserves requested encoding and strips connection headers", async () => {
     mockRequestOnce(jsonResponse({ type: "string" }));
 
     const parser = new $RefParser();
@@ -204,21 +204,19 @@ describe.skipIf(isBrowser)("HTTP request security", () => {
 
     expect(requestOptions(0).headers).toEqual({
       accept: "*/*",
-      "accept-encoding": "identity",
+      "accept-encoding": "gzip",
       "user-agent": "node",
       "x-custom": "kept",
     });
   });
 
-  it("rejects compressed responses", async () => {
+  it("decodes compressed responses", async () => {
     const body = gzipSync(Buffer.from(JSON.stringify({ type: "string" })));
     const res = fakeResponse(200, { "content-type": "application/json", "content-encoding": "gzip" }, body);
     mockRequestOnce(res);
 
     const parser = new $RefParser();
-    await expect(parser.parse("https://trusted.example/schema.json")).rejects.toThrow(
-      "Unsupported content-encoding: gzip",
-    );
+    await expect(parser.parse("https://trusted.example/schema.json")).resolves.toEqual({ type: "string" });
 
     expect(res.destroyed).toBe(true);
   });
