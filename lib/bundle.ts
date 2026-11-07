@@ -27,6 +27,7 @@ export interface InventoryEntry {
   nestedIdScope: boolean;
   targetResourceBase: string;
   targetResourceId?: string;
+  rootReference?: string;
 }
 /**
  * Bundles all external JSON references into the main JSON schema, thus resulting in a schema that
@@ -265,6 +266,11 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   const shouldResolveOnCwd = $Ref.isExternal$Ref($ref) && options.dereference?.externalReferenceResolution === "root";
   const resolutionBase = shouldResolveOnCwd ? url.cwd() : dynamicIdScope ? scopeBase : path;
   const $refPath = url.resolve(resolutionBase, $ref.$ref);
+  const refFile = url.stripHash($refPath);
+  const rootReference =
+    refFile === $refs._root$Ref.path || $refs._aliases[refFile]?.value === $refs._root$Ref.value
+      ? url.getHash($refPath)
+      : undefined;
   const pointer = $refs._resolve($refPath, pathFromRoot, options);
   if (pointer === null) {
     return;
@@ -315,6 +321,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
     nestedIdScope, // Whether this $ref will remain inside a non-root $id scope after bundling
     targetResourceBase, // The canonical URI of the resource containing the target
     ...(targetResourceId === undefined ? {} : { targetResourceId }),
+    ...(rootReference === undefined ? {} : { rootReference }),
   });
 
   // Recursively crawl the resolved value
@@ -417,6 +424,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   });
 
   let file, hash, pathFromRoot;
+  const recursiveEntries: InventoryEntry[] = [];
   for (const entry of inventory) {
     // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
 
@@ -427,7 +435,16 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       // instead of rewriting it to the fully resolved hash. References to nested
       // resources must also retain their resource URI so that "#" does not point
       // at the document root instead.
-      if (bundleOpts.optimizeInternalRefs !== false) {
+      if (
+        entry.rootReference !== undefined &&
+        !entry.nestedIdScope &&
+        (bundleOpts.optimizeInternalRefs === false || !entry.nestedResource)
+      ) {
+        // An inlined file without its own $id now shares the root's scope.
+        // Internalizing a reference back to that root is required even when
+        // optimization is disabled; only collapsing its ref chain is optional.
+        entry.$ref.$ref = bundleOpts.optimizeInternalRefs === false ? entry.rootReference : entry.hash;
+      } else if (bundleOpts.optimizeInternalRefs !== false) {
         const targetResourceBase = url.stripHash(entry.targetResourceBase);
         const locationResourceBase = url.stripHash(entry.scopeBase);
         if (targetResourceBase !== locationResourceBase) {
@@ -441,8 +458,16 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       entry.$ref.$ref = qualifyPathFromRoot(entry, pathFromRoot, rootId, rootScopeBase);
     } else if (entry.file === file && entry.hash.indexOf(hash + "/") === 0) {
       // This $ref points to a sub-value of the previous $ref, so remap it beneath that path
-      const subPath = Pointer.join(pathFromRoot, Pointer.parse(entry.hash.replace(hash, "#")));
-      entry.$ref.$ref = qualifyPathFromRoot(entry, subPath, rootId, rootScopeBase);
+      const tokens = Pointer.parse("#" + entry.hash.slice(hash.length));
+      if (pathFromRoot?.startsWith(entry.pathFromRoot + "/")) {
+        // The ancestor was embedded beneath this sub-value. Redirecting this
+        // location into that ancestor would remove the very path it points to.
+        entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
+        recursiveEntries.push(entry);
+      } else {
+        const subPath = Pointer.join(pathFromRoot, tokens);
+        entry.$ref.$ref = qualifyPathFromRoot(entry, subPath, rootId, rootScopeBase);
+      }
     } else {
       // We've moved to a new file or new hash
       file = entry.file;
@@ -458,6 +483,12 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         entry.$ref.$ref = entry.pathFromRoot;
       }
     }
+  }
+
+  for (const entry of recursiveEntries) {
+    // Finish other external inlines before copying this subtree, so writes to
+    // inventoried parents are retained in the recursive bundle as well.
+    preserveRecursiveTargets(entry, inventory, rootId, rootScopeBase);
   }
 
   // we want to ensure that any $refs that point to another $ref are remapped to point to the final value
@@ -479,6 +510,113 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   //     }
   //   }
   // }
+}
+
+/**
+ * Replaces cycles introduced by recursive external sub-paths with internal references.
+ * Copying keeps source values distinct from extended refs that override their properties.
+ */
+function preserveRecursiveTargets(
+  entry: InventoryEntry,
+  inventory: InventoryEntry[],
+  rootId?: string,
+  rootScopeBase?: string,
+) {
+  const targets = new Set(inventory.map((candidate) => candidate.value));
+  const paths = new Map<object, string>();
+  const activeTargets = new Map<object, string>();
+  const parents = new Map<object, { copy: any; targetCount: number }>();
+  const refScopes = new Map<object, InventoryEntry>();
+
+  function copy(value: any, path: string, scope: InventoryEntry, legacyIdScope = false): any {
+    if (!value || typeof value !== "object" || ArrayBuffer.isView(value)) {
+      return value;
+    }
+    const recursivePath = activeTargets.get(value);
+    if (recursivePath !== undefined) {
+      // Only reference targets can be replaced with $refs. Intermediate maps
+      // such as "properties" must remain literal objects in the bundle.
+      return { $ref: qualifyPathFromRoot(scope, recursivePath, rootId, rootScopeBase) };
+    }
+    const parent = parents.get(value);
+    if (parent && parent.targetCount === activeTargets.size) {
+      // Preserve JavaScript object cycles that did not come from a $ref.
+      return parent.copy;
+    }
+    legacyIdScope = getSchemaIdMode(value, legacyIdScope);
+    if (hasSchemaIdentifier(value, legacyIdScope)) {
+      scope = {
+        ...scope,
+        scopeBase: getSchemaBasePath(scope.scopeBase, value, legacyIdScope),
+        dynamicIdScope: true,
+        nestedIdScope: true,
+      };
+    }
+    if (targets.has(value)) {
+      if (!paths.has(value)) {
+        paths.set(value, path);
+      }
+      activeTargets.set(value, path);
+    }
+    if ($Ref.is$Ref(value)) {
+      // Retain inventoried ref identities so subsequent remapping reaches all
+      // their copied occurrences, including refs with sibling properties.
+      refScopes.set(value, scope);
+      activeTargets.delete(value);
+      return value;
+    }
+    const result = Array.isArray(value) ? new Array(value.length) : {};
+    parents.set(value, { copy: result, targetCount: activeTargets.size });
+    for (const key of Object.keys(value)) {
+      Object.defineProperty(result, key, {
+        value: copy(value[key], Pointer.join(path, key), scope, legacyIdScope),
+        writable: true,
+        enumerable: true,
+        configurable: true,
+      });
+    }
+    activeTargets.delete(value);
+    if (parent) {
+      parents.set(value, parent);
+    } else {
+      parents.delete(value);
+    }
+    return result;
+  }
+
+  entry.$ref = entry.parent[entry.key] = copy(entry.$ref, entry.pathFromRoot, {
+    ...entry,
+    scopeBase: entry.nestedIdScope ? entry.scopeBase : (rootScopeBase ?? entry.scopeBase),
+  });
+
+  // An extended ref can move the unmodified source deeper into the bundle.
+  // Prefer the closest source target so refs never traverse a generated $ref,
+  // including when optimizeInternalRefs is disabled.
+  const relocated = inventory
+    .filter((candidate) => paths.has(candidate.value))
+    .sort((a, b) => b.hash.length - a.hash.length);
+  for (const candidate of inventory) {
+    if (!candidate.external || candidate.circular || !$Ref.is$Ref(candidate.$ref)) {
+      continue;
+    }
+    const target = relocated.find(
+      (target) =>
+        target.file === candidate.file &&
+        (target.hash === candidate.hash || candidate.hash.startsWith(target.hash + "/")),
+    );
+    if (target) {
+      const path = Pointer.join(
+        paths.get(target.value)!,
+        Pointer.parse("#" + candidate.hash.slice(target.hash.length)),
+      );
+      candidate.$ref.$ref = qualifyPathFromRoot(
+        refScopes.get(candidate.$ref) ?? candidate,
+        path,
+        rootId,
+        rootScopeBase,
+      );
+    }
+  }
 }
 
 /**
