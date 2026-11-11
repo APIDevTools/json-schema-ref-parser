@@ -82,6 +82,8 @@ The Node.js HTTP resolver supports gzip, deflate, Brotli, and Zstandard response
 
 `resolveExcludedPathMatcher(path, value)` is a top-level option that stops resolution and fetching for a root-relative occurrence and all of its descendants. It is separate from the `resolve` map because every key in that map can be a custom resolver plugin. A reference and its resolved effective value can both be evaluated at the same root-relative path; extended-reference values are merged before their descendants are inspected. Internal alias traversal uses `dereference.maxDepth` as its safety limit.
 
+Loaded external documents are also inventoried in full, including data outside a selected fragment. During this additional pass, the matcher receives paths relative to each external document's root, such as `#/example`. Exclusions from the root-relative traversal remain in effect. For example, when `#/use` references `external.json#/schema`, an unselected sibling named `example` is checked at `#/example`; a matcher such as `path => path.endsWith("/example")` excludes examples in both passes. A matcher that always returns `false` preserves full-document reference discovery.
+
 Resolution, bundling, and dereferencing are stage-local. Configure each stage's matcher when the same literal value should remain untouched throughout a compound operation.
 
 ## `dereference` Options

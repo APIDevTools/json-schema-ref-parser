@@ -51,7 +51,6 @@ interface ResolveContext<S extends object, O extends ParserOptions<S>> {
   documentLoads: Map<string, Promise<boolean>>;
   externalDocuments: Set<string>;
   excludedPaths: Set<string>;
-  excludedAncestorPaths: Set<string>;
 }
 
 export default async function resolveExternalWithMatcher<S extends object, O extends ParserOptions<S>>(
@@ -70,7 +69,6 @@ export default async function resolveExternalWithMatcher<S extends object, O ext
     documentLoads: new Map(),
     externalDocuments: new Set(),
     excludedPaths: new Set(),
-    excludedAncestorPaths: new Set(),
   };
 
   await crawlOccurrence(
@@ -278,7 +276,7 @@ function markPhysicalExternalDocument<S extends object, O extends ParserOptions<
 
 /**
  * Preserve resolve()'s historical full-document inventory. Physical occurrences excluded by the
- * matcher-aware crawl remain literal, while every other branch is inventoried as before.
+ * logical crawl remain literal; remaining branches are matched relative to their document root.
  */
 async function completeExternalDocumentInventory<S extends object, O extends ParserOptions<S>>(
   context: ResolveContext<S, O>,
@@ -290,7 +288,7 @@ async function completeExternalDocumentInventory<S extends object, O extends Par
     }
 
     const ref = context.$refs._get$Ref(documentPath);
-    if (!ref || isHandledError(ref.value)) {
+    if (!ref || isHandledError(ref.value) || isPhysicalPathExcluded(ref.path! + "#", ref.value, context)) {
       continue;
     }
 
@@ -302,15 +300,14 @@ async function completeExternalDocumentInventory<S extends object, O extends Par
       ref.dynamicIdScope,
       ref.legacyIdScope,
       undefined,
-      new WeakMap(),
       context,
     );
   }
 }
 
 /**
- * Crawls physical document occurrences. An active ancestry chain protects incomplete subtrees
- * containing exclusions; complete subtrees are visited once per object and URI scope.
+ * Crawls every physical occurrence because the matcher can exclude different paths through a
+ * shared object. Only active ancestors are skipped to prevent object cycles.
  */
 async function crawlPhysicalOccurrence<S extends object, O extends ParserOptions<S>>(
   value: unknown,
@@ -319,7 +316,6 @@ async function crawlPhysicalOccurrence<S extends object, O extends ParserOptions
   dynamicIdScope: boolean,
   legacyIdScope: boolean,
   activeObjects: ObjectChain | undefined,
-  seen: WeakMap<object, Set<string>>,
   context: ResolveContext<S, O>,
 ) {
   if (
@@ -330,20 +326,6 @@ async function crawlPhysicalOccurrence<S extends object, O extends ParserOptions
     hasObject(activeObjects, value)
   ) {
     return;
-  }
-
-  const hasExcludedDescendant = context.excludedAncestorPaths.has(path);
-  const scopeKey = `${legacyIdScope}:${scopeBase}`;
-  const scopes = seen.get(value);
-  if (!hasExcludedDescendant && scopes?.has(scopeKey)) {
-    return;
-  }
-  if (!hasExcludedDescendant) {
-    if (scopes) {
-      scopes.add(scopeKey);
-    } else {
-      seen.set(value, new Set([scopeKey]));
-    }
   }
 
   const nextActiveObjects: ObjectChain = {
@@ -370,7 +352,16 @@ async function crawlPhysicalOccurrence<S extends object, O extends ParserOptions
         return;
       }
 
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (descriptor?.get && isPhysicalPathExcluded(childPath, undefined, context)) {
+        return;
+      }
+
       const child = (value as Record<string, unknown>)[key];
+      if (isPhysicalPathExcluded(childPath, child, context)) {
+        return;
+      }
+
       const childLegacyIdScope = getSchemaIdMode(child, legacyIdScope);
       const childScopeBase =
         dynamicIdScope && child && typeof child === "object" && !ArrayBuffer.isView(child)
@@ -383,7 +374,6 @@ async function crawlPhysicalOccurrence<S extends object, O extends ParserOptions
         dynamicIdScope,
         childLegacyIdScope,
         nextActiveObjects,
-        seen,
         context,
       );
     }),
@@ -391,23 +381,27 @@ async function crawlPhysicalOccurrence<S extends object, O extends ParserOptions
   await Promise.all(tasks);
 }
 
+function isPhysicalPathExcluded<S extends object, O extends ParserOptions<S>>(
+  path: string,
+  value: unknown,
+  context: ResolveContext<S, O>,
+) {
+  if (context.excludedPaths.has(path)) {
+    return true;
+  }
+  if (context.excludedPathMatcher(url.getHash(path), value)) {
+    context.excludedPaths.add(normalizePhysicalPath(path));
+    return true;
+  }
+  return false;
+}
+
 function markExcludedOrigins<S extends object, O extends ParserOptions<S>>(
   target: LocatedValue,
   context: ResolveContext<S, O>,
 ) {
   for (const path of target.originPaths || [target.path]) {
-    const normalizedPath = normalizePhysicalPath(path);
-    if (context.excludedPaths.has(normalizedPath)) {
-      continue;
-    }
-
-    context.excludedPaths.add(normalizedPath);
-    const documentRoot = url.stripHash(normalizedPath) + "#";
-    let ancestor = documentRoot;
-    for (const token of Pointer.parse(normalizedPath)) {
-      context.excludedAncestorPaths.add(ancestor);
-      ancestor = Pointer.join(ancestor, token);
-    }
+    context.excludedPaths.add(normalizePhysicalPath(path));
   }
 }
 

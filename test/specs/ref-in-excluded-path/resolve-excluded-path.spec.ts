@@ -631,6 +631,112 @@ describe("excluded paths during resolution", () => {
     }
   });
 
+  it.each(["resolve", "bundle", "dereference"] as const)(
+    "excludes literal siblings of an external fragment during %s",
+    async (operation) => {
+      const reads: Record<string, number> = {};
+      const seenPaths: string[] = [];
+      const options = memoryOptions(
+        {
+          "mem://external.json": {
+            example: { $ref: "a confusingly named property" },
+            schema: { type: "string" },
+          },
+        },
+        reads,
+        (schemaPath) => {
+          seenPaths.push(schemaPath);
+          return schemaPath.endsWith("/example");
+        },
+      );
+
+      await $RefParser[operation]("mem://root.json", { use: { $ref: "mem://external.json#/schema" } }, options);
+
+      expect(reads).toEqual({ "mem://external.json": 1 });
+      expect(seenPaths).toContain("#/example");
+      expect(seenPaths).not.toContain("#/example/$ref");
+    },
+  );
+
+  it("matches unselected values while retaining structural references in nested document inventory", async () => {
+    const reads: Record<string, number> = {};
+    const options = memoryOptions(
+      {
+        "mem://external.json": {
+          schema: { type: "string" },
+          example: { $ref: "mem://literal.json", literal: true },
+          structural: { $ref: "mem://nested.json#/schema" },
+        },
+        "mem://nested.json": {
+          schema: { type: "number" },
+          example: { $ref: "mem://nested-literal.json", literal: true },
+          structural: { $ref: "mem://structural.json" },
+        },
+        "mem://structural.json": { type: "boolean" },
+      },
+      reads,
+      (schemaPath, value) => schemaPath === "#/example" && isReference(value) && "literal" in value,
+    );
+
+    await $RefParser.resolve("mem://root.json", { use: { $ref: "mem://external.json#/schema" } }, options);
+
+    expect(reads).toEqual({
+      "mem://external.json": 1,
+      "mem://nested.json": 1,
+      "mem://structural.json": 1,
+    });
+  });
+
+  it("checks each unselected shared occurrence independently of key order", async () => {
+    for (const order of [
+      ["excluded", "included"],
+      ["included", "excluded"],
+    ] as const) {
+      const reads: Record<string, number> = {};
+      const seenPaths: string[] = [];
+      const shared: Record<string, unknown> = { nested: { $ref: "mem://nested.json" } };
+      shared.self = shared;
+      const options = memoryOptions(
+        {
+          "mem://external.json": {
+            schema: { type: "string" },
+            ...Object.fromEntries(order.map((key) => [key, shared])),
+          },
+          "mem://nested.json": { type: "number" },
+        },
+        reads,
+        (schemaPath) => {
+          seenPaths.push(schemaPath);
+          return schemaPath === "#/excluded/nested";
+        },
+      );
+
+      await $RefParser.resolve("mem://root.json", { use: { $ref: "mem://external.json#/schema" } }, options);
+
+      expect(reads["mem://nested.json"]).toBe(1);
+      expect(seenPaths).toContain("#/excluded/nested");
+      expect(seenPaths).toContain("#/included/nested");
+      expect(seenPaths).not.toContain("#/excluded/nested/$ref");
+    }
+  });
+
+  it("does not read unselected accessors excluded by path", async () => {
+    let getterCalls = 0;
+    const external = { schema: { type: "string" } };
+    Object.defineProperty(external, "example", {
+      enumerable: true,
+      get() {
+        getterCalls += 1;
+        throw new Error("unselected excluded getter was evaluated");
+      },
+    });
+    const options = memoryOptions({ "mem://external.json": external }, {}, (schemaPath) => schemaPath === "#/example");
+
+    await $RefParser.resolve("mem://root.json", { use: { $ref: "mem://external.json#/schema" } }, options);
+
+    expect(getterCalls).toBe(0);
+  });
+
   it("does not leak a selected exclusion across shared physical document occurrences", async () => {
     for (const order of [
       ["used", "unused"],

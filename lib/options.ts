@@ -174,6 +174,9 @@ export interface $RefParserOptions<S extends object = JSONSchema> {
    * resolved. Returning `true` stops that occurrence and all of its descendants from being
    * crawled or fetched. The current value lets callers distinguish structural references from
    * literal `$ref` data.
+   * Loaded external documents are also inventoried in full. During that pass, the matcher uses
+   * paths relative to each external document's root (for example, `#/example`), and exclusions
+   * from the root-relative traversal remain in effect.
    *
    * This option is top-level because `resolve` is also an open map of custom resolver plugins;
    * placing a callback in that map would make arbitrary function-valued plugins type-check even
