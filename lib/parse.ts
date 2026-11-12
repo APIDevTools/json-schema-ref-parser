@@ -16,6 +16,8 @@ interface ParseTarget {
   url: string;
   reference?: string;
   baseUrl?: string;
+  /** The URL of the document that contains the `$ref`, without the hash. */
+  referrer?: string;
 }
 
 /**
@@ -29,6 +31,7 @@ async function parse<S extends object = JSONSchema, O extends ParserOptions<S> =
   let path = typeof target === "string" ? target : target.url;
   const baseUrl = typeof target === "string" ? undefined : target.baseUrl;
   let reference = typeof target === "string" ? undefined : target.reference;
+  const referrer = typeof target === "string" ? undefined : target.referrer;
 
   // Remove the URL fragment, if any
   const hashIndex = path.indexOf("#");
@@ -60,6 +63,12 @@ async function parse<S extends object = JSONSchema, O extends ParserOptions<S> =
 
   // Read the file and then parse the data
   try {
+    // A schema loaded from an HTTP(S) URL must not pull in local files. Without this check,
+    // a remote schema could read any file on the host with `$ref: "file:///..."`.
+    if (referrer && url.isHttp(referrer) && url.isFileSystemPath(path)) {
+      throw new ResolverError(new Error(`Cannot resolve local file "${path}" from remote schema "${referrer}"`), path);
+    }
+
     const resolver = await readFile<S, O>(file, options, $refs);
     $ref.pathType = resolver.plugin.name;
     file.data = resolver.result;

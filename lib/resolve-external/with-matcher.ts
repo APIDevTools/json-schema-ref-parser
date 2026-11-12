@@ -240,6 +240,7 @@ async function loadExternalDocument<S extends object, O extends ParserOptions<S>
       url: resolvedPath,
       baseUrl: resolutionBase,
       reference: reference.$ref,
+      referrer: url.stripHash(path),
     },
     context.$refs,
     context.options,

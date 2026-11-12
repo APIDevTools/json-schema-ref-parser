@@ -176,9 +176,10 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
   // Parse the $referenced file/url
   try {
     const reference = ($ref as JSONSchema).$ref;
-    const parseTarget: { url: string; baseUrl: string; reference?: string } = {
+    const parseTarget: { url: string; baseUrl: string; reference?: string; referrer: string } = {
       url: resolvedPath,
       baseUrl: resolutionBase,
+      referrer: url.stripHash(path),
     };
     if (typeof reference === "string") {
       parseTarget.reference = reference;
