@@ -72,6 +72,12 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
   // Remap all $ref pointers
   remap<S, O>(inventory, options, rootId, rootScopeBase);
 
+  // Without a root $id, refs qualified from the root carry its local path, which only resolves
+  // where the bundle was made. Point them from the document root instead where that is safe.
+  if (!rootId && parser.$refs._root$Ref.dynamicIdScope) {
+    collapseLocalRootScopes(parser.schema, rootScopeBase, parser.$refs._root$Ref.legacyIdScope);
+  }
+
   // Fix any $ref paths that traverse through other $refs (which is invalid per JSON Schema spec)
   const bundleOptions = (options.bundle || {}) as BundleOptions;
   if (bundleOptions.optimizeInternalRefs !== false) {
@@ -756,6 +762,103 @@ function qualifyPathFromRoot(
   }
 
   return url.stripHash(rootResource) + pathFromRoot;
+}
+
+interface IdScope {
+  key: "$id" | "id";
+  id: string;
+  // The outermost $id schema above this one, or this schema when it is the outermost
+  outer: object;
+  pointer: string;
+  schema: Record<string, unknown>;
+}
+
+interface ScopedRef {
+  holder: { $ref: string };
+  // The $id schemas above this ref, outermost first
+  scopes: IdScope[];
+}
+
+// Rewrites refs that start with the root's local path, and fragment-only refs under the same
+// nested $id, as pointers from the document root, then removes those $ids.
+function collapseLocalRootScopes(schema: unknown, rootScopeBase: string, legacyIdScope: boolean) {
+  const rootPrefix = url.stripHash(rootScopeBase) + "#";
+  const refs: ScopedRef[] = [];
+  const idScopes: IdScope[] = [];
+  const seen = new Set<object>();
+
+  const visit = (node: unknown, pointer: string, scopes: IdScope[], inheritedLegacyId: boolean) => {
+    if (!node || typeof node !== "object" || ArrayBuffer.isView(node) || seen.has(node)) {
+      return;
+    }
+    seen.add(node);
+
+    const obj = node as Record<string, unknown>;
+    const legacyId = getSchemaIdMode(obj, inheritedLegacyId);
+    const id = getSchemaId(obj, legacyId);
+    let innerScopes = scopes;
+    if (id !== undefined) {
+      const scope: IdScope = {
+        key: legacyId ? "id" : "$id",
+        id,
+        outer: scopes[0]?.schema ?? obj,
+        pointer,
+        schema: obj,
+      };
+      idScopes.push(scope);
+      innerScopes = [...scopes, scope];
+    }
+
+    for (const key of Object.keys(obj)) {
+      const value = obj[key];
+      if (key === "$ref" && typeof value === "string") {
+        refs.push({ holder: obj as ScopedRef["holder"], scopes: innerScopes });
+      } else {
+        visit(value, Pointer.join(pointer, key), innerScopes, legacyId);
+      }
+    }
+  };
+
+  // The root has no $id here, so only nested schemas open a scope.
+  visit(schema, "#", [], legacyIdScope);
+
+  const isRootPrefixed = (ref: ScopedRef) => ref.holder.$ref.startsWith(rootPrefix);
+  const isFragment = (ref: string) => ref === "#" || ref.startsWith("#/");
+  // A ref may target a $id when it contains it, unless it is a pointer from the document root.
+  const mayTargetId = (ref: string, id: string) => ref !== "#" && !isInternalPointer(ref) && ref.includes(id);
+  const otherRefs = refs.filter((ref) => !isRootPrefixed(ref)).map((ref) => ref.holder.$ref);
+
+  // Grouped by outermost $id, since removing it re-scopes every ref beneath it.
+  const groups = new Map<object, ScopedRef[]>();
+  for (const ref of refs) {
+    const outer = ref.scopes[0]?.schema;
+    if (outer) {
+      groups.set(outer, [...(groups.get(outer) ?? []), ref]);
+    }
+  }
+
+  for (const [outer, group] of groups) {
+    const scopes = idScopes.filter((scope) => scope.outer === outer);
+    // URI and anchor refs can't be rewritten as root pointers, so a group using one, or one whose
+    // $id a URI ref may target, stays as the bundler wrote it.
+    const canCollapse =
+      group.some(isRootPrefixed) &&
+      group.every((ref) => isRootPrefixed(ref) || isFragment(ref.holder.$ref)) &&
+      !otherRefs.some((ref) => scopes.some(({ id }) => mayTargetId(ref, id)));
+    if (!canCollapse) {
+      continue;
+    }
+
+    const scopesToCollapse = new Set<IdScope>();
+    for (const ref of group) {
+      const innermost = ref.scopes[ref.scopes.length - 1]!;
+      ref.holder.$ref = isRootPrefixed(ref)
+        ? ref.holder.$ref.slice(rootPrefix.length - 1)
+        : innermost.pointer + ref.holder.$ref.slice(1);
+      ref.scopes.forEach((scope) => scopesToCollapse.add(scope));
+    }
+    scopesToCollapse.forEach((scope) => delete scope.schema[scope.key]);
+  }
 }
 
 function referenceToResource(entry: InventoryEntry): string {

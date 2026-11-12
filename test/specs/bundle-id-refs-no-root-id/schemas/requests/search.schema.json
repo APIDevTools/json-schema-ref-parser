@@ -1,0 +1,12 @@
+{
+  "$id": "requests/search.schema.json",
+  "type": "object",
+  "properties": {
+    "test1": { "$ref": "../test.json" },
+    "test2": { "$ref": "../test.json" },
+    "page": { "$ref": "#/$defs/page" }
+  },
+  "$defs": {
+    "page": { "type": "integer" }
+  }
+}
