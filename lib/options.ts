@@ -18,6 +18,9 @@ export type DeepPartial<T> = T extends (...args: never[]) => unknown
 /** Stops an operation from processing a root-relative schema occurrence and its descendants. */
 export type ExcludedPathMatcher = (path: string, value?: unknown) => boolean;
 
+/** Stable identity lets bundle traversal recognize when exclusions are path-independent. */
+export const defaultBundleExcludedPathMatcher: ExcludedPathMatcher = () => false;
+
 export interface BundleOptions {
   /**
    * A function, called for each path, which can return true to stop this path and all
@@ -272,7 +275,7 @@ export const getJsonSchemaRefParserDefaultOptions = () => {
        *
        * @type {function}
        */
-      excludedPathMatcher: () => false,
+      excludedPathMatcher: defaultBundleExcludedPathMatcher,
     },
 
     /**

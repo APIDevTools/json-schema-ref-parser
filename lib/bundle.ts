@@ -7,6 +7,7 @@ import type $RefParser from "./index.js";
 import type { ParserOptions } from "./index.js";
 import type { JSONSchema } from "./index.js";
 import type { BundleOptions } from "./options.js";
+import { defaultBundleExcludedPathMatcher } from "./options.js";
 
 export interface InventoryEntry {
   $ref: any;
@@ -70,13 +71,18 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
   const rootId = getSchemaId(parser.schema, parser.$refs._root$Ref.legacyIdScope);
 
   // Remap all $ref pointers
-  remap<S, O>(inventory, options, rootId, rootScopeBase);
+  const generatedRefs = new Map<object, string>();
+  remap<S, O>(inventory, options, generatedRefs, rootId, rootScopeBase);
 
-  // Fix any $ref paths that traverse through other $refs (which is invalid per JSON Schema spec)
-  const bundleOptions = (options.bundle || {}) as BundleOptions;
-  if (bundleOptions.optimizeInternalRefs !== false) {
-    fixRefsThroughRefs(inventory, parser.schema as any);
-  }
+  finalizeReferences(
+    parser.schema,
+    inventory,
+    generatedRefs,
+    rootScopeBase,
+    parser.$refs._root$Ref.dynamicIdScope,
+    parser.$refs._root$Ref.legacyIdScope,
+    (options.bundle || {}) as BundleOptions,
+  );
 }
 
 /**
@@ -378,6 +384,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
 function remap<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   inventory: InventoryEntry[],
   options: O,
+  generatedRefs: Map<object, string>,
   rootId?: string,
   rootScopeBase?: string,
 ) {
@@ -456,6 +463,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     } else if (entry.file === file && entry.hash === hash) {
       // This $ref points to the same value as the previous $ref, so remap it to the same path
       entry.$ref.$ref = qualifyPathFromRoot(entry, pathFromRoot, rootId, rootScopeBase);
+      generatedRefs.set(entry.$ref, pathFromRoot);
     } else if (entry.file === file && entry.hash.indexOf(hash + "/") === 0) {
       // This $ref points to a sub-value of the previous $ref, so remap it beneath that path
       const tokens = Pointer.parse("#" + entry.hash.slice(hash.length));
@@ -467,6 +475,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       } else {
         const subPath = Pointer.join(pathFromRoot, tokens);
         entry.$ref.$ref = qualifyPathFromRoot(entry, subPath, rootId, rootScopeBase);
+        generatedRefs.set(entry.$ref, subPath);
       }
     } else {
       // We've moved to a new file or new hash
@@ -481,6 +490,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       if (entry.circular) {
         // This $ref points to itself
         entry.$ref.$ref = entry.pathFromRoot;
+        generatedRefs.set(entry.$ref, entry.pathFromRoot);
       }
     }
   }
@@ -488,7 +498,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   for (const entry of recursiveEntries) {
     // Finish other external inlines before copying this subtree, so writes to
     // inventoried parents are retained in the recursive bundle as well.
-    preserveRecursiveTargets(entry, inventory, rootId, rootScopeBase);
+    preserveRecursiveTargets(entry, inventory, generatedRefs, rootId, rootScopeBase);
   }
 
   // we want to ensure that any $refs that point to another $ref are remapped to point to the final value
@@ -519,6 +529,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
 function preserveRecursiveTargets(
   entry: InventoryEntry,
   inventory: InventoryEntry[],
+  generatedRefs: Map<object, string>,
   rootId?: string,
   rootScopeBase?: string,
 ) {
@@ -536,7 +547,9 @@ function preserveRecursiveTargets(
     if (recursivePath !== undefined) {
       // Only reference targets can be replaced with $refs. Intermediate maps
       // such as "properties" must remain literal objects in the bundle.
-      return { $ref: qualifyPathFromRoot(scope, recursivePath, rootId, rootScopeBase) };
+      const ref = { $ref: qualifyPathFromRoot(scope, recursivePath, rootId, rootScopeBase) };
+      generatedRefs.set(ref, recursivePath);
+      return ref;
     }
     const parent = parents.get(value);
     if (parent && parent.targetCount === activeTargets.size) {
@@ -615,6 +628,7 @@ function preserveRecursiveTargets(
         rootId,
         rootScopeBase,
       );
+      generatedRefs.set(candidate.$ref, path);
     }
   }
 }
@@ -637,26 +651,135 @@ function removeFromInventory(inventory: InventoryEntry[], entry: any) {
 }
 
 /**
- * After remapping, some $ref paths may traverse through other $ref nodes.
- * JSON pointer resolution does not follow $ref indirection, so these paths are invalid.
- * This function detects and fixes such paths by following any intermediate $refs
- * to compute a valid direct path.
+ * Locate references in the finished bundle, after recursive targets and external
+ * schemas have moved. Generated targets inside the same resource can use local
+ * pointers; authored references retain their spelling when optimization is off.
  */
-function fixRefsThroughRefs(inventory: InventoryEntry[], schema: any) {
-  for (const entry of inventory) {
-    if (!entry.$ref || typeof entry.$ref !== "object" || !("$ref" in entry.$ref)) {
-      continue;
-    }
+function finalizeReferences(
+  schema: any,
+  inventory: InventoryEntry[],
+  generatedRefs: Map<object, string>,
+  rootScopeBase: string,
+  dynamicIdScope: boolean,
+  legacyIdScope: boolean,
+  options: BundleOptions,
+) {
+  if (
+    inventory.length === 0 ||
+    (options.optimizeInternalRefs === false && (!dynamicIdScope || generatedRefs.size === 0))
+  ) {
+    return;
+  }
+  interface Resource {
+    value: object;
+    path: string;
+  }
+  const trackedRefs = new Set([...inventory.map((entry) => entry.$ref), ...generatedRefs.keys()]);
+  const references: { value: any; resource: Resource }[] = [];
+  const resourceRoots = new Map<object, object | undefined>();
+  const parents = new Set<object>();
+  const isExcludedPath = options.excludedPathMatcher || (() => false);
+  const visited =
+    !options.excludedPathMatcher || options.excludedPathMatcher === defaultBundleExcludedPathMatcher
+      ? new Map<object, Set<string>>()
+      : undefined;
 
-    const refValue = entry.$ref.$ref;
-    if (typeof refValue !== "string" || !isInternalPointer(refValue)) {
-      continue;
+  function visit(value: any, path: string, scopeBase: string, legacyId: boolean, resource: Resource) {
+    if (!value || typeof value !== "object" || ArrayBuffer.isView(value) || parents.has(value)) {
+      return;
     }
+    legacyId = getSchemaIdMode(value, legacyId);
+    if (dynamicIdScope && path !== "#") {
+      const nextBase = getSchemaBasePath(scopeBase, value, legacyId);
+      // A plain-name fragment identifies a subschema within the current
+      // resource. It does not establish a new JSON Pointer root.
+      if (url.stripHash(nextBase) !== url.stripHash(scopeBase)) {
+        resource = { value, path };
+      }
+      scopeBase = nextBase;
+    }
+    if (visited) {
+      const context = JSON.stringify([legacyId, scopeBase, resource.path]);
+      const contexts = visited.get(value);
+      if (contexts?.has(context)) {
+        return;
+      }
+      if (contexts) {
+        contexts.add(context);
+      } else {
+        visited.set(value, new Set([context]));
+      }
+    }
+    parents.add(value);
+    if (!resourceRoots.has(value)) {
+      resourceRoots.set(value, resource.value);
+    } else if (resourceRoots.get(value) !== resource.value) {
+      resourceRoots.set(value, undefined);
+    }
+    if (trackedRefs.has(value) && typeof value.$ref === "string") {
+      references.push({ value, resource });
+    }
+    for (const key of Object.keys(value)) {
+      const childPath = Pointer.join(path, key);
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (descriptor?.get && isExcludedPath(childPath, undefined)) {
+        continue;
+      }
+      const child = value[key];
+      if (!isExcludedPath(childPath, child)) {
+        visit(child, childPath, scopeBase, legacyId, resource);
+      }
+    }
+    parents.delete(value);
+  }
 
-    const fixedPath = resolvePathThroughRefs(schema, refValue);
-    if (fixedPath !== refValue) {
-      entry.$ref.$ref = fixedPath;
+  if (!isExcludedPath("#", schema)) {
+    visit(schema, "#", rootScopeBase, legacyIdScope, { value: schema, path: "#" });
+  }
+
+  // A caller can share an object across resource scopes. Only mutate its ref
+  // when every occurrence agrees on the rewrite.
+  const rewrites = new Map<any, string | undefined>();
+  function propose(value: any, ref: string) {
+    if (!rewrites.has(value)) {
+      rewrites.set(value, ref);
+    } else if (rewrites.get(value) !== ref) {
+      rewrites.set(value, undefined);
     }
+  }
+  function applyRewrites() {
+    for (const [value, ref] of rewrites) {
+      if (ref !== undefined && ref !== value.$ref) {
+        value.$ref = ref;
+      }
+    }
+    rewrites.clear();
+  }
+
+  if (dynamicIdScope) {
+    for (const { value, resource } of references) {
+      const target = generatedRefs.get(value);
+      if (target === undefined) {
+        continue;
+      }
+      const insideResource = target === resource.path || target.startsWith(resource.path + "/");
+      propose(
+        value,
+        insideResource
+          ? "#" + target.slice(resource.path.length)
+          : value.$ref.startsWith("#")
+            ? url.stripHash(rootScopeBase) + target
+            : value.$ref,
+      );
+    }
+    applyRewrites();
+  }
+
+  if (options.optimizeInternalRefs !== false) {
+    for (const { value, resource } of references) {
+      propose(value, resolvePathThroughRefs(resource.value, value.$ref, resourceRoots));
+    }
+    applyRewrites();
   }
 }
 
@@ -665,7 +788,7 @@ function fixRefsThroughRefs(inventory: InventoryEntry[], schema: any) {
  * is a $ref, follows it and adjusts the path accordingly.
  * Returns the corrected path that doesn't traverse through any $ref.
  */
-function resolvePathThroughRefs(schema: any, refPath: string): string {
+function resolvePathThroughRefs(schema: any, refPath: string, resourceRoots: Map<object, object | undefined>): string {
   if (!isInternalPointer(refPath)) {
     return refPath;
   }
@@ -675,8 +798,13 @@ function resolvePathThroughRefs(schema: any, refPath: string): string {
   const resolvedSegments: string[] = [];
 
   for (const seg of segments) {
-    if (current === null || current === undefined || typeof current !== "object") {
-      // Can't walk further, return original path
+    if (
+      current === null ||
+      current === undefined ||
+      typeof current !== "object" ||
+      resourceRoots.get(current) !== schema
+    ) {
+      // Do not follow a fragment reference after crossing into another resource.
       return refPath;
     }
 
@@ -693,7 +821,7 @@ function resolvePathThroughRefs(schema: any, refPath: string): string {
       const targetSegments = Pointer.parse(current.$ref);
       resolvedSegments.length = 0;
       resolvedSegments.push(...targetSegments);
-      current = walkPath(schema, current.$ref);
+      current = walkPath(schema, current.$ref, resourceRoots);
       if (current === null || current === undefined || typeof current !== "object") {
         return refPath;
       }
@@ -709,7 +837,7 @@ function resolvePathThroughRefs(schema: any, refPath: string): string {
 /**
  * Walks a JSON pointer path through a schema object, returning the value at that path.
  */
-function walkPath(schema: any, path: string): any {
+function walkPath(schema: any, path: string, resourceRoots: Map<object, object | undefined>): any {
   if (!isInternalPointer(path)) {
     return undefined;
   }
@@ -718,7 +846,12 @@ function walkPath(schema: any, path: string): any {
   let current = schema;
 
   for (const seg of segments) {
-    if (current === null || current === undefined || typeof current !== "object") {
+    if (
+      current === null ||
+      current === undefined ||
+      typeof current !== "object" ||
+      resourceRoots.get(current) !== schema
+    ) {
       return undefined;
     }
     current = current[seg];
