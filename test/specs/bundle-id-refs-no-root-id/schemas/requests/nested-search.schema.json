@@ -1,0 +1,14 @@
+{
+  "$id": "requests/nested-search.schema.json",
+  "type": "object",
+  "properties": {
+    "inner": {
+      "$id": "inner/inner.schema.json",
+      "type": "object",
+      "properties": {
+        "test1": { "$ref": "../../test.json" },
+        "test2": { "$ref": "../../test.json" }
+      }
+    }
+  }
+}

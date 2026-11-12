@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "type": "object",
+  "properties": {
+    "a": { "$ref": "schemas/requests/test.json" },
+    "search": { "$ref": "schemas/requests/search.schema.json" }
+  }
+}

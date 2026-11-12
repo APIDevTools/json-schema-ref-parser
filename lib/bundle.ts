@@ -25,6 +25,8 @@ export interface InventoryEntry {
   scopeBase: string;
   dynamicIdScope: boolean;
   nestedIdScope: boolean;
+  // Where the innermost non-root $id resource around this $ref sits in the bundle
+  scopePathFromRoot?: string;
   targetResourceBase: string;
   targetResourceId?: string;
   rootReference?: string;
@@ -72,12 +74,6 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
   // Remap all $ref pointers
   remap<S, O>(inventory, options, rootId, rootScopeBase);
 
-  // Without a root $id, refs qualified from the root carry its local path, which only resolves
-  // where the bundle was made. Point them from the document root instead where that is safe.
-  if (!rootId && parser.$refs._root$Ref.dynamicIdScope) {
-    collapseLocalRootScopes(parser.schema, rootScopeBase, parser.$refs._root$Ref.legacyIdScope);
-  }
-
   // Fix any $ref paths that traverse through other $refs (which is invalid per JSON Schema spec)
   const bundleOptions = (options.bundle || {}) as BundleOptions;
   if (bundleOptions.optimizeInternalRefs !== false) {
@@ -113,6 +109,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   embeddedResourcePaths: Set<string>,
   seen: Set<object>,
   matcherAlreadyChecked = false,
+  scopePathFromRoot?: string,
 ) {
   const obj = key === null ? parent : parent[key as keyof typeof parent];
   const bundleOptions = (options.bundle || {}) as BundleOptions;
@@ -147,6 +144,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         options,
         embeddedResourcePaths,
         seen,
+        scopePathFromRoot,
       );
     } else {
       // Crawl the object in a specific order that's optimized for bundling.
@@ -186,6 +184,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
             : currentScopeBase;
         const childHasSchemaIdentifier = dynamicIdScope && hasSchemaIdentifier(value, childLegacyIdScope);
         const childNestedIdScope = nestedIdScope || childHasSchemaIdentifier;
+        const childScopePathFromRoot = childHasSchemaIdentifier ? keyPathFromRoot : scopePathFromRoot;
         let childEmbeddedResourcePaths = embeddedResourcePaths;
         if (childHasSchemaIdentifier) {
           childEmbeddedResourcePaths = new Set(embeddedResourcePaths);
@@ -207,6 +206,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
             options,
             childEmbeddedResourcePaths,
             seen,
+            childScopePathFromRoot,
           );
         } else {
           crawl(
@@ -225,6 +225,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
             childEmbeddedResourcePaths,
             seen,
             true,
+            childScopePathFromRoot,
           );
         }
 
@@ -267,6 +268,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   options: O,
   embeddedResourcePaths: Set<string>,
   seen: Set<object>,
+  scopePathFromRoot?: string,
 ) {
   const $ref = $refKey === null ? $refParent : $refParent[$refKey];
   const shouldResolveOnCwd = $Ref.isExternal$Ref($ref) && options.dereference?.externalReferenceResolution === "root";
@@ -328,13 +330,15 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
     targetResourceBase, // The canonical URI of the resource containing the target
     ...(targetResourceId === undefined ? {} : { targetResourceId }),
     ...(rootReference === undefined ? {} : { rootReference }),
+    ...(scopePathFromRoot === undefined ? {} : { scopePathFromRoot }),
   });
 
   // Recursively crawl the resolved value
   if (!existingEntry || external) {
     const resolvedScopeBase = pointer.$ref.dynamicIdScope ? pointer.scopeBase : pointer.$ref.path!;
-    const resolvedNestedIdScope =
-      nestedIdScope || (pointer.$ref.dynamicIdScope && hasSchemaIdentifier(pointer.value, pointer.legacyIdScope));
+    const resolvedHasSchemaIdentifier =
+      pointer.$ref.dynamicIdScope && hasSchemaIdentifier(pointer.value, pointer.legacyIdScope);
+    const resolvedNestedIdScope = nestedIdScope || resolvedHasSchemaIdentifier;
     const resolvedEmbeddedResourcePaths = new Set(embeddedResourcePaths);
     if (pointer.value === pointer.$ref.value && hasSchemaIdentifier(pointer.$ref.value, pointer.$ref.legacyIdScope)) {
       resolvedEmbeddedResourcePaths.add(url.stripHash(pointer.$ref.path!));
@@ -355,6 +359,8 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
       options,
       resolvedEmbeddedResourcePaths,
       seen,
+      false,
+      resolvedHasSchemaIdentifier ? pathFromRoot : scopePathFromRoot,
     );
   }
 }
@@ -556,6 +562,7 @@ function preserveRecursiveTargets(
         scopeBase: getSchemaBasePath(scope.scopeBase, value, legacyIdScope),
         dynamicIdScope: true,
         nestedIdScope: true,
+        scopePathFromRoot: path,
       };
     }
     if (targets.has(value)) {
@@ -752,6 +759,12 @@ function qualifyPathFromRoot(
     return pathFromRoot;
   }
 
+  // A target inside the same resource can be pointed to from that resource, which needs no URI.
+  const scopePath = entry.scopePathFromRoot;
+  if (scopePath !== undefined && (pathFromRoot === scopePath || pathFromRoot.startsWith(scopePath + "/"))) {
+    return "#" + pathFromRoot.slice(scopePath.length);
+  }
+
   // A fragment-only reference inside a nested schema resource resolves against
   // that resource's $id. Point back to the root resource explicitly instead.
   // Prefer the root's declared $id when it resolves correctly from this scope;
@@ -762,103 +775,6 @@ function qualifyPathFromRoot(
   }
 
   return url.stripHash(rootResource) + pathFromRoot;
-}
-
-interface IdScope {
-  key: "$id" | "id";
-  id: string;
-  // The outermost $id schema above this one, or this schema when it is the outermost
-  outer: object;
-  pointer: string;
-  schema: Record<string, unknown>;
-}
-
-interface ScopedRef {
-  holder: { $ref: string };
-  // The $id schemas above this ref, outermost first
-  scopes: IdScope[];
-}
-
-// Rewrites refs that start with the root's local path, and fragment-only refs under the same
-// nested $id, as pointers from the document root, then removes those $ids.
-function collapseLocalRootScopes(schema: unknown, rootScopeBase: string, legacyIdScope: boolean) {
-  const rootPrefix = url.stripHash(rootScopeBase) + "#";
-  const refs: ScopedRef[] = [];
-  const idScopes: IdScope[] = [];
-  const seen = new Set<object>();
-
-  const visit = (node: unknown, pointer: string, scopes: IdScope[], inheritedLegacyId: boolean) => {
-    if (!node || typeof node !== "object" || ArrayBuffer.isView(node) || seen.has(node)) {
-      return;
-    }
-    seen.add(node);
-
-    const obj = node as Record<string, unknown>;
-    const legacyId = getSchemaIdMode(obj, inheritedLegacyId);
-    const id = getSchemaId(obj, legacyId);
-    let innerScopes = scopes;
-    if (id !== undefined) {
-      const scope: IdScope = {
-        key: legacyId ? "id" : "$id",
-        id,
-        outer: scopes[0]?.schema ?? obj,
-        pointer,
-        schema: obj,
-      };
-      idScopes.push(scope);
-      innerScopes = [...scopes, scope];
-    }
-
-    for (const key of Object.keys(obj)) {
-      const value = obj[key];
-      if (key === "$ref" && typeof value === "string") {
-        refs.push({ holder: obj as ScopedRef["holder"], scopes: innerScopes });
-      } else {
-        visit(value, Pointer.join(pointer, key), innerScopes, legacyId);
-      }
-    }
-  };
-
-  // The root has no $id here, so only nested schemas open a scope.
-  visit(schema, "#", [], legacyIdScope);
-
-  const isRootPrefixed = (ref: ScopedRef) => ref.holder.$ref.startsWith(rootPrefix);
-  const isFragment = (ref: string) => ref === "#" || ref.startsWith("#/");
-  // A ref may target a $id when it contains it, unless it is a pointer from the document root.
-  const mayTargetId = (ref: string, id: string) => ref !== "#" && !isInternalPointer(ref) && ref.includes(id);
-  const otherRefs = refs.filter((ref) => !isRootPrefixed(ref)).map((ref) => ref.holder.$ref);
-
-  // Grouped by outermost $id, since removing it re-scopes every ref beneath it.
-  const groups = new Map<object, ScopedRef[]>();
-  for (const ref of refs) {
-    const outer = ref.scopes[0]?.schema;
-    if (outer) {
-      groups.set(outer, [...(groups.get(outer) ?? []), ref]);
-    }
-  }
-
-  for (const [outer, group] of groups) {
-    const scopes = idScopes.filter((scope) => scope.outer === outer);
-    // URI and anchor refs can't be rewritten as root pointers, so a group using one, or one whose
-    // $id a URI ref may target, stays as the bundler wrote it.
-    const canCollapse =
-      group.some(isRootPrefixed) &&
-      group.every((ref) => isRootPrefixed(ref) || isFragment(ref.holder.$ref)) &&
-      !otherRefs.some((ref) => scopes.some(({ id }) => mayTargetId(ref, id)));
-    if (!canCollapse) {
-      continue;
-    }
-
-    const scopesToCollapse = new Set<IdScope>();
-    for (const ref of group) {
-      const innermost = ref.scopes[ref.scopes.length - 1]!;
-      ref.holder.$ref = isRootPrefixed(ref)
-        ? ref.holder.$ref.slice(rootPrefix.length - 1)
-        : innermost.pointer + ref.holder.$ref.slice(1);
-      ref.scopes.forEach((scope) => scopesToCollapse.add(scope));
-    }
-    scopesToCollapse.forEach((scope) => delete scope.schema[scope.key]);
-  }
 }
 
 function referenceToResource(entry: InventoryEntry): string {
