@@ -76,6 +76,47 @@ describe.skipIf(isBrowser)("Local files referenced from a remote schema", () => 
     );
   });
 
+  it("rejects a relative $ref under a file:// $id with resolveExcludedPathMatcher", async () => {
+    const options = {
+      resolveExcludedPathMatcher: () => false,
+      resolve: {
+        remote: remote({
+          "https://example.com/openapi.json": {
+            $schema: "https://json-schema.org/draft/2020-12/schema",
+            $id: pathToFileURL(nodePath.join(dir, "root.json")).href,
+            properties: { leak: { $ref: "secret.json" } },
+          },
+        }),
+      },
+    };
+    await expect(new $RefParser().dereference("https://example.com/openapi.json", options)).rejects.toThrow(
+      "from remote schema",
+    );
+  });
+
+  it("rejects a $ref through a remote schema's file:// $id alias", async () => {
+    const idUrl = pathToFileURL(nodePath.join(dir, "alias.json")).href;
+    for (const extra of [{}, { resolveExcludedPathMatcher: () => false }]) {
+      const options = {
+        ...extra,
+        resolve: {
+          remote: remote({
+            "https://example.com/openapi.json": {
+              $schema: "https://json-schema.org/draft/2020-12/schema",
+              $defs: {
+                inner: { $id: idUrl, properties: { leak: { $ref: "secret.json" } } },
+              },
+              properties: { a: { $ref: idUrl } },
+            },
+          }),
+        },
+      };
+      await expect(new $RefParser().dereference("https://example.com/openapi.json", options)).rejects.toThrow(
+        "from remote schema",
+      );
+    }
+  });
+
   it("rejects it when following a remote $ref from a remote schema", async () => {
     const options = {
       resolve: {
