@@ -25,7 +25,6 @@ export interface InventoryEntry {
   scopeBase: string;
   dynamicIdScope: boolean;
   nestedIdScope: boolean;
-  // Where the innermost non-root $id resource around this $ref sits in the bundle
   scopePathFromRoot?: string;
   targetResourceBase: string;
   targetResourceId?: string;
