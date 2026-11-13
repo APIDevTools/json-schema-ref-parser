@@ -431,6 +431,9 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   });
 
   let file, hash, pathFromRoot;
+  // Sibling keys of the inlined $ref that other $refs are remapped to. An extended $ref is
+  // inlined merged with its siblings, so those keys no longer hold the target's own values.
+  let siblingKeys: Set<string> | undefined;
   const recursiveEntries: InventoryEntry[] = [];
   for (const entry of inventory) {
     // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
@@ -460,7 +463,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           entry.$ref.$ref = entry.hash;
         }
       }
-    } else if (entry.file === file && entry.hash === hash) {
+    } else if (entry.file === file && entry.hash === hash && !siblingKeys) {
       // This $ref points to the same value as the previous $ref, so remap it to the same path
       entry.$ref.$ref = qualifyPathFromRoot(entry, pathFromRoot, rootId, rootScopeBase);
       generatedRefs.set(entry.$ref, pathFromRoot);
@@ -472,6 +475,10 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         // location into that ancestor would remove the very path it points to.
         entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
         recursiveEntries.push(entry);
+      } else if (siblingKeys?.has(tokens[0])) {
+        // The previous $ref overrides this key with its own sibling, so the path beneath
+        // it no longer holds the target's value. Inline the value here instead.
+        entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
       } else {
         const subPath = Pointer.join(pathFromRoot, tokens);
         entry.$ref.$ref = qualifyPathFromRoot(entry, subPath, rootId, rootScopeBase);
@@ -482,6 +489,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       file = entry.file;
       hash = entry.hash;
       pathFromRoot = entry.pathFromRoot;
+      siblingKeys = entry.extended ? new Set(Object.keys(entry.$ref).filter((key) => key !== "$ref")) : undefined;
 
       // This is the first $ref to point to this value, so dereference the value.
       // Any other $refs that point to the same value will point to this $ref instead
