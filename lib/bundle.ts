@@ -1,7 +1,7 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
-import { getSchemaBasePath, getSchemaId, getSchemaIdMode } from "./util/schema-resources.js";
+import { getSchemaBasePath, getSchemaId, getSchemaIdMode, usesDynamicIdScope } from "./util/schema-resources.js";
 import type $Refs from "./refs.js";
 import type $RefParser from "./index.js";
 import type { ParserOptions } from "./index.js";
@@ -29,6 +29,7 @@ export interface InventoryEntry {
   targetResourceBase: string;
   targetResourceId?: string;
   rootReference?: string;
+  embeddedTargetPath?: string;
 }
 /**
  * Bundles all external JSON references into the main JSON schema, thus resulting in a schema that
@@ -72,6 +73,7 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
 
   // Remap all $ref pointers
   const generatedRefs = new Map<object, string>();
+  embedSharedTargets(parser.schema, inventory, parser.$refs._root$Ref.legacyIdScope);
   remap<S, O>(inventory, options, generatedRefs, rootId, rootScopeBase);
 
   finalizeReferences(
@@ -360,6 +362,191 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
 }
 
 /**
+ * If every caller extends a target, inlining it several times would duplicate any
+ * resource identifiers it contains. Inlining a caller inside its own target would
+ * create a JavaScript cycle. Give these targets one unmodified definition.
+ */
+function embedSharedTargets(schema: any, inventory: InventoryEntry[], legacyIdScope: boolean) {
+  if (!inventory.some((entry) => entry.external && entry.extended)) {
+    return;
+  }
+  const byTarget = new Map<object, InventoryEntry[]>();
+  const extendedByPath = new Map<string, InventoryEntry>();
+  for (const entry of inventory) {
+    if (entry.value && typeof entry.value === "object") {
+      if (entry.external && entry.extended) {
+        extendedByPath.set(entry.file + entry.hash, entry);
+      }
+      const group = byTarget.get(entry.value);
+      if (group) {
+        group.push(entry);
+      } else {
+        byTarget.set(entry.value, [entry]);
+      }
+    }
+  }
+
+  // A pointer into an overridden subtree also needs its unmodified source.
+  const overriddenTargets = new Set<object>();
+  for (const entry of inventory) {
+    let hash = entry.hash as string;
+    while (hash.includes("/")) {
+      hash = hash.slice(0, hash.lastIndexOf("/"));
+      const ancestor = extendedByPath.get(entry.file + hash);
+      if (ancestor && Object.hasOwn(ancestor.$ref, Pointer.parse("#" + entry.hash.slice(hash.length))[0])) {
+        overriddenTargets.add(ancestor.value);
+      }
+    }
+  }
+
+  const relocated = new Map<string, string>();
+  const dynamicIdScope = usesDynamicIdScope(schema);
+  const localResources = new Map<string, Map<string, string>>();
+  const definitionsToAdd: InventoryEntry[] = [];
+  for (const entries of byTarget.values()) {
+    if (
+      (entries.length < 2 && !overriddenTargets.has(entries[0].value)) ||
+      entries.some((entry) => entry.external && !entry.extended)
+    ) {
+      continue;
+    }
+    const first = entries.find((entry) => entry.external);
+    if (!first) {
+      continue;
+    }
+    const paths = new Set<string>(entries.map((entry) => entry.pathFromRoot));
+    const recursive = entries.some((entry) => findAncestorPath(entry.pathFromRoot, paths) !== undefined);
+    if (!recursive && !containsSchemaResource(first.value, legacyIdScope)) {
+      continue;
+    }
+    const definition = createSharedDefinition(schema, first, legacyIdScope);
+    definitionsToAdd.push(definition);
+    const path = definition.pathFromRoot;
+    for (const entry of entries) {
+      relocated.set(entry.pathFromRoot, path);
+      if (!dynamicIdScope) {
+        // Generic JSON has no nested resource scopes on the next read. A
+        // reference authored against this resource needs a document pointer.
+        const hashes = localResources.get(entry.file) ?? new Map<string, string>();
+        hashes.set(entry.hash, path);
+        localResources.set(entry.file, hashes);
+      }
+    }
+  }
+
+  if (relocated.size) {
+    // Children were inventoried through the original extended references. Their
+    // file and scope remain the same, but their physical destination has moved.
+    for (const entry of inventory) {
+      const hashes = !entry.external && localResources.get(entry.file);
+      if (hashes) {
+        const hash = hashes.has(entry.hash) ? entry.hash : findAncestorPath(entry.hash, hashes);
+        if (hash !== undefined) {
+          entry.embeddedTargetPath = Pointer.join(
+            hashes.get(hash)!,
+            Pointer.parse("#" + entry.hash.slice(hash.length)),
+          );
+        }
+      }
+      const parent = findAncestorPath(entry.pathFromRoot, relocated);
+      if (parent !== undefined) {
+        entry.pathFromRoot = relocated.get(parent)! + entry.pathFromRoot.slice(parent.length);
+        entry.depth = Pointer.parse(entry.pathFromRoot).length;
+      }
+    }
+    for (const definition of definitionsToAdd) {
+      addToInventory(inventory, definition);
+    }
+  }
+}
+
+function createSharedDefinition(schema: any, first: InventoryEntry, legacyIdScope: boolean): InventoryEntry {
+  // OpenAPI and older JSON Schema dialects already define locations for named schemas.
+  let owner = schema;
+  let ownerPath = "#";
+  const olderDraft = legacyIdScope || (typeof schema.$schema === "string" && /draft-0[467]\//.test(schema.$schema));
+  let keyword = olderDraft || ("definitions" in owner && !("$defs" in owner)) ? "definitions" : "$defs";
+  if (typeof schema.openapi === "string") {
+    owner = schema.components ??= {};
+    ownerPath = "#/components";
+    keyword = "schemas";
+  } else if (typeof schema.swagger === "string") {
+    keyword = "definitions";
+  }
+  // JSON arrays cannot serialize named properties. An extended reference is
+  // itself an object, so it can carry the definition even in a bare array.
+  if (
+    Array.isArray(owner) ||
+    !owner ||
+    typeof owner !== "object" ||
+    (owner[keyword] !== undefined &&
+      (!owner[keyword] || typeof owner[keyword] !== "object" || Array.isArray(owner[keyword])))
+  ) {
+    owner = first.$ref;
+    ownerPath = first.pathFromRoot;
+    keyword = "$defs";
+    while (Object.hasOwn(owner, keyword)) {
+      keyword = "_" + keyword;
+    }
+  }
+  const definitions = (owner[keyword] ??= {});
+  const fileName = first.file.split("/").pop() || "resource";
+  // OpenAPI restricts component names to ASCII letters, digits, ".", "-" and "_".
+  const name =
+    keyword === "schemas" || typeof schema.swagger === "string" ? fileName.replace(/[^A-Za-z0-9._-]+/g, "_") : fileName;
+  let key = name;
+  let suffix = 2;
+  while (Object.hasOwn(definitions, key)) {
+    key = name + "-" + suffix++;
+  }
+  const path = Pointer.join(ownerPath, [keyword, key]);
+  const ref = { $ref: first.file + first.hash };
+  Object.defineProperty(definitions, key, { value: ref, enumerable: true, configurable: true, writable: true });
+  return {
+    ...first,
+    $ref: ref,
+    parent: definitions,
+    key,
+    pathFromRoot: path,
+    depth: Pointer.parse(path).length,
+    circular: false,
+    extended: false,
+  };
+}
+
+function findAncestorPath(path: string, paths: ReadonlySet<string> | ReadonlyMap<string, string>) {
+  let index = path.lastIndexOf("/");
+  while (index !== -1) {
+    const ancestor = path.slice(0, index);
+    if (paths.has(ancestor)) {
+      return ancestor;
+    }
+    index = ancestor.lastIndexOf("/");
+  }
+  return undefined;
+}
+
+function containsSchemaResource(value: object, legacyIdScope: boolean) {
+  const seen = new Set<object>();
+  function visit(node: any, legacy: boolean): boolean {
+    if (!node || typeof node !== "object" || ArrayBuffer.isView(node) || seen.has(node)) {
+      return false;
+    }
+    seen.add(node);
+    legacy = getSchemaIdMode(node, legacy);
+    return (
+      Boolean(getSchemaId(node, legacy)) ||
+      Object.keys(node).some((key) => {
+        // Inspect data properties without evaluating getters on excluded paths.
+        const descriptor = Object.getOwnPropertyDescriptor(node, key);
+        return descriptor && "value" in descriptor && visit(descriptor.value, legacy);
+      })
+    );
+  }
+  return visit(value, legacyIdScope);
+}
+
+/**
  * Re-maps every $ref pointer, so that they're all relative to the root of the JSON Schema.
  * Each referenced value is dereferenced EXACTLY ONCE.  All subsequent references to the same
  * value are re-mapped to point to the first reference.
@@ -431,12 +618,18 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   });
 
   let file, hash, pathFromRoot;
+  // Sibling keys of the inlined $ref that other $refs are remapped to. An extended $ref is
+  // inlined merged with its siblings, so those keys no longer hold the target's own values.
+  let siblingKeys: Set<string> | undefined;
   const recursiveEntries: InventoryEntry[] = [];
   for (const entry of inventory) {
     // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
 
     const bundleOpts = (options.bundle || {}) as BundleOptions;
-    if (!entry.external) {
+    if (entry.embeddedTargetPath !== undefined) {
+      entry.$ref.$ref = entry.embeddedTargetPath;
+      generatedRefs.set(entry.$ref, entry.embeddedTargetPath);
+    } else if (!entry.external) {
       // This $ref already resolves to the main JSON Schema file.
       // When optimizeInternalRefs is false, preserve the original internal ref path
       // instead of rewriting it to the fully resolved hash. References to nested
@@ -460,7 +653,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
           entry.$ref.$ref = entry.hash;
         }
       }
-    } else if (entry.file === file && entry.hash === hash) {
+    } else if (entry.file === file && entry.hash === hash && !siblingKeys) {
       // This $ref points to the same value as the previous $ref, so remap it to the same path
       entry.$ref.$ref = qualifyPathFromRoot(entry, pathFromRoot, rootId, rootScopeBase);
       generatedRefs.set(entry.$ref, pathFromRoot);
@@ -472,16 +665,24 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         // location into that ancestor would remove the very path it points to.
         entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
         recursiveEntries.push(entry);
+      } else if (siblingKeys?.has(tokens[0])) {
+        // The previous $ref overrides this key with its own sibling, so the path beneath
+        // it no longer holds the target's value. Inline the value here instead.
+        entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
+        if (containsObject(entry.value, entry.parent)) {
+          recursiveEntries.push(entry);
+        }
       } else {
         const subPath = Pointer.join(pathFromRoot, tokens);
         entry.$ref.$ref = qualifyPathFromRoot(entry, subPath, rootId, rootScopeBase);
         generatedRefs.set(entry.$ref, subPath);
       }
     } else {
-      // We've moved to a new file or new hash
+      // This reference must be embedded at its own location.
       file = entry.file;
       hash = entry.hash;
       pathFromRoot = entry.pathFromRoot;
+      siblingKeys = entry.extended ? new Set(Object.keys(entry.$ref).filter((key) => key !== "$ref")) : undefined;
 
       // This is the first $ref to point to this value, so dereference the value.
       // Any other $refs that point to the same value will point to this $ref instead
@@ -534,6 +735,7 @@ function preserveRecursiveTargets(
   rootScopeBase?: string,
 ) {
   const targets = new Set(inventory.map((candidate) => candidate.value));
+  targets.add(entry.$ref);
   const paths = new Map<object, string>();
   const activeTargets = new Map<object, string>();
   const parents = new Map<object, { copy: any; targetCount: number }>();
