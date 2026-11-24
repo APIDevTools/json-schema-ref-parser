@@ -1,3 +1,4 @@
 minimumReleaseAgeExclude:
   - "@oxfmt/*"
   - "@oxlint/*"
+  - "@types/node@26.6.7"
