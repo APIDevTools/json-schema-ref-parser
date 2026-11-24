@@ -1,6 +1,7 @@
 import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import parse from "./parse.js";
+import { resolveReferencePath } from "./resolve-external/reference-path.js";
 import resolveExternalWithMatcher from "./resolve-external/with-matcher.js";
 import * as url from "./util/url.js";
 import { isHandledError } from "./util/errors.js";
@@ -161,7 +162,10 @@ async function resolve$Ref<S extends object = JSONSchema, O extends ParserOption
 ) {
   const shouldResolveOnCwd = options.dereference?.externalReferenceResolution === "root";
   const resolutionBase = shouldResolveOnCwd ? url.cwd() : dynamicIdScope ? scopeBase : path;
-  const resolvedPath = url.resolve(resolutionBase, ($ref as JSONSchema).$ref!);
+  const resolvedPath = resolveReferencePath(resolutionBase, ($ref as JSONSchema).$ref!, path, $refs, options);
+  if (!resolvedPath) {
+    return;
+  }
   const withoutHash = url.stripHash(resolvedPath);
 
   // $ref.$ref = url.relative($refs._root$Ref.path, resolvedPath);

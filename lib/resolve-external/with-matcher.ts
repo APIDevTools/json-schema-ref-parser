@@ -1,6 +1,7 @@
 import $Ref from "../ref.js";
 import Pointer from "../pointer.js";
 import parse from "../parse.js";
+import { resolveReferencePath } from "./reference-path.js";
 import * as url from "../util/url.js";
 import { isHandledError } from "../util/errors.js";
 import { getSchemaBasePath, getSchemaIdMode } from "../util/schema-resources.js";
@@ -187,8 +188,14 @@ async function crawlReferenceOccurrence<S extends object, O extends ParserOption
       : referenceLocation.dynamicIdScope
         ? referenceLocation.scopeBase
         : referenceLocation.path;
-  const resolvedPath = url.resolve(resolutionBase, reference.$ref);
-  if (hasReference(activeReferences, resolvedPath)) {
+  const resolvedPath = resolveReferencePath(
+    resolutionBase,
+    reference.$ref,
+    referenceLocation.path,
+    context.$refs,
+    context.options,
+  );
+  if (!resolvedPath || hasReference(activeReferences, resolvedPath)) {
     return false;
   }
   assertReferenceDepth(activeReferences, referenceLocation.path, context.options);
@@ -341,8 +348,10 @@ async function crawlPhysicalOccurrence<S extends object, O extends ParserOptions
         : dynamicIdScope
           ? scopeBase
           : path;
-    const resolvedPath = url.resolve(resolutionBase, reference.$ref);
-    tasks.push(loadExternalDocument(reference, resolvedPath, resolutionBase, path, context));
+    const resolvedPath = resolveReferencePath(resolutionBase, reference.$ref, path, context.$refs, context.options);
+    if (resolvedPath) {
+      tasks.push(loadExternalDocument(reference, resolvedPath, resolutionBase, path, context));
+    }
   }
 
   tasks.push(
@@ -439,10 +448,11 @@ async function selectTarget<S extends object, O extends ParserOptions<S>>(
     return;
   }
 
+  const physicalPath = ref.sourcePath || ref.path! + "#";
   let current: LocatedValue = {
     value: ref.value,
-    path: ref.path! + "#",
-    originPaths: [ref.sourcePath || ref.path! + "#"],
+    path: physicalPath,
+    originPaths: [physicalPath],
     scopeBase: ref.path!,
     dynamicIdScope: ref.dynamicIdScope,
     legacyIdScope: ref.legacyIdScope,
@@ -516,7 +526,16 @@ async function followIntermediateReferences<S extends object, O extends ParserOp
         : referenceLocation.dynamicIdScope
           ? referenceLocation.scopeBase
           : referenceLocation.path;
-    const resolvedPath = url.resolve(resolutionBase, reference.$ref);
+    const resolvedPath = resolveReferencePath(
+      resolutionBase,
+      reference.$ref,
+      referenceLocation.path,
+      context.$refs,
+      context.options,
+    );
+    if (!resolvedPath) {
+      return;
+    }
     if (hasReference(referenceChain, resolvedPath)) {
       return $Ref.isExtended$Ref(reference) ? current : undefined;
     }
