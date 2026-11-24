@@ -308,7 +308,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
     }
   }
 
-  inventory.push({
+  addToInventory(inventory, {
     $ref, // The JSON Reference (e.g. {$ref: string})
     parent: $refParent, // The object that contains this $ref pointer
     key: $refKey, // The key in `parent` that is the $ref pointer
@@ -634,20 +634,34 @@ function preserveRecursiveTargets(
 }
 
 /**
- * TODO
+ * Index of the inventory, keyed by `$ref` parent and then by key, so that an already
+ * inventoried $ref can be found without scanning the whole inventory.
  */
-function findInInventory(inventory: InventoryEntry[], $refParent: any, $refKey: any) {
-  for (const existingEntry of inventory) {
-    if (existingEntry && existingEntry.parent === $refParent && existingEntry.key === $refKey) {
-      return existingEntry;
-    }
+const inventoryIndexes = new WeakMap<InventoryEntry[], Map<any, Map<any, InventoryEntry>>>();
+
+function addToInventory(inventory: InventoryEntry[], entry: InventoryEntry) {
+  let index = inventoryIndexes.get(inventory);
+  if (!index) {
+    index = new Map();
+    inventoryIndexes.set(inventory, index);
   }
-  return undefined;
+  let keys = index.get(entry.parent);
+  if (!keys) {
+    keys = new Map();
+    index.set(entry.parent, keys);
+  }
+  keys.set(entry.key, entry);
+  inventory.push(entry);
 }
 
-function removeFromInventory(inventory: InventoryEntry[], entry: any) {
+function findInInventory(inventory: InventoryEntry[], $refParent: any, $refKey: any) {
+  return inventoryIndexes.get(inventory)?.get($refParent)?.get($refKey);
+}
+
+function removeFromInventory(inventory: InventoryEntry[], entry: InventoryEntry) {
   const index = inventory.indexOf(entry);
   inventory.splice(index, 1);
+  inventoryIndexes.get(inventory)?.get(entry.parent)?.delete(entry.key);
 }
 
 /**
