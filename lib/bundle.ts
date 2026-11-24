@@ -2,6 +2,7 @@ import $Ref from "./ref.js";
 import Pointer from "./pointer.js";
 import * as url from "./util/url.js";
 import { getSchemaBasePath, getSchemaId, getSchemaIdMode, usesDynamicIdScope } from "./util/schema-resources.js";
+import { locateChild, type ReferenceLocation } from "./util/reference-location.js";
 import type $Refs from "./refs.js";
 import type $RefParser from "./index.js";
 import type { ParserOptions } from "./index.js";
@@ -30,6 +31,23 @@ export interface InventoryEntry {
   targetResourceId?: string;
   rootReference?: string;
   embeddedTargetPath?: string;
+  targetOrigin?: TargetOrigin;
+  preserveReference?: boolean;
+}
+
+// Only descendants reached through a resolved target move with that target.
+// Literal siblings at the same logical path stay at the authored reference.
+interface TargetOrigin {
+  entry: InventoryEntry;
+  path: string;
+  parent: TargetOrigin | undefined;
+}
+
+interface CrawlContext {
+  targetOrigin?: TargetOrigin;
+  seen: Set<object>;
+  mergedTargets: Map<string, ReferenceLocation>;
+  overlappingRefs: WeakSet<object>;
 }
 /**
  * Bundles all external JSON references into the main JSON schema, thus resulting in a schema that
@@ -51,13 +69,17 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
   // Build an inventory of all $ref pointers in the JSON Schema
   const inventory: InventoryEntry[] = [];
   const embeddedResourcePaths = new Set([url.stripHash(parser.$refs._root$Ref.path!), url.stripHash(rootScopeBase)]);
+  const context: CrawlContext = { seen: new Set(), mergedTargets: new Map(), overlappingRefs: new WeakSet() };
   crawl<S, O>(
     parser,
     "schema",
-    parser.$refs._root$Ref.path + "#",
-    rootScopeBase,
-    parser.$refs._root$Ref.dynamicIdScope,
-    parser.$refs._root$Ref.legacyIdScope,
+    {
+      value: parser.schema,
+      path: parser.$refs._root$Ref.path + "#",
+      scopeBase: rootScopeBase,
+      dynamicIdScope: parser.$refs._root$Ref.dynamicIdScope,
+      legacyIdScope: parser.$refs._root$Ref.legacyIdScope,
+    },
     false,
     "#",
     0,
@@ -65,7 +87,7 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
     parser.$refs,
     options,
     embeddedResourcePaths,
-    new Set(),
+    context,
   );
 
   // Get the root schema's $id (if any) for qualifying refs inside sub-schemas with their own $id
@@ -73,7 +95,7 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
 
   // Remap all $ref pointers
   const generatedRefs = new Map<object, string>();
-  embedSharedTargets(parser.schema, inventory, parser.$refs._root$Ref.legacyIdScope);
+  embedSharedTargets(parser.schema, inventory, parser.$refs._root$Ref.legacyIdScope, context.overlappingRefs);
   remap<S, O>(inventory, options, generatedRefs, rootId, rootScopeBase);
 
   finalizeReferences(
@@ -92,7 +114,7 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
  *
  * @param parent - The object containing the value to crawl. If the value is not an object or array, it will be ignored.
  * @param key - The property key of `parent` to be crawled
- * @param path - The full path of the property being crawled, possibly with a JSON Pointer in the hash
+ * @param location - The source document and URI scope of the property being crawled
  * @param pathFromRoot - The path of the property being crawled, from the schema root
  * @param indirections
  * @param inventory - An array of already-inventoried $ref pointers
@@ -102,10 +124,7 @@ function bundle<S extends object = JSONSchema, O extends ParserOptions<S> = Pars
 function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = ParserOptions<S>>(
   parent: object | $RefParser<S, O>,
   key: string | null,
-  path: string,
-  scopeBase: string,
-  dynamicIdScope: boolean,
-  legacyIdScope: boolean,
+  location: ReferenceLocation,
   nestedIdScope: boolean,
   pathFromRoot: string,
   indirections: number,
@@ -113,7 +132,7 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   $refs: $Refs<S, O>,
   options: O,
   embeddedResourcePaths: Set<string>,
-  seen: Set<object>,
+  context: CrawlContext,
   matcherAlreadyChecked = false,
 ) {
   const obj = key === null ? parent : parent[key as keyof typeof parent];
@@ -124,23 +143,25 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     obj &&
     typeof obj === "object" &&
     !ArrayBuffer.isView(obj) &&
-    (matcherAlreadyChecked || !isExcludedPath(pathFromRoot, obj)) &&
-    !seen.has(obj)
+    (matcherAlreadyChecked || !isExcludedPath(pathFromRoot, obj))
   ) {
     // Input schemas are normally JSON trees, but callers can pass pre-circular
     // JavaScript objects. Tracking identities keeps those cycles intact without
     // recursively walking them until the call stack overflows. It also avoids
     // repeatedly inventorying shared object instances.
-    seen.add(obj);
-
-    const currentScopeBase = scopeBase;
-    if ($Ref.isAllowed$Ref(obj, options)) {
+    const visited = context.seen.has(obj);
+    const isRef = $Ref.isAllowed$Ref(obj, options);
+    if (visited && (!isRef || key === null)) {
+      return;
+    }
+    context.seen.add(obj);
+    if (isRef) {
       inventory$Ref(
         parent,
         key,
-        path,
-        currentScopeBase,
-        dynamicIdScope,
+        location.path,
+        location.scopeBase,
+        location.dynamicIdScope,
         nestedIdScope,
         pathFromRoot,
         indirections,
@@ -148,94 +169,72 @@ function crawl<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
         $refs,
         options,
         embeddedResourcePaths,
-        seen,
+        context,
       );
-    } else {
-      // Crawl the object in a specific order that's optimized for bundling.
-      // This is important because it determines how `pathFromRoot` gets built,
-      // which later determines which keys get dereferenced and which ones get remapped
-      const keys = Object.keys(obj).sort((a, b) => {
-        // Most people will expect references to be bundled into the the "definitions" property,
-        // so we always crawl that property first, if it exists.
-        if (a === "definitions" || a === "$defs") {
-          return -1;
-        } else if (b === "definitions" || b === "$defs") {
-          return 1;
-        } else {
-          // Otherwise, crawl the keys based on their length.
-          // This produces the shortest possible bundled references
-          return a.length - b.length;
-        }
-      }) as (keyof typeof obj)[];
+      if (visited || !$Ref.isExtended$Ref(obj)) {
+        return;
+      }
+    }
+    // Crawl the object in a specific order that's optimized for bundling.
+    // This is important because it determines how `pathFromRoot` gets built,
+    // which later determines which keys get dereferenced and which ones get remapped
+    const keys = Object.keys(obj).sort((a, b) => {
+      // Most people will expect references to be bundled into the the "definitions" property,
+      // so we always crawl that property first, if it exists.
+      if (a === "definitions" || a === "$defs") {
+        return -1;
+      } else if (b === "definitions" || b === "$defs") {
+        return 1;
+      } else {
+        // Otherwise, crawl the keys based on their length.
+        // This produces the shortest possible bundled references
+        return a.length - b.length;
+      }
+    }) as (keyof typeof obj)[];
 
-      for (const key of keys) {
-        const keyPath = Pointer.join(path, key);
-        const keyPathFromRoot = Pointer.join(pathFromRoot, key);
-        const descriptor = Object.getOwnPropertyDescriptor(obj, key);
-        if (descriptor?.get && isExcludedPath(keyPathFromRoot, undefined)) {
-          continue;
-        }
+    for (const key of keys) {
+      if (isRef && key === "$ref") {
+        continue;
+      }
+      const keyPathFromRoot = Pointer.join(pathFromRoot, key);
+      const descriptor = Object.getOwnPropertyDescriptor(obj, key);
+      if (descriptor?.get && isExcludedPath(keyPathFromRoot, undefined)) {
+        continue;
+      }
 
-        const value = obj[key];
-        if (isExcludedPath(keyPathFromRoot, value)) {
-          continue;
-        }
+      const value = obj[key];
+      if (isExcludedPath(keyPathFromRoot, value)) {
+        continue;
+      }
 
-        const childLegacyIdScope = getSchemaIdMode(value, legacyIdScope);
-        const childScopeBase =
-          dynamicIdScope && value && typeof value === "object" && !ArrayBuffer.isView(value)
-            ? getSchemaBasePath(currentScopeBase, value, childLegacyIdScope)
-            : currentScopeBase;
-        const childHasSchemaIdentifier = dynamicIdScope && hasSchemaIdentifier(value, childLegacyIdScope);
-        const childNestedIdScope = nestedIdScope || childHasSchemaIdentifier;
-        let childEmbeddedResourcePaths = embeddedResourcePaths;
-        if (childHasSchemaIdentifier) {
-          childEmbeddedResourcePaths = new Set(embeddedResourcePaths);
-          childEmbeddedResourcePaths.add(url.stripHash(childScopeBase));
-        }
+      const child = locateChild($refs, location, key, value);
+      const childHasSchemaIdentifier = child.dynamicIdScope && hasSchemaIdentifier(value, child.legacyIdScope);
+      let childEmbeddedResourcePaths = embeddedResourcePaths;
+      if (childHasSchemaIdentifier) {
+        childEmbeddedResourcePaths = new Set(embeddedResourcePaths);
+        childEmbeddedResourcePaths.add(url.stripHash(child.scopeBase));
+      }
 
-        if ($Ref.isAllowed$Ref(value, options)) {
-          inventory$Ref(
-            obj,
-            key,
-            keyPath,
-            childScopeBase,
-            dynamicIdScope,
-            childNestedIdScope,
-            keyPathFromRoot,
-            indirections,
-            inventory,
-            $refs,
-            options,
-            childEmbeddedResourcePaths,
-            seen,
-          );
-        } else {
-          crawl(
-            obj,
-            key,
-            keyPath,
-            childScopeBase,
-            dynamicIdScope,
-            childLegacyIdScope,
-            childNestedIdScope,
-            keyPathFromRoot,
-            indirections,
-            inventory,
-            $refs,
-            options,
-            childEmbeddedResourcePaths,
-            seen,
-            true,
-          );
-        }
+      crawl(
+        obj,
+        key,
+        child,
+        nestedIdScope || childHasSchemaIdentifier,
+        keyPathFromRoot,
+        indirections,
+        inventory,
+        $refs,
+        options,
+        childEmbeddedResourcePaths,
+        context,
+        true,
+      );
 
-        // We need to ensure that we have an object to work with here because we may be crawling
-        // an `examples` schema and `value` may be nullish.
-        if (value && typeof value === "object" && !Array.isArray(value)) {
-          if ("$ref" in value) {
-            bundleOptions?.onBundle?.(value["$ref"], obj[key], obj as any, key);
-          }
+      // We need to ensure that we have an object to work with here because we may be crawling
+      // an `examples` schema and `value` may be nullish.
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        if ("$ref" in value) {
+          bundleOptions?.onBundle?.(value["$ref"], obj[key], obj as any, key);
         }
       }
     }
@@ -268,7 +267,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   $refs: $Refs<S, O>,
   options: O,
   embeddedResourcePaths: Set<string>,
-  seen: Set<object>,
+  context: CrawlContext,
 ) {
   const $ref = $refKey === null ? $refParent : $refParent[$refKey];
   const shouldResolveOnCwd = $Ref.isExternal$Ref($ref) && options.dereference?.externalReferenceResolution === "root";
@@ -282,6 +281,18 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
   const pointer = $refs._resolve($refPath, pathFromRoot, options);
   if (pointer === null) {
     return;
+  }
+  // Resolving a chain through an extended reference creates a fresh merged
+  // object. Every occurrence of the same non-circular target must inventory
+  // and update the instance that will actually be embedded in the bundle.
+  let target = pointer.location!;
+  if (target.child && !pointer.circular && !pointer.chainCircular) {
+    const shared = context.mergedTargets.get($refPath);
+    if (shared) {
+      target = shared;
+    } else {
+      context.mergedTargets.set($refPath, target);
+    }
   }
   const parsed = Pointer.parse(pathFromRoot);
   const depth = parsed.length;
@@ -310,7 +321,10 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
     }
   }
 
-  addToInventory(inventory, {
+  if (extended && options.dereference?.mergeKeys !== false) {
+    preserveOverlappingRefs($ref, target.value, context.overlappingRefs);
+  }
+  const entry = {
     $ref, // The JSON Reference (e.g. {$ref: string})
     parent: $refParent, // The object that contains this $ref pointer
     key: $refKey, // The key in `parent` that is the $ref pointer
@@ -318,7 +332,7 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
     depth, // How far from the JSON Schema root is this $ref pointer?
     file, // The file that the $ref pointer resolves to
     hash, // The hash within `file` that the $ref pointer resolves to
-    value: pointer.value, // The resolved value of the $ref pointer
+    value: target.value, // The resolved value of the $ref pointer
     circular: pointer.circular, // Is this $ref pointer DIRECTLY circular? (i.e. it references itself)
     extended, // Does this $ref extend its resolved value? (i.e. it has extra properties, in addition to "$ref")
     external, // Does this $ref pointer point to a file other than the main JSON Schema file?
@@ -330,7 +344,9 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
     targetResourceBase, // The canonical URI of the resource containing the target
     ...(targetResourceId === undefined ? {} : { targetResourceId }),
     ...(rootReference === undefined ? {} : { rootReference }),
-  });
+    ...(context.targetOrigin && { targetOrigin: context.targetOrigin }),
+  };
+  addToInventory(inventory, entry);
 
   // Recursively crawl the resolved value
   if (!existingEntry || external) {
@@ -343,12 +359,9 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
       resolvedEmbeddedResourcePaths.add(url.stripHash(resolvedScopeBase));
     }
     crawl(
-      pointer.value,
+      target.value as S,
       null,
-      pointer.path,
-      resolvedScopeBase,
-      pointer.$ref.dynamicIdScope,
-      pointer.legacyIdScope,
+      target,
       resolvedNestedIdScope,
       pathFromRoot,
       indirections + 1,
@@ -356,8 +369,49 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
       $refs,
       options,
       resolvedEmbeddedResourcePaths,
-      seen,
+      { ...context, targetOrigin: { entry, path: pathFromRoot, parent: context.targetOrigin } },
     );
+  }
+}
+
+/**
+ * Deep merge selects keywords before dereferencing them. Inlining either side
+ * of an overlapping $ref ahead of that merge would introduce the referenced
+ * schema's keywords on the other side, even when its $ref was overridden.
+ */
+function preserveOverlappingRefs(source: object, target: unknown, refs: WeakSet<object>) {
+  const seen = new WeakMap<object, WeakSet<object>>();
+  function visit(left: object, right: object) {
+    let partners = seen.get(left);
+    if (partners?.has(right)) {
+      return;
+    }
+    if (!partners) {
+      partners = new WeakSet();
+      seen.set(left, partners);
+    }
+    partners.add(right);
+    for (const key of Object.keys(left)) {
+      if (key === "$ref") {
+        continue;
+      }
+      const a = Object.getOwnPropertyDescriptor(left, key)?.value;
+      const b = Object.getOwnPropertyDescriptor(right, key)?.value;
+      if (!a || !b || typeof a !== "object" || typeof b !== "object" || Array.isArray(a) || Array.isArray(b)) {
+        continue;
+      }
+      // Looking at data descriptors avoids evaluating getters on excluded paths.
+      if (typeof Object.getOwnPropertyDescriptor(a, "$ref")?.value === "string") {
+        refs.add(a);
+      }
+      if (typeof Object.getOwnPropertyDescriptor(b, "$ref")?.value === "string") {
+        refs.add(b);
+      }
+      visit(a, b);
+    }
+  }
+  if (target && typeof target === "object") {
+    visit(source, target);
   }
 }
 
@@ -366,22 +420,31 @@ function inventory$Ref<S extends object = JSONSchema, O extends ParserOptions<S>
  * resource identifiers it contains. Inlining a caller inside its own target would
  * create a JavaScript cycle. Give these targets one unmodified definition.
  */
-function embedSharedTargets(schema: any, inventory: InventoryEntry[], legacyIdScope: boolean) {
-  if (!inventory.some((entry) => entry.external && entry.extended)) {
+function embedSharedTargets(
+  schema: any,
+  inventory: InventoryEntry[],
+  legacyIdScope: boolean,
+  overlappingRefs: WeakSet<object>,
+) {
+  if (!inventory.some((entry) => entry.external && (entry.extended || overlappingRefs.has(entry.$ref)))) {
     return;
   }
-  const byTarget = new Map<object, InventoryEntry[]>();
+  const byTarget = new Map<object | string, InventoryEntry[]>();
   const extendedByPath = new Map<string, InventoryEntry>();
   for (const entry of inventory) {
-    if (entry.value && typeof entry.value === "object") {
+    if (overlappingRefs.has(entry.$ref)) {
+      entry.preserveReference = true;
+    }
+    if (entry.preserveReference || (entry.value && typeof entry.value === "object")) {
       if (entry.external && entry.extended) {
         extendedByPath.set(entry.file + entry.hash, entry);
       }
-      const group = byTarget.get(entry.value);
+      const target = entry.value && typeof entry.value === "object" ? entry.value : entry.file + entry.hash;
+      const group = byTarget.get(target);
       if (group) {
         group.push(entry);
       } else {
-        byTarget.set(entry.value, [entry]);
+        byTarget.set(target, [entry]);
       }
     }
   }
@@ -399,14 +462,15 @@ function embedSharedTargets(schema: any, inventory: InventoryEntry[], legacyIdSc
     }
   }
 
-  const relocated = new Map<string, string>();
+  const relocated = new Map<InventoryEntry, string>();
   const dynamicIdScope = usesDynamicIdScope(schema);
   const localResources = new Map<string, Map<string, string>>();
   const definitionsToAdd: InventoryEntry[] = [];
   for (const entries of byTarget.values()) {
+    const preserve = entries.some((entry) => entry.external && entry.preserveReference);
     if (
-      (entries.length < 2 && !overriddenTargets.has(entries[0].value)) ||
-      entries.some((entry) => entry.external && !entry.extended)
+      (!preserve && entries.length < 2 && !overriddenTargets.has(entries[0].value)) ||
+      entries.some((entry) => entry.external && !entry.extended && !entry.preserveReference)
     ) {
       continue;
     }
@@ -416,14 +480,14 @@ function embedSharedTargets(schema: any, inventory: InventoryEntry[], legacyIdSc
     }
     const paths = new Set<string>(entries.map((entry) => entry.pathFromRoot));
     const recursive = entries.some((entry) => findAncestorPath(entry.pathFromRoot, paths) !== undefined);
-    if (!recursive && !containsSchemaResource(first.value, legacyIdScope)) {
+    if (!preserve && !recursive && !containsSchemaResource(first.value, legacyIdScope)) {
       continue;
     }
     const definition = createSharedDefinition(schema, first, legacyIdScope);
     definitionsToAdd.push(definition);
     const path = definition.pathFromRoot;
     for (const entry of entries) {
-      relocated.set(entry.pathFromRoot, path);
+      relocated.set(entry, path);
       if (!dynamicIdScope) {
         // Generic JSON has no nested resource scopes on the next read. A
         // reference authored against this resource needs a document pointer.
@@ -448,10 +512,13 @@ function embedSharedTargets(schema: any, inventory: InventoryEntry[], legacyIdSc
           );
         }
       }
-      const parent = findAncestorPath(entry.pathFromRoot, relocated);
-      if (parent !== undefined) {
-        entry.pathFromRoot = relocated.get(parent)! + entry.pathFromRoot.slice(parent.length);
-        entry.depth = Pointer.parse(entry.pathFromRoot).length;
+      for (let origin = entry.targetOrigin; origin; origin = origin.parent) {
+        const destination = relocated.get(origin.entry);
+        if (destination !== undefined) {
+          entry.pathFromRoot = destination + entry.pathFromRoot.slice(origin.path.length);
+          entry.depth = Pointer.parse(entry.pathFromRoot).length;
+          break;
+        }
       }
     }
     for (const definition of definitionsToAdd) {
@@ -511,6 +578,7 @@ function createSharedDefinition(schema: any, first: InventoryEntry, legacyIdScop
     depth: Pointer.parse(path).length,
     circular: false,
     extended: false,
+    preserveReference: false,
   };
 }
 
@@ -589,6 +657,9 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     } else if (a.extended !== b.extended) {
       // If the $ref extends the resolved value, then sort it lower than other $refs that don't extend the value
       return a.extended ? +1 : -1;
+    } else if (Boolean(a.preserveReference) !== Boolean(b.preserveReference)) {
+      // Keep the authored $ref keyword for subsequent sibling merges.
+      return a.preserveReference ? 1 : -1;
     } else if (a.indirections !== b.indirections) {
       // Sort direct references higher than indirect references
       return a.indirections - b.indirections;
@@ -622,6 +693,14 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
   // inlined merged with its siblings, so those keys no longer hold the target's own values.
   let siblingKeys: Set<string> | undefined;
   const recursiveEntries: InventoryEntry[] = [];
+  const extendedEntries: InventoryEntry[] = [];
+  function inline(entry: InventoryEntry) {
+    if (entry.extended && !entry.circular) {
+      extendedEntries.push(entry);
+    } else {
+      entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
+    }
+  }
   for (const entry of inventory) {
     // console.log('Re-mapping $ref pointer "%s" at %s', entry.$ref.$ref, entry.pathFromRoot);
 
@@ -663,12 +742,12 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
       if (pathFromRoot?.startsWith(entry.pathFromRoot + "/")) {
         // The ancestor was embedded beneath this sub-value. Redirecting this
         // location into that ancestor would remove the very path it points to.
-        entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
+        inline(entry);
         recursiveEntries.push(entry);
       } else if (siblingKeys?.has(tokens[0])) {
         // The previous $ref overrides this key with its own sibling, so the path beneath
         // it no longer holds the target's value. Inline the value here instead.
-        entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
+        inline(entry);
         if (containsObject(entry.value, entry.parent)) {
           recursiveEntries.push(entry);
         }
@@ -686,7 +765,7 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
 
       // This is the first $ref to point to this value, so dereference the value.
       // Any other $refs that point to the same value will point to this $ref instead
-      entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
+      inline(entry);
 
       if (entry.circular) {
         // This $ref points to itself
@@ -696,6 +775,11 @@ function remap<S extends object = JSONSchema, O extends ParserOptions<S> = Parse
     }
   }
 
+  // Deep merging copies property containers. Finish all child rewrites before
+  // copying their containers, including inside another extended reference.
+  for (const entry of extendedEntries.sort((a, b) => b.depth - a.depth)) {
+    entry.$ref = entry.parent[entry.key] = $Ref.dereference(entry.$ref, entry.value, options);
+  }
   for (const entry of recursiveEntries) {
     // Finish other external inlines before copying this subtree, so writes to
     // inventoried parents are retained in the recursive bundle as well.
